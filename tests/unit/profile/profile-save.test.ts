@@ -49,3 +49,15 @@ describe('profile in the save', () => {
     expect(importSave(exportSave(save), econ)).toEqual(save);
   });
 });
+
+describe('daily share record (GA-DP-6)', () => {
+  it('defaults to null, keeps a valid record and drops a broken one', () => {
+    expect(loadSave(econ, memoryStore({ [KEY]: JSON.stringify(OLD_SAVE) })).dailyShare).toBeNull();
+    const ok = { ...OLD_SAVE, dailyShare: { date: '2026-11-08', pours: 31 } };
+    expect(loadSave(econ, memoryStore({ [KEY]: JSON.stringify(ok) })).dailyShare).toEqual({ date: '2026-11-08', pours: 31 });
+    for (const bad of [{ date: 'yesterday', pours: 31 }, { date: '2026-11-08', pours: -2 }, 'x']) {
+      const raw = { ...OLD_SAVE, dailyShare: bad };
+      expect(loadSave(econ, memoryStore({ [KEY]: JSON.stringify(raw) })).dailyShare, JSON.stringify(bad)).toBeNull();
+    }
+  });
+});

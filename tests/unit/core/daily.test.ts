@@ -11,6 +11,7 @@ import {
   utcDateKey,
   localDateKey,
   recordDailySolve,
+  sharePours,
   streakReward,
   streakStatus,
 } from '../../../src/core/daily';
@@ -176,5 +177,19 @@ describe('device date going backwards (D10)', () => {
     const st: StreakState = { last: '2026-11-08', streak: 9, best: 9, passes: 1 };
     const back = recordDailySolve(st, '2026-11-06', cfg).state;
     expect(recordDailySolve(back, '2026-11-09', cfg).state.streak).toBe(10);
+  });
+});
+
+describe('owner defaults of 2026-11-08 (GA-DP-5, GA-DP-6)', () => {
+  it('after the clock moves back, Home shows today as not solved (GA-DP-5)', () => {
+    const st: StreakState = { last: '2026-11-08', streak: 9, best: 9, passes: 0 };
+    expect(streakStatus(st, '2026-11-06')).toEqual({ current: 9, solvedToday: false, passAtRisk: false });
+  });
+  it('Share uses the first counted solve of that date, not a replay (GA-DP-6)', () => {
+    expect(sharePours({ date: '2026-11-08', pours: 31 }, '2026-11-08', 24)).toBe(31);
+  });
+  it('Share uses the current solve when no counted solve of that date is recorded', () => {
+    expect(sharePours(null, '2026-11-08', 24)).toBe(24);
+    expect(sharePours({ date: '2026-11-07', pours: 31 }, '2026-11-08', 24)).toBe(24);
   });
 });

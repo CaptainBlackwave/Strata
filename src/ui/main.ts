@@ -8,12 +8,12 @@ import './style.css';
 import rawConfig from '../config/game-config.json';
 import { type Board, type Jar, canPour, isClosed, isSealed, pourAmount } from '../core/board';
 import { type CollectionConfig, allShells, grantShell, milestoneDue, setProgress } from '../core/collection';
-import { type DailyConfig, generateDaily, recordDailySolve, streakStatus, utcDateKey, weekday } from '../core/daily';
-import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, spendBooster } from '../core/economy';
+import { type DailyConfig, generateDaily, recordDailySolve, sharePours, streakStatus, utcDateKey, weekday } from '../core/daily';
+import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, isFreeBooster, spendBooster } from '../core/economy';
 import { generateLevel, tutorialBoard } from '../core/generator';
 import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
 import { createRng } from '../core/rng';
-import { GameSession, type SessionEvent } from '../core/session';
+import { GameSession, type SessionEvent, sessionOptions } from '../core/session';
 import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme } from '../core/themes';
 import {
   type Profile,
@@ -724,7 +724,7 @@ function showUnlocks(items: SlotItem[]): void {
 
 async function shareDaily(): Promise<void> {
   const url = location.href.split('?')[0].split('#')[0];
-  const text = t.shareText(dailyDate, dailyName, session.moves, save.daily.streak, url);
+  const text = t.shareText(dailyDate, dailyName, sharePours(save.dailyShare, dailyDate, session.moves), save.daily.streak, url);
   try {
     if (navigator.share) {
       await navigator.share({ text });
@@ -765,12 +765,8 @@ function startLevel(n: number): void {
 }
 
 function beginSession(board: Board, isChallenge: boolean): void {
-  session = new GameSession(board, {
-    extraJarsPerLevel: config.extraJarsPerLevel,
-    hintNodeBudget: config.hint.solverNodeBudget,
-    shuffleAttempts: config.shuffle.maxAttempts,
-    shuffleNodeBudget: config.shuffle.solverNodeBudget,
-  });
+  // One place builds the options, so the shuffle's total budget (F7, GA-SB-4) is always passed.
+  session = new GameSession(board, sessionOptions(config));
   session.onChange(onSessionEvent);
   challenge = isChallenge;
   selected = null;
@@ -824,12 +820,14 @@ function onSessionEvent(e: SessionEvent): void {
       pendingWin = true;
       break;
     case 'stuck':
-      showStuckBanner(t.stuck);
+      showStuckBanner(session.lostReason ? t.cantWin : t.stuck);
       break;
   }
   if (e.type !== 'stuck' && e.type !== 'won') {
     hideStuckBanner(); // the board changed
     disarmRestart();
+    // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
+    if (session.status !== 'won' && session.lostReason) showStuckBanner(t.cantWin);
   }
   updateHud();
 }
@@ -960,7 +958,10 @@ function showWin(): void {
     const counts = !r.alreadySolved && !r.outOfOrder;
     earn(r.reward);
     save.stats = bumpStats(save.stats, { pours: session.moves, dailiesSolved: counts ? 1 : 0 });
-    if (counts) awardShell();
+    if (counts) {
+      awardShell();
+      save.dailyShare = { date: dailyDate, pours: session.moves }; // Share reports this solve, not a replay (GA-DP-6)
+    }
     writeSave(save);
     showUnlocks(newlyUnlocked(config, before, progressNow()));
     $('win-title').textContent = t.dailyWinTitle;
@@ -1414,7 +1415,8 @@ function useBooster(id: BoosterId): void {
     else audio.play('shuffle');
   } else if (id === 'hint') applied = showHint();
   save.wallet = applied ? r.wallet : before;
-  if (applied) save.stats = bumpStats(save.stats, { boostersUsed: 1 });
+  // Free Undo is a pour taken back, not a booster, so it isn't counted (owner decision, sprint 6).
+  if (applied && !isFreeBooster(id, config)) save.stats = bumpStats(save.stats, { boostersUsed: 1 });
   writeSave(save);
   if (applied) {
     if (id !== 'shuffle') audio.play('booster');
@@ -1425,11 +1427,15 @@ function useBooster(id: BoosterId): void {
 
 /** Highlights the solver's next move. Returns false if there is none. */
 function showHint(): boolean {
-  const m = session.hint();
-  if (!m) {
-    showToast(t.noHint);
+  const r = session.hintResult();
+  if (!('move' in r)) {
+    // Not applied, so the charge or coins are refunded. A proven loss shows the banner (D21);
+    // a search that ran out of budget doesn't claim the board is lost (F7, GA-SB-2).
+    if (r.reason === 'unwinnable') showStuckBanner(t.cantWin);
+    else if (r.reason === 'budget') showToast(t.hintBudget);
     return false;
   }
+  const m = r.move;
   clearHint();
   for (const [i, cls, label] of [
     [m.from, 'hint-from', t.hintFrom],

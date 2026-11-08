@@ -171,8 +171,25 @@ export function recordDailySolve(state: StreakState, today: string, config: Dail
 export function streakStatus(state: StreakState, today: string): { current: number; solvedToday: boolean; passAtRisk: boolean } {
   if (state.last === null) return { current: 0, solvedToday: false, passAtRisk: false };
   const gap = dayNumber(today) - dayNumber(state.last);
-  if (gap <= 0) return { current: state.streak, solvedToday: true, passAtRisk: false };
+  // A device date before the last solve (D10) shows today as not solved (owner default, GA-DP-5).
+  if (gap < 0) return { current: state.streak, solvedToday: false, passAtRisk: false };
+  if (gap === 0) return { current: state.streak, solvedToday: true, passAtRisk: false };
   if (gap === 1) return { current: state.streak, solvedToday: false, passAtRisk: false };
   if (gap === 2 && state.passes > 0) return { current: state.streak, solvedToday: false, passAtRisk: true };
   return { current: 0, solvedToday: false, passAtRisk: false };
+}
+
+/** The pour count of a date's first counted solve, kept so Share can't show a replay's count. */
+export interface DailyShareRecord {
+  readonly date: string;
+  readonly pours: number;
+}
+
+/**
+ * The pour count Share reports for `date`: the first counted solve's when one is recorded for
+ * that date, otherwise the current solve's (owner default, GA-DP-6).
+ * Example: `sharePours({ date: '2026-11-08', pours: 31 }, '2026-11-08', 24) // 31`
+ */
+export function sharePours(record: DailyShareRecord | null, date: string, moves: number): number {
+  return record && record.date === date ? record.pours : moves;
 }
