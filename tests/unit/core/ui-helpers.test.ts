@@ -1,7 +1,7 @@
 // Stories: production/epics/strata/story-005-touch-ui.md, story-006-progress-save.md,
 // production/epics/competitive/story-002-economy-boosters.md
 import { describe, expect, it } from 'vitest';
-import { MIN_HIT, computeLayout } from '../../../src/ui/layout';
+import { HIT_SNAP_MARGIN, MIN_HIT, computeLayout } from '../../../src/ui/layout';
 import config from '../../../src/config/game-config.json';
 import { type EconomyConfig, newWallet } from '../../../src/core/economy';
 import { type KeyValueStore, exportSave, freshSave, importSave, loadSave, writeSave } from '../../../src/ui/storage';
@@ -27,7 +27,7 @@ describe('computeLayout', () => {
     const input = { width: 288, height: 348, jars: 9, capacity: 8 };
     const l = computeLayout(input);
     expect(l.jarWidth).toBeLessThan(MIN_HIT);
-    expect(l.jarWidth + l.gapX).toBeGreaterThanOrEqual(MIN_HIT);
+    expect(l.jarWidth + l.gapX).toBeGreaterThanOrEqual(MIN_HIT + HIT_SNAP_MARGIN);
     expect(l.cols * l.jarWidth + (l.cols + 1) * l.gapX).toBeLessThanOrEqual(input.width);
   });
   it('never shrinks the drawn jar to make room for the wider gap', () => {
