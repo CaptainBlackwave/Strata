@@ -121,8 +121,8 @@ const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
   surface2: '--surface-2', toastBg: '--toast-bg', toastFg: '--toast-fg', sky: '--sky', themeColor: '--theme-color',
 };
 
-/** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour. */
-const PATTERNS = 14;
+/** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour (tests/unit/core/config-schema.test.ts keeps the two counts equal). */
+const PATTERNS = config.palette.length;
 const BOOSTER_NAMES: Record<BoosterId, string> = { undo: t.undo, shuffle: t.shuffle, extraJar: t.jar, hint: t.hint };
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

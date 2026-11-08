@@ -25,6 +25,7 @@ interface Entry<E> {
   readonly opener: FocusTarget | null;
 }
 
+/** The stack of open overlays (menus, cards, dialogs): the top one gets focus and Escape, and closing returns focus to its opener. */
 export class LayerStack<E extends LayerElement> {
   private stack: Entry<E>[] = [];
 
