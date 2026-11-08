@@ -2292,7 +2292,25 @@ body[data-theme='rainbowafterrain'] .home::before {
 }
 
 /* ---- Sprint 8 P1, tier 2 and 3 (layers are scene-fx.ts) ---- */
-/* TIER23 */
+.scene-swatch[data-scene='softrain']::after {
+  background: repeating-linear-gradient(105deg, transparent 0 7px, rgba(52, 72, 92, 0.35) 7px 8px);
+}
+.scene-swatch[data-scene='winterlights']::after {
+  background:
+    radial-gradient(circle at 15% 22%, #ffd27a 0 2px, transparent 3px), radial-gradient(circle at 38% 30%, #ff9a85 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 30%, #a6e3c4 0 2px, transparent 3px), radial-gradient(circle at 85% 22%, #9cc4ff 0 2px, transparent 3px);
+}
+/* The dark ladder scenes get the same dark-scene touches as Moonlit tide (kept here so the sprint 7 lists stay untouched) */
+body:is([data-theme='winterlights'], [data-theme='meteorshower'], [data-theme='auroranight']) {
+  color-scheme: dark;
+}
+body:is([data-theme='winterlights'], [data-theme='meteorshower'], [data-theme='auroranight']) .glass::before {
+  background: rgba(255, 255, 255, 0.15);
+}
+body:is([data-theme='winterlights'], [data-theme='meteorshower'], [data-theme='auroranight']) :is(.tool, .daily-card, .profile-chip) {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+/* TIER3 */
 
 /* Sea fog (tier 1): static mist low over the sea, on the board and the home screen */
 body[data-theme='seafog']::before,

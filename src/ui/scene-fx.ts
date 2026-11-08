@@ -1,6 +1,7 @@
 /**
- * Animated scene layers (design/gdd/scenes.md 2.1a, sprint 7 B5): falling snow, rising
- * lanterns and New Year fireworks, drawn on one canvas behind all UI.
+ * Animated scene layers (design/gdd/scenes.md 2.1a, sprint 7 B5 and sprint 8 P1): falling snow,
+ * rising lanterns, New Year fireworks, soft rain, winter lights, meteors and aurora bands, drawn
+ * on one canvas behind all UI.
  *
  * Rules every layer follows (scenes.md "Rules for every animated layer"):
  * - The canvas sits at `z-index: -1` inside the home screen while it is shown, and behind
@@ -16,10 +17,22 @@
 export const MAX_PARTICLES = 60;
 const FRAME_MS = 1000 / 30;
 
-type LayerKind = 'snow' | 'lanterns' | 'fireworks';
+type LayerKind = 'snow' | 'lanterns' | 'fireworks' | 'rain' | 'lights';
 
 /** The scenes that have an animated layer, by scene id. */
-const LAYERS: Readonly<Record<string, LayerKind>> = { wintersnow: 'snow', harvestmoon: 'lanterns', newyear: 'fireworks' };
+const LAYERS: Readonly<Record<string, LayerKind>> = {
+  wintersnow: 'snow',
+  harvestmoon: 'lanterns',
+  newyear: 'fireworks',
+  softrain: 'rain',
+  winterlights: 'lights',
+};
+
+/** Winter lights: the bulb colours, cycled along the string. */
+const BULBS = ['#ffd27a', '#ff9a85', '#a6e3c4', '#9cc4ff'] as const;
+/** Winter lights: how many swags the string hangs in, and how many bulbs in all. */
+const SWAGS = 3;
+const BULB_COUNT = 18;
 
 interface Particle {
   x: number;
@@ -46,6 +59,7 @@ let clock = 0;
 let w = 0;
 let h = 0;
 let lantern: HTMLCanvasElement | null = null;
+const bulbSprites = new Map<string, HTMLCanvasElement>();
 let wired = false;
 
 /**
@@ -227,7 +241,23 @@ function seed(): void {
     for (let i = 0; i < 12; i++) ambient.push(newLantern(rand(h * 0.2, h * 1.02)));
   } else if (kind === 'fireworks') {
     for (let i = 0; i < 24; i++) ambient.push({ x: rand(0, w), y: rand(0, h * 0.62), vx: 0, vy: 0, r: rand(0.7, 1.6), phase: rand(0, 6.3), life: Infinity, color: i % 3 ? '#fff6d8' : '#e8c15a' });
+  } else if (kind === 'rain') {
+    // Thin slanted streaks; r is the streak length.
+    for (let i = 0; i < 48; i++) {
+      const vy = rand(380, 520);
+      ambient.push({ x: rand(-0.1 * w, w), y: rand(-h * 0.1, h), vx: vy * 0.16, vy, r: rand(9, 17), phase: 0, life: Infinity, color: '' });
+    }
+  } else if (kind === 'lights') {
+    // A string of bulbs hanging in swags along the very top; each bulb sits just under the wire.
+    for (let i = 0; i < BULB_COUNT; i++) ambient.push({ x: ((i + 0.5) / BULB_COUNT) * w, y: 0, vx: 0, vy: 0, r: 1, phase: rand(0, 6.3), life: Infinity, color: BULBS[i % BULBS.length] });
   }
+}
+
+/** Winter lights: the wire's height at `x` (three quadratic swags, 14 px at the hooks, 30 px at the dips). */
+function wireY(x: number): number {
+  const span = w / SWAGS;
+  const u = (x % span) / span;
+  return 14 + 64 * u * (1 - u);
 }
 
 /** Lanterns rise along the sides, away from the home screen's centred text. */
@@ -287,6 +317,15 @@ function step(dt: number): void {
         p.x = rand(0, w);
       }
     }
+  } else if (kind === 'rain') {
+    for (const p of ambient) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.y > h + 20) {
+        p.y = -20;
+        p.x = rand(-0.1 * w, w);
+      }
+    }
   } else if (kind === 'lanterns') {
     ambient = ambient.map((p) => (p.y < h * 0.12 ? newLantern(h + 20) : p));
     for (const p of ambient) {
@@ -325,6 +364,32 @@ function draw(): void {
       ctx.globalAlpha = Math.max(0, Math.min(1, (p.y - h * 0.12) / (h * 0.2), (h + 20 - p.y) / (h * 0.15))) * 0.8;
       const s = 26 * p.r;
       ctx.drawImage(img, p.x - s / 2, p.y - s / 2, s, s);
+    }
+    ctx.globalAlpha = 1;
+  } else if (kind === 'rain') {
+    ctx.strokeStyle = 'rgba(52, 72, 92, 0.3)';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    for (const p of ambient) {
+      const k = p.r / p.vy;
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x - p.vx * k, p.y - p.r);
+    }
+    ctx.stroke();
+  } else if (kind === 'lights') {
+    const span = w / SWAGS;
+    ctx.strokeStyle = 'rgba(20, 26, 40, 0.7)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    for (let k = 0; k < SWAGS; k++) {
+      ctx.moveTo(k * span, 14);
+      ctx.quadraticCurveTo(k * span + span / 2, 46, (k + 1) * span, 14);
+    }
+    ctx.stroke();
+    for (const p of ambient) {
+      // A slow, soft twinkle: never fully off, never a flash.
+      ctx.globalAlpha = 0.5 + 0.45 * (0.5 + 0.5 * Math.sin(clock * 1.1 + p.phase));
+      ctx.drawImage(bulbSprite(p.color), p.x - 12, wireY(p.x) + 4 - 12, 24, 24);
     }
     ctx.globalAlpha = 1;
   } else if (kind === 'fireworks') {
@@ -368,5 +433,28 @@ function lanternSprite(): HTMLCanvasElement {
   g.fillRect(26, 20, 12, 3);
   g.fillRect(26, 42, 12, 2);
   lantern = c;
+  return c;
+}
+
+/** One glowing bulb per colour, rendered once and reused (Winter lights). */
+function bulbSprite(color: string): HTMLCanvasElement {
+  const cached = bulbSprites.get(color);
+  if (cached) return cached;
+  const c = document.createElement('canvas');
+  c.width = c.height = 24;
+  const g = c.getContext('2d')!;
+  const glow = g.createRadialGradient(12, 12, 1, 12, 12, 12);
+  glow.addColorStop(0, color);
+  glow.addColorStop(0.35, color);
+  glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  g.globalAlpha = 0.45;
+  g.fillStyle = glow;
+  g.fillRect(0, 0, 24, 24);
+  g.globalAlpha = 1;
+  g.fillStyle = color;
+  g.beginPath();
+  g.ellipse(12, 13, 2.6, 3.4, 0, 0, Math.PI * 2);
+  g.fill();
+  bulbSprites.set(color, c);
   return c;
 }
