@@ -79,3 +79,5 @@ The owner picked **all ten bundles (F1–F10)** and asked for subagents to be us
 Built on branch `ccr-85fc6fb4-lk2gcb`: core rules (D19–D22, F7), UI (F1–F6, F8, free Undo display), documents (F9, F10), then the lead's wiring (`hintResult`, `lostReason`, `sessionOptions`, D25, GA-DP-5, GA-DP-6) and a HUD wrap fix for 150% text at 320 px. Evidence: `production/qa/evidence/sprint-6-fixes/README.md`. Tests: 286/286.
 
 Still open: the backlog in section 4, plus the docs pass's owner questions (GX-15/GB-SC-2 unknown shell ids, GB-SC-6 catalog changes, GB-PP-4 name normalisation, GA-LG-7 debut-level mechanic alone, GB-FA-8 timings in config, GX-7 formal pillars, GX-12 Extra Jar vs the spare lever), and the audit items not in a bundle (AX-14 intro dialog name, AX-17 pinch zoom, AX-19 43 px jars at level 120 on 320 px).
+
+**Q8 (art and name review), 2026-11-08:** the owner marked all 40 items Looks good, with no renames and no flags. Nothing changed in the game.

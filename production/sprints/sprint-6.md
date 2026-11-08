@@ -1,6 +1,6 @@
 # Sprint 6: quality pass
 
-> **Status: complete except Q8 (2026-11-08).** Q1–Q7 done; Q8 waits on the owner's art review page. Chosen in the owner interview of 2026-11-08: a quality pass before more content. The art and name review runs alongside it on the owner's review page.
+> **Status: complete (2026-11-08).** Q1–Q8 done. Q8: the owner approved all 40 reviewed items (20 expedition shells, 8 avatars, 6 frames, 6 plates) as they are, so no names or art changed. Chosen in the owner interview of 2026-11-08: a quality pass before more content. The art and name review runs alongside it on the owner's review page.
 
 ## Sprint Goal
 Find every gap between the design documents, the screens and the accessibility requirements, and give the owner one findings report to choose fixes from. No player-facing change unless the owner picks a fix.

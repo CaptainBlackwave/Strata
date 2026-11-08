@@ -156,7 +156,7 @@ None open: fixed order; sets 5–8 built.
 ### Flagged Follow-Up Work
 - [x] `?level=N` restricted; shells now need a genuine first clear.
 - [x] More sets (sets 5–8, 2026-11-08).
-- [ ] Owner review of the 20 new shell names and artwork.
+- [x] Owner review of the 20 new shell names and artwork: all approved as they are, no renames or redraws (2026-11-08, sprint 6 Q8; review page `https://claude.ai/artifact/R59gDtKvScKwoXWsVoDcEw`).
 - [ ] Consider seasonal shells once the 40 are completed in testing.
 
 ---

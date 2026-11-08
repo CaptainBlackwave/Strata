@@ -286,7 +286,7 @@ None open: the owner answered every interview question.
 - In the grids, the arrow keys select the next unlocked item (radio-group behaviour). On a locked item they move focus only.
 
 ### Flagged Follow-Up Work
-- [ ] Owner review of the 8 avatar drawings and the item names.
+- [x] Owner review of the 8 avatars, 6 frames, 6 name plates and their names: all approved as they are, no renames or redraws (2026-11-08, sprint 6 Q8).
 - [ ] If the name is ever shared (daily Share text, leaderboards C11), add a word filter first.
 - [ ] More cosmetics later (seasonal items, shell avatars), keeping unlocks milestone-based.
 
