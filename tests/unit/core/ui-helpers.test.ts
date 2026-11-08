@@ -137,3 +137,13 @@ describe('save code export/import (D16)', () => {
     expect(save.wallet.coins).toBe(econ.economy.startCoins);
   });
 });
+
+describe('collection-complete message (D38)', () => {
+  it('shows no coin amount once the bonus is 0, and the amount if one is configured', async () => {
+    const { t } = await import('../../../src/ui/strings');
+    const cfg = (await import('../../../src/config/game-config.json')).default as { collection: { coinsWhenComplete: number } };
+    expect(cfg.collection.coinsWhenComplete).toBe(0);
+    expect(t.allShellsBonus(0)).toBe('Collection complete ✓');
+    expect(t.allShellsBonus(50)).toBe('Collection complete: +50 coins');
+  });
+});

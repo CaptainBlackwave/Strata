@@ -163,7 +163,7 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 
 ## Open Questions and Follow-Up Work
 
-- Whether the hard-coded presentation values (ANIM timings, vibration, layout limits, 2.4 s hint, 2.6 s toast) move to config or are recorded as exempt: owner choice (GB-FA-8).
+- ~~Whether the hard-coded presentation values move to config~~ **Decided (D31, 2026-11-08): exempt.** ANIM timings, vibration patterns, layout limits, the 2.4 s hint, the 2.6 s toast, the 700 ms refused-pour outline and the 3 s Restart second-tap window are presentation, not gameplay, and stay in `src/ui/` as named constants. Gameplay values (rules, rewards, prices, difficulty) stay in `game-config.json`.
 
 ### Flagged Follow-Up Work
 - [x] UI font sizes converted to `rem`; overlays scroll and button rows wrap at large text.
@@ -178,3 +178,4 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude (sprint 6, F9) | Profile, Edit Profile, Discard and Save code screens, win-card avatar and unlock rows, Save code in Settings, per-layer keyboard table (GB-FA-1); 14 colours and patterns (GB-FA-2, GX-9); text scaling moved to Handled (GB-FA-3); jars 11+ by Tab (GB-FA-4); full reduced-motion list (GB-FA-5); screen check with a pass condition (GB-FA-6); depends on player-profile (GX-10); decided sprint 6 items recorded: stuck banner naming Restart (GX-1), refused-pour toast, visible and announced hint, dialogs holding focus, 44 px targets, Settings on Home, leave-level confirmation |
+| 2026-11-08 | Claude (sprint 7, B6) | Presentation timings recorded as exempt from the config rule (D31, GB-FA-8) |

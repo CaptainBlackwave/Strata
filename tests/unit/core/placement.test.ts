@@ -5,6 +5,7 @@ import plain from '../../fixtures/plain-boards.json';
 import { type Board, isSealed, isWon } from '../../../src/core/board';
 import { type DailyConfig, dailySpec, dayNumber, generateDaily } from '../../../src/core/daily';
 import { generateLevel } from '../../../src/core/generator';
+import { solve } from '../../../src/core/solver';
 import { type GameConfig, levelSpec, mechanicChance, pickMechanics } from '../../../src/core/levels';
 import { GameSession } from '../../../src/core/session';
 
@@ -196,4 +197,33 @@ describe('spare-jar swap and generation fallback (D1 revised, sweep regressions)
     expect(() => generateLevel(460, cfg)).not.toThrow();
     expect(() => generateLevel(470, cfg)).not.toThrow();
   });
+});
+
+describe('a debut level shows its new mechanic alone (D28, GA-LG-7)', () => {
+  // production/sprints/sprint-7.md B1; design/gdd/jar-mechanics.md. No spare-jar swap on an unlockAt level.
+  const debuts = cfg.mechanics.list.map((m) => ({ id: m.id, level: m.unlockAt }));
+  /** The ramp always swaps a spare from level 1, so the old code would swap on every debut level. */
+  const alwaysSwap = { ...cfg, ramp: { ...cfg.ramp, spareOne: { ...cfg.ramp.spareOne, from: 1, chanceFrom: 1, chanceTo: 1 } } } as typeof cfg;
+  it('with the swap forced on, every debut level keeps 2 spares and only its debut mechanic', () => {
+    for (const { id, level } of debuts) {
+      const s = levelSpec(level, alwaysSwap);
+      expect(s.mechanics, `level ${level}`).toEqual([id]);
+      expect(s.spare, `level ${level}`).toBe(2);
+    }
+  });
+  it('with the swap forced on, a non-debut level still swaps (the rule is debut-only)', () => {
+    const s = levelSpec(62, alwaysSwap);
+    expect(s.spare).toBe(1);
+    expect(s.mechanics.some((m) => m === 'narrow' || m === 'funnel')).toBe(true);
+  });
+  it('the real debut levels from 60 (locked 61, funnel 81) have 2 spares, their mechanic alone, and are solver-proven', () => {
+    for (const { id, level } of debuts.filter((d) => d.level >= cfg.ramp.spareOne.from)) {
+      const g = generateLevel(level, cfg);
+      expect(g.spec.mechanics, `level ${level}`).toEqual([id]);
+      expect(g.spec.spare, `level ${level}`).toBe(2);
+      expect(has(g.board, id), `level ${level}`).toBe(true);
+      expect(g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel).length, `level ${level}`).toBe(2);
+      expect(solve(g.board, cfg.generator.solverNodeBudget).solvable, `level ${level}`).toBe(true);
+    }
+  }, 60_000);
 });

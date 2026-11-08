@@ -39,7 +39,15 @@ export interface GameConfig {
   readonly curve: readonly CurveRow[];
   readonly ramp: RampConfig;
   readonly challenge: ChallengeConfig;
-  readonly generator: { readonly maxAttempts: number; readonly solverNodeBudget: number; readonly maxSealedAtStart: number; readonly stepNodeBudget?: number; readonly stepAttemptNodeBudget?: number };
+  readonly generator: {
+    readonly maxAttempts: number;
+    readonly solverNodeBudget: number;
+    readonly maxSealedAtStart: number;
+    readonly stepNodeBudget?: number;
+    readonly stepAttemptNodeBudget?: number;
+    /** Level length targets in solver pours (D36). Absent: no length cap. */
+    readonly pourBands?: readonly PourBand[];
+  };
   readonly hint: { readonly solverNodeBudget: number };
   /** `totalNodeBudget` caps solver states across all attempts of one shuffle (F7, GA-SB-4). */
   readonly shuffle: { readonly maxAttempts: number; readonly solverNodeBudget: number; readonly totalNodeBudget?: number };
@@ -52,6 +60,17 @@ export interface GameConfig {
     readonly comboChance: number;
     readonly list: readonly MechanicConfig[];
   };
+}
+
+/**
+ * One level-length band (owner decision D36, sprint 7 B7). It covers levels from `from` up to
+ * the next band's `from` - 1; the last band is open-ended. `max` is enforced at generation
+ * (`maxPoursFor` in generator.ts); `median` is a target checked by the band test only.
+ */
+export interface PourBand {
+  readonly from: number;
+  readonly median: number;
+  readonly max: number;
 }
 
 /** The four sprint-3 jar mechanics. */
@@ -110,7 +129,9 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     buriedDepth = row.buriedDepth ?? buriedDepth;
   }
   const mechanics = pickMechanics(level, config);
-  if (spare > 1 && spareOneChance(level, config) > 0) {
+  // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
+  const debut = config.mechanics.list.some((m) => m.unlockAt === level);
+  if (!debut && spare > 1 && spareOneChance(level, config) > 0) {
     // Decision D1 (revised 2026-11-08): one of the two spares becomes a special jar.
     // A board with a single ordinary spare is almost never winnable, but one ordinary
     // spare plus a narrow jar or a funnel almost always is.

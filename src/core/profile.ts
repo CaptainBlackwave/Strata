@@ -157,15 +157,19 @@ export function newlyUnlocked(config: ProfileConfig, before: Progress, after: Pr
   return unlockedItems(config, after).filter(({ item }) => !isUnlocked(item, before));
 }
 
-/** Trims, and collapses runs of spaces to one. Example: `"  Sea   Gull "` → `"Sea Gull"`. */
+/**
+ * Trims, collapses runs of spaces to one, and applies Unicode NFC, so a letter typed as
+ * base + combining mark is stored like its precomposed form (decision D30).
+ * Example: `"  Sea   Gull "` → `"Sea Gull"`; `"Zoe\u0308"` → `"Zo\u00eb"`.
+ */
 export function normaliseName(raw: string): string {
-  return raw.trim().replace(/\s+/g, ' ');
+  return raw.normalize('NFC').trim().replace(/\s+/g, ' ');
 }
 
 /** Letters (any script, with their combining marks), numbers, single spaces and hyphens. */
 const NAME_CHARS = /^[\p{L}\p{M}\p{N}]+(?:[ -][\p{L}\p{M}\p{N}]+)*$/u;
 
-/** True if the name, once normalised, is `min`–`max` characters of allowed text. */
+/** True if the name, once normalised, is `min`–`max` NFC characters (code points) of allowed text. */
 export function isValidName(raw: string, config: ProfileConfig): boolean {
   const name = normaliseName(raw);
   const length = [...name].length;

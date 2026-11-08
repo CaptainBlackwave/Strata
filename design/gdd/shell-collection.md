@@ -38,7 +38,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Set reward**: the shell that completes a set pays 150 coins plus one Shuffle, one Extra Jar and one Hint charge (D19 drops the Undo charge; until it is built the code still adds one Undo charge), and the card names the set.
 
-**After all 40**: each milestone or first daily solve pays 50 coins instead.
+**After all 40**: milestones and first daily solves pay nothing extra. The endless 50-coin bonus was removed (D38, sprint 7), because the scene ladder is now the long-term coin goal; the cabinet reads "Collection complete ✓".
 
 **Cabinet**: opened from the home screen. One scrolling list. Each set's header is a button showing the name, `owned/total` and a chevron; **completed sets start collapsed** and the header expands or collapses them (`aria-expanded`, keyboard Enter/Space). An open set shows owned shells by name, locked shells as soft silhouettes with "?", "Next shell: clear N more levels", and "Complete the set: 150 coins + 1 of each booster" until a set is done ("Set complete ✓" afterwards).
 
@@ -76,6 +76,10 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 - Save: the owned shell ids, in the order earned.
 
 **Persistence**: the owned list (`save-data.md`).
+
+**Catalog changes are append-only** (D27, 2026-11-08): new shells and sets are only ever added at the end. Existing ids, their order and their names never change once shipped, so saves and the "next shell" order stay stable. A rename needs a new id and a migration note, and is avoided.
+
+**Unknown ids are dropped on load** (D26, 2026-11-08): only ids in the catalog are kept, in earned order, so an edited or very old save code can't count towards sets or the Gold frame. Built in sprint 7 (B1): `knownShells()` in `collection.ts`, applied after every load and save-code restore.
 
 ### 2.3 Integration Points
 
@@ -168,3 +172,4 @@ None open: fixed order; sets 5–8 built.
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude | Expedition sets 5–8 from the owner interview (SC-1 to SC-8) |
 | 2026-11-08 | Claude (sprint 6, F9) | Closed "Not Yet Handled" and "Unclear" items moved to Handled with their decisions (GB-SC-1); unknown-id behaviour stated as built, fix left to the owner (GB-SC-2, GX-15); play rate stated (GB-SC-3); dependencies match 2.3, with the level win flow and player-profile (GB-SC-4); replay and out-of-order dailies grant nothing (GB-SC-7); set reward without Undo (D19) |
+| 2026-11-08 | Claude (sprint 7, B6) | Catalog is append-only (D27); unknown ids dropped on load (D26, building) |

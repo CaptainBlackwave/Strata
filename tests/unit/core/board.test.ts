@@ -114,3 +114,25 @@ describe('boardKey and addEmptyJar', () => {
     expect(b.jars[1].units).toEqual([]);
   });
 });
+
+describe('sealing reveals buried sand (owner bug report 2026-11-08)', () => {
+  // A sealed jar is one colour by definition, so its buried units are that colour too and must show.
+  it('a jar that seals with buried units at the bottom reveals them', () => {
+    // Jar 0 holds 3 lagoon (colour 3) with the bottom 2 buried; jar 1's top lagoon completes it.
+    const board = makeBoard(4, [[3, 3, 3], [1, 3], []], [2, 0, 0]);
+    const r = pour(board, 1, 0);
+    expect(isSealed(r.board.jars[0], 4)).toBe(true);
+    expect(r.board.jars[0].hidden).toBe(0);
+  });
+  it('buried units in a jar that does not seal stay buried', () => {
+    const board = makeBoard(4, [[2, 3], [1, 3], []], [1, 0, 0]);
+    const r = pour(board, 1, 0);
+    expect(isSealed(r.board.jars[0], 4)).toBe(false);
+    expect(r.board.jars[0].hidden).toBe(1);
+  });
+  it('a board dealt with an already-full buried jar shows it revealed', () => {
+    const board = makeBoard(4, [[5, 5, 5, 5], [1, 2]], [3, 1]);
+    expect(board.jars[0].hidden).toBe(0);
+    expect(board.jars[1].hidden).toBe(1);
+  });
+});

@@ -1,7 +1,8 @@
 /**
  * Time-of-day scenes: buying with coins, the "Match my clock" schedule, and the
  * contrast check that keeps every scene readable. Pure functions only.
- * Implements design/competitive-roadmap.md item C10 (sprint 4 decisions S4-1 to S4-4).
+ * Implements design/competitive-roadmap.md item C10 (sprint 4 decisions S4-1 to S4-4) and the
+ * scene ladder's seasons and holidays (design/gdd/scenes.md 2.1a, D33; sprint 7 B5).
  */
 import type { Wallet } from './economy';
 
@@ -25,12 +26,28 @@ export interface ThemeTokens {
   readonly themeColor: string;
 }
 
-/** One scene. `hours` is [from, to) on the local clock and may wrap past midnight. */
+/** What a scene is about. Only `time` scenes have clock hours; only `holiday` scenes take over the clock. */
+export type ThemeKind = 'time' | 'season' | 'holiday' | 'weather' | 'sky';
+
+/** A yearly date window, `MM-DD` to `MM-DD` inclusive. It may wrap the year end (`12-28` to `01-07`). */
+export interface ThemeWindow {
+  readonly from: string;
+  readonly to: string;
+}
+
+/**
+ * One scene. `hours` is [from, to) on the local clock and may wrap past midnight; scenes
+ * without hours are never picked by the clock. `kind` defaults to `time` and `tier`
+ * (1 colour-only, 2 one ambient layer, 3 layered and reactive) to 1.
+ */
 export interface Theme {
   readonly id: string;
   readonly name: string;
   readonly price: number;
-  readonly hours: readonly [number, number];
+  readonly hours?: readonly [number, number];
+  readonly kind?: ThemeKind;
+  readonly tier?: 1 | 2 | 3;
+  readonly window?: ThemeWindow;
   readonly tokens: ThemeTokens;
 }
 
@@ -46,22 +63,53 @@ export interface ThemeState {
   readonly auto: boolean;
 }
 
-/** The scene whose clock range contains `hour` (0-23). */
+/** The time-of-day scene whose clock range contains `hour` (0-23). Scenes without `hours` are skipped. */
 export function themeForHour(hour: number, config: ThemeConfig): string {
-  const hit = config.themes.list.find(({ hours: [from, to] }) => (from <= to ? hour >= from && hour < to : hour >= from || hour < to));
+  const hit = config.themes.list.find(({ hours }) => {
+    if (!hours) return false;
+    const [from, to] = hours;
+    return from <= to ? hour >= from && hour < to : hour >= from || hour < to;
+  });
   return hit?.id ?? config.themes.default;
 }
 
+/** The local calendar date as `YYYY-MM-DD` (the scene windows use the player's local date). */
+export function localDateKey(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 /**
- * The scene to show now. Manual: the selected scene, if owned. Auto: the clock's scene
- * if owned, otherwise the selected one. Anything invalid falls back to the default.
- * Example: `activeTheme(save.themes, new Date().getHours(), config)`.
+ * Whether `dateKey` (`YYYY-MM-DD`) falls inside the scene's window, both ends included.
+ * A window may wrap the year end. A window ending `02-29` covers Feb 28 in common years.
+ * Scenes with no window ("any time") are never "in season", and neither is a malformed date.
+ * Example: `inSeason(newYear, '2027-01-03') === true`.
  */
-export function activeTheme(state: ThemeState, hour: number, config: ThemeConfig): string {
+export function inSeason(theme: Theme, dateKey: string): boolean {
+  const md = /^\d{4}-(\d{2}-\d{2})$/.exec(dateKey)?.[1];
+  if (!theme.window || !md) return false;
+  const { from, to } = theme.window;
+  return from <= to ? md >= from && md <= to : md >= from || md <= to;
+}
+
+/**
+ * The scene to show now. Manual: the selected scene, if owned. Auto: an owned holiday
+ * scene in season on `dateKey` (the highest price wins), else the clock's scene if owned,
+ * else the selected one. Season and weather scenes never take over the clock. Anything
+ * invalid falls back to the default. Leaving out `dateKey` skips the holiday step.
+ * Example: `activeTheme(save.themes, now.getHours(), config, localDateKey(now))`.
+ */
+export function activeTheme(state: ThemeState, hour: number, config: ThemeConfig, dateKey?: string): string {
   const owns = (id: string) => id === config.themes.default || state.owned.includes(id);
   const known = (id: string) => config.themes.list.some((t) => t.id === id);
   const selected = known(state.selected) && owns(state.selected) ? state.selected : config.themes.default;
   if (!state.auto) return selected;
+  if (dateKey) {
+    const holiday = config.themes.list
+      .filter((t) => t.kind === 'holiday' && owns(t.id) && inSeason(t, dateKey))
+      .reduce<Theme | undefined>((best, t) => (!best || t.price > best.price ? t : best), undefined);
+    if (holiday) return holiday.id;
+  }
   const clock = themeForHour(hour, config);
   return owns(clock) ? clock : selected;
 }

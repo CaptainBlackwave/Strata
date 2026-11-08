@@ -52,6 +52,60 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 
 **Readability**: a unit test checks every scene's text against its background (ink on card/top/bottom ≥ 4.5:1; soft text and button text ≥ 3:1; toast ≥ 4.5:1). The browser's address-bar colour follows the scene.
 
+### 2.1a The scene ladder (owner decisions D32, D33, D37, D39; sprint 7)
+
+**Why:** after the three original scenes (all affordable in the first week) coins had nothing lasting to buy (GX-11). The ladder gives them a goal for months. Prices come from the 90-day coin model (`production/qa/sprint-7/economy-model.md`, re-run after D38 removed the 50-coin collection bonus).
+
+**Price formula:** `price(n) = round50(2500 × 1.15^(n − 1))` for rung `n` = 1…12 (2,500 → 11,650; 72,550 in total). The three original scenes keep 300 / 500 / 800 as a first-week starter tier (D37). Fitted so that a **regular** player (8 levels and the daily a day) can afford a new rung about every 1–2 weeks (days 11, 19, 29, 41, 54, 70, 88), a **heavy** player (25 a day) still has the top 3 to chase at day 90, and a **light** player (3 a day, the daily 4 days a week) gets 3 rungs by day 82.
+
+**Animation tiers:**
+- **Tier 1, colour-only:** new colour tokens plus static CSS decoration, like the original four.
+- **Tier 2, one ambient layer:** one slow background layer behind the board and home screen (falling snow, rising lanterns).
+- **Tier 3, layered and reactive:** an ambient layer plus a reaction to play: a burst when a jar seals and a bigger one on a level clear.
+
+**Rules for every animated layer:**
+- It sits behind all UI, never over the board's text, and never changes contrast (the per-scene contrast test still applies).
+- It stops completely under reduced motion and leaves a still frame.
+- It pauses while the page is hidden.
+- It stays light on battery: CSS animations or one canvas at most 30 fps, no more than about 60 particles.
+- Reactions never delay input.
+
+| Rung | Scene | Kind | Tier | Price | In season (local date) | Built |
+|---|---|---|---|---|---|---|
+| 1 | **Sea Fog** (`seafog`, shown as "Sea fog") | weather | 1 | 2,500 | any time | **built, sprint 7** |
+| 2 | High Summer | season | 1 | 2,900 | Jun 1 – Aug 31 | later |
+| 3 | Spring Blossom | season | 1 | 3,300 | Mar 1 – May 31 | later |
+| 4 | Autumn Shore | season | 1 | 3,800 | Sep 1 – Nov 30 | later |
+| 5 | Rainbow After Rain | weather | 1 | 4,350 | any time | later |
+| 6 | **Winter Snow** (`wintersnow`, "Winter snow") | season | 2 | 5,050 | Dec 1 – Feb 28/29 | **built, sprint 7** |
+| 7 | **Harvest Moon Lanterns** (`harvestmoon`, shown as "Harvest moon" to fit the picker) | holiday | 2 | 5,800 | Sep 15 – Oct 15 | **built, sprint 7** |
+| 8 | Soft Rain | weather | 2 | 6,650 | any time | later |
+| 9 | Winter Lights | holiday | 2 | 7,650 | Dec 1 – Jan 6 | later |
+| 10 | **New Year Fireworks** (`newyear`, "New Year fireworks") | holiday | 3 | 8,800 | Dec 28 – Jan 7 | **built, sprint 7** |
+| 11 | Meteor Shower | special sky | 3 | 10,100 | Aug 10 – Aug 14 (Perseids) | later |
+| 12 | Aurora Night | special sky | 3 | 11,650 | any time | later |
+
+**Availability (D33):**
+- Every scene can be bought any time and is kept forever.
+- A scene whose window includes today's local date shows an **"In season"** badge in the picker.
+- With **Match my clock** on, an owned *holiday* scene that is in season replaces the time-of-day scene for its whole window. If two overlap, the higher rung wins.
+- Season-long scenes (High Summer, Spring Blossom, Autumn Shore, Winter Snow) only get the badge. They don't take over the clock for three months.
+- Windows use northern-hemisphere seasons. A southern-hemisphere option is a follow-up.
+
+**Looks (the build brief):**
+- **Sea Fog:** pale grey-green sky, misted sea, softened glass edges. A calm, low-contrast look that still passes the contrast test.
+- **Winter Snow:** cool white-blue day palette, a light snow layer on the home sea curve, and slowly falling flakes.
+- **Harvest Moon Lanterns:** dusk palette, a large warm moon, and paper lanterns rising slowly from the sea.
+- **New Year Fireworks:** night palette with a faint ambient sparkle. A small burst on each seal, and a fuller display on the win card, in the board's sand colours.
+
+**Win-card exception (owner decision D40, 2026-11-08):** on the win card only, New Year's display plays for about 3.5 s on its own canvas *inside* the win overlay: in front of the dim backdrop, behind the card, never over its text. Everywhere else the layer stays behind all UI.
+
+**Names (D41):** the picker shows sentence-case names to match "Moonlit tide": Sea fog, Winter snow, Harvest moon (rung 7's full name, Harvest Moon Lanterns, is too long for the two-column picker), New Year fireworks.
+
+**Southern hemisphere (D42, later):** season windows stay northern for now. A later sprint adds a Settings switch that shifts the *season* windows by six months; holidays keep their dates.
+
+**Build order:** rungs ship out of order (D39 picked one scene per tier first). The picker lists scenes by price, so the rungs that aren't built yet are simply absent until later sprints, and the prices of the built ones never change when the rest arrive.
+
 ### 2.2 State and Data
 
 - `ThemeState`: `owned[]` (Midday always included), `selected`, `auto`.
@@ -139,3 +193,5 @@ None open on sound (D17).
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude (sprint 6, F9) | Scene cost now links to `economy.md` (GX-16, GB-SN-3); scene sound moved to Handled and the un-asked question listed as open (GB-SN-1); §5 matches §2.3 (GB-SN-5); local hour vs UTC daily noted (GX-18) |
+| 2026-11-08 | Claude (sprint 7, B4) | Scene ladder: 12 rungs, price formula from the coin model, 3 animation tiers, season windows and holiday clock switching (D32, D33, D37, D39) |
+| 2026-11-08 | Claude (sprint 7, B5) | Sea Fog, Winter Snow, Harvest Moon Lanterns and New Year Fireworks built (`themes.ts` `inSeason`, `localDateKey`, holiday clock takeover; `scene-fx.ts` canvas layer at 1x, ≤ 30 fps, ≤ 60 particles). Main-thread cost about 30 ms/s in headless Chromium (`production/qa/evidence/sprint-7/README.md`) |
