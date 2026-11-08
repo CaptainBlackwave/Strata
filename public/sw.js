@@ -14,25 +14,36 @@ const CORE = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png'
 const ASSET_REF = /(?:src|href)="(\.?\/?assets\/[^"]+)"/g;
 const CHUNK_REF = /new URL\(\s*["'`]([^"'`]+\.js)["'`]\s*,\s*import\.meta\.url/g;
 
+/** Adds each URL on its own, so one missing file never fails the rest (TD-7). */
+function addEach(cache, urls) {
+  return Promise.allSettled(urls.map((u) => cache.add(u)));
+}
+
+/** The built assets (`assets/...`) an HTML page references, as absolute URLs (TD-7: the one copy of the regex). */
+function assetsOf(html) {
+  return [...html.matchAll(ASSET_REF)].map((m) => new URL(m[1], self.registration.scope).href);
+}
+
 /** Caches every asset `html` references, plus the chunks those scripts load by URL (P4). */
 async function cacheAssets(cache, html) {
-  const assets = [...html.matchAll(ASSET_REF)].map((m) => new URL(m[1], self.registration.scope).href);
-  await cache.addAll(assets);
+  const assets = assetsOf(html);
+  await addEach(cache, assets);
   const chunks = [];
   for (const url of assets.filter((a) => a.endsWith('.js'))) {
     const res = await cache.match(url);
     if (!res) continue;
     for (const m of (await res.text()).matchAll(CHUNK_REF)) chunks.push(new URL(m[1], url).href);
   }
-  if (chunks.length) await cache.addAll([...new Set(chunks)]);
+  if (chunks.length) await addEach(cache, [...new Set(chunks)]);
 }
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await cache.addAll(CORE);
-      await cacheAssets(cache, await (await cache.match('./')).text());
+      await addEach(cache, CORE);
+      const page = await cache.match('./');
+      if (page) await cacheAssets(cache, await page.text()).catch(() => undefined);
       await self.skipWaiting();
     })(),
   );
@@ -76,9 +87,13 @@ self.addEventListener('fetch', (event) => {
       // requested in CORS mode with an Origin header, so without it the cached copy never matches.
       const hit = await cache.match(req, { ignoreSearch: true, ignoreVary: true });
       if (hit) return hit;
-      const res = await fetch(req);
-      if (res.ok) await cache.put(req, res.clone());
-      return res;
+      try {
+        const res = await fetch(req);
+        if (res.ok) await cache.put(req, res.clone());
+        return res;
+      } catch {
+        return Response.error(); // offline and not cached: a clean network error, not an unhandled rejection
+      }
     })(),
   );
 });
