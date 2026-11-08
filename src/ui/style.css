@@ -2107,3 +2107,13 @@ input[type='text'] {
   user-select: text;
   -webkit-user-select: text;
 }
+
+/* F8: Settings on Home, opposite the profile chip (UX-home-1). */
+.home-top {
+  align-items: center;
+  padding-right: env(safe-area-inset-right);
+}
+.home-settings {
+  margin-left: auto;
+  box-shadow: 0 3px 0 rgba(90, 70, 50, 0.12);
+}

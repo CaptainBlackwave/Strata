@@ -241,13 +241,14 @@ let previewing: string | null = null;
 
 function openScenes(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
   previewing = currentTheme();
-  $<HTMLInputElement>('set-auto').checked = save.themes.auto;
   renderScenes();
   openLayer($('scenes'), $('scene-grid').querySelector<HTMLElement>('[aria-pressed="true"]'), opener);
 }
 
 function renderScenes(): void {
   $('scenes-coins').textContent = String(save.wallet.coins);
+  // Use or Buy turns clock-matching off, so the switch re-syncs on every render (UX-scenes-1).
+  $<HTMLInputElement>('set-auto').checked = save.themes.auto;
   const grid = $('scene-grid');
   grid.replaceChildren(
     ...config.themes.list.map((theme) => {
@@ -1498,6 +1499,7 @@ function wireInput(): void {
   $('btn-close-cabinet').addEventListener('click', () => closeLayer($('cabinet')));
   $('btn-share').addEventListener('click', () => void shareDaily());
   $('btn-settings').addEventListener('click', openSettings);
+  $('btn-home-settings').addEventListener('click', openSettings);
   $('btn-close-settings').addEventListener('click', () => closeLayer(settingsEl));
   $('btn-home').addEventListener('click', () => leaveBoard(showHome));
   $('btn-keep-playing').addEventListener('click', () => closeLayer($('leave')));
@@ -1610,6 +1612,7 @@ function wireInput(): void {
 
 function openSettings(): void {
   for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) $<HTMLInputElement>(`set-${key}`).checked = save.settings[key];
+  $('btn-home').hidden = layers.has(homeEl); // already Home when opened from Home
   openLayer(settingsEl, $('set-sound'));
 }
 
@@ -1619,6 +1622,8 @@ function applyStrings(): void {
   $('btn-restart').title = t.restart;
   $('btn-stuck-restart').textContent = t.restart;
   $('btn-settings').title = t.settings;
+  $('btn-home-settings').title = t.settings;
+  $('btn-home-settings').setAttribute('aria-label', t.settings);
   $('settings-title').textContent = t.settings;
   for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns'];
   $('btn-home').textContent = t.home;
