@@ -17,6 +17,8 @@ const en = {
   playTutorial: 'Play',
   level: (n: number) => `Level ${n}`,
   challenge: 'Tall jars',
+  /** Shown only when a level start waits over 150 ms for background generation (P4). */
+  preparingLevel: 'Getting the jars ready…',
   pours: 'pours',
   poursLabel: (n: number) => (n === 1 ? 'pour' : 'pours'),
   coins: 'coins',
