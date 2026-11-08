@@ -165,11 +165,23 @@ of 64 and a max of 70 (156), was 66 and 73. Its median stays 56, and its states 
 test will catch that, and the cap will re-deal levels from 41 on. Levels 1–40 would be re-dealt
 too, which would break the byte-identical guarantee for 1–59.
 
+**Levels 201–500** (one run, `SWEEP_TO=500 SWEEP_RUNS=1`; the 500-row CSV is not committed):
+
+| Band | Pours median | p90 | Max (level) | States median / max | Gen ms median / max | Mechanics (combos) | Fallbacks |
+|---|---|---|---|---|---|---|---|
+| 201–300 | 55 | 64 | 70 (281) | 213 / 4,607 | 7.4 / 607 | 82 (32) | 0 |
+| 301–400 | 55.5 | 64 | 70 (384) | 179.5 / 6,599 | 5.4 / 693 | 84 (32) | 0 |
+| 401–500 | 55 | 64 | 70 (442) | 227 / 9,340 | 9.5 / 660 | 86 (28) | 2 (460, 470, `noMechanics`) |
+
+Over 201–500 the median is 55 (target ≤ 56) and nothing is over 70. Past level 200 the median sits a
+pour under its target, with many levels on the cap. 460 and 470 (tall jars) dropped their mechanics
+with or without the cap: their boards are identical either way.
+
 ## Caveats
 
 - `pours` depends on the solver's move order. A change to `orderedMoves` changes every number, and
   which boards the length cap re-deals, so the band test
   (`tests/unit/core/difficulty-bands.test.ts`) must be re-baselined whenever the solver changes.
 - `genMs` was measured on one desktop-class container. Treat it as relative.
-- Levels past 200 are not measured. The economy model's regular player reaches level 720 by day 90
-  (see `economy-model.md`), so a sweep to 500 would be worth running once (`SWEEP_TO=500`).
+- Levels 201–500 were swept once (see After the cap). Levels past 500 are not measured. The economy
+  model's regular player reaches level 720 by day 90 (see `economy-model.md`).
