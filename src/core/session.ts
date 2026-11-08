@@ -3,7 +3,7 @@
  * hints and status. The UI listens through `onChange`, so nothing here knows about the DOM.
  * Implements design/game-brief.md MVP 1 and MVP 4.
  */
-import { type Board, type Jar, type Move, addEmptyJar, canPour, isClosed, isSealed, isStuck, isWon, jarKey, pour, settle } from './board';
+import { type Board, type Jar, type LostReason, type Move, addEmptyJar, canPour, isClosed, isSealed, isStuck, isWon, jarKey, lostReason as boardLostReason, pour, settle } from './board';
 import { type Rng, shuffle as shuffleInPlace } from './rng';
 import { solve } from './solver';
 
@@ -91,6 +91,15 @@ export class GameSession {
     if (isWon(this.current)) return 'won';
     if (isStuck(this.current)) return 'stuck';
     return 'playing';
+  }
+
+  /**
+   * Why the current board can certainly no longer be won, or `null` (decision D-c).
+   * Independent of `status`: a lost board can still have legal pours. Undo, restart,
+   * shuffle and the extra jar still work. See `lostReason` in board.ts for the rules.
+   */
+  get lostReason(): LostReason | null {
+    return boardLostReason(this.current);
   }
 
   /** Subscribes to events. Returns an unsubscribe function. */
