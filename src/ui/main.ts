@@ -39,7 +39,9 @@ import {
 import { DICE_SVG, LOCK_SVG, STAT_ICONS, portraitSvg } from './avatars';
 import { GameAudio } from './audio';
 import { burst, celebrate, sparkleAround } from './fx';
+import { type FocusTarget, LayerStack } from './layers';
 import { computeLayout } from './layout';
+import { UI_TOKEN_VARS, type UiThemeTokens } from './theme-tokens';
 import { shellSvg } from './shells';
 import { type SaveData, exportSave, importSave, loadSave, writeSave } from './storage';
 import { t } from './strings';
@@ -47,6 +49,10 @@ import { t } from './strings';
 const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig & ProfileConfig;
 /** Presentation-only timings (ms) and tilt angle: animation feel, not gameplay. */
 const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
+/** How long a refused jar keeps its static red outline (ms): presentation only. */
+const NOPE_MS = 700;
+/** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
+const RESTART_CONFIRM_MS = 3000;
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const boardEl = $('board');
@@ -62,6 +68,50 @@ const coachEl = $('coach');
 const coachText = $('coach-text');
 const btnNext = $<HTMLButtonElement>('btn-next');
 const toolButtons = [...document.querySelectorAll<HTMLButtonElement>('.tool[data-booster]')];
+
+// ---- Layers (F3: dialogs hold keyboard focus) ------------------------------
+
+/** Every overlay draws in stack order; only the top one is interactive (the toast stays live). */
+const layers = new LayerStack<HTMLElement>(() => [...($('app').children as HTMLCollectionOf<HTMLElement>)], [toastEl], 20);
+
+/** Whether focus can land on `el`: on the page, not hidden, not inert and not disabled. */
+function canFocus(el: unknown): el is HTMLElement {
+  return el instanceof HTMLElement && el.isConnected && !el.closest('[hidden],[inert]') && !(el as HTMLButtonElement).disabled && el.getClientRects().length > 0;
+}
+
+/** The first control in `layer` that can take focus. */
+function firstFocusable(layer: HTMLElement): HTMLElement | null {
+  const all = layer.querySelectorAll<HTMLElement>('button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+  return [...all].find(canFocus) ?? null;
+}
+
+/**
+ * Opens `el` as the top layer: everything behind becomes inert, and focus moves to
+ * `first` (or the layer's first control). `opener` gets focus back on close; it defaults
+ * to whatever had focus.
+ */
+function openLayer(el: HTMLElement, first: HTMLElement | null = null, opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
+  layers.open(el, opener === document.body ? null : opener);
+  const target = canFocus(first) ? first : firstFocusable(el);
+  target?.focus();
+}
+
+/**
+ * Closes `el`. With `restore`, focus returns to its opener, or to the new top layer's
+ * first control if the opener is gone. Returns the opener, so a sub-screen that replaces
+ * this layer can hand focus back to the same place.
+ */
+function closeLayer(el: HTMLElement, restore = true): FocusTarget | null {
+  const opener = layers.close(el);
+  if (restore) {
+    if (canFocus(opener)) opener.focus();
+    else {
+      const top = layers.top();
+      if (top) firstFocusable(top)?.focus();
+    }
+  }
+  return opener;
+}
 
 const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
   bgTop: '--bg-top', bgBottom: '--bg-bottom', sea: '--sea', ink: '--ink', inkSoft: '--ink-soft', glass: '--glass',
@@ -90,6 +140,7 @@ let unitHeight = 0;
 const returning = new Set<number>();
 let toastTimer = 0;
 let hintTimer = 0;
+let restartTimer = 0; // Restart's second-tap window (F6); declared before boot uses it
 const audio = new GameAudio(save.settings);
 const shuffleRng = createRng(Date.now() >>> 0);
 
@@ -118,12 +169,12 @@ if (qaLevel) {
 
 let restoreArmed = false;
 
-function openTransfer(): void {
+function openTransfer(opener: FocusTarget | null = null): void {
   $<HTMLTextAreaElement>('transfer-code').value = exportSave(save);
   $('transfer-status').textContent = t.saveCodeHelp;
   restoreArmed = false;
   $('btn-restore-code').textContent = t.restoreCode;
-  $('transfer').hidden = false;
+  openLayer($('transfer'), $('transfer-code'), opener);
 }
 
 async function copySaveCode(): Promise<void> {
@@ -159,7 +210,7 @@ function restoreSaveCode(): void {
   writeSave(save);
   audio.configure(save.settings);
   applyTheme(currentTheme());
-  $('transfer').hidden = true;
+  closeLayer($('transfer'), false);
   showToast(t.restored);
   startLevel(save.level);
   showHome();
@@ -177,21 +228,28 @@ function applyTheme(id: string): void {
   const theme = config.themes.list.find((x) => x.id === id) ?? config.themes.list[0];
   const root = document.documentElement.style;
   for (const [key, cssVar] of Object.entries(TOKEN_VARS)) root.setProperty(cssVar, theme.tokens[key as keyof ThemeTokens]);
+  const extra = theme.tokens as ThemeTokens & UiThemeTokens;
+  for (const [key, cssVar] of Object.entries(UI_TOKEN_VARS)) {
+    const value = extra[key as keyof UiThemeTokens];
+    if (value) root.setProperty(cssVar, value);
+    else root.removeProperty(cssVar); // fall back to the style.css default
+  }
   document.body.dataset.theme = theme.id;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.themeColor);
 }
 
 let previewing: string | null = null;
 
-function openScenes(): void {
+function openScenes(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
   previewing = currentTheme();
-  $<HTMLInputElement>('set-auto').checked = save.themes.auto;
   renderScenes();
-  $('scenes').hidden = false;
+  openLayer($('scenes'), $('scene-grid').querySelector<HTMLElement>('[aria-pressed="true"]'), opener);
 }
 
 function renderScenes(): void {
   $('scenes-coins').textContent = String(save.wallet.coins);
+  // Use or Buy turns clock-matching off, so the switch re-syncs on every render (UX-scenes-1).
+  $<HTMLInputElement>('set-auto').checked = save.themes.auto;
   const grid = $('scene-grid');
   grid.replaceChildren(
     ...config.themes.list.map((theme) => {
@@ -199,6 +257,7 @@ function renderScenes(): void {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'scene-card';
+      card.dataset.id = theme.id;
       card.setAttribute('aria-pressed', String(previewing === theme.id));
       const k = theme.tokens;
       card.innerHTML = `<span class="scene-swatch" style="--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})"><i></i><i></i><i></i></span><span class="scene-name"></span><span class="scene-status"></span>`;
@@ -212,6 +271,7 @@ function renderScenes(): void {
         applyTheme(theme.id);
         audio.play('select');
         renderScenes();
+        $('scene-grid').querySelector<HTMLElement>(`[data-id="${theme.id}"]`)?.focus(); // keep focus on the rebuilt card
       });
       return card;
     }),
@@ -248,7 +308,7 @@ function confirmScene(): void {
 }
 
 function closeScenes(): void {
-  $('scenes').hidden = true;
+  closeLayer($('scenes'));
   previewing = null;
   applyTheme(currentTheme()); // drop any unpurchased preview
 }
@@ -256,7 +316,7 @@ function closeScenes(): void {
 // ---- Screens ------------------------------------------------------------
 
 function showHome(): void {
-  winEl.hidden = true;
+  closeLayer(winEl, false);
   $('home-coins').textContent = String(save.wallet.coins);
   $('btn-play').textContent = save.tutorialDone ? t.play(save.level) : t.playTutorial;
   const today = utcDateKey(new Date()); // the daily follows UTC (design/gdd/daily-puzzle.md, M4)
@@ -277,12 +337,12 @@ function showHome(): void {
   $('btn-shells').hidden = !save.tutorialDone;
   $('btn-scenes').hidden = !save.tutorialDone;
   renderProfileChip();
-  homeEl.hidden = false;
+  openLayer(homeEl, $('btn-play'), null);
 }
 
 function startDaily(): void {
   audio.unlock();
-  homeEl.hidden = true;
+  closeLayer(homeEl, false);
   mode = 'daily';
   dailyDate = utcDateKey(new Date());
   const gen = generateDaily(dailyDate, config);
@@ -316,7 +376,7 @@ function introduce(ids: readonly MechanicId[]): void {
   showMechanicCards(fresh, t.newJar);
 }
 
-function showMechanicCards(ids: readonly MechanicId[], kicker: string): void {
+function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
   $('intro-kicker').textContent = kicker;
   $('intro-list').replaceChildren(
     ...ids.map((id) => {
@@ -330,8 +390,7 @@ function showMechanicCards(ids: readonly MechanicId[], kicker: string): void {
       return row;
     }),
   );
-  $('intro').hidden = false;
-  $('btn-intro-ok').focus();
+  openLayer($('intro'), $('btn-intro-ok'), opener);
 }
 
 /** Grants the next shell (or the completion bonus) and fills the win card's shell row. */
@@ -406,8 +465,7 @@ function openCabinet(): void {
       return sec;
     }),
   );
-  $('cabinet').hidden = false;
-  $('btn-close-cabinet').focus();
+  openLayer($('cabinet'), $('btn-close-cabinet'));
 }
 
 // ---- Player profile (design/gdd/player-profile.md) ----------------------
@@ -472,8 +530,7 @@ function renderProfileChip(): void {
 
 function openProfile(): void {
   renderProfile();
-  $('profile').hidden = false;
-  $('btn-close-profile').focus();
+  openLayer($('profile'), $('btn-close-profile'));
 }
 
 function renderProfile(): void {
@@ -519,8 +576,7 @@ function openEditProfile(): void {
   $<HTMLInputElement>('name-input').value = draft.name;
   $('pick-note').textContent = '';
   renderEdit();
-  $('edit-profile').hidden = false;
-  $(`tab-${activeSlot}`).focus();
+  openLayer($('edit-profile'), $(`tab-${activeSlot}`));
 }
 
 /** The name to draw on plates while editing: the draft if valid, else the saved one. */
@@ -601,32 +657,28 @@ function saveEditProfile(): void {
   save.profile = { ...draft, name: normaliseName(draft.name) };
   writeSave(save);
   audio.play('select');
-  $('edit-profile').hidden = true;
   renderProfile();
   renderProfileChip();
-  $('btn-edit-profile').focus();
+  closeLayer($('edit-profile'));
 }
 
 /** Closing asks "Discard changes?" only when the draft differs from the saved profile. */
 function closeEditProfile(): void {
   if (sameProfile(draft, save.profile)) {
-    $('edit-profile').hidden = true;
-    $('btn-edit-profile').focus();
+    closeLayer($('edit-profile'));
     return;
   }
-  $('discard').hidden = false;
-  $('btn-keep-editing').focus();
+  openLayer($('discard'), $('btn-keep-editing'));
 }
 
 function keepEditing(): void {
-  $('discard').hidden = true;
+  closeLayer($('discard'), false);
   $(`tab-${activeSlot}`).focus();
 }
 
 function discardEdits(): void {
-  $('discard').hidden = true;
-  $('edit-profile').hidden = true;
-  $('btn-edit-profile').focus();
+  closeLayer($('discard'), false);
+  closeLayer($('edit-profile'));
 }
 
 /** Arrow keys inside the tab list and the pick grids (roving focus, PP-8 / A-keyboard). */
@@ -687,7 +739,7 @@ async function shareDaily(): Promise<void> {
 
 function play(): void {
   audio.unlock();
-  homeEl.hidden = true;
+  closeLayer(homeEl, false);
   if (!save.tutorialDone) startTutorial();
   else startLevel(save.level);
 }
@@ -725,7 +777,9 @@ function beginSession(board: Board, isChallenge: boolean): void {
   busy = false;
   pendingWin = false;
   returning.clear();
-  winEl.hidden = true;
+  closeLayer(winEl, false);
+  hideStuckBanner(false);
+  disarmRestart();
   document.body.dataset.challenge = String(isChallenge);
   buildJars();
   updateHud();
@@ -770,10 +824,103 @@ function onSessionEvent(e: SessionEvent): void {
       pendingWin = true;
       break;
     case 'stuck':
-      showToast(t.stuck);
+      showStuckBanner(t.stuck);
       break;
   }
+  if (e.type !== 'stuck' && e.type !== 'won') {
+    hideStuckBanner(); // the board changed
+    disarmRestart();
+  }
   updateHud();
+}
+
+// ---- Protect progress (F6) -------------------------------------------------
+
+/**
+ * Restart from the HUD button or the R key. Restart can't be undone (the session clears
+ * its history), so with pours on the board the first tap arms it and a second tap within
+ * RESTART_CONFIRM_MS restarts.
+ */
+function requestRestart(): void {
+  if (busy || returning.size || mode === 'tutorial') return;
+  const btn = $('btn-restart');
+  if (session.moves === 0 || btn.classList.contains('armed')) {
+    disarmRestart();
+    session.restart();
+    return;
+  }
+  btn.classList.add('armed');
+  btn.setAttribute('aria-label', t.restartArmedLabel);
+  showToast(t.restartConfirm);
+  restartTimer = window.setTimeout(disarmRestart, RESTART_CONFIRM_MS);
+}
+
+function disarmRestart(): void {
+  window.clearTimeout(restartTimer);
+  const btn = $('btn-restart');
+  btn.classList.remove('armed');
+  btn.removeAttribute('aria-label');
+}
+
+let leaveAction: (() => void) | null = null;
+
+/**
+ * Runs `action` (go Home, replay the tutorial) from Settings. If a board is part-way
+ * played, asks "Leave this board?" first, because the board isn't kept.
+ */
+function leaveBoard(action: () => void): void {
+  const partWay = !layers.has(homeEl) && session.moves > 0 && session.status !== 'won';
+  if (!partWay) {
+    closeLayer(settingsEl, false);
+    action();
+    return;
+  }
+  leaveAction = action;
+  openLayer($('leave'), $('btn-keep-playing'));
+}
+
+function confirmLeave(): void {
+  const action = leaveAction;
+  leaveAction = null;
+  closeLayer($('leave'), false);
+  closeLayer(settingsEl, false);
+  action?.();
+}
+
+// ---- Stuck banner (F2) ---------------------------------------------------
+
+/**
+ * Shows the persistent stuck banner with `message` (plus a Restart button) until the
+ * board changes. Any variant ("no pours left", "this board can't be won now") calls this
+ * with its own text from strings.ts. The board re-fits around the banner once idle.
+ */
+function showStuckBanner(message: string): void {
+  const banner = $('stuck');
+  const wasHidden = banner.hidden;
+  banner.hidden = false;
+  // Set the text after the banner is visible so the polite live region announces it.
+  requestAnimationFrame(() => {
+    if (!banner.hidden) $('stuck-text').textContent = message;
+  });
+  if (wasHidden) relayoutWhenIdle();
+}
+
+/** Hides the stuck banner. `relayout` re-fits the board to the freed space. */
+function hideStuckBanner(relayout = true): void {
+  const banner = $('stuck');
+  if (banner.hidden) return;
+  banner.hidden = true;
+  $('stuck-text').textContent = '';
+  if (relayout) relayoutWhenIdle();
+}
+
+/** Rebuilds the jars for the current board size once no pour is animating. */
+function relayoutWhenIdle(): void {
+  if (busy || returning.size) {
+    window.setTimeout(relayoutWhenIdle, 60);
+    return;
+  }
+  buildJars();
 }
 
 function sealFx(i: number, color: string): void {
@@ -844,10 +991,7 @@ function showWin(): void {
     btnNext.textContent = t.next;
     if (firstClear) countUp($('win-coins'), reward);
   }
-  window.setTimeout(() => {
-    winEl.hidden = false;
-    btnNext.focus();
-  }, reducedMotion() ? 0 : ANIM.winDelay);
+  window.setTimeout(() => openLayer(winEl, btnNext, null), reducedMotion() ? 0 : ANIM.winDelay);
 }
 
 function countUp(el: HTMLElement, total: number): void {
@@ -899,7 +1043,8 @@ function buildJars(): void {
     jar.dataset.index = String(i);
     jar.innerHTML =
       '<span class="cork" aria-hidden="true"></span><span class="padlock" aria-hidden="true"></span><span class="funnel-mark" aria-hidden="true"></span>' +
-      '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>';
+      '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
+      '<span class="hint-badge" aria-hidden="true"></span>';
     jar.addEventListener('click', () => onJarTap(i));
     rows.appendChild(jar);
     return jar;
@@ -1002,13 +1147,16 @@ function updateHud(): void {
     const id = btn.dataset.booster as BoosterId;
     const charges = save.wallet.boosters[id];
     const price = config.boosters[id].price;
+    // A free booster (owner decision D-a: Undo) shows no charge or price badge.
+    const free = (config.boosters[id] as { free?: boolean }).free === true;
     const badge = btn.querySelector('.badge') as HTMLElement;
+    badge.hidden = free;
     badge.textContent = charges > 0 ? String(charges) : String(price);
     badge.classList.toggle('price', charges === 0);
     const usable =
       !over && mode !== 'tutorial' && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
     btn.disabled = !usable;
-    btn.setAttribute('aria-label', t.boosterLabel(BOOSTER_NAMES[id], charges, price));
+    btn.setAttribute('aria-label', free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price));
   }
   ($('btn-restart') as HTMLButtonElement).disabled = mode === 'tutorial';
 }
@@ -1061,8 +1209,19 @@ function onJarTap(i: number): void {
     void animatePour(from, i);
   } else {
     nope(i);
+    explainRefusal(i);
     setSelected(isLiftable(i) ? i : null);
   }
+}
+
+/** Says why a pour into jar `i` was refused, so it isn't shown by motion and sound only (AX-5). */
+function explainRefusal(i: number): void {
+  const board = session.board;
+  const jar = board.jars[i];
+  if (!jar) return;
+  if (isClosed(jar)) return explain(i);
+  if (jar.units.length >= (jar.cap ?? board.capacity)) return showToast(isSealed(jar, board.capacity) ? t.jarSealedFull : t.jarFull);
+  showToast(t.coloursDontMatch);
 }
 
 function nope(i: number): void {
@@ -1070,6 +1229,8 @@ function nope(i: number): void {
   el.classList.remove('nope');
   void el.offsetWidth; // restart the CSS animation
   el.classList.add('nope');
+  window.clearTimeout(Number(el.dataset.nopeTimer));
+  el.dataset.nopeTimer = String(window.setTimeout(() => el.classList.remove('nope'), NOPE_MS));
   audio.play('nope');
 }
 
@@ -1270,14 +1431,16 @@ function showHint(): boolean {
     return false;
   }
   clearHint();
-  for (const [i, cls] of [
-    [m.from, 'hint-from'],
-    [m.to, 'hint-to'],
+  for (const [i, cls, label] of [
+    [m.from, 'hint-from', t.hintFrom],
+    [m.to, 'hint-to', t.hintTo],
   ] as const) {
     const el = jarEls[i];
+    (el.querySelector('.hint-badge') as HTMLElement).textContent = label;
     void el.offsetWidth; // restart the CSS animation
     el.classList.add(cls);
   }
+  showToast(t.hintToast(m.from + 1, m.to + 1)); // announced politely (AX-4)
   hintTimer = window.setTimeout(clearHint, 2400);
   return true;
 }
@@ -1292,22 +1455,20 @@ function clearHint(): void {
 
 function wireInput(): void {
   for (const btn of toolButtons) btn.addEventListener('click', () => useBooster(btn.dataset.booster as BoosterId));
-  $('btn-restart').addEventListener('click', () => {
+  $('btn-stuck-restart').addEventListener('click', () => {
     if (busy || returning.size || mode === 'tutorial') return;
-    session.restart();
+    session.restart(); // an explicit, labelled choice offered while stuck
   });
+  $('btn-restart').addEventListener('click', requestRestart);
   $('btn-play').addEventListener('click', play);
   btnNext.addEventListener('click', () => {
-    winEl.hidden = true;
+    closeLayer(winEl, false);
     if (mode === 'daily') showHome();
     else startLevel(mode === 'tutorial' ? 1 : level + 1);
   });
   $('btn-daily').addEventListener('click', startDaily);
-  $('btn-scenes').addEventListener('click', openScenes);
-  $('btn-scenes-2').addEventListener('click', () => {
-    settingsEl.hidden = true;
-    openScenes();
-  });
+  $('btn-scenes').addEventListener('click', () => openScenes());
+  $('btn-scenes-2').addEventListener('click', () => openScenes(closeLayer(settingsEl, false)));
   $('btn-scene-buy').addEventListener('click', confirmScene);
   $('btn-close-scenes').addEventListener('click', closeScenes);
   $<HTMLInputElement>('set-auto').addEventListener('change', (e) => {
@@ -1319,7 +1480,7 @@ function wireInput(): void {
   });
   $('btn-shells').addEventListener('click', openCabinet);
   $('btn-profile').addEventListener('click', openProfile);
-  $('btn-close-profile').addEventListener('click', () => ($('profile').hidden = true));
+  $('btn-close-profile').addEventListener('click', () => closeLayer($('profile')));
   $('btn-edit-profile').addEventListener('click', openEditProfile);
   $('btn-close-edit').addEventListener('click', closeEditProfile);
   $('btn-save-profile').addEventListener('click', saveEditProfile);
@@ -1337,30 +1498,33 @@ function wireInput(): void {
     audio.play('shuffle');
     renderEdit();
   });
-  $('btn-close-cabinet').addEventListener('click', () => ($('cabinet').hidden = true));
+  $('btn-close-cabinet').addEventListener('click', () => closeLayer($('cabinet')));
   $('btn-share').addEventListener('click', () => void shareDaily());
   $('btn-settings').addEventListener('click', openSettings);
-  $('btn-close-settings').addEventListener('click', () => (settingsEl.hidden = true));
-  $('btn-home').addEventListener('click', () => {
-    settingsEl.hidden = true;
-    showHome();
-  });
-  $('btn-savecode').addEventListener('click', () => {
-    settingsEl.hidden = true;
-    openTransfer();
-  });
+  $('btn-home-settings').addEventListener('click', openSettings);
+  $('btn-close-settings').addEventListener('click', () => closeLayer(settingsEl));
+  $('btn-home').addEventListener('click', () => leaveBoard(showHome));
+  $('btn-keep-playing').addEventListener('click', () => closeLayer($('leave')));
+  $('btn-leave').addEventListener('click', confirmLeave);
+  $('btn-savecode').addEventListener('click', () => openTransfer(closeLayer(settingsEl, false)));
   $('btn-copy-code').addEventListener('click', () => void copySaveCode());
   $('btn-restore-code').addEventListener('click', restoreSaveCode);
-  $('btn-close-transfer').addEventListener('click', () => ($('transfer').hidden = true));
-  $('btn-guide').addEventListener('click', () => {
-    settingsEl.hidden = true;
-    showMechanicCards(MECHANICS, t.jarGuide);
+  // Editing the code disarms Restore, so a new code always gets its own warning (UX-settings-1).
+  $('transfer-code').addEventListener('input', () => {
+    if (!restoreArmed) return;
+    restoreArmed = false;
+    $('btn-restore-code').textContent = t.restoreCode;
+    $('transfer-status').textContent = t.saveCodeHelp;
   });
-  $('btn-intro-ok').addEventListener('click', () => ($('intro').hidden = true));
-  $('btn-tutorial').addEventListener('click', () => {
-    settingsEl.hidden = true;
-    startTutorial();
-  });
+  $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
+  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, closeLayer(settingsEl, false)));
+  $('btn-intro-ok').addEventListener('click', () => closeLayer($('intro')));
+  $('btn-tutorial').addEventListener('click', () =>
+    leaveBoard(() => {
+      closeLayer(homeEl, false);
+      startTutorial();
+    }),
+  );
   for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) {
     $<HTMLInputElement>(`set-${key}`).addEventListener('change', (e) => {
       save.settings[key] = (e.target as HTMLInputElement).checked;
@@ -1372,36 +1536,36 @@ function wireInput(): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    if (!$('discard').hidden) {
+    // Keys go to the top layer only (F3); the board's shortcuts work when no layer is open.
+    const top = layers.top();
+    const onButton = document.activeElement instanceof HTMLButtonElement;
+    if (top === $('discard')) {
       if (e.key === 'Escape') keepEditing();
       return;
     }
-    if (!$('edit-profile').hidden) {
+    if (top === $('leave')) {
+      if (e.key === 'Escape') closeLayer(top);
+      return;
+    }
+    if (top === $('edit-profile')) {
       if (e.key === 'Escape') closeEditProfile();
       else if (e.key === 'Enter' && e.target === $('name-input')) saveEditProfile();
       return;
     }
-    if (!$('profile').hidden) {
-      if (e.key === 'Escape') $('profile').hidden = true;
+    if (top === $('profile') || top === $('transfer') || top === $('cabinet')) {
+      if (e.key === 'Escape') closeLayer(top);
       return;
     }
-    if (!$('transfer').hidden) {
-      if (e.key === 'Escape') $('transfer').hidden = true;
-      return;
-    }
-    if (!$('scenes').hidden) {
+    if (top === $('scenes')) {
       if (e.key === 'Escape') closeScenes();
       return;
     }
-    if (!$('intro').hidden) {
-      if (e.key === 'Escape' || e.key === 'Enter') $('intro').hidden = true;
+    if (top === $('intro')) {
+      // Enter on a focused button activates that button natively.
+      if (e.key === 'Escape' || (e.key === 'Enter' && !onButton)) closeLayer(top);
       return;
     }
-    if (!$('cabinet').hidden) {
-      if (e.key === 'Escape') $('cabinet').hidden = true;
-      return;
-    }
-    if (!homeEl.hidden) {
+    if (top === homeEl) {
       // Enter/Space plays, unless another home button (profile, daily, shells, scenes) has focus.
       const focused = document.activeElement;
       if (focused instanceof HTMLButtonElement && focused.id !== 'btn-play') return;
@@ -1411,23 +1575,25 @@ function wireInput(): void {
       }
       return;
     }
-    if (!winEl.hidden) {
-      if (e.key === 'Enter' || e.key === ' ') {
+    if (top === winEl) {
+      // Enter/Space on Share (or any focused button) activates that button, not Continue (UX-win-1).
+      if ((e.key === 'Enter' || e.key === ' ') && !onButton) {
         e.preventDefault();
         btnNext.click();
       }
       return;
     }
-    if (!settingsEl.hidden) {
-      if (e.key === 'Escape') settingsEl.hidden = true;
+    if (top === settingsEl) {
+      if (e.key === 'Escape') closeLayer(settingsEl);
       return;
     }
+    if (top) return;
     const k = e.key.toLowerCase();
     if (k === 'z') useBooster('undo');
     else if (k === 's') useBooster('shuffle');
     else if (k === 'j') useBooster('extraJar');
     else if (k === 'h') useBooster('hint');
-    else if (k === 'r') $('btn-restart').click();
+    else if (k === 'r') requestRestart();
     else if (k === 'escape') setSelected(null);
     else if (/^[0-9]$/.test(k)) {
       const i = k === '0' ? 9 : Number(k) - 1;
@@ -1448,15 +1614,18 @@ function wireInput(): void {
 
 function openSettings(): void {
   for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) $<HTMLInputElement>(`set-${key}`).checked = save.settings[key];
-  settingsEl.hidden = false;
-  $('btn-close-settings').focus();
+  $('btn-home').hidden = layers.has(homeEl); // already Home when opened from Home
+  openLayer(settingsEl, $('set-sound'));
 }
 
 function applyStrings(): void {
   for (const btn of toolButtons) (btn.querySelector('.tool-name') as HTMLElement).textContent = BOOSTER_NAMES[btn.dataset.booster as BoosterId];
   $('moves-label').textContent = t.pours;
   $('btn-restart').title = t.restart;
+  $('btn-stuck-restart').textContent = t.restart;
   $('btn-settings').title = t.settings;
+  $('btn-home-settings').title = t.settings;
+  $('btn-home-settings').setAttribute('aria-label', t.settings);
   $('settings-title').textContent = t.settings;
   for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns'];
   $('btn-home').textContent = t.home;
@@ -1493,6 +1662,10 @@ function applyStrings(): void {
   $('plates-label').textContent = t.platesLabel;
   $('btn-save-profile').textContent = t.saveProfile;
   $('discard-title').textContent = t.discardTitle;
+  $('leave-title').textContent = t.leaveTitle;
+  $('leave-text').textContent = t.leaveText;
+  $('btn-keep-playing').textContent = t.keepPlaying;
+  $('btn-leave').textContent = t.leave;
   $('btn-keep-editing').textContent = t.keepEditing;
   $('btn-discard').textContent = t.discard;
   boardEl.setAttribute('aria-label', t.boardLabel);

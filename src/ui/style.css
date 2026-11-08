@@ -17,6 +17,8 @@
   --sky: #fff6d8;
   --buried: #b9a88d;
   --focus: #2a6fdb;
+  --accent-text: #1a6b61;
+  --coral-text: #b3412b;
   color-scheme: light;
 }
 
@@ -60,7 +62,8 @@ body {
 #app {
   height: 100%;
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr); /* lets the HUD title shrink at large text (AX-20) */
   padding: max(10px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
   max-width: 900px;
   margin: 0 auto;
@@ -82,6 +85,8 @@ body {
 }
 .brand {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 800;
   font-size: 0.8125rem;
   letter-spacing: 0.18em;
@@ -95,7 +100,7 @@ body {
   margin-left: 6px;
   padding: 2px 7px;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--accent-text);
   color: var(--accent-ink);
   letter-spacing: 0.08em;
   font-size: 0.625rem;
@@ -106,7 +111,11 @@ body {
 }
 .level-label {
   font-weight: 800;
-  font-size: 1.375rem;
+  /* Large text on a narrow phone: cap the heading by the screen width so it isn't cut (AX-20). */
+  font-size: min(1.375rem, 6.5vw);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .hud-moves {
   white-space: nowrap;
@@ -132,7 +141,7 @@ body {
   cursor: pointer;
 }
 .chip[aria-pressed='true'] {
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: var(--accent);
   background: var(--card);
 }
@@ -343,6 +352,11 @@ body {
   }
 }
 
+/* A refused pour also gets a static outline, so it shows under reduced motion (AX-5). */
+.jar.nope .glass {
+  outline: 3px solid var(--coral-text, #b3412b);
+  outline-offset: 2px;
+}
 .jar.nope {
   animation: nope 300ms ease-in-out;
 }
@@ -357,15 +371,48 @@ body {
   }
 }
 
+/* Hint (AX-1, AX-13): a static ring that also shows under reduced motion. "From" is lifted
+   with a solid ring, "to" has a dashed ring, and each carries a text badge, so direction
+   never depends on colour alone. The pulse is extra motion only. */
 .jar.hint-from .glass,
 .jar.hint-to .glass {
-  animation: hint 600ms ease-in-out 3;
+  outline: 4px solid var(--hint);
+  outline-offset: 2px;
 }
 .jar.hint-from .glass {
   --hint: #2a9d8f;
 }
 .jar.hint-to .glass {
   --hint: #f2a541;
+  outline-style: dashed;
+}
+.jar.hint-from:not(.selected) {
+  transform: translateY(calc(var(--lift) * -0.5));
+}
+.hint-badge {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -100%);
+  z-index: 2;
+  padding: 0.1em 0.45em;
+  border-radius: 999px;
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.jar:not(.hint-from):not(.hint-to) .hint-badge {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jar.hint-from .glass,
+  .jar.hint-to .glass {
+    animation: hint 600ms ease-in-out 3;
+  }
 }
 @keyframes hint {
   0%,
@@ -449,7 +496,7 @@ body {
   height: 1.65em;
   padding: 0 0.45em;
   border-radius: 0.85em;
-  background: var(--accent);
+  background: var(--accent-text); /* small 11 px count: F4 */
   color: var(--accent-ink);
   font-size: 0.6875rem;
   line-height: 1.65em;
@@ -474,7 +521,7 @@ body {
   transition:
     opacity 200ms,
     transform 200ms;
-  z-index: 10;
+  z-index: 50; /* above every overlay layer and the particles (UX-all-3) */
 }
 .toast.show {
   opacity: 1;
@@ -593,8 +640,9 @@ body {
   box-shadow: inset 0 -2px 0 rgba(140, 90, 20, 0.35);
 }
 .icon-btn {
-  width: 38px;
-  height: 38px;
+  flex: none;
+  width: 44px; /* F5: 44 x 44 touch target (UX-all-4) */
+  height: 44px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -773,7 +821,7 @@ body {
   margin: 0 0 14px !important;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--accent) !important;
+  color: var(--accent-text) !important;
 }
 
 /* Settings sheet */
@@ -820,6 +868,7 @@ body {
   height: 28px;
   border-radius: 999px;
   background: #d9cbb4;
+  box-shadow: inset 0 0 0 2px var(--ink-soft);
   position: relative;
   cursor: pointer;
   transition: background 160ms;
@@ -837,6 +886,7 @@ body {
   transition: transform 160ms;
 }
 .toggle input:checked {
+  box-shadow: none;
   background: var(--accent);
 }
 .toggle input:checked::after {
@@ -853,6 +903,7 @@ body {
 }
 .secondary {
   flex: 1;
+  min-height: 44px; /* F5 */
   padding: 11px;
   font: inherit;
   font-weight: 800;
@@ -973,7 +1024,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--accent-ink);
-  background: var(--accent);
+  background: var(--accent-text);
 }
 .daily-cal i {
   display: block;
@@ -997,7 +1048,7 @@ body {
 }
 .daily-streak {
   font-weight: 800;
-  color: #c8553d !important;
+  color: var(--coral-text) !important;
 }
 .shells-btn {
   display: flex;
@@ -1090,7 +1141,7 @@ body {
   margin: 4px 0 10px;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .shell-set {
   margin-bottom: 12px;
@@ -1100,13 +1151,18 @@ body {
   box-shadow: inset 0 -3px 0 rgba(90, 70, 50, 0.12);
 }
 .shell-set.complete {
+  --ink: #4a3b2c;
+  --ink-soft: #6b5a47;
+  --focus: #2a6fdb;
+  color: var(--ink);
   background: linear-gradient(180deg, #e8f5f0, #cfe9e1);
 }
 .shell-set-head {
   display: flex;
   width: 100%;
+  min-height: 44px; /* F5 */
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   padding: 2px 0 6px;
   border: 0;
@@ -1131,7 +1187,7 @@ body {
   transform: translateY(0) rotate(-45deg);
 }
 .shell-set-head:focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
   border-radius: 8px;
 }
@@ -1321,7 +1377,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .intro-row {
   display: flex;
@@ -1747,9 +1803,10 @@ svg.fx-stone {
   flex: none;
 }
 .level-badge {
+  /* F4: small text, so it sits on accent-text (>= 4.5:1 with accent-ink) */
   padding: 2px 10px;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--accent-text);
   color: var(--accent-ink);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -1833,6 +1890,7 @@ svg.fx-stone {
 }
 .tab {
   flex: 1;
+  min-height: 44px; /* F5 */
   padding: 9px 4px;
   font: inherit;
   font-weight: 800;
@@ -1935,7 +1993,7 @@ svg.fx-stone {
   border-radius: 12px;
 }
 .name-input[aria-invalid='true'] {
-  border-color: #c8553d;
+  border-color: var(--coral-text);
 }
 .reroll {
   width: 46px;
@@ -1947,14 +2005,14 @@ svg.fx-stone {
   margin: 4px 0 4px;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #b3412b;
+  color: var(--coral-text);
 }
 .pick-note {
   min-height: 1.2em;
   margin: 10px 0;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .btn-save-profile:disabled,
 #btn-save-profile:disabled {
@@ -2000,4 +2058,62 @@ svg.fx-stone {
 }
 body[data-theme='moonlit'] .profile-chip {
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* ==== Sprint 6 fixes (production/qa/sprint-6-findings.md) ==== */
+/* Stuck banner (F2): stays on the board until the board changes. */
+.stuck-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow:
+    0 3px 0 rgba(90, 70, 50, 0.16),
+    0 6px 14px rgba(90, 70, 50, 0.1);
+}
+.stuck-banner[hidden] {
+  display: none;
+}
+.stuck-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.stuck-banner .stuck-restart {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+/* F6: Restart waits for a second tap; the armed state is shown by fill, not motion. */
+.icon-btn.armed {
+  background: var(--coral-text);
+  color: var(--card);
+}
+.leave-text {
+  margin: 6px 0 0;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+/* F6: the save code and the name field allow selecting and pasting text (iOS, UX-settings-3). */
+textarea,
+input[type='text'] {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* F8: Settings on Home, opposite the profile chip (UX-home-1). */
+.home-top {
+  align-items: center;
+  padding-right: env(safe-area-inset-right);
+}
+.home-settings {
+  margin-left: auto;
+  box-shadow: 0 3px 0 rgba(90, 70, 50, 0.12);
 }
