@@ -186,6 +186,17 @@ body {
   padding-top: 18px;
 }
 
+/*
+ * D44 (AX-17): pinch zoom is allowed on the page, but double-tap zoom stays off
+ * wherever fast tapping happens. `manipulation` keeps panning and pinch zoom.
+ */
+.board,
+.jar,
+.toolbar,
+button {
+  touch-action: manipulation;
+}
+
 .jar {
   --lift: calc(var(--jar-w) * 0.32);
   position: relative;
