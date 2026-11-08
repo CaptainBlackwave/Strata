@@ -14,7 +14,7 @@ import { generateLevel, tutorialBoard } from '../core/generator';
 import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent, sessionOptions } from '../core/session';
-import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme } from '../core/themes';
+import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, inSeason, localDateKey } from '../core/themes';
 import {
   type Profile,
   type ProfileConfig,
@@ -39,6 +39,7 @@ import {
 import { DICE_SVG, LOCK_SVG, STAT_ICONS, portraitSvg } from './avatars';
 import { GameAudio } from './audio';
 import { burst, celebrate, sparkleAround } from './fx';
+import { sceneSealBurst, sceneWinDisplay, startSceneFx } from './scene-fx';
 import { type FocusTarget, LayerStack } from './layers';
 import { computeLayout } from './layout';
 import { UI_TOKEN_VARS, type UiThemeTokens } from './theme-tokens';
@@ -222,7 +223,8 @@ function restoreSaveCode(): void {
 
 
 function currentTheme(): string {
-  return activeTheme(save.themes, new Date().getHours(), config);
+  const now = new Date();
+  return activeTheme(save.themes, now.getHours(), config, localDateKey(now)); // holiday scenes follow the local date (B5)
 }
 
 /** Applies a scene's colour tokens. Sand colours are never touched (decision S4-4). */
@@ -237,6 +239,7 @@ function applyTheme(id: string): void {
     else root.removeProperty(cssVar); // fall back to the style.css default
   }
   document.body.dataset.theme = theme.id;
+  startSceneFx(theme.id); // the scene's animated layer, if it has one (scene-fx.ts)
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.themeColor);
 }
 
@@ -253,8 +256,9 @@ function renderScenes(): void {
   // Use or Buy turns clock-matching off, so the switch re-syncs on every render (UX-scenes-1).
   $<HTMLInputElement>('set-auto').checked = save.themes.auto;
   const grid = $('scene-grid');
+  const today = localDateKey(new Date());
   grid.replaceChildren(
-    ...config.themes.list.map((theme) => {
+    ...[...config.themes.list].sort((a, b) => a.price - b.price).map((theme) => {
       const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
       const card = document.createElement('button');
       card.type = 'button';
@@ -263,7 +267,20 @@ function renderScenes(): void {
       card.setAttribute('aria-pressed', String(previewing === theme.id));
       const k = theme.tokens;
       card.innerHTML = `<span class="scene-swatch" style="--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})"><i></i><i></i><i></i></span><span class="scene-name"></span><span class="scene-status"></span>`;
+      card.querySelector('.scene-swatch')!.setAttribute('data-scene', theme.id);
       card.querySelector('.scene-name')!.textContent = theme.name;
+      const badges = [inSeason(theme, today) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
+      if (badges.length) {
+        const row = document.createElement('span');
+        row.className = 'scene-badges';
+        for (const [cls, text] of badges) {
+          const b = document.createElement('span');
+          b.className = `scene-badge ${cls}`;
+          b.textContent = text;
+          row.appendChild(b);
+        }
+        card.querySelector('.scene-name')!.after(row);
+      }
       const status = card.querySelector('.scene-status') as HTMLElement;
       const inUse = owned && currentTheme() === theme.id;
       status.textContent = inUse ? t.sceneInUse : owned ? t.sceneOwned : String(theme.price);
@@ -931,6 +948,7 @@ function sealFx(i: number, color: string): void {
   el.classList.add('just-sealed');
   window.setTimeout(() => {
     sparkleAround(el, color);
+    sceneSealBurst(el, color); // New Year: a small firework above the jar
     audio.play('seal');
   }, reducedMotion() ? 0 : 180);
 }
@@ -940,6 +958,7 @@ function showWin(): void {
   coach(null);
   const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
   celebrate(colors);
+  sceneWinDisplay(colors); // New Year: fireworks around the win card
   audio.play('win');
   $('win-shell').hidden = true;
   $('btn-share').hidden = true;
