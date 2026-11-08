@@ -133,7 +133,8 @@ function mount(): void {
 
 function resize(): void {
   if (!canvas || !ctx) return;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // 1x backing store: soft particles need no retina detail, and raster cost scales with pixels (measured, B5 README).
+  const dpr = 1;
   const oldW = w;
   w = window.innerWidth;
   h = window.innerHeight;
