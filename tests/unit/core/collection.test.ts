@@ -1,7 +1,7 @@
 // Story: production/epics/sprint-2/story-002-shell-collection.md
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { type CollectionConfig, allShells, grantShell, milestoneDue, setProgress } from '../../../src/core/collection';
+import { type CollectionConfig, allShells, grantShell, knownShells, milestoneDue, setProgress } from '../../../src/core/collection';
 
 const cfg = config as unknown as CollectionConfig;
 const total = cfg.collection.sets.reduce((n, s) => n + s.shells.length, 0);
@@ -95,5 +95,22 @@ describe('expedition sets (shell sets 5-8, owner interview 2026-11-08)', () => {
     const effect = Object.fromEntries(cfg.collection.sets.map((s) => [s.id, s.effect ?? null]));
     expect(effect).toMatchObject({ night: 'glow', ancient: 'stone', north: null, volcanic: null, tidepool: null });
     expect(allShells(cfg).find((s) => s.setId === 'night')?.effect).toBe('glow');
+  });
+});
+
+describe('knownShells: unknown ids are dropped on load (D26, GX-15 / GB-SC-2)', () => {
+  // production/sprints/sprint-7.md B1; design/gdd/save-data.md, design/gdd/shell-collection.md
+  it('keeps only catalog ids, in earned order', () => {
+    const [a, b, c] = allShells(cfg).map((s) => s.id);
+    expect(knownShells([c, 'retired-shell', a, 'x', b], cfg)).toEqual([c, a, b]);
+  });
+  it('drops duplicates, keeping the first time a shell was earned', () => {
+    const [a, b] = allShells(cfg).map((s) => s.id);
+    expect(knownShells([b, a, b, a], cfg)).toEqual([b, a]);
+  });
+  it('an empty or fully known list is unchanged', () => {
+    const ids = allShells(cfg).map((s) => s.id);
+    expect(knownShells([], cfg)).toEqual([]);
+    expect(knownShells(ids, cfg)).toEqual(ids);
   });
 });

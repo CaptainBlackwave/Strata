@@ -84,6 +84,20 @@ describe('names', () => {
   it('rejects empty, too short, too long, emoji and symbols', () => {
     for (const bad of ['', '   ', 'a', 'ABCDEFGHIJKLMNOPQ', '😀😀', 'a_b', 'hi!', '--', 'a--b']) expect(isValidName(bad, cfg), bad).toBe(false);
   });
+  it('stores names NFC-normalised, so a decomposed and a precomposed name are the same (D30)', () => {
+    // production/sprints/sprint-7.md B1; design/gdd/player-profile.md
+    const decomposed = 'Zoe\u0308'; // e + combining diaeresis
+    const precomposed = 'Zo\u00eb'; // ë
+    expect(normaliseName(decomposed)).toBe(precomposed);
+    expect(normaliseName(precomposed)).toBe(precomposed);
+    expect(normaliseName(`  ${decomposed}  `)).toBe(normaliseName(precomposed));
+  });
+  it('counts NFC characters for the length limit (D30)', () => {
+    const max = cfg.profile.name.max;
+    expect(isValidName('e\u0301'.repeat(max), cfg)).toBe(true); // max × é, 2 code points each before NFC
+    expect(isValidName('\u00e9'.repeat(max), cfg)).toBe(true);
+    expect(isValidName('e\u0301'.repeat(max + 1), cfg)).toBe(false);
+  });
   it('counts characters, not UTF-16 units', () => {
     expect(isValidName('日'.repeat(16), cfg)).toBe(true);
     expect(isValidName('日'.repeat(17), cfg)).toBe(false);

@@ -7,7 +7,7 @@
 import './style.css';
 import rawConfig from '../config/game-config.json';
 import { type Board, type Jar, canPour, isClosed, isSealed, pourAmount } from '../core/board';
-import { type CollectionConfig, allShells, grantShell, milestoneDue, setProgress } from '../core/collection';
+import { type CollectionConfig, allShells, grantShell, knownShells, milestoneDue, setProgress } from '../core/collection';
 import { type DailyConfig, generateDaily, recordDailySolve, sharePours, streakStatus, utcDateKey, weekday } from '../core/daily';
 import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, isFreeBooster, spendBooster } from '../core/economy';
 import { generateLevel, tutorialBoard } from '../core/generator';
@@ -150,6 +150,7 @@ const params = new URLSearchParams(location.search);
 const levelParam = Number(params.get('level'));
 const qaLevel = Number.isInteger(levelParam) && levelParam >= 1; // QA launch argument (run-and-observe)
 applyStrings();
+save.shells = knownShells(save.shells, config); // D26: before the profile repair counts them
 repairSaveProfile();
 writeSave(save);
 applyTheme(currentTheme());
@@ -206,6 +207,7 @@ function restoreSaveCode(): void {
     return;
   }
   save = imported;
+  save.shells = knownShells(save.shells, config); // D26
   repairSaveProfile();
   writeSave(save);
   audio.configure(save.settings);

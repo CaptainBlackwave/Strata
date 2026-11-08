@@ -75,3 +75,15 @@ export function setProgress(owned: readonly string[], config: CollectionConfig) 
 export function milestoneDue(level: number, config: CollectionConfig): boolean {
   return level > 0 && level % config.collection.everyLevels === 0;
 }
+
+/**
+ * The owned shell ids that exist in the catalog, in earned order, each once (decision D26).
+ * Run on every loaded or imported save, so a retired or mistyped id can neither count
+ * toward a milestone nor unlock a cosmetic. Example: `knownShells(['cockle', 'gone', 'cockle'], config) // ['cockle']`.
+ */
+export function knownShells(owned: readonly string[], config: CollectionConfig): string[] {
+  const catalog = new Set(allShells(config).map((s) => s.id));
+  const kept = new Set<string>();
+  for (const id of owned) if (catalog.has(id)) kept.add(id);
+  return [...kept];
+}

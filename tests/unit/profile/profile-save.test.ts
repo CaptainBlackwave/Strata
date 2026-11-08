@@ -1,8 +1,9 @@
 // Design: design/gdd/player-profile.md §3.8 (save fields and repair), §8 (Logic)
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
+import { type CollectionConfig, allShells, knownShells, setProgress } from '../../../src/core/collection';
 import type { EconomyConfig } from '../../../src/core/economy';
-import { type ProfileConfig, emptyStats, isValidName, progressOf, repairProfile } from '../../../src/core/profile';
+import { type ProfileConfig, emptyStats, isUnlocked, isValidName, progressOf, repairProfile } from '../../../src/core/profile';
 import { type KeyValueStore, exportSave, freshSave, importSave, loadSave, writeSave } from '../../../src/ui/storage';
 
 const econ = config as unknown as EconomyConfig;
@@ -60,4 +61,35 @@ describe('daily share record (GA-DP-6)', () => {
       expect(loadSave(econ, memoryStore({ [KEY]: JSON.stringify(raw) })).dailyShare, JSON.stringify(bad)).toBeNull();
     }
   });
+});
+
+describe('unknown shell ids in a save (D26, GX-15 / GB-SC-2)', () => {
+  // production/sprints/sprint-7.md B1. main.ts runs knownShells right after loadSave and importSave.
+  const col = config as unknown as CollectionConfig;
+  const real = allShells(col).map((s) => s.id);
+  const UNKNOWN = ['retired-1', 'retired-2', 'retired-3'];
+  // 40 ids: 37 real ones (not in catalog order) with 3 unknown ones mixed in.
+  const earned = [...real.slice(0, 37)].reverse();
+  const held = [...earned.slice(0, 10), UNKNOWN[0], ...earned.slice(10, 20), UNKNOWN[1], ...earned.slice(20), UNKNOWN[2]];
+  const gold = cfg.profile.frames.find((f) => f.id === 'gold')!;
+  const progressFor = (shells: string[]) =>
+    progressOf({ level: 30, bestStreak: 0, shellsOwned: shells.length, setsCompleted: setProgress(shells, col).filter((p) => p.complete).length, stats: emptyStats() });
+
+  it('the fixture really is 40 ids with 3 unknown, and Gold needs 40 shells', () => {
+    expect(held).toHaveLength(40);
+    expect(held.filter((id) => !real.includes(id))).toEqual(UNKNOWN);
+    expect(gold.unlock).toEqual({ kind: 'shells', count: 40 });
+  });
+  for (const [path, load] of [
+    ['loadSave', () => loadSave(econ, memoryStore({ [KEY]: JSON.stringify({ ...OLD_SAVE, shells: held }) }))],
+    ['importSave', () => importSave(exportSave({ ...freshSave(econ), shells: held }), econ)!],
+  ] as const) {
+    it(`after ${path}, keeps the 37 real shells in earned order and the Gold frame stays locked`, () => {
+      const shells = knownShells(load().shells, col);
+      expect(shells).toEqual(earned);
+      const progress = progressFor(shells);
+      expect(progress.shells).toBe(37);
+      expect(isUnlocked(gold, progress)).toBe(false);
+    });
+  }
 });
