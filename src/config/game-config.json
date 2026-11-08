@@ -16,8 +16,10 @@
     "hint": { "start": 3, "price": 60 }
   },
   "shuffle": {
+    "$comment": "totalNodeBudget caps solver states across all re-deal attempts of one shuffle, so a stuck late board can never freeze the main thread (F7, GA-SB-4). About 25 us per state on a desktop; the costliest successful shuffle measured on levels 140-200 used 18.6k states.",
     "maxAttempts": 40,
-    "solverNodeBudget": 40000
+    "solverNodeBudget": 40000,
+    "totalNodeBudget": 50000
   },
   "mechanics": {
     "$comment": "Sprint 3 (S3-1..S3-3): unlock every 20 levels, easiest first; each debuts on its unlock level, then appears in about `chance` of levels; two can combine from `comboFrom`. Narrow and funnel add an extra jar; frozen and locked change existing filled jars.",
