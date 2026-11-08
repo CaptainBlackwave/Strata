@@ -60,7 +60,7 @@ body {
 #app {
   height: 100%;
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto auto;
   padding: max(10px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
   max-width: 900px;
   margin: 0 auto;
@@ -343,6 +343,11 @@ body {
   }
 }
 
+/* A refused pour also gets a static outline, so it shows under reduced motion (AX-5). */
+.jar.nope .glass {
+  outline: 3px solid var(--coral-text, #b3412b);
+  outline-offset: 2px;
+}
 .jar.nope {
   animation: nope 300ms ease-in-out;
 }
@@ -507,7 +512,7 @@ body {
   transition:
     opacity 200ms,
     transform 200ms;
-  z-index: 10;
+  z-index: 50; /* above every overlay layer and the particles (UX-all-3) */
 }
 .toast.show {
   opacity: 1;
@@ -2033,4 +2038,35 @@ svg.fx-stone {
 }
 body[data-theme='moonlit'] .profile-chip {
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* ==== Sprint 6 fixes (production/qa/sprint-6-findings.md) ==== */
+/* Stuck banner (F2): stays on the board until the board changes. */
+.stuck-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow:
+    0 3px 0 rgba(90, 70, 50, 0.16),
+    0 6px 14px rgba(90, 70, 50, 0.1);
+}
+.stuck-banner[hidden] {
+  display: none;
+}
+.stuck-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.stuck-banner .stuck-restart {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
 }

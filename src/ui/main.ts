@@ -47,6 +47,8 @@ import { t } from './strings';
 const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig & ProfileConfig;
 /** Presentation-only timings (ms) and tilt angle: animation feel, not gameplay. */
 const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
+/** How long a refused jar keeps its static red outline (ms): presentation only. */
+const NOPE_MS = 700;
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const boardEl = $('board');
@@ -726,6 +728,7 @@ function beginSession(board: Board, isChallenge: boolean): void {
   pendingWin = false;
   returning.clear();
   winEl.hidden = true;
+  hideStuckBanner(false);
   document.body.dataset.challenge = String(isChallenge);
   buildJars();
   updateHud();
@@ -770,10 +773,47 @@ function onSessionEvent(e: SessionEvent): void {
       pendingWin = true;
       break;
     case 'stuck':
-      showToast(t.stuck);
+      showStuckBanner(t.stuck);
       break;
   }
+  if (e.type !== 'stuck' && e.type !== 'won') hideStuckBanner(); // the board changed
   updateHud();
+}
+
+// ---- Stuck banner (F2) ---------------------------------------------------
+
+/**
+ * Shows the persistent stuck banner with `message` (plus a Restart button) until the
+ * board changes. Any variant ("no pours left", "this board can't be won now") calls this
+ * with its own text from strings.ts. The board re-fits around the banner once idle.
+ */
+function showStuckBanner(message: string): void {
+  const banner = $('stuck');
+  const wasHidden = banner.hidden;
+  banner.hidden = false;
+  // Set the text after the banner is visible so the polite live region announces it.
+  requestAnimationFrame(() => {
+    if (!banner.hidden) $('stuck-text').textContent = message;
+  });
+  if (wasHidden) relayoutWhenIdle();
+}
+
+/** Hides the stuck banner. `relayout` re-fits the board to the freed space. */
+function hideStuckBanner(relayout = true): void {
+  const banner = $('stuck');
+  if (banner.hidden) return;
+  banner.hidden = true;
+  $('stuck-text').textContent = '';
+  if (relayout) relayoutWhenIdle();
+}
+
+/** Rebuilds the jars for the current board size once no pour is animating. */
+function relayoutWhenIdle(): void {
+  if (busy || returning.size) {
+    window.setTimeout(relayoutWhenIdle, 60);
+    return;
+  }
+  buildJars();
 }
 
 function sealFx(i: number, color: string): void {
@@ -1062,8 +1102,19 @@ function onJarTap(i: number): void {
     void animatePour(from, i);
   } else {
     nope(i);
+    explainRefusal(i);
     setSelected(isLiftable(i) ? i : null);
   }
+}
+
+/** Says why a pour into jar `i` was refused, so it isn't shown by motion and sound only (AX-5). */
+function explainRefusal(i: number): void {
+  const board = session.board;
+  const jar = board.jars[i];
+  if (!jar) return;
+  if (isClosed(jar)) return explain(i);
+  if (jar.units.length >= (jar.cap ?? board.capacity)) return showToast(isSealed(jar, board.capacity) ? t.jarSealedFull : t.jarFull);
+  showToast(t.coloursDontMatch);
 }
 
 function nope(i: number): void {
@@ -1071,6 +1122,8 @@ function nope(i: number): void {
   el.classList.remove('nope');
   void el.offsetWidth; // restart the CSS animation
   el.classList.add('nope');
+  window.clearTimeout(Number(el.dataset.nopeTimer));
+  el.dataset.nopeTimer = String(window.setTimeout(() => el.classList.remove('nope'), NOPE_MS));
   audio.play('nope');
 }
 
@@ -1295,6 +1348,10 @@ function clearHint(): void {
 
 function wireInput(): void {
   for (const btn of toolButtons) btn.addEventListener('click', () => useBooster(btn.dataset.booster as BoosterId));
+  $('btn-stuck-restart').addEventListener('click', () => {
+    if (busy || returning.size || mode === 'tutorial') return;
+    session.restart(); // an explicit, labelled choice offered while stuck
+  });
   $('btn-restart').addEventListener('click', () => {
     if (busy || returning.size || mode === 'tutorial') return;
     session.restart();
@@ -1459,6 +1516,7 @@ function applyStrings(): void {
   for (const btn of toolButtons) (btn.querySelector('.tool-name') as HTMLElement).textContent = BOOSTER_NAMES[btn.dataset.booster as BoosterId];
   $('moves-label').textContent = t.pours;
   $('btn-restart').title = t.restart;
+  $('btn-stuck-restart').textContent = t.restart;
   $('btn-settings').title = t.settings;
   $('settings-title').textContent = t.settings;
   for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns'];

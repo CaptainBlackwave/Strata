@@ -33,6 +33,10 @@
       <main id="board" class="board" aria-label="Sand jars"></main>
       <div id="coach" class="coach" hidden aria-live="polite"><span class="coach-ring" aria-hidden="true"></span><span id="coach-text" class="coach-text"></span></div>
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div id="stuck" class="stuck-banner" hidden>
+        <p id="stuck-text" class="stuck-text" aria-live="polite"></p>
+        <button id="btn-stuck-restart" class="secondary stuck-restart" type="button">Restart</button>
+      </div>
       <nav class="toolbar" aria-label="Boosters">
         <button id="btn-undo" class="tool" type="button" data-booster="undo" title="Undo (Z)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
