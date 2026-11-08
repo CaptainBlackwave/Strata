@@ -90,6 +90,24 @@ function read(store: KeyValueStore | null, key: string): unknown {
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object';
 const nonNegInt = (v: unknown, fallback: number) => (Number.isInteger(v) && (v as number) >= 0 ? (v as number) : fallback);
 
+/** Highest level number a save may hold. Above it the value is treated as corrupt or edited (TD-6). */
+const MAX_LEVEL = 1_000_000;
+/** Longest save code `importSave` reads, in characters (256 KB). A real save is a few KB. */
+const MAX_CODE_LENGTH = 256 * 1024;
+
+/** A level number: an integer from 1 to {@link MAX_LEVEL}, else 1. */
+const levelOf = (v: unknown): number => (Number.isInteger(v) && (v as number) >= 1 && (v as number) <= MAX_LEVEL ? (v as number) : 1);
+
+/** The usable part of a `best` map: keys that are positive level numbers, values non-negative integers. */
+function bestOf(v: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!isObj(v) || Array.isArray(v)) return out;
+  for (const [k, n] of Object.entries(v)) {
+    if (/^[1-9]\d*$/.test(k) && Number.isInteger(n) && (n as number) >= 0) out[k] = n as number;
+  }
+  return out;
+}
+
 /** A de-duplicated list of the strings in `v`, or [] if it isn't an array. */
 const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : []);
 
@@ -109,15 +127,15 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     const v1 = read(store, LEGACY_PROGRESS);
     const prefs = read(store, LEGACY_PREFS);
     if (isObj(v1)) {
-      base.level = Number.isInteger(v1.level) && (v1.level as number) >= 1 ? (v1.level as number) : 1;
-      if (isObj(v1.best)) base.best = v1.best as Record<string, number>;
+      base.level = levelOf(v1.level);
+      base.best = bestOf(v1.best);
       base.tutorialDone = base.level > 1; // returning players skip the tutorial
       base.seenWhatsNew = ''; // a returning player is updating, so the card shows once
     }
     if (isObj(prefs) && prefs.patterns === true) base.settings.patterns = true;
     return base;
   }
-  const level = Number.isInteger(v2.level) && (v2.level as number) >= 1 ? (v2.level as number) : 1;
+  const level = levelOf(v2.level);
   const w = isObj(v2.wallet) ? v2.wallet : {};
   const b = isObj(w.boosters) ? w.boosters : {};
   const s = isObj(v2.settings) ? v2.settings : {};
@@ -127,7 +145,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const str = (v: unknown) => (typeof v === 'string' ? v : '');
   return {
     level,
-    best: isObj(v2.best) ? (v2.best as Record<string, number>) : {},
+    best: bestOf(v2.best),
     wallet: {
       coins: nonNegInt(w.coins, base.wallet.coins),
       boosters: Object.fromEntries(BOOSTERS.map((id) => [id, nonNegInt(b[id], base.wallet.boosters[id])])) as Record<BoosterId, number>,
@@ -193,11 +211,11 @@ export function exportSave(save: SaveData): string {
 /**
  * Reads a save code. Returns null if it isn't a Strata save code; otherwise every
  * field is checked and repaired exactly like a normal load. Spaces and line breaks
- * in a pasted code are ignored.
+ * in a pasted code are ignored. A code over 256 KB is refused (TD-6).
  */
 export function importSave(code: string, econ: EconomyConfig): SaveData | null {
   const compact = code.replace(/\s+/g, '');
-  if (!compact.startsWith(CODE_PREFIX)) return null;
+  if (!compact.startsWith(CODE_PREFIX) || compact.length > MAX_CODE_LENGTH) return null;
   let json: string;
   try {
     const bin = atob(compact.slice(CODE_PREFIX.length));
