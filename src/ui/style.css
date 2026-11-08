@@ -72,12 +72,22 @@ body {
 /* ---- HUD ---- */
 .hud {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 4px 2px 8px;
 }
+/* Restart, coins and Settings stay together; at large text on a narrow phone they wrap to
+   their own row under the title instead of cutting "Level 120" and the Tall jars tag. */
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: inherit;
+  margin-left: auto;
+}
 .hud-title {
-  min-width: 0;
+  flex: 1 1 auto;
+  min-width: min(6.75em, 100%);
   display: flex;
   flex-direction: column;
   line-height: 1.1;
