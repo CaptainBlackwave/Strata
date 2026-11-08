@@ -2,7 +2,7 @@
 status: reverse-documented
 source: src/core/board.ts, src/core/levels.ts, src/core/generator.ts, src/ui/main.ts
 date: 2026-11-08
-verified-by: pending review (the four mechanics and unlock pacing were chosen by the owner in the sprint-3 interview, decisions S3-1 to S3-5)
+verified-by: pending review (the four mechanics and unlock pacing were chosen by the owner in the sprint-3 interview, decisions S3-1 to S3-5; dead ends D21 and the 3-mechanic ceiling D22 decided 2026-11-08)
 ---
 
 # Jar Mechanics: Design Document
@@ -12,6 +12,9 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** the dead-end check (D21) is *decided 2026-11-08, building in sprint 6*.
+> D22 documents behaviour that is already built.
 
 ---
 
@@ -19,16 +22,18 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **Purpose**: Long-term variety. Every 20 levels a new kind of jar changes how the player plans.
 
-**Scope**: The four special jars, when they appear, how they are placed, and how the player is told about them. Basic pouring is in `pour-rules.md`.
+**Scope**: The four special jars, when they appear, how they are placed, which of their states make a board unwinnable, and how the player is told about them. Basic pouring is in `pour-rules.md`.
 
 **Current Implementation**: Optional per-jar fields on `Jar` (`cap`, `frozen`, `lock`, `funnel`) that the shared pour and seal rules respect, a schedule (`pickMechanics`), a placement step (`applyMechanics`) and UI for each.
 
-**Design Intent** (confirmed by the owner, sprint-3 decisions):
+**Design Intent** (confirmed by the owner, sprint-3 decisions, updated by D1, D8, D21, D22):
 - All four mechanics ship: Narrow, Frozen, Locked lid, One-way funnel (S3-1).
 - They unlock every 20 levels, easiest first: 21, 41, 61, 81 (S3-2).
-- After unlock each appears in about 1 in 3 levels; two can combine after level 100 (S3-3).
+- After unlock each appears in about 1 in 3 levels (S3-3); from level 45 that chance ramps to 1 in 2 by level 120 (D1, `level-generation.md` §3). Two rolled mechanics can combine from level 101.
+- **Up to 3 mechanics on one level from level 101** (D22): the spare-jar swap of the D1 ramp can add a narrow or funnel to a level that rolled two. This is part of the ramp, not an accident.
 - A Saturday daily features one mechanic (S3-4).
 - Frozen jars thaw when any jar seals (S3-5).
+- **The game says when a mechanic has made the board unwinnable**, for the cases it can be certain of (D21).
 
 ---
 
@@ -38,26 +43,40 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 | Mechanic | Debut | Rule |
 |---|---|---|
-| **Narrow jar** | Level 21 | An *extra* empty jar with its own capacity of 2 (`mechanics.list[narrow].cap`). It never seals, so it has to end the level empty. Pours into it stop when it holds 2 units |
+| **Narrow jar** | Level 21 | An *extra* empty jar with its own capacity of 2 (`mechanics.list[narrow].cap`). It never seals (D4), so it has to end the level empty. Pours into it stop when it holds 2 units |
 | **Frozen jar** | Level 41 | One filled jar (`count: 1`) starts iced: no pouring in or out. When *any* jar seals, every frozen jar thaws at once |
 | **Locked lid** | Level 61 | One filled jar gets a padlock in a colour that is **not** inside that jar. It is closed until a jar of the lock's colour is sealed |
-| **One-way funnel** | Level 81 | An *extra* empty jar you can pour into but never out of. It seals normally when full of one colour at normal capacity, so a mixed funnel is a dead end (undo, shuffle and the extra jar still help) |
+| **One-way funnel** | Level 81 | An *extra* empty jar you can pour into but never out of. It seals normally when full of one colour at normal capacity, so a funnel holding two colours is a dead end (below) |
 
-**Schedule** (`pickMechanics`):
+**Schedule** (`pickMechanics`, the *rolled* mechanics):
 - A level equal to a mechanic's `unlockAt` always gets exactly that mechanic (its debut).
-- Every 10th level (tall-jar challenge) gets no mechanic. Decided 2026-11-08: from level 100, tall-jar levels can get a mechanic with the same chance as normal levels (**built in sprint 5**).
-- Any other level with at least one unlocked mechanic gets one with probability 0.34, chosen evenly from the unlocked ones. Decided 2026-11-08 (difficulty ramp, M3): this chance rises toward 0.5 by level 120 (**built in sprint 5**).
+- Every 10th level (tall-jar challenge) gets no mechanic before level 100. From level 100, tall-jar levels can get a mechanic with the same chance as normal levels (D8, **built in sprint 5**).
+- Any other level with at least one unlocked mechanic gets one with the mechanic chance, chosen evenly from the unlocked ones. The chance is 0.34 up to level 45 and ramps to 0.5 at level 120 (D1, **built in sprint 5**; formula in `level-generation.md` §3).
 - From level 101, a second, different mechanic is added with probability 0.45.
 - The draw is seeded by `(mechanics.salt, level)`, so a level always has the same mechanics.
 
+**Mechanics per level** (D22): the spare-jar swap (`level-generation.md` §2.1) runs after `pickMechanics` and, from level 60, can replace one spare with a narrow jar (or, from 81, a narrow jar or a funnel). So the most special jar types on one level are:
+
+| Levels | Rolled | Plus spare swap | Most in total |
+|---|---|---|---|
+| 1–20 | 0 | 0 | 0 |
+| 21–59 | 0–1 | 0 | 1 |
+| 60–100 | 0–1 | 0–1 | 2 |
+| 101+ | 0–2 | 0–1 | **3** (for example frozen + locked + narrow) |
+
 **Placement** (`applyMechanics`): runs after the normal deal, with its own random stream (`mixSeed(seed, 0xa11ce)`), so a level that gets no mechanic keeps exactly the board it had before mechanics existed (fixture `tests/fixtures/plain-boards.json`). Narrow and funnel append an extra jar. Frozen and locked pick a random filled jar that is not already frozen or locked.
 
+**Dead ends** (D21, *decided 2026-11-08, building in sprint 6*): these states can never be won, so the game reports them (`pour-rules.md` §2.1 "Dead end") even while pours remain. Only these certain cases are reported:
+1. **Mixed funnel**: a funnel holds two or more colours. It can't be poured from and can't seal, so the level can't end.
+2. **Lock that can't open**: a locked jar whose key colour can no longer be sealed. The certain case is when units of the key colour sit in a mixed funnel (case 1), so a full jar of that colour can never be made.
+The stuck banner then says "This board can't be won now: Undo or Restart" (`feel-audio-ui.md`). Undo and Restart are free (D19).
+
 **Player-facing**:
-- First time a mechanic appears (in a level or a daily) a "New jar!" card explains it. Settings → Jar guide lists all four, showing "Unlocks at level N" for ones not met yet.
+- First time a mechanic appears (in a level or a daily) a "New jar!" card explains it. Settings → Jar guide lists all four, showing "Unlocks at level N" for ones not met yet. If a debut level falls back to a board without its mechanic, the card waits for the next level that has it (GA-LG-6 default, `level-generation.md`).
 - Tapping a jar that can't be used shakes it and shows a one-line reason.
 - Thawing and unlocking play an effect and a toast ("Thawed!", "Unlocked!").
 - In colour patterns mode a padlock also shows the lock colour's pattern.
-- Screen readers hear each jar's state ("frozen", "locked until teal is sealed", "narrow", "one-way funnel").
+- Screen readers hear each jar's state ("frozen", "locked until lagoon is sealed", "narrow", "one-way funnel"); the lock colour is spoken by its palette id.
 
 ### 2.2 State and Data
 
@@ -69,8 +88,8 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 ### 2.3 Integration Points
 
-- **Depends on**: `pour-rules.md`, `level-generation.md` (placement is part of generation; every result is solver-checked).
-- **Depended on by**: `daily-puzzle.md` (Saturday), `session-boosters.md` (shuffle and hint respect jar states), `feel-audio-ui.md` (drawing, toasts).
+- **Depends on**: `pour-rules.md`, `level-generation.md` (placement is part of generation; every result is solver-checked; the spare swap adds jars).
+- **Depended on by**: `pour-rules.md` (dead-end cases), `daily-puzzle.md` (Saturday), `session-boosters.md` (shuffle and hint respect jar states; dead-end status), `feel-audio-ui.md` (drawing, toasts, stuck banner), `save-data.md` (`seenMechanics`).
 
 ---
 
@@ -79,9 +98,10 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
 | Debut | `level == unlockAt` gives exactly that mechanic | `unlockAt`: narrow 21, frozen 41, locked 61, funnel 81 | Level 41 always has one frozen jar and nothing else |
-| Chance of a mechanic | `P = 0.34` for a non-challenge level with at least one mechanic unlocked | `chance` | Over levels 22–600, between 25% and 45% of levels have one (tested) |
+| Chance of a mechanic | `P(level)` = 0.34 to level 45, `0.34 + 0.16·(level − 45)/75` to 120, 0.5 after (D1; owned by `level-generation.md` §3) | `chance`, `ramp.mechanicChance` | Level 82: 0.42. Past level 120 the test asserts 42–58% of non-challenge levels have a rolled mechanic |
 | Which mechanic | uniform over the unlocked ones | | At level 45 (narrow, frozen unlocked): 50% each |
 | Second mechanic | `P = 0.45` when `level ≥ 101` and at least two are unlocked, a different one | `comboFrom`, `comboChance` | A level 120 board can be locked + narrow |
+| Most mechanics | `rolled (≤ 2 from 101) + swap (≤ 1 from 60)` | | Level 101+: up to 3 (D22) |
 | Jars added | narrow +1, funnel +1, frozen 0, locked 0 | | A narrow level has `colours + spare + 1` jars |
 | Narrow capacity | 2 | `cap` | |
 | Frozen count | 1 jar | `count` | |
@@ -95,16 +115,21 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 - ✅ A narrow jar can't seal, so a level can't be won with a full narrow jar.
 - ✅ A whole one-colour jar moved to an empty jar is only treated as a pure swap when both jars are the same kind (a swap into a narrow or funnel jar is real progress).
 - ✅ A lock never uses a colour already inside its own jar.
-- ✅ Every generated board, with its mechanics, is proven winnable by the solver before the player sees it; levels 1–500 generate with no failures (worst 196 ms).
-- ✅ A funnel filled with mixed colours leaves the board stuck: the stuck message appears and undo is available.
+- ✅ Every generated board, with its mechanics, is proven winnable by the solver before the player sees it (generation timing is owned by `level-generation.md` §3).
 - ✅ Shuffle never moves the sand of sealed, frozen, locked or funnel jars; the solver prunes duplicate empty jars per kind.
+- ✅ Up to 3 mechanics on one level from 101 (D22): allowed by design and covered by the solver proof.
+
+**Decided 2026-11-08, building in sprint 6**:
+- **A funnel filled with mixed colours** makes the level unwinnable for good. Before D21 the stuck message appeared only once no useful move was left, so a player could keep pouring on a lost board with no signal. With D21 the stuck banner shows "This board can't be won now: Undo or Restart" as soon as the funnel holds two colours. The same applies to a lock whose key colour is trapped in a mixed funnel.
 
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
+- ⚠️ A debut level from 60 up can also get the spare-swap narrow jar, so its new mechanic is not always alone (GA-LG-7; no rule yet).
 
 **Unclear**:
-- ✅ Decided 2026-11-08: keep as built. Everyone gets the same Saturday board; a player meeting a mechanic early sees its intro card first.
-- ✅ Decided 2026-11-08: narrow jars never seal and must end the level empty.
+- ✅ Decided 2026-11-08 (D2): keep as built. Everyone gets the same Saturday board; a player meeting a mechanic early sees its intro card first.
+- ✅ Decided 2026-11-08 (D4): narrow jars never seal and must end the level empty.
+- ✅ Decided 2026-11-08 (D22): up to 3 mechanics per level from 101.
 
 ---
 
@@ -114,7 +139,7 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **Design Dependencies**: `pour-rules.md`, `level-generation.md`, `daily-puzzle.md`, `session-boosters.md`, `feel-audio-ui.md`, `save-data.md` (remembers which intro cards were shown).
 
-**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`.
+**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
 
 ---
 
@@ -122,9 +147,9 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **What Exists** (covered in `tests/unit/core/mechanics.test.ts` and `tests/unit/core/placement.test.ts`):
 - ✅ Narrow, frozen, locked and funnel jars obey the rules in 2.1.
-- ✅ Levels 1–20 have no mechanics; debuts are on levels 21, 41, 61, 81; every 10th level is plain.
-- ✅ Between 25% and 45% of non-challenge levels after unlock have a mechanic; combos appear only from level 101.
-- ✅ Levels without a mechanic keep their exact pre-mechanics boards (levels 1–80 fixture).
+- ✅ Levels 1–20 have no mechanics; debuts are on levels 21, 41, 61, 81; tall-jar levels below 100 have no mechanic.
+- ✅ The mechanic chance follows the ramp: past level 120, 42–58% of non-challenge levels have a rolled mechanic; combos appear only from level 101.
+- ✅ Levels without a mechanic keep their exact pre-mechanics boards (plain levels 1–59 fixture).
 - ✅ Mechanic levels are winnable by following hints.
 - ✅ Every Saturday for 8 weeks has exactly one mechanic, rotating through all four; other days are plain.
 
@@ -132,16 +157,19 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 - [x] All four mechanics implemented, tested and documented.
 - [x] Open questions answered (2026-11-08).
 - [x] Tall-jar mechanics from level 100 and the rising mechanic chance built and tested.
+- [ ] D21: a mixed funnel, and a lock whose key colour is in a mixed funnel, are reported as dead ends while pours remain (tests); the banner text is screenshotted.
+- [ ] D22: a test bounds `levelSpec(level).mechanics.length` (rolled plus swap) at 3 from 101 and 2 before.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-None open: Saturday stays as built, and narrow jars never seal.
+None open: Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reported (D21), up to 3 mechanics (D22).
 
 ### Flagged Follow-Up Work
 - [x] Mechanics on tall-jar levels from level 100, with tests (a lock is only placed in a jar missing its key colour; otherwise the deal is re-dealt).
 - [x] Mechanic chance ramps to 0.5 by level 120.
+- [ ] Build the D21 dead-end check (sprint 6), then mark it built here.
 - Note: from level 60 a narrow jar or funnel can also appear as the *spare-jar swap* (`level-generation.md`).
 
 ---
@@ -151,3 +179,4 @@ None open: Saturday stays as built, and narrow jars never seal.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; mechanic rules and pacing confirmed by the owner in sprint 3 |
+| 2026-11-08 | Claude (sprint 6, F9) | Mechanic chance is the D1 ramp, with the tested band (GA-JAR-1); D22 up to 3 mechanics from 101 with a per-band table (GA-JAR-2); D21 dead ends replace the overclaimed "mixed funnel leaves the board stuck" (GA-JAR-3); every-10th-level and fixture range updated (GA-JAR-4); timing figure left to level-generation (GA-JAR-5); "teal" → "lagoon" (GA-JAR-6); GA-LG-6 default noted on the intro card |

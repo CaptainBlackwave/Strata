@@ -2,7 +2,7 @@
 status: reverse-documented
 source: src/core/economy.ts, src/config/game-config.json, src/ui/main.ts
 date: 2026-11-08
-verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11-08)
+verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11-08; free Undo D19 and deferred targets D23 decided 2026-11-08)
 ---
 
 # Economy: Design Document
@@ -12,6 +12,9 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** D19 (free Undo) is *decided 2026-11-08, building in sprint 6*. Until it lands,
+> the code still gives 5 Undo charges, prices Undo at 40 coins and puts 1 Undo charge in each set reward.
 
 ---
 
@@ -19,14 +22,16 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 
 **Purpose**: Give play a reward and give boosters and scenes a price, so choices have weight.
 
-**Scope**: The wallet (coins and booster charges), level rewards, booster prices. Streak coins, set rewards and scene prices are listed here for the coin flow but owned by `daily-puzzle.md`, `shell-collection.md` and `scenes.md`.
+**Scope**: The wallet (coins and booster charges), level rewards, booster prices. Streak coins, set rewards and scene prices are listed here for the coin flow but owned by `daily-puzzle.md`, `shell-collection.md` and `scenes.md`. This document owns the "scene cost in levels" figure; `scenes.md` links to it.
 
 **Current Implementation**: Pure functions over an immutable `Wallet` (`newWallet`, `spendBooster`, `buyBooster`, `levelReward`, `addCoins`, `addBoosters`). All numbers come from `game-config.json`.
 
-**Design Intent** (`design/competitive-roadmap.md` D1–D5):
-- Coins are earned **only by playing**: no purchases, ads, lives or energy.
-- Boosters are limited but earnable: stored charges first, then coins.
+**Design Intent** (`design/competitive-roadmap.md` roadmap R1–R3; D19):
+- Coins are earned **only by playing**: no purchases, ads, lives or energy (roadmap R1, R2).
+- Shuffle, Extra Jar and Hint are limited but earnable: stored charges first, then coins (roadmap R3).
+- **Undo is free and unlimited** (D19): it has no charges, no price and is not in any reward. *Decided 2026-11-08, building in sprint 6.*
 - **A level pays coins on its first clear only; replays pay nothing** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (`clearReward`, M1).
+- **Targets deferred** (D23): no reward or price is tied to a target yet. Every value below is a first estimate until a later balance sprint sets targets (GA-ECON-1, GX-11 stay open, owner-acknowledged).
 
 ---
 
@@ -34,25 +39,39 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 
 ### 2.1 Core Mechanics
 
-- **New player**: 100 coins; charges Undo 5, Shuffle 3, extra Jar 3, Hint 3.
-- **Using a booster** (`spendBooster`): if a charge is stored, spend one charge and no coins; otherwise pay the booster's coin price; if neither is possible, refuse and change nothing.
-- **Level reward** (`levelReward`): base reward, plus a bonus if Perfect (`session-boosters.md`), plus a bonus on tall-jar levels. The tutorial pays nothing.
+- **New player**: 100 coins; charges Shuffle 3, extra Jar 3, Hint 3. Undo needs no charges (D19; today's code still gives 5).
+- **Using a booster** (`spendBooster`): Undo never spends anything (D19). For Shuffle, Jar and Hint: if a charge is stored, spend one charge and no coins; otherwise pay the booster's coin price; if neither is possible, refuse and change nothing.
+- **Level reward** (`levelReward`): base reward, plus a bonus if Perfect (`session-boosters.md`), plus a bonus on tall-jar levels (`LevelSpec.challenge`, `level-generation.md`). The tutorial pays nothing.
 - **First clear only** (`clearReward`): the reward is paid only when the level is at or beyond the player's progress; a replay pays 0 and the win card says "Already cleared: no coins this time".
-- **Coin sinks**: boosters at zero charges (40 / 80 / 120 / 60), scenes (300 / 500 / 800).
-- **Coin sources**: level rewards, daily streak coins (30–100), shell-set rewards (150 plus one of each booster), the post-collection milestone (50).
+
+**Coin and charge faucets** (every source, with its rate):
+
+| Faucet | Pays | Rate | Ends? |
+|---|---|---|---|
+| Level first clear | 20, +10 if Perfect, +30 on a tall-jar level (every 10th) | once per level number | no (levels are endless) |
+| Daily streak coins | `min(100, 30 + 10·(streak − 1))` | once per UTC date, counted solves only (`daily-puzzle.md`) | no |
+| Shell from a level | a shell (no coins by itself) | first clear of every 5th level | after 40 shells, see below |
+| Shell from a daily | a shell | every counted daily solve (not replays, not out-of-order) | after 40 shells, see below |
+| Set reward | 150 coins + 1 Shuffle, 1 Jar, 1 Hint charge (D19 removes the Undo charge) | the shell that completes a set: 8 sets in total | yes: 1,200 coins and 8 charges of each booster, lifetime |
+| Post-collection bonus | 50 coins | every 5th-level first clear **and** every counted daily solve once all 40 shells are owned | **no: it recurs forever** |
+| Starting wallet | 100 coins, 3 / 3 / 3 charges | once | yes |
+
+A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It pays no level reward, Perfect bonus or tall-jar bonus, even on the tall-jar Sunday (`challenge: true`).
+
+**Coin sinks**: Shuffle 80, Jar 120, Hint 60 at zero charges (repeatable); scenes 300 / 500 / 800 (one-time). Undo is not a sink (D19).
 
 **Player-facing**: a coin counter in the HUD and on the home screen, a coin count-up on the win card, a price shown on a booster's badge when its charges run out, toasts such as "Used 60 coins" and "Needs 80 coins. Clear levels to earn more."
 
 ### 2.2 State and Data
 
-- `Wallet`: `coins`, `boosters {undo, shuffle, extraJar, hint}` (charges).
+- `Wallet`: `coins`, `boosters {undo, shuffle, extraJar, hint}` (charges). `undo` stays in old saves and is ignored once D19 is built.
 - `buyBooster` (buy one stored charge for its price) is implemented and tested but **no screen calls it**.
 
-**Persistence**: the wallet is saved after every change (`save-data.md`). Coins are floored and clamped at 0 when added.
+**Persistence**: the wallet is saved after every change (`save-data.md`). `addCoins` floors the amount and ignores a negative amount; the balance itself can't go below 0 because spending is refused when coins are short. A save with negative or invalid coins is repaired on load (`save-data.md`).
 
 ### 2.3 Integration Points
 
-- **Depends on**: `session-boosters.md` (Perfect, booster use), `jar`-level data for the tall-jar flag (`level-generation.md`).
+- **Depends on**: `session-boosters.md` (Perfect, booster use), `level-generation.md` (the tall-jar flag, `LevelSpec.challenge`).
 - **Depended on by**: `daily-puzzle.md`, `shell-collection.md`, `scenes.md` (all add or spend coins), `feel-audio-ui.md` (HUD, win card), `save-data.md`, `player-profile.md` (counts coins credited by play as "Coins earned").
 
 ---
@@ -62,9 +81,9 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
 | Level reward | `20 + 10·[perfect] + 30·[tall-jar level]` | `perfect` and `tall-jar` are 0 or 1 | Ordinary clear 20; Perfect 30; Perfect tall-jar level 60 |
-| Booster use | `charge > 0 ? −1 charge : coins ≥ price ? −price coins : refused` | price: Undo 40, Shuffle 80, Jar 120, Hint 60 | Hint at 0 charges with 100 coins → 40 coins left |
-| Price in levels | `price / coinsPerLevel` | | Undo 2 levels, Hint 3, Shuffle 4, Jar 6 (kept between 2 and 8 by a test) |
-| Scene cost in levels | `price / reward` | `reward` = 20 (plain clear) or 30 (Perfect clear) | Dawn 300: 15 plain or 10 Perfect clears. Sunset 500: 25 or 17. Moonlit 800: 40 or 27 |
+| Booster use | Undo: free. Others: `charge > 0 ? −1 charge : coins ≥ price ? −price coins : refused` | price: Shuffle 80, Jar 120, Hint 60 | Hint at 0 charges with 100 coins → 40 coins left |
+| Price in levels | `price / coinsPerLevel` | | Hint 3, Shuffle 4, Jar 6 (each priced booster kept between 2 and 8 by a test) |
+| Scene cost in levels (level income only) | `price / reward` | `reward` = 20 (plain clear) or 30 (Perfect clear); ignores streak, set and tall-jar income, so it overstates the real cost | Dawn 300: 15 plain or 10 Perfect clears. Sunset 500: 25 or 17. Moonlit 800: 40 or 27 |
 
 ---
 
@@ -75,15 +94,18 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 - ✅ Insufficient coins at zero charges: refused, wallet unchanged, price toast shown.
 - ✅ The wallet is never mutated in place (immutability tested).
 - ✅ Invalid or negative coin amounts and charge counts in a save are repaired (`save-data.md`).
-
 - ✅ **Replays pay nothing** (M1, fixed 2026-11-08): `clearReward` pays only when `level >= nextLevel`. Verified in the browser: replaying level 3 with progress at level 5 left coins at 100.
+- ✅ `?level=N` is **replay only** (D3, **built in sprint 5**): `launchLevel` opens at most the player's current level. Verified: `?level=100` with progress at level 5 opens level 5.
+
+**Decided 2026-11-08, building in sprint 6**:
+- **Undo costs nothing** (D19), so a player with 0 coins and 0 charges can always undo. Restart was the free substitute for a paid Undo; that workaround is gone.
 
 **Not Yet Handled**:
-- ✅ `?level=N` is **replay only** (**built in sprint 5**): `launchLevel` opens at most the player's current level. Verified: `?level=100` with progress at level 5 opens level 5.
+- ⚠️ After about level 60, coins have only one repeatable sink (boosters). A player who buys none accumulates coins with nothing left to buy (GX-11). Deferred by D23.
 
 **Unclear**:
-- ✅ Decided 2026-11-08: no shop for now. `buyBooster` stays unexposed.
-- ⚠️ The long-run balance (coins per hour against scene and booster prices) has not been measured; the numbers are first estimates (balance pass pending).
+- ✅ Decided 2026-11-08: no shop for now (D7). `buyBooster` stays unexposed.
+- ⚠️ The long-run balance (coins per hour against scene and booster prices) has not been measured; the numbers are first estimates. **Deferred by D23** to a later balance sprint.
 
 ---
 
@@ -91,9 +113,9 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 
 **Technical Dependencies**: none beyond types.
 
-**Design Dependencies**: `session-boosters.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `feel-audio-ui.md`, `save-data.md`, `level-generation.md`.
+**Design Dependencies**: `session-boosters.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `feel-audio-ui.md`, `save-data.md`, `level-generation.md`, `player-profile.md`.
 
-**Content Dependencies**: `economy` (`startCoins` 100, `coinsPerLevel` 20, `perfectBonus` 10, `challengeBonus` 30), `boosters` (`start` and `price` for each).
+**Content Dependencies**: `economy` (`startCoins` 100, `coinsPerLevel` 20, `perfectBonus` 10, `challengeBonus` 30), `boosters` (`start` and `price` for Shuffle, Jar and Hint; Undo's entry retired by D19), `collection.setReward`, `collection.coinsWhenComplete`.
 
 ---
 
@@ -103,24 +125,25 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 - ✅ The starting wallet comes from config.
 - ✅ A booster spends a stored charge first and no coins; at zero charges it spends coins; with neither it refuses and returns the same wallet object.
 - ✅ Rewards: base, Perfect bonus and tall-jar bonus add as in the formula.
-- ✅ Every booster costs between 2 and 8 levels' coins.
-
+- ✅ Every priced booster costs between 2 and 8 levels' coins.
 - ✅ A replay of a cleared level pays nothing; winning level 1 twice raises coins once (`clearReward` tests).
 
 **Definition of Done**:
 - [x] Replay reward gated on first clear, with a test (win level 1 twice: coins rise once).
-- [ ] A balance pass (`/balance-check`) on coin income against prices.
+- [ ] D19: Undo spends nothing at any wallet state; a new wallet and the set reward carry no Undo charges (tests).
+- [ ] A balance pass (`/balance-check`) on coin income against prices, once targets exist (deferred, D23).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. What is the target time to earn each scene? (balance pass)
+1. What is the target time to earn each scene, and does coin need a long-term sink after level 60? **Deferred by D23** to a later balance sprint (GA-ECON-1, GX-11, owner-acknowledged).
 
 ### Flagged Follow-Up Work
 - [x] In `main.ts` `showWin`, pay only on a first clear (`clearReward`).
 - [x] Clamp `?level=N` to the player's progress (`launchLevel`, tested and verified in the browser).
-- [ ] Run `/balance-check` on the economy.
+- [ ] Build D19 (sprint 6), then mark it built here.
+- [ ] Run `/balance-check` on the economy after targets are set (D23).
 
 ---
 
@@ -130,3 +153,4 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; replay-coin rule confirmed by the owner |
 | 2026-11-08 | Claude | M1 fixed: replays pay nothing (`clearReward`) |
+| 2026-11-08 | Claude (sprint 6, F9) | D19 free Undo and D23 deferred targets recorded; full faucet table incl. daily shells, recurring post-collection bonus and charge faucets (GA-ECON-2); roadmap cited as R1–R3 (GX-8, GA-ECON-6); scene cost labelled level income only (GA-ECON-3) and owned here (GX-16); `addCoins` wording (GA-ECON-4); tall-jar flag reference and daily payout stated (GA-ECON-5); `?level=N` item moved to Handled |
