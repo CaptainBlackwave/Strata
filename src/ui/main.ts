@@ -143,6 +143,8 @@ const returning = new Set<number>();
 let toastTimer = 0;
 let hintTimer = 0;
 let restartTimer = 0; // Restart's second-tap window (F6); declared before boot uses it
+let armedBooster: BoosterId | null = null; // a coin purchase waiting for its second tap (UX-board-7)
+let boosterTimer = 0;
 const audio = new GameAudio(save.settings);
 const shuffleRng = createRng(Date.now() >>> 0);
 /** Background generation of upcoming levels (sprint 8 P4, D46); declared before boot uses it. */
@@ -179,12 +181,18 @@ if (qaLevel) {
 
 let restoreArmed = false;
 
+/**
+ * Opens the save-code sheet (UX-settings-6): this device's code is read-only with Copy, and
+ * Restore reads only the separate, empty paste box, so it never warns about your own progress.
+ */
 function openTransfer(opener: FocusTarget | null = null): void {
   $<HTMLTextAreaElement>('transfer-code').value = exportSave(save);
-  $('transfer-status').textContent = t.saveCodeHelp;
+  $<HTMLTextAreaElement>('transfer-paste').value = '';
+  $('copy-status').textContent = t.saveCodeHelp;
+  $('transfer-status').textContent = t.restoreHelp;
   restoreArmed = false;
   $('btn-restore-code').textContent = t.restoreCode;
-  openLayer($('transfer'), $('transfer-code'), opener);
+  openLayer($('transfer'), $('btn-copy-code'), opener);
 }
 
 async function copySaveCode(): Promise<void> {
@@ -192,20 +200,21 @@ async function copySaveCode(): Promise<void> {
   box.value = exportSave(save);
   try {
     await navigator.clipboard.writeText(box.value);
-    $('transfer-status').textContent = t.codeCopied;
+    $('copy-status').textContent = t.codeCopied;
   } catch {
     box.select(); // clipboard blocked: leave it selected for a manual copy
-    $('transfer-status').textContent = t.codeSelectManually;
+    $('copy-status').textContent = t.codeSelectManually;
   }
 }
 
 /** Restores from the pasted code. The first tap asks for confirmation; the second replaces progress. */
 function restoreSaveCode(): void {
-  const imported = importSave($<HTMLTextAreaElement>('transfer-code').value, config);
+  const pasted = $<HTMLTextAreaElement>('transfer-paste').value;
+  const imported = pasted.trim() ? importSave(pasted, config) : null;
   if (!imported) {
     restoreArmed = false;
     $('btn-restore-code').textContent = t.restoreCode;
-    $('transfer-status').textContent = t.codeInvalid;
+    $('transfer-status').textContent = pasted.trim() ? t.codeInvalid : t.codeEmpty;
     audio.play('nope');
     return;
   }
@@ -222,6 +231,7 @@ function restoreSaveCode(): void {
   audio.configure(save.settings);
   applyTheme(currentTheme());
   closeLayer($('transfer'), false);
+  closeLayer(settingsEl, false); // the sheet was opened over Settings
   showToast(t.restored);
   startLevel(save.level);
   showHome();
@@ -293,6 +303,12 @@ function renderScenes(): void {
       const inUse = owned && currentTheme() === theme.id;
       status.textContent = inUse ? t.sceneInUse : owned ? t.sceneOwned : String(theme.price);
       status.classList.toggle('price', !owned);
+      if (!owned) {
+        const unit = document.createElement('span'); // "300 coins", not a bare number (UX-scenes-3)
+        unit.className = 'sr-only';
+        unit.textContent = ` ${t.coins}`;
+        status.append(unit);
+      }
       card.addEventListener('click', () => {
         previewing = theme.id;
         applyTheme(theme.id);
@@ -308,6 +324,7 @@ function renderScenes(): void {
   const btn = $<HTMLButtonElement>('btn-scene-buy');
   const inUse = owned && currentTheme() === theme.id;
   btn.hidden = inUse;
+  $('scene-previewing').textContent = previewing !== currentTheme() ? t.scenePreviewing(theme.name) : ''; // UX-scenes-4
   btn.disabled = !owned && save.wallet.coins < theme.price;
   btn.textContent = owned ? t.sceneUse(theme.name) : save.wallet.coins >= theme.price ? t.sceneBuy(theme.name, theme.price) : t.sceneNeed(theme.price, save.wallet.coins);
   $('scenes-auto-note').textContent = t.matchClockNote;
@@ -403,7 +420,7 @@ function introduce(ids: readonly MechanicId[]): void {
   showMechanicCards(fresh, t.newJar);
 }
 
-function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
+function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null, footer = ''): void {
   $('intro-title').textContent = kicker;
   $('intro-list').replaceChildren(
     ...ids.map((id) => {
@@ -417,6 +434,12 @@ function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: F
       return row;
     }),
   );
+  if (footer) {
+    const note = document.createElement('p');
+    note.className = 'intro-keys';
+    note.textContent = footer;
+    $('intro-list').append(note);
+  }
   openLayer($('intro'), $('btn-intro-ok'), opener);
 }
 
@@ -469,7 +492,9 @@ function openCabinet(): void {
   const every = config.collection.everyLevels;
   const remaining = every - (cleared % every);
   $('cabinet-title').textContent = t.cabinetTitle;
-  $('cabinet-next').textContent = save.shells.length < allShells(config).length ? t.nextShell(remaining) : t.allShellsBonus(config.collection.coinsWhenComplete);
+  // Today's unsolved daily also grants a shell, and the complete line is a standing rule, not a payout (UX-cab-3).
+  const dailyOpen = save.tutorialDone && !streakStatus(save.daily, utcDateKey(new Date())).solvedToday;
+  $('cabinet-next').textContent = save.shells.length < allShells(config).length ? t.nextShell(remaining, dailyOpen) : t.collectionDone(config.collection.coinsWhenComplete);
   const sets = $('cabinet-sets');
   sets.replaceChildren(
     ...setProgress(save.shells, config).map((p) => {
@@ -500,7 +525,15 @@ function openCabinet(): void {
         const cell = document.createElement('figure');
         cell.className = has ? 'shell-cell' : 'shell-cell locked';
         cell.innerHTML = `${shellSvg({ ...sh, effect: p.set.effect }, !has)}<figcaption></figcaption>`;
-        cell.querySelector('figcaption')!.textContent = has ? sh.name : t.lockedShell;
+        cell.querySelector('svg')?.setAttribute('aria-hidden', 'true');
+        const caption = cell.querySelector('figcaption')!;
+        if (has) caption.textContent = sh.name;
+        else {
+          // The "?" stays on screen; a screen reader hears "Not found yet" (UX-cab-1, AX-15).
+          caption.innerHTML = '<span aria-hidden="true"></span><span class="sr-only"></span>';
+          caption.children[0].textContent = t.lockedShellMark;
+          caption.children[1].textContent = t.lockedShell;
+        }
         grid.appendChild(cell);
       }
       const note = document.createElement('p');
@@ -619,7 +652,9 @@ let activeSlot: Slot = 'avatar';
 function openEditProfile(): void {
   draft = { ...save.profile };
   activeSlot = 'avatar';
-  $<HTMLInputElement>('name-input').value = draft.name;
+  const input = $<HTMLInputElement>('name-input');
+  input.value = draft.name;
+  input.maxLength = config.profile.name.max; // the rule, not twice it (UX-edit-2)
   $('pick-note').textContent = '';
   renderEdit();
   openLayer($('edit-profile'), $(`tab-${activeSlot}`));
@@ -671,6 +706,8 @@ function renderEdit(focusSlot: Slot | null = null, focusId: string | null = null
   $('name-error').textContent = valid ? '' : t.nameInvalid(config.profile.name.min, config.profile.name.max);
   $<HTMLInputElement>('name-input').setAttribute('aria-invalid', String(!valid));
   $<HTMLButtonElement>('btn-save-profile').disabled = !valid;
+  // On the other tabs the Name panel is hidden, so the reason Save is off shows by Save (UX-edit-1).
+  $('save-error').textContent = !valid && activeSlot !== 'plate' ? t.nameInvalidTab(config.profile.name.min, config.profile.name.max) : '';
   if (focusSlot && focusId) $(`grid-${focusSlot}`).querySelector<HTMLElement>(`[data-id="${focusId}"]`)?.focus();
 }
 
@@ -771,15 +808,24 @@ function showUnlocks(items: SlotItem[]): void {
 async function shareDaily(): Promise<void> {
   const url = location.href.split('?')[0].split('#')[0];
   const text = t.shareText(dailyDate, dailyName, sharePours(save.dailyShare, dailyDate, session.moves), save.daily.streak, url);
-  try {
-    if (navigator.share) {
+  // The outcome shows inside the card, not as a toast under the overlay (UX-win-4).
+  const status = $('share-status');
+  status.textContent = '';
+  if (navigator.share) {
+    try {
       await navigator.share({ text });
+      status.textContent = t.shared;
       return;
+    } catch (e) {
+      if ((e as DOMException).name === 'AbortError') return; // the player closed the share sheet
+      // any other failure: fall back to copying
     }
+  }
+  try {
     await navigator.clipboard.writeText(text);
-    showToast(t.copied);
+    status.textContent = t.copied;
   } catch {
-    /* the share sheet was dismissed, or the clipboard is blocked */
+    status.textContent = t.shareFailed;
   }
 }
 
@@ -888,6 +934,7 @@ function onSessionEvent(e: SessionEvent): void {
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
+      announce(t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) + (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : ''));
       break;
     case 'extraJar':
       buildJars();
@@ -911,6 +958,7 @@ function onSessionEvent(e: SessionEvent): void {
     clearHint(); // a hint describes the old board, so it must not linger onto the new one
     hideStuckBanner(); // the board changed
     disarmRestart();
+    disarmBooster();
     // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
     if (session.status !== 'won' && session.lostReason) showStuckBanner(t.cantWin);
   }
@@ -932,6 +980,7 @@ function requestRestart(): void {
     session.restart();
     return;
   }
+  disarmBooster();
   btn.classList.add('armed');
   btn.setAttribute('aria-label', t.restartArmedLabel);
   showToast(t.restartConfirm);
@@ -1029,6 +1078,8 @@ function showWin(): void {
   $('win-shell').hidden = true;
   $('btn-share').hidden = true;
   $('win-unlocks').replaceChildren();
+  $('share-status').textContent = '';
+  $('btn-win-home').hidden = mode !== 'level'; // a level card can stop here (UX-win-2); the daily's Continue is already Home
   $('win-avatar').hidden = mode === 'tutorial';
   if (mode !== 'tutorial') $('win-avatar').innerHTML = portraitOf(save.profile);
   const before = progressNow();
@@ -1059,6 +1110,7 @@ function showWin(): void {
     $('btn-share').hidden = false;
     btnNext.textContent = t.home;
     if (counts) countUp($('win-coins'), r.reward);
+    $('win-reward-sr').textContent = `${t.reward(r.reward)} ${t.coins}`;
   } else {
     const perfect = session.assists === 0;
     const firstClear = level >= save.level;
@@ -1079,7 +1131,17 @@ function showWin(): void {
     $('win-note').textContent = !firstClear ? t.replayNote : perfect ? t.perfectNote : '';
     btnNext.textContent = t.next;
     if (firstClear) countUp($('win-coins'), reward);
+    $('win-reward-sr').textContent = `${t.reward(reward)} ${t.coins}`;
   }
+  // Focus lands on Continue, so the dialog describes the result: only the parts shown this time (UX-win-3).
+  const described = [
+    'win-text',
+    !$('win-reward').hidden && 'win-reward-sr',
+    $('win-note').textContent && 'win-note',
+    !$('win-shell').hidden && 'win-shell-text',
+    $('win-unlocks').childElementCount > 0 && 'win-unlocks',
+  ].filter(Boolean);
+  winEl.querySelector('.win-card')!.setAttribute('aria-describedby', described.join(' '));
   window.setTimeout(() => openLayer(winEl, btnNext, null), reducedMotion() ? 0 : ANIM.winDelay);
 }
 
@@ -1245,7 +1307,8 @@ function updateHud(): void {
     const usable =
       !over && mode !== 'tutorial' && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
     btn.disabled = !usable;
-    btn.setAttribute('aria-label', free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price));
+    const label = armedBooster === id ? t.boosterArmedLabel(BOOSTER_NAMES[id], price) : free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price);
+    btn.setAttribute('aria-label', label);
   }
   ($('btn-restart') as HTMLButtonElement).disabled = mode === 'tutorial';
 }
@@ -1486,6 +1549,16 @@ function hideToast(): void {
   toastEl.classList.remove('show');
 }
 
+/**
+ * Reads `text` out through the polite live region outside the app root, so no layer makes it
+ * inert (UX-board-5). Clearing it first lets the same sentence be read twice in a row.
+ */
+function announce(text: string): void {
+  const el = $('announce');
+  el.textContent = '';
+  window.setTimeout(() => (el.textContent = text), 50);
+}
+
 function showToast(text: string): void {
   toastEl.textContent = text;
   toastEl.classList.add('show');
@@ -1495,12 +1568,34 @@ function showToast(text: string): void {
 
 // ---- Boosters -----------------------------------------------------------
 
+/** Cancels a booster purchase waiting for its second tap (time out, a board change, another action). */
+function disarmBooster(): void {
+  window.clearTimeout(boosterTimer);
+  if (armedBooster === null) return;
+  toolButtons.find((b) => b.dataset.booster === armedBooster)?.classList.remove('armed');
+  armedBooster = null;
+  updateHud(); // puts the button's normal label back
+}
+
 /** Spends a charge (or coins) and applies the booster; refunds if it couldn't apply. */
 function useBooster(id: BoosterId): void {
   audio.unlock();
   if (busy || returning.size || mode === 'tutorial' || session.status === 'won') return;
   if (id === 'undo' && !session.canUndo) return showToast(t.noUndo);
-  if (id === 'extraJar' && session.extraJarsLeft <= 0) return showToast(t.noJars);
+  // With no charges left, the first tap only names the price and a second tap within the
+  // window buys, like Restart's arm (UX-board-7). Too few coins skips this: the spend is refused anyway.
+  const price = config.boosters[id].price;
+  if (save.wallet.boosters[id] === 0 && !isFreeBooster(id, config) && save.wallet.coins >= price && armedBooster !== id) {
+    disarmBooster();
+    disarmRestart();
+    armedBooster = id;
+    toolButtons.find((b) => b.dataset.booster === id)?.classList.add('armed');
+    updateHud();
+    showToast(t.boosterConfirm(price));
+    boosterTimer = window.setTimeout(disarmBooster, RESTART_CONFIRM_MS);
+    return;
+  }
+  disarmBooster();
   const before = save.wallet;
   const r = spendBooster(save.wallet, id, config);
   if (!r.ok) {
@@ -1574,9 +1669,11 @@ function wireInput(): void {
     if (mode === 'daily') showHome();
     else startLevel(mode === 'tutorial' ? 1 : level + 1);
   });
+  $('btn-win-home').addEventListener('click', showHome); // showHome closes the card
   $('btn-daily').addEventListener('click', startDaily);
   $('btn-scenes').addEventListener('click', () => openScenes());
-  $('btn-scenes-2').addEventListener('click', () => openScenes(closeLayer(settingsEl, false)));
+  // Sub-screens open over Settings, so closing one returns to it with focus on its button (UX-settings-4).
+  $('btn-scenes-2').addEventListener('click', () => openScenes());
   $('btn-scene-buy').addEventListener('click', confirmScene);
   $('btn-close-scenes').addEventListener('click', closeScenes);
   $<HTMLInputElement>('set-auto').addEventListener('change', (e) => {
@@ -1614,20 +1711,21 @@ function wireInput(): void {
   $('btn-home').addEventListener('click', () => leaveBoard(showHome));
   $('btn-keep-playing').addEventListener('click', () => closeLayer($('leave')));
   $('btn-leave').addEventListener('click', confirmLeave);
-  $('btn-savecode').addEventListener('click', () => openTransfer(closeLayer(settingsEl, false)));
+  $('btn-savecode').addEventListener('click', () => openTransfer($('btn-savecode')));
   $('btn-copy-code').addEventListener('click', () => void copySaveCode());
   $('btn-restore-code').addEventListener('click', restoreSaveCode);
   // Editing the code disarms Restore, so a new code always gets its own warning (UX-settings-1).
-  $('transfer-code').addEventListener('input', () => {
+  $('transfer-paste').addEventListener('input', () => {
     if (!restoreArmed) return;
     restoreArmed = false;
     $('btn-restore-code').textContent = t.restoreCode;
-    $('transfer-status').textContent = t.saveCodeHelp;
+    $('transfer-status').textContent = t.restoreHelp;
   });
   $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
-  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, closeLayer(settingsEl, false)));
+  // The Jar guide lists the keys where a keyboard is likely (UX-board-8).
+  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, undefined, matchMedia('(pointer: fine)').matches ? t.keysNote : ''));
   $('btn-intro-ok').addEventListener('click', () => closeLayer($('intro')));
-  $('btn-whatsnew').addEventListener('click', () => openWhatsNew(closeLayer(settingsEl, false)));
+  $('btn-whatsnew').addEventListener('click', () => openWhatsNew());
   $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
   $('btn-tutorial').addEventListener('click', () =>
     leaveBoard(() => {
@@ -1706,8 +1804,12 @@ function wireInput(): void {
     else if (k === 'h') useBooster('hint');
     else if (k === 'r') requestRestart();
     else if (k === 'escape') setSelected(null);
-    else if (/^[0-9]$/.test(k)) {
-      const i = k === '0' ? 9 : Number(k) - 1;
+    else {
+      // 1-9 and 0 pick jars 1-10; with Shift they pick jars 11-20 (UX-board-8). Shift changes
+      // e.key ("!"), so the top-row digit comes from e.code.
+      const digit = /^Digit[0-9]$/.test(e.code) ? e.code.slice(5) : /^[0-9]$/.test(k) ? k : null;
+      if (digit === null) return;
+      const i = (digit === '0' ? 9 : Number(digit) - 1) + (e.shiftKey ? 10 : 0);
       if (i < jarEls.length) onJarTap(i);
     }
   });
@@ -1760,17 +1862,23 @@ function applyStrings(): void {
   $('btn-savecode').textContent = t.saveCode;
   $('transfer-title').textContent = t.saveCode;
   $('btn-copy-code').textContent = t.copyCode;
+  $('code-mine-label').textContent = t.yourCode;
+  $('code-paste-label').textContent = t.pasteCode;
   $('btn-close-transfer').textContent = t.close;
   $('scenes-label').textContent = t.scenes;
   $('btn-scenes-2').textContent = t.scenes;
   $('scenes-title').textContent = t.scenes;
   $('scenes-auto-label').textContent = t.matchClock;
+  $('scenes-auto-help').textContent = t.matchClockOff; // UX-scenes-2
   $('btn-close-scenes').textContent = t.close;
   $('btn-intro-ok').textContent = t.gotIt;
   $('btn-close-settings').textContent = t.close;
+  $('patterns-help').textContent = t.patternsTitle; // UX-settings-5
+  for (const el of document.querySelectorAll<HTMLElement>('.coins-sr')) el.textContent = ` ${t.coins}`; // UX-home-2
   $('home-title').textContent = t.brand;
   $('home-tagline').textContent = t.tagline;
   $('btn-share').textContent = t.share;
+  $('btn-win-home').textContent = t.home;
   $('btn-close-cabinet').title = t.close;
   $('profile-title').textContent = t.profileTitle;
   $('btn-close-profile').title = t.close;

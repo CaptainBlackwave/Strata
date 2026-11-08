@@ -2421,3 +2421,127 @@ body[data-theme='harvestmoon']::before {
   pointer-events: none;
   background: radial-gradient(circle, rgba(246, 194, 106, 0.32) 0 30%, transparent 70%);
 }
+
+/* UX-board-7: a booster waiting for its buy tap is filled like the armed Restart (F6). */
+.tool.armed {
+  color: var(--card);
+  background: var(--coral-text);
+}
+
+/* UX-settings-6: two boxes, "Your code" (read-only) and "Paste a code to restore". */
+.transfer-label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+.transfer-btn {
+  width: 100%;
+  margin-bottom: 4px;
+}
+.transfer-code[readonly] {
+  color: var(--ink-soft);
+}
+
+/* Screen-reader-only text: in the accessibility tree, not drawn. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* UX-win-2: Home beside Continue on level cards. */
+.win-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.win-actions .primary {
+  flex: 2 1 8em;
+  width: auto;
+}
+.win-actions .secondary {
+  flex: 1 1 5em;
+}
+/* UX-win-4: the Share outcome, inside the card. */
+.win-card p.share-status {
+  margin: -2px 0 12px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.win-card p.share-status:empty {
+  margin: 0;
+}
+
+/* UX-settings-5: helper text under a switch's label. */
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 12px;
+}
+.toggle-help {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+/* UX-scenes-4: "Previewing {name}" above Buy/Use. */
+.scene-previewing {
+  margin: 10px 0 4px;
+  text-align: center;
+  font-weight: 800;
+  color: var(--accent-text);
+}
+.scene-previewing:empty {
+  margin: 0;
+}
+
+/* UX-edit-1: the name error, repeated by Save on the other tabs. */
+.save-error {
+  text-align: center;
+}
+.save-error:empty {
+  min-height: 0;
+  margin: 0;
+}
+
+/* UX-board-8: the keyboard line at the foot of the Jar guide. */
+.intro-keys {
+  margin: 4px 0 14px;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  text-align: left;
+}
+
+/* UX-all-6: a light tint on hover, only on devices that can hover (no sticky hover on touch). */
+@media (hover: hover) {
+  .primary:hover:not(:disabled),
+  .secondary:hover:not(:disabled),
+  .tool:hover:not(:disabled),
+  .icon-btn:hover:not(:disabled),
+  .daily-card:hover,
+  .shells-btn:hover,
+  .scene-card:hover,
+  .profile-chip:hover,
+  .shell-set-head:hover,
+  .tab:hover,
+  .pick:hover {
+    filter: brightness(1.06) saturate(1.05);
+  }
+}
+
+/* AX-16: a locked name plate keeps its colours so its name stays readable (it was 2.28:1 at
+   opacity 0.45); the lock icon and a dashed edge mark it instead. */
+.plate-grid .pick.locked > :first-child {
+  filter: none;
+  opacity: 1;
+}
+.plate-grid .pick.locked {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+}
