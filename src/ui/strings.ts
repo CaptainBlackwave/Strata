@@ -3,6 +3,13 @@
  * hardcoded UI text). Only English ships for now. Add a locale by adding a table.
  */
 
+/**
+ * The release the "What's new" card describes (D46, D52). Bump it together with
+ * `whatsNew.lines`; a save whose `seenWhatsNew` differs sees the card once on Home.
+ * A constant here rather than package.json, whose version is not kept up to date.
+ */
+export const WHATS_NEW_VERSION = '0.8.0';
+
 const en = {
   brand: 'Strata',
   tagline: 'Sort the sand. Seal the jars.',
@@ -75,6 +82,19 @@ const en = {
   newJar: 'New jar!',
   gotIt: 'Got it',
   jarGuide: 'Jar guide',
+  /** The "What's new" card: 3-5 short plain lines, shown once per version (D52). */
+  whatsNew: {
+    version: WHATS_NEW_VERSION,
+    title: "What's new",
+    button: "What's new",
+    lines: [
+      'Undo is free now.',
+      'Four new scenes to buy, with more on the way.',
+      "A banner tells you when you're stuck, and hints are clearer.",
+      'Jars are easier to tap, and you can pinch to zoom.',
+      'Sealed jars now show their sand.',
+    ],
+  },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
   thawed: 'Thawed!',
   unlocked: 'Unlocked!',

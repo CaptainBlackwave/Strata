@@ -1425,6 +1425,20 @@ button {
   border-bottom: 0;
   margin-bottom: 8px;
 }
+/* "What's new" card (D46, D52) */
+.whatsnew-title {
+  margin: 2px 0 10px;
+  font-size: 1.25rem;
+}
+.whatsnew-list {
+  margin: 0 0 14px;
+  padding-left: 1.2em;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+.whatsnew-list li + li {
+  margin-top: 6px;
+}
 .intro-row h2 {
   margin: 0 0 2px;
   font-size: 1.125rem;
