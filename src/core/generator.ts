@@ -18,6 +18,42 @@ export interface GeneratedLevel {
 }
 
 /**
+ * Thrown by `generateFromSpec` when no attempt gives a solver-proven deal within the length
+ * cap. `shortest` is the shortest proven deal that was over the cap, if any was found, so
+ * a fallback chain can keep it instead of ending on an unproven board (D36).
+ */
+export class NoDealError extends Error {
+  readonly shortest: GeneratedLevel | undefined;
+  constructor(message: string, shortest: GeneratedLevel | undefined) {
+    super(message);
+    this.name = 'NoDealError';
+    this.shortest = shortest;
+  }
+}
+
+/**
+ * The most solver pours (`solutionLength`) a generated board may need at `level`, from
+ * `generator.pourBands` (owner decision D36, sprint 7 B7): the max of the band with the
+ * largest `from` at or below `level`. A level below every band, which is the daily
+ * (level 0), gets the last band's max, because the daily's hardest weekday boards are
+ * late-game sized. `Infinity` when no bands are configured.
+ * Example: `maxPoursFor(153, config) // 70`
+ */
+export function maxPoursFor(level: number, config: GameConfig): number {
+  const bands = [...(config.generator.pourBands ?? [])].sort((a, b) => a.from - b.from);
+  if (!bands.length) return Infinity;
+  let band = bands[bands.length - 1];
+  if (level >= bands[0].from) for (const b of bands) if (b.from <= level) band = b;
+  return band.max;
+}
+
+/** The shorter of a kept deal and the over-cap deal a caught error carries; the first wins ties. */
+function shorterDeal(kept: GeneratedLevel | undefined, error: unknown): GeneratedLevel | undefined {
+  const found = error instanceof NoDealError ? error.shortest : undefined;
+  return found && (!kept || found.solutionLength < kept.solutionLength) ? found : kept;
+}
+
+/**
  * Deals `colors × capacity` units into `colors` full jars, then adds `spare` empty
  * jars. Each full jar buries `buriedDepth` units from its bottom (its top stays visible).
  */
@@ -45,8 +81,11 @@ export function generateLevel(level: number, config: GameConfig): GeneratedLevel
   // second ordinary spare, then without mechanics. Each step is still solver-proven.
   // Every step but the last is capped by total solver work (generator.stepNodeBudget),
   // which keeps level starts fast and stays identical on every device.
+  // Every step is also capped by length (generator.pourBands, D36). When no step finds a deal
+  // within it, the shortest proven deal any step found is kept (see lastResort).
   const cap = config.generator.stepNodeBudget ?? Infinity;
   const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
+  let shortest: GeneratedLevel | undefined;
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : config.generator.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, config.generator.maxAttempts]);
   if (spec.mechanics.length) tries.push([{ ...spec, spare: 2, mechanics: [] }, config.generator.maxAttempts]);
@@ -54,25 +93,30 @@ export function generateLevel(level: number, config: GameConfig): GeneratedLevel
     try {
       const last = i === tries.length - 1;
       return generateFromSpec(tries[i][0], seed, config, tries[i][1], last ? Infinity : cap, last ? config.generator.solverNodeBudget : perAttempt);
-    } catch {
-      // fall through to the next, easier step
+    } catch (e) {
+      shortest = shorterDeal(shortest, e); // fall through to the next, easier step
     }
   }
-  return lastResort(spec, seed, config);
+  return lastResort(spec, seed, config, shortest);
 }
 
 /**
  * The end of every fallback chain (F7, GA-LG-3, GA-DP-1): a plain deal with one more spare
  * jar, capped like the middle steps, then `fallbackBoard`, which can't fail. Shared by
  * numbered levels and the daily. The returned spec says what was actually built.
+ * Length cap (D36): if that deal is over `maxPoursFor` too, the shortest proven deal seen
+ * (`shortest`, passed in from the earlier steps, or this step's own) is returned instead of
+ * `fallbackBoard`, which is used only when no step proved any board.
  */
-export function lastResort<S extends LevelSpec>(spec: S, seed: number, config: GameConfig): GeneratedLevel & { spec: S } {
+export function lastResort<S extends LevelSpec>(spec: S, seed: number, config: GameConfig, shortest?: GeneratedLevel): GeneratedLevel & { spec: S } {
   const cap = config.generator.stepNodeBudget ?? config.generator.solverNodeBudget;
   const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
   const easier: S = { ...spec, spare: Math.max(2, spec.spare) + 1, mechanics: [] };
   try {
     return generateFromSpec(easier, seed, config, config.generator.maxAttempts, cap, perAttempt) as GeneratedLevel & { spec: S };
-  } catch {
+  } catch (e) {
+    const kept = shorterDeal(shortest, e);
+    if (kept) return kept as GeneratedLevel & { spec: S };
     const plain: S = { ...spec, spare: 2, mechanics: [] };
     const board = fallbackBoard(plain, seed);
     return { spec: plain, board, seed, solutionLength: board.jars.filter((j) => j.units.length).length + 1, attempts: 0 };
@@ -102,8 +146,11 @@ export function fallbackBoard(spec: LevelSpec, seed: number): Board {
 }
 
 /**
- * Deals boards for `spec` from `baseSeed` until one is solver-proven winnable.
- * Shared by numbered levels and the daily puzzle.
+ * Deals boards for `spec` from `baseSeed` until one is solver-proven winnable in at most
+ * `maxPoursFor(spec.level)` pours (D36). A proven deal over that cap is rejected like an
+ * unwinnable one and the next attempt is dealt. Shared by numbered levels and the daily.
+ * Throws a `NoDealError` (carrying the shortest over-cap proven deal, if any) when no
+ * attempt succeeds.
  */
 export function generateFromSpec(
   spec: LevelSpec,
@@ -114,6 +161,8 @@ export function generateFromSpec(
   attemptNodeBudget = config.generator.solverNodeBudget,
 ): GeneratedLevel {
   const { maxSealedAtStart } = config.generator;
+  const maxPours = maxPoursFor(spec.level, config);
+  let shortest: GeneratedLevel | undefined; // the shortest proven deal over the length cap
   let spent = 0; // solver states across attempts: a deterministic cap on generation time
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const seed = mixSeed(baseSeed, attempt);
@@ -126,11 +175,13 @@ export function generateFromSpec(
     const result = solve(board, Math.min(attemptNodeBudget, totalNodeBudget - spent));
     spent += result.nodes;
     if (result.solvable === true) {
-      return { spec, board, seed, solutionLength: result.path.length, attempts: attempt + 1 };
+      const found: GeneratedLevel = { spec, board, seed, solutionLength: result.path.length, attempts: attempt + 1 };
+      if (found.solutionLength <= maxPours) return found;
+      if (!shortest || found.solutionLength < shortest.solutionLength) shortest = found;
     }
     if (spent >= totalNodeBudget) break;
   }
-  throw new Error(`No solvable board for ${spec.level > 0 ? `level ${spec.level}` : 'this spec'} after ${maxAttempts} attempts`);
+  throw new NoDealError(`No solvable board within ${maxPours} pours for ${spec.level > 0 ? `level ${spec.level}` : 'this spec'} after ${maxAttempts} attempts`, shortest);
 }
 
 /**

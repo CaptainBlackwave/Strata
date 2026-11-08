@@ -4,8 +4,10 @@
 
 ```sh
 npx vite-node tools/balance/difficulty-sweep.ts          # levels 1-200, 3 timing runs per level
-SWEEP_TO=300 SWEEP_RUNS=1 npx vite-node tools/balance/difficulty-sweep.ts
+SWEEP_TO=500 SWEEP_RUNS=1 SWEEP_CSV=/tmp/sweep500.csv npx vite-node tools/balance/difficulty-sweep.ts
 ```
+
+`SWEEP_CSV` sends a long run somewhere other than the committed 1–200 CSV.
 
 It writes `production/qa/sprint-7/difficulty-sweep.csv` (one row per level) and prints the band
 summary this report is built from. It takes about 15–30 s. Every number except generation time is
@@ -21,6 +23,7 @@ off. The fallback step is read from the spec that `generateLevel` returns.
 
 | Column | Meaning |
 |---|---|
+| `poursCap` | The length cap for the level, `maxPoursFor(level)` from `generator.pourBands` (B7, D36). Added in B7. |
 | `pours` | `solutionLength`: the length of the path the DFS solver found. It is **not optimal**: it is the first path found, best-first by a cheap heuristic. |
 | `poursLowerBound` | A cheap floor for any player: every same-colour run on the board must move at least once, except one bottom run per colour. A real optimum lies between this and `pours`. |
 | `solverStates` | States the solver expanded on the proven board. A proxy for how much search the board needs: few safe moves and many dead ends. |
@@ -28,7 +31,10 @@ off. The fallback step is read from the spec that `generateLevel` returns.
 | `fallback` | `none`, `secondSpare`, `noMechanics`, `lastResort+1spare` or `fallbackBoard`: the step of the chain in `generateLevel`. |
 | `genMs` | Median wall time of `generateLevel` over 3 runs, Node on the dev container (desktop class). A phone is probably 3–5× slower. |
 
-## Per-band results
+## Per-band results (B2, before the length cap)
+
+This table is the B2 baseline the owner decided D36 on. For the shipped numbers after the B7
+length cap, see [After the cap](#after-the-cap-b7-d36). The CSV is the after-cap sweep.
 
 | Band | Pours median | p90 | max (level) | Floor median | States median | p90 | max (level) | Gen ms median / max | Mechanics (combos) | Spare swap | Fallbacks |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -119,10 +125,63 @@ units per board, not a smarter solver. From the shape table, about **8–9 colou
 level 40 to "3–5 minutes" (target median ≤ 56, max ≤ 70, which today's curve meets except 153 and
 161). Either way, the approved numbers become the B7 band test.
 
+## After the cap (B7, D36)
+
+The owner chose to keep the boards and change the brief (D36): 1–3 minute bites early, 3–5 minutes
+from level 40. The targets are now config (`generator.pourBands`), and the `max` is enforced at
+generation. A solver-proven deal over its band's max is rejected like an unwinnable one and the
+next attempt is dealt. `tests/unit/core/difficulty-bands.test.ts` generates levels 1–200 and checks
+every band.
+
+**Boards that changed in 1–200.** Four levels, not the two D36 names: 93 and 177 were over 70 as
+well (spike 4 above). All four were re-dealt from their own recipe, with the same spec, the same
+mechanics and no fallback step. Levels 1–59 are byte-identical (every one, not only the plain
+levels the fixture guards).
+
+| Level | Before (pours) | After (pours) | Deal used | Mechanics | Gen ms after |
+|---|---|---|---|---|---|
+| 93 | 72 | 61 | 4th | narrow | 9 |
+| 153 | 73 | 55 | 2nd | narrow (spare swap) | 46 |
+| 161 | 73 | 57 | 2nd | narrow (spare swap) | 66 |
+| 177 | 71 | 66 | 3rd | narrow | 13 |
+
+The daily uses the same cap at the last band's max (70). In a full year of dailies (2026) one date
+changed: 2026-09-26 (Saturday, 71 → 41 pours, 2nd deal). The longest daily is now 68 pours.
+
+**D36 bands after the cap** (levels 1–200):
+
+| Band | Median (target) | p90 | Max (target) | Over max |
+|---|---|---|---|---|
+| 1–20 | 24 (≤ 25) | 35 | 44 (≤ 45) | none |
+| 21–40 | 43 (≤ 45) | 49 | 57 (≤ 58) | none |
+| 41–200 | 53 (≤ 56) | 62 | 70 (≤ 70, level 156) | none |
+
+Only two sweep bands moved: 81–100 now has a max of 62 (94), was 72 (93), and 151–200 has a p90
+of 64 and a max of 70 (156), was 66 and 73. Its median stays 56, and its states median goes from
+260.5 to 252.5. Every other number in the B2 table is unchanged, apart from generation time.
+
+**Headroom.** The 1–20 and 21–40 bands are within a pour of their max (44/45, 57/58), and level
+156 sits exactly on 70. A small change to the curve or the solver could push these over. The band
+test will catch that, and the cap will re-deal levels from 41 on. Levels 1–40 would be re-dealt
+too, which would break the byte-identical guarantee for 1–59.
+
+**Levels 201–500** (one run, `SWEEP_TO=500 SWEEP_RUNS=1`; the 500-row CSV is not committed):
+
+| Band | Pours median | p90 | Max (level) | States median / max | Gen ms median / max | Mechanics (combos) | Fallbacks |
+|---|---|---|---|---|---|---|---|
+| 201–300 | 55 | 64 | 70 (281) | 213 / 4,607 | 7.4 / 607 | 82 (32) | 0 |
+| 301–400 | 55.5 | 64 | 70 (384) | 179.5 / 6,599 | 5.4 / 693 | 84 (32) | 0 |
+| 401–500 | 55 | 64 | 70 (442) | 227 / 9,340 | 9.5 / 660 | 86 (28) | 2 (460, 470, `noMechanics`) |
+
+Over 201–500 the median is 55 (target ≤ 56) and nothing is over 70. Past level 200 the median sits a
+pour under its target, with many levels on the cap. 460 and 470 (tall jars) dropped their mechanics
+with or without the cap: their boards are identical either way.
+
 ## Caveats
 
-- `pours` depends on the solver's move order. A change to `orderedMoves` changes every number, so
-  the band test must be re-baselined whenever the solver changes.
+- `pours` depends on the solver's move order. A change to `orderedMoves` changes every number, and
+  which boards the length cap re-deals, so the band test
+  (`tests/unit/core/difficulty-bands.test.ts`) must be re-baselined whenever the solver changes.
 - `genMs` was measured on one desktop-class container. Treat it as relative.
-- Levels past 200 are not measured. The economy model's regular player reaches level 720 by day 90
-  (see `economy-model.md`), so a sweep to 500 would be worth running once (`SWEEP_TO=500`).
+- Levels 201–500 were swept once (see After the cap). Levels past 500 are not measured. The economy
+  model's regular player reaches level 720 by day 90 (see `economy-model.md`).
