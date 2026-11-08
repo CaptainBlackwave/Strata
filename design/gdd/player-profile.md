@@ -1,0 +1,293 @@
+---
+status: designed (owner interview 2026-11-08, decisions PP-1 to PP-10); not yet built
+source: to be built in src/core/profile.ts, src/ui/avatars.ts, src/ui/main.ts, src/ui/storage.ts, src/config/game-config.json
+date: 2026-11-08
+verified-by: owner interview 2026-11-08
+---
+
+# Player Profile: Design Document
+
+> **Designed, not reverse-documented.** Every rule here was agreed with the owner in the
+> interview of 2026-11-08 (PP-1 to PP-10). The owner's reference screenshots, taken from
+> another game, were used **only for layout and flow** (a stats grid, an edit sheet with tabs
+> and a Save button). No art, characters, names or features were taken from them. The
+> project's CLAUDE.md and decision D5 ("no mascots") apply.
+
+---
+
+## 1. Overview
+
+**Purpose**: give players an identity and a place to see how far they've come. The home screen gets a small avatar chip. Tapping it opens a Profile screen with the player's avatar, frame, name on a name plate, their level and a grid of lifetime stats. An Edit Profile sheet lets them pick an avatar, a frame and a name plate, and change their name.
+
+**Scope**: the home chip, the Profile screen, the Edit Profile sheet, the generated names and name rules, the cosmetics catalog (8 avatars, 6 frames, 6 name plates), the milestone unlocks, five new lifetime counters, the small avatar on the win card and the unlock notice on the win card.
+
+**Out of scope**: online identity, teams, friends or leaderboards (C11 stays deferred), buying cosmetics with coins (PP-7), and showing the name in the daily Share text.
+
+### Owner decisions (interview 2026-11-08)
+
+| # | Decision |
+|---|---|
+| PP-1 | **Entry point**: a round avatar chip with its frame at the top-left of the home screen, with the name on a small plate beside it. It opens Profile |
+| PP-2 | **Profile screen**: a header card (avatar in its frame, the name on its plate, a **Level N** badge, an edit button), then a stats grid |
+| PP-3 | **Stats**: core progress, perfect clears, lifetime totals and scenes (all four groups; the list is in 3.4) |
+| PP-4 | **Avatars**: original **seaside objects** drawn as SVG in the house style. No characters or creatures, so D5 holds |
+| PP-5 | **Names**: a friendly generated name for new players (adjective + seaside noun + 2 digits) with a re-roll button. Players may also type their own: 2–16 characters, letters, numbers and single spaces. The name is kept on this device only |
+| PP-6 | **Name art = name plates**: styled banners behind the name. Every plate has its own fixed colours, so it reads the same in all 8 scenes |
+| PP-7 | **Unlocks are earned by milestones only.** Coins are not involved. Locked items show how to earn them and the player's progress |
+| PP-8 | **Edit sheet**: tabs **Avatar / Frame / Name** (the name field and the plates are on Name). The preview card updates as you tap. **Save** commits. Closing with unsaved changes asks "Discard changes?" |
+| PP-9 | **Reach**: the home chip, a small avatar on the win card, and an unlock notice on the win card when a milestone pays out |
+| PP-10 | **Catalog size**: 8 avatars, 6 frames, 6 plates; about half are open from the start. ("Kite" was proposed as a 9th avatar and dropped) |
+
+---
+
+## 2. Player Fantasy
+
+"This is *my* stall by the sea." The profile is a quiet trophy shelf: a glance shows how many levels you've cleared, how long your streak is and what you've collected. Picking a lighthouse in a driftwood frame is self-expression that you earned by playing, not by paying. It is never a nag and never a store.
+
+---
+
+## 3. Detailed Rules
+
+### 3.1 Home chip
+
+- It sits at the top-left of the home screen, inside the safe area. The avatar is drawn in the selected frame (44 px touch target minimum), with the name on the selected plate beside it.
+- The name truncates with an ellipsis if space runs out. The chip never pushes or overlaps the logo, title, coins or Play.
+- It is a `button`, labelled "Profile: {name}". Enter or Space opens Profile.
+
+### 3.2 Profile screen
+
+- A modal dialog in the same style as the cabinet and scenes sheets, with a close button (×). Escape closes it.
+- **Header card**: the avatar in its frame (large), the name on its plate, a **Level N** badge (N = the level the player is on, `save.level`) and an edit button (✎) that opens the Edit sheet.
+- **Stats grid**: two columns of tiles. Each tile has a small icon, a label and a value. A value of 0 shows "0", not "–", because every stat here has a meaning at 0.
+- At 150% text the grid drops to one column. Nothing overflows horizontally at 320 px.
+
+### 3.3 Edit Profile sheet
+
+- It opens over Profile. At the top is a **preview card** (avatar in its frame, name on its plate) that shows the *draft*, not the saved profile.
+- **Tabs** (`role="tablist"`, arrow keys move between tabs):
+  - **Avatar**: a grid of the 8 avatars.
+  - **Frame**: a grid of the 6 frames, each drawn around the draft avatar.
+  - **Name**: a text field with the draft name, a 🎲 re-roll button and a grid of the 6 plates, each showing the draft name.
+- **Grid items** are radio buttons (`role="radio"` in a `radiogroup`). The selected item has a check badge.
+  - An unlocked item: tapping it selects it in the draft and updates the preview.
+  - A locked item: it is shown dimmed with a lock. Tapping it shows its requirement and progress in a line under the grid, such as "Clear 25 levels · 12/25". It is never selected.
+- **Name field**: the input is checked as you type (3.5). If it is invalid, the field shows why, such as "Use 2–16 letters or numbers", and Save is disabled. Re-roll replaces the draft name with a new generated one.
+- **Save** writes the draft (avatar, frame, plate, name) to the save, closes the sheet and refreshes Profile, the home chip and any open views.
+- **Closing** (× or Escape): if the draft equals the saved profile, it closes at once. Otherwise a small dialog asks "Discard changes?" with **Discard** and **Keep editing**.
+
+### 3.4 Stats
+
+| Stat | Value | Source | New counter? |
+|---|---|---|---|
+| Levels cleared | `save.level − 1` | existing | no |
+| Perfect clears | first clears of a level with no boosters used (D4's Perfect) | `stats.perfectClears` | **yes** |
+| Daily streak | the live streak, as on the home card (`streakStatus(...).current`) | existing | no |
+| Best streak | `daily.best` | existing | no |
+| Dailies solved | daily solves that count (not replays, not out-of-order) | `stats.dailiesSolved` | **yes** |
+| Shells | `owned / 40` | existing | no |
+| Sets completed | `completed / 8` | existing (`setProgress`) | no |
+| Scenes | `owned / total` | existing | no |
+| Total pours | the sum of `moves` of every solved level or daily, replays included | `stats.pours` | **yes** |
+| Coins earned | all coins credited by play: level rewards, daily rewards, set bonuses, the all-shells bonus | `stats.coinsEarned` | **yes** |
+| Boosters used | boosters that were applied (from a charge or bought with coins). Refunded attempts do not count | `stats.boostersUsed` | **yes** |
+
+- New counters start at **0** for every save, including existing players, because the past was never recorded. This is stated once in a footnote under the grid: "Some totals count from this update onwards."
+- The tutorial adds nothing to any counter.
+- Counters are only ever increased, never decreased.
+
+### 3.5 Names
+
+- **Generated name**: `{Adjective} {Noun} {NN}`, for example "Saffron Gull 42". Adjectives and nouns come from two word lists in `src/ui/strings.ts` (they are player-facing text). `NN` is 10–99. The generator takes an injected random source, so tests are deterministic.
+  - Adjectives (16): Saffron, Coral, Sage, Lagoon, Plum, Sandy, Sunny, Breezy, Salty, Golden, Misty, Pebbled, Sea-Glass, Driftwood, Tidal, Calm.
+  - Nouns (16): Gull, Tern, Puffin, Pebble, Dune, Wave, Tide, Cove, Reef, Harbour, Lantern, Kite, Anchor, Sail, Jar, Shell.
+- **A new player** gets a generated name when the save is first created. Existing saves with no name get one on first load after the update.
+- **Typed names**:
+  - **Normalised**: leading and trailing spaces are trimmed and runs of spaces collapse to one.
+  - **Valid if**: 2–16 characters after normalising, and every character is a Unicode letter, a number or a space (`/^[\p{L}\p{N} ]+$/u`). A hyphen is allowed only because generated names use one ("Sea-Glass"), so the rule is `/^[\p{L}\p{N} -]+$/u`.
+  - **Not filtered for words**: the name never leaves the device, so there is no word filter (re-check before the name is ever shared, see Follow-Up).
+- The **Name tab** in the reference had a list of names to pick from. Strata does not keep a name history. The re-roll button is the "pick" path.
+
+### 3.6 Cosmetics catalog and unlocks
+
+All three lists live in `game-config.json` under `profile`. Ids are fixed once shipped, because saves store them. Display names live in the config next to the ids, as shell names do.
+
+**Unlock rule** (`unlock` is `null` for start items): `{ "kind": K, "count": N }`, met when `progress[K] ≥ N`.
+
+| Kind | Progress value |
+|---|---|
+| `levels` | levels cleared (`save.level − 1`) |
+| `perfectClears` | `stats.perfectClears` |
+| `bestStreak` | `daily.best` |
+| `dailiesSolved` | `stats.dailiesSolved` |
+| `shells` | shells owned |
+| `sets` | sets completed |
+
+**Avatars (8)**: original seaside objects, drawn in `src/ui/avatars.ts` as SVG on a round tinted background, in the matte sand palette.
+
+| id | Name | Unlock |
+|---|---|---|
+| `sand-jar` | Sand Jar | start (default) |
+| `beach-hut` | Beach Hut | start |
+| `sailboat` | Sailboat | start |
+| `sun-hat` | Sun Hat | start |
+| `lighthouse` | Lighthouse | clear 25 levels |
+| `sandcastle` | Sandcastle | clear 50 levels |
+| `anchor` | Anchor | complete 1 shell set |
+| `lantern` | Lantern | clear 100 levels |
+
+**Frames (6)**: a ring drawn around the avatar.
+
+| id | Name | Look | Unlock |
+|---|---|---|---|
+| `sand` | Plain Sand | flat sand-coloured ring | start (default) |
+| `rope` | Rope | twisted rope ring | start |
+| `sea-glass` | Sea Glass | frosted sea-glass ring | start |
+| `driftwood` | Driftwood | wood-grain ring | 10 perfect clears |
+| `coral` | Coral | knobbly coral ring | best streak 14 |
+| `gold` | Gold | gold ring with a soft shine | all 40 shells |
+
+**Name plates (6)**: a banner behind the name. Each has a fixed background, edge and ink colour.
+
+| id | Name | Look | Unlock |
+|---|---|---|---|
+| `cream` | Cream | plain cream pill | start (default) |
+| `sand-stripes` | Sand Stripes | three soft sand layers | start |
+| `sea-glass` | Sea Glass | frosted aqua pill | start |
+| `driftwood` | Driftwood Sign | wooden sign with nail dots | clear 75 levels |
+| `wave` | Wave Ribbon | ribbon with a wave edge | 30 dailies solved |
+| `gold-leaf` | Gold Leaf | gold-leaf plaque | complete 4 shell sets |
+
+**Unlocks are derived, not stored.** Whether an item is unlocked is computed from the progress values each time. Nothing extra is saved, and existing players get everything they have already earned the moment the update loads. Items earned this way on load get no notice (3.7).
+
+### 3.7 Win card additions
+
+- **Small avatar**: the player's avatar in its frame, shown small at the top of the win card, in every mode except the tutorial.
+- **Unlock notice**: the set of unlocked items is computed before and after the win's save changes. Each newly unlocked item gets one row in the win card (art + "New avatar: Lighthouse", "New frame: Coral", "New name plate: Wave Ribbon"), under the shell row. It never appears for an item that was already unlocked, so loading an old save shows nothing. Rows use the existing reveal animation and respect reduced motion.
+
+### 3.8 State and Data
+
+- **Save** (`save-data.md`) gains two fields:
+  - `profile: { name: string, avatar: string, frame: string, plate: string }`
+  - `stats: { perfectClears, dailiesSolved, pours, coinsEarned, boostersUsed }` (non-negative integers)
+- **Load and repair** follows the save's field-by-field rule:
+  - a missing or invalid name is regenerated;
+  - an unknown or **locked** avatar, frame or plate falls back to that list's default (a save code from another device could name one);
+  - a counter that is missing or not a non-negative integer becomes 0.
+- **Config**: `profile { name: { min: 2, max: 16 }, avatars[], frames[], plates[] }`.
+- **Core**: `src/core/profile.ts`, pure and DOM-free. It holds `normaliseName`, `isValidName`, `generateName(rng, words)`, `progressOf(save-like input)`, `isUnlocked(item, progress)`, `unlockedIds(config, progress)`, `newlyUnlocked(before, after)`, `repairProfile(profile, config, progress)` and the counter bump helpers.
+
+---
+
+## 4. Formulas
+
+| Formula | Expression | Variables | Example |
+|---|---|---|---|
+| Levels cleared | `L = save.level − 1` | `save.level` ≥ 1 | On level 112 → 111 cleared |
+| Unlocked | `unlock == null or progress[kind] ≥ count` | `kind`, `count` from config | Lighthouse: `levels ≥ 25`. A player on level 26 (25 cleared) has it |
+| Progress line | `min(progress[kind], count) / count` | | "Clear 25 levels · 12/25" |
+| Newly unlocked | `unlocked(after) − unlocked(before)` | before and after one win | Clearing level 25 adds Lighthouse |
+| Total pours | `pours += session.moves` on every solved level or daily | `moves` ≥ 1 | A 31-pour daily adds 31 |
+| Coins earned | `coinsEarned += c` for every play reward `c` credited | | Level reward 25 + set bonus 150 → +175 |
+| Generated names | `16 × 16 × 90 = 23,040` combinations | | Collisions don't matter, since names are device-local |
+
+**Pacing of the unlocks** (rationale for the counts):
+- Levels: 25 / 50 / 75 / 100 levels arrive at roughly 1, 2, 3 and 4 weeks for a daily player, matching shell pacing (`shell-collection.md` §3).
+- 10 perfect clears is a first-week goal.
+- A best streak of 14 is two tide-pass cycles (S2-2).
+- 30 dailies solved is about a month.
+- 1 set ≈ 25 levels.
+- 4 sets is the halfway point of the cabinet; all 40 shells is the long goal.
+
+---
+
+## 5. Edge Cases
+
+| Situation | What happens |
+|---|---|
+| Storage blocked or private window | A name is generated for the session and edits work but aren't kept, the same as all other progress |
+| Save code names an unknown or locked avatar, frame or plate | It falls back to that list's default on load. The name is kept if valid, otherwise regenerated |
+| Typed name is all spaces, 1 character or 17+ characters | Save is disabled and the field says "Use 2–16 letters or numbers". The saved name is unchanged |
+| Name with emoji or symbols | Invalid, with the same message. Letters from any script (é, ß, 日本) are valid |
+| Very wide name (16 × "W") | It truncates with an ellipsis on the home chip. The Profile header wraps to two lines at most |
+| Re-roll gives the current name | Allowed (1 in 23,040). No retry is needed |
+| Tap a locked item | Only the requirement line shows. The selection does not change |
+| Close the Edit sheet after only toggling back to the saved choice | Draft equals saved, so it closes with no prompt |
+| Win unlocks two items at once (level 100 + a 4th set) | Two notice rows, in config order (avatars, frames, plates) |
+| A daily replay, or a solve with the device date moved back | Neither `dailiesSolved` nor `coinsEarned` changes. `pours` still counts, because it was a real solved puzzle |
+| A level replay | `pours` counts. `perfectClears` and `coinsEarned` don't, because replays are not first clears and pay nothing (M1) |
+| Booster bought but refunded (shuffle found nothing) | `boostersUsed` unchanged |
+| Tutorial | No counter changes. No avatar or unlock rows on its win card |
+| Save is imported mid-session | The chip, Profile and the counters reload from the imported save |
+
+---
+
+## 6. Dependencies
+
+- **Depends on**:
+  - `save-data.md` (new fields and repair)
+  - `economy.md` (coin credits counted)
+  - `session-boosters.md` (Perfect, boosters applied, moves)
+  - `daily-puzzle.md` (streak, counted solves)
+  - `shell-collection.md` (shells and sets as unlock progress)
+  - `scenes.md` (scenes owned, and plates must read in every scene)
+- **Depended on by**: `feel-audio-ui.md` (home chip, win card rows, new dialogs).
+- **Technical**:
+  - `collection.ts` (`setProgress`)
+  - `daily.ts` (`streakStatus`)
+  - `themes.ts` (`contrastRatio` for the plate check)
+  - `storage.ts` (`SaveData`)
+
+---
+
+## 7. Tuning Knobs
+
+| Knob | Where | Default | Safe range | Affects |
+|---|---|---|---|---|
+| `profile.name.min` / `max` | config | 2 / 16 | min 1–3, max 12–20 | Name length, and chip layout at 320 px (re-screenshot if max > 16) |
+| Each item's `unlock.count` | config | see 3.6 | ≥ 1, below the content cap (levels ≤ ~500, shells ≤ 40, sets ≤ 8) | When cosmetics arrive |
+| Each item's `unlock.kind` | config | see 3.6 | one of the six kinds | What the player chases |
+| Plate colours (`bg`, `edge`, `ink`) | config | see art | ink vs bg contrast ≥ 4.5 : 1 | Readability, enforced by a unit test |
+| Name word lists | `strings.ts` | 16 × 16 | ≥ 8 each | Variety of generated names |
+
+---
+
+## 8. Acceptance Criteria
+
+**Logic** (unit tests in `tests/unit/profile/`):
+- [ ] `generateName` with a fixed rng returns a stable name of the form `Adj Noun NN` that passes `isValidName`.
+- [ ] `isValidName` accepts "Saffron Gull 42", "Zoë", "日本"; rejects "", "a", 17 characters, "😀😀", "a_b". `normaliseName("  Sea   Gull ")` returns "Sea Gull".
+- [ ] `isUnlocked` is true for start items. It is false at count − 1 and true at count, for each of the six kinds.
+- [ ] `newlyUnlocked` returns only the difference. Clearing level 25 yields `lighthouse`, and nothing else from a fresh save.
+- [ ] `repairProfile` replaces unknown or locked ids with the defaults and regenerates an invalid name.
+- [ ] Catalog: 8 / 6 / 6 items with unique ids per list; exactly one default per list; at least 3 start items per list; every plate's ink-on-bg contrast is ≥ 4.5.
+- [ ] `loadSave` on an old save (no `profile`, no `stats`) gives a valid generated name, the defaults and all counters at 0. It round-trips through `exportSave` / `importSave`.
+- [ ] Every avatar and frame id has SVG artwork, and every pair renders differently.
+
+**UI** (screenshots in `production/qa/evidence/player-profile/`, 412 px and 320 px, 100% and 150% text):
+- [ ] Home screen with the chip: no overlap with the logo, title, coins or Play, in at least two scenes.
+- [ ] Profile screen with stats; a fresh save; a long-progress save.
+- [ ] Edit sheet: the Avatar, Frame and Name tabs; a locked item tapped (requirement line); an invalid name (Save disabled); the "Discard changes?" prompt.
+- [ ] Win card with the small avatar and an unlock notice row.
+- [ ] Keyboard: chip → Profile → Edit → tabs by arrows → radio selection → Save, with no pointer.
+
+**Definition of Done**:
+- [ ] All of the above checked, `npm test` and `npm run build` pass, evidence retained, systems index updated.
+
+---
+
+## Open Questions and Follow-Up Work
+
+None open: the owner answered every interview question.
+
+### Flagged Follow-Up Work
+- [ ] Owner review of the 8 avatar drawings and the item names.
+- [ ] If the name is ever shared (daily Share text, leaderboards C11), add a word filter first.
+- [ ] More cosmetics later (seasonal items, shell avatars), keeping unlocks milestone-based.
+
+---
+
+## Version History
+
+| Date | Author | Changes |
+|------|--------|---------|
+| 2026-11-08 | Claude | Designed from the owner interview (PP-1 to PP-10) |
