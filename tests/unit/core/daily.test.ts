@@ -1,5 +1,5 @@
 // Story: production/epics/sprint-2/story-001-daily-puzzle.md
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { isSealed, isWon, pour } from '../../../src/core/board';
 import {
@@ -8,6 +8,7 @@ import {
   dailySpec,
   dayNumber,
   generateDaily,
+  utcDateKey,
   localDateKey,
   recordDailySolve,
   streakReward,
@@ -125,5 +126,28 @@ describe('streak', () => {
   it('streakReward is base + per-day growth, capped', () => {
     expect(streakReward(1, cfg)).toBe(s.baseCoins);
     expect(streakReward(1000, cfg)).toBe(s.maxCoins);
+  });
+});
+
+describe('utcDateKey (M4: the daily follows UTC)', () => {
+  // design/gdd/daily-puzzle.md: one board for everyone at the same moment.
+  it('formats the UTC calendar date, switching at UTC midnight', () => {
+    expect(utcDateKey(new Date(Date.UTC(2026, 10, 8, 23, 59)))).toBe('2026-11-08');
+    expect(utcDateKey(new Date(Date.UTC(2026, 10, 9, 0, 1)))).toBe('2026-11-09');
+    expect(utcDateKey(new Date(Date.UTC(2026, 11, 31, 23, 59)))).toBe('2026-12-31');
+  });
+  it('gives the same key in any time zone at the same instant', () => {
+    const instant = new Date(Date.UTC(2026, 10, 8, 12, 0)).getTime();
+    try {
+      const keys = ['Pacific/Kiritimati', 'America/Los_Angeles', 'Asia/Tokyo', 'UTC'].map((tz) => {
+        vi.stubEnv('TZ', tz);
+        return utcDateKey(new Date(instant));
+      });
+      expect(new Set(keys)).toEqual(new Set(['2026-11-08']));
+      vi.stubEnv('TZ', 'Pacific/Kiritimati'); // UTC+14: the local date is already the 9th
+      expect(localDateKey(new Date(instant))).toBe('2026-11-09');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

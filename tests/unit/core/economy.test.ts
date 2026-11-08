@@ -1,7 +1,7 @@
 // Story: production/epics/competitive/story-002-economy-boosters.md
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { type BoosterId, type EconomyConfig, addBoosters, buyBooster, levelReward, newWallet, spendBooster } from '../../../src/core/economy';
+import { type BoosterId, type EconomyConfig, addBoosters, buyBooster, clearReward, levelReward, newWallet, spendBooster } from '../../../src/core/economy';
 
 const econ = config as unknown as EconomyConfig;
 
@@ -79,5 +79,28 @@ describe('addBoosters', () => {
     expect(r.boosters.hint).toBe(w.boosters.hint + 2);
     expect(r.boosters.shuffle).toBe(w.boosters.shuffle);
     expect(r.coins).toBe(w.coins);
+  });
+});
+
+describe('clearReward (M1: first clear only)', () => {
+  // design/gdd/economy.md: "A level pays coins on its first clear only; replays pay nothing".
+  it('a first clear pays the full level reward', () => {
+    expect(clearReward({ level: 7, nextLevel: 7, perfect: true, challenge: false }, econ)).toBe(levelReward({ perfect: true, challenge: false }, econ));
+  });
+  it('clearing a level beyond your progress also counts as a first clear', () => {
+    expect(clearReward({ level: 9, nextLevel: 7, perfect: false, challenge: false }, econ)).toBe(econ.economy.coinsPerLevel);
+  });
+  it('replaying an already-cleared level pays nothing, Perfect or not', () => {
+    expect(clearReward({ level: 3, nextLevel: 7, perfect: true, challenge: false }, econ)).toBe(0);
+    expect(clearReward({ level: 10, nextLevel: 11, perfect: true, challenge: true }, econ)).toBe(0);
+  });
+  it('winning level 1 twice raises coins only once', () => {
+    let coins = 0;
+    let next = 1;
+    for (let i = 0; i < 2; i++) {
+      coins += clearReward({ level: 1, nextLevel: next, perfect: false, challenge: false }, econ);
+      next = Math.max(next, 2);
+    }
+    expect(coins).toBe(econ.economy.coinsPerLevel);
   });
 });

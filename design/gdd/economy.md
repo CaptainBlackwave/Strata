@@ -26,7 +26,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 **Design Intent** (`design/competitive-roadmap.md` D1–D5):
 - Coins are earned **only by playing**: no purchases, ads, lives or energy.
 - Boosters are limited but earnable: stored charges first, then coins.
-- **A level pays coins on its first clear only; replays pay nothing** — `INTENDED — confirmed 2026-11-08`. **CODE MISMATCH** (see Edge Cases).
+- **A level pays coins on its first clear only; replays pay nothing** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (`clearReward`, M1).
 
 ---
 
@@ -37,6 +37,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 - **New player**: 100 coins; charges Undo 5, Shuffle 3, extra Jar 3, Hint 3.
 - **Using a booster** (`spendBooster`): if a charge is stored, spend one charge and no coins; otherwise pay the booster's coin price; if neither is possible, refuse and change nothing.
 - **Level reward** (`levelReward`): base reward, plus a bonus if Perfect (`session-boosters.md`), plus a bonus on tall-jar levels. The tutorial pays nothing.
+- **First clear only** (`clearReward`): the reward is paid only when the level is at or beyond the player's progress; a replay pays 0 and the win card says "Already cleared: no coins this time".
 - **Coin sinks**: boosters at zero charges (40 / 80 / 120 / 60), scenes (300 / 500 / 800).
 - **Coin sources**: level rewards, daily streak coins (30–100), shell-set rewards (150 plus one of each booster), the post-collection milestone (50).
 
@@ -75,9 +76,10 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 - ✅ The wallet is never mutated in place (immutability tested).
 - ✅ Invalid or negative coin amounts and charge counts in a save are repaired (`save-data.md`).
 
-**Not Yet Handled** (**CODE MISMATCH** with confirmed intent):
-- ⚠️ **Replays pay full coins.** The win flow pays `levelReward` on every win; only the shell is gated on a first clear (`level >= save.level`). Opening the game with `?level=1` repeatedly earns 20 coins a time. Intended: first clear only. No reduced replay payout was chosen.
-- ⚠️ `?level=N` can also jump ahead: clearing a level beyond the player's progress moves their level forward and pays out.
+- ✅ **Replays pay nothing** (M1, fixed 2026-11-08): `clearReward` pays only when `level >= nextLevel`. Verified in the browser: replaying level 3 with progress at level 5 left coins at 100.
+
+**Not Yet Handled**:
+- ⚠️ `?level=N` can still jump ahead: clearing a level beyond the player's progress moves their level forward and pays out.
 
 **Unclear**:
 - ❓ `INTENT UNKNOWN`: whether `buyBooster` (buy a charge without using it) should be exposed, for instance on a shop screen. Today the only way to turn coins into charges is to use the booster at zero charges.
@@ -103,11 +105,10 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 - ✅ Rewards: base, Perfect bonus and tall-jar bonus add as in the formula.
 - ✅ Every booster costs between 2 and 8 levels' coins.
 
-**What's Missing**:
-- ❌ A replay of a cleared level pays nothing (confirmed intent, not yet true).
+- ✅ A replay of a cleared level pays nothing; winning level 1 twice raises coins once (`clearReward` tests).
 
 **Definition of Done**:
-- [ ] Replay reward gated on first clear, with a test (win level 1 twice: coins rise once).
+- [x] Replay reward gated on first clear, with a test (win level 1 twice: coins rise once).
 - [ ] A balance pass (`/balance-check`) on coin income against prices.
 
 ---
@@ -118,7 +119,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 2. What is the target time to earn each scene?
 
 ### Flagged Follow-Up Work
-- [ ] In `main.ts` `showWin`, pay `levelReward` only when `firstClear` is true; update tests and `?level=N` handling.
+- [x] In `main.ts` `showWin`, pay only on a first clear (`clearReward`).
 - [ ] Decide whether `?level=N` should still change real progress in the shipped game.
 - [ ] Run `/balance-check` on the economy.
 
@@ -129,3 +130,4 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; replay-coin rule confirmed by the owner |
+| 2026-11-08 | Claude | M1 fixed: replays pay nothing (`clearReward`) |

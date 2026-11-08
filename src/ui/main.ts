@@ -8,8 +8,8 @@ import './style.css';
 import rawConfig from '../config/game-config.json';
 import { type Board, type Jar, canPour, isClosed, isSealed, pourAmount } from '../core/board';
 import { type CollectionConfig, allShells, grantShell, milestoneDue, setProgress } from '../core/collection';
-import { type DailyConfig, generateDaily, localDateKey, recordDailySolve, streakStatus, weekday } from '../core/daily';
-import { type BoosterId, type EconomyConfig, addBoosters, addCoins, levelReward, spendBooster } from '../core/economy';
+import { type DailyConfig, generateDaily, recordDailySolve, streakStatus, utcDateKey, weekday } from '../core/daily';
+import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, spendBooster } from '../core/economy';
 import { generateLevel, tutorialBoard } from '../core/generator';
 import type { GameConfig, MechanicId } from '../core/levels';
 import { createRng } from '../core/rng';
@@ -182,7 +182,7 @@ function showHome(): void {
   winEl.hidden = true;
   $('home-coins').textContent = String(save.wallet.coins);
   $('btn-play').textContent = save.tutorialDone ? t.play(save.level) : t.playTutorial;
-  const today = localDateKey(new Date());
+  const today = utcDateKey(new Date()); // the daily follows UTC (design/gdd/daily-puzzle.md, M4)
   const day = config.daily.week[weekday(today)];
   const status = streakStatus(save.daily, today);
   const [y, m, d] = today.split('-').map(Number);
@@ -206,7 +206,7 @@ function startDaily(): void {
   audio.unlock();
   homeEl.hidden = true;
   mode = 'daily';
-  dailyDate = localDateKey(new Date());
+  dailyDate = utcDateKey(new Date());
   const gen = generateDaily(dailyDate, config);
   dailyName = gen.spec.name;
   beginSession(gen.board, gen.spec.challenge);
@@ -464,10 +464,11 @@ function showWin(): void {
     if (!r.alreadySolved) countUp($('win-coins'), r.reward);
   } else {
     const perfect = session.assists === 0;
-    const reward = levelReward({ perfect, challenge }, config);
+    const firstClear = level >= save.level;
+    // Coins on the first clear only; replays pay nothing (design/gdd/economy.md, M1).
+    const reward = clearReward({ level, nextLevel: save.level, perfect, challenge }, config);
     const key = String(level);
     const prevBest = save.best[key];
-    const firstClear = level >= save.level;
     if (prevBest === undefined || session.moves < prevBest) save.best[key] = session.moves;
     save.level = Math.max(save.level, level + 1);
     save.wallet = addCoins(save.wallet, reward);
@@ -475,10 +476,10 @@ function showWin(): void {
     writeSave(save);
     $('win-title').textContent = perfect ? t.perfectTitle : t.winTitle;
     $('win-text').textContent = t.winText(session.moves, prevBest);
-    $('win-reward').hidden = false;
-    $('win-note').textContent = perfect ? t.perfectNote : '';
+    $('win-reward').hidden = !firstClear;
+    $('win-note').textContent = !firstClear ? t.replayNote : perfect ? t.perfectNote : '';
     btnNext.textContent = t.next;
-    countUp($('win-coins'), reward);
+    if (firstClear) countUp($('win-coins'), reward);
   }
   window.setTimeout(() => {
     winEl.hidden = false;

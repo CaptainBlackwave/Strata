@@ -130,14 +130,40 @@ describe('GameSession shuffle and assists', () => {
     expect(s.board).toEqual(before);
   });
 
-  it('counts assists: undo, hint, extra jar and shuffle each count, pours do not', () => {
+  it('counts assists: hint and extra jar count; pours and undo do not (M2)', () => {
     const s = fresh();
     s.pour(0, 2);
     expect(s.assists).toBe(0);
     s.undo();
     s.hint();
     s.addExtraJar();
-    expect(s.assists).toBe(3);
+    expect(s.assists).toBe(2);
+  });
+
+  it('undo never forfeits Perfect, however many times it is used (M2)', () => {
+    // design/gdd/session-boosters.md: "Undo is free for Perfect".
+    const s = fresh();
+    for (let i = 0; i < 3; i++) {
+      s.pour(0, 2);
+      s.undo();
+    }
+    s.pour(0, 2);
+    s.pour(1, 0);
+    s.pour(1, 2);
+    expect(s.status).toBe('won');
+    expect(s.assists).toBe(0);
+  });
+
+  it('a hint that finds no move does not count against Perfect (M2)', () => {
+    const dead = new GameSession(makeBoard(2, [[0, 1], [1, 0]]), { ...opts, extraJarsPerLevel: 0 });
+    expect(dead.hint()).toBeNull();
+    expect(dead.assists).toBe(0);
+  });
+
+  it('a hint that returns a move does count', () => {
+    const s = fresh();
+    expect(s.hint()).not.toBeNull();
+    expect(s.assists).toBe(1);
   });
 
   it('restart clears assists only for the history, not the count', () => {

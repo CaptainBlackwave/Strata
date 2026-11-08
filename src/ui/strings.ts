@@ -31,7 +31,8 @@ const en = {
   perfectTitle: 'Perfect!',
   winText: (moves: number, best: number | undefined) =>
     best !== undefined && best < moves ? `${moves} pours · best ${best}` : `${moves} pours${best === undefined || best === moves ? ' · new best' : ''}`,
-  perfectNote: 'No boosters used',
+  perfectNote: 'No hint, shuffle or extra jar used',
+  replayNote: 'Already cleared: no coins this time',
   next: 'Continue',
   reward: (n: number) => `+${n}`,
   daily: 'Daily puzzle',

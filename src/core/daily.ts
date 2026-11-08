@@ -54,6 +54,15 @@ export function localDateKey(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+/**
+ * Today's daily-puzzle key: the **UTC** calendar date as `YYYY-MM-DD`, so every player
+ * gets the same board at the same moment (design/gdd/daily-puzzle.md, M4).
+ * Example: `utcDateKey(new Date())`.
+ */
+export function utcDateKey(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
 /** Whole days since 1970-01-01 for a date key (timezone-independent). */
 export function dayNumber(key: string): number {
   const [y, m, d] = key.split('-').map(Number);

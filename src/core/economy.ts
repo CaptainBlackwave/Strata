@@ -82,3 +82,16 @@ export function addBoosters(wallet: Wallet, bundle: Readonly<Partial<Record<Boos
   for (const id of Object.keys(bundle) as BoosterId[]) boosters[id] += Math.max(0, Math.floor(bundle[id] ?? 0));
   return { ...wallet, boosters };
 }
+
+/**
+ * Coins for winning a level, paid on its first clear only: replaying a level you have
+ * already cleared pays nothing (design/gdd/economy.md, M1). `nextLevel` is the player's
+ * saved progress (the next level to play), so a clear at or beyond it is a first clear.
+ * Example: `clearReward({ level: 3, nextLevel: 7, perfect: true, challenge: false }, cfg) // 0`
+ */
+export function clearReward(
+  result: { readonly level: number; readonly nextLevel: number; readonly perfect: boolean; readonly challenge: boolean },
+  config: EconomyConfig,
+): number {
+  return result.level >= result.nextLevel ? levelReward(result, config) : 0;
+}

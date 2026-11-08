@@ -10,7 +10,7 @@ for a full-screen app icon. Every push to `main` re-runs the tests and redeploys
 ```bash
 npm install
 npm run dev      # play at http://localhost:5173  (add ?level=N to jump to a level)
-npm test         # 131 unit tests: rules, mechanics, solver, generator, curve, session, economy, daily, collection, scenes, save
+npm test         # 140 unit tests: rules, mechanics, solver, generator, curve, session, economy, daily, collection, scenes, save
 npm run build    # static site in dist/
 ```
 

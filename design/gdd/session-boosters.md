@@ -25,7 +25,7 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 
 **Design Intent**:
 - Mistakes are cheap but not free: boosters have limited charges, then coin prices (`economy.md`, decision D3).
-- **Perfect means "cleared without leaning on boosters", where Undo is free and a Hint that finds no move doesn't count** — `INTENDED — confirmed 2026-11-08`. **CODE MISMATCH** (see Edge Cases).
+- **Perfect means "cleared without leaning on boosters", where Undo is free and a Hint that finds no move doesn't count** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (M2).
 
 ---
 
@@ -36,13 +36,13 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 | Action | Behaviour |
 |---|---|
 | **Pour** | Applies a legal pour, pushes the previous board on the history, counts a move, emits `pour` (with units moved, colour, whether the target sealed), then `won` or `stuck` if the status changed. Refused (returns false) when illegal or the level is already won |
-| **Undo** | Restores the previous board and takes one move off the counter. The session allows unlimited undos; the UI gates it through the wallet (a charge, or coins) |
+| **Undo** | Restores the previous board and takes one move off the counter. The session allows unlimited undos; the UI gates it through the wallet (a charge, or coins). Undo never counts against Perfect |
 | **Restart** | Back to the dealt board, with any extra jar already used re-added; clears history and moves; does **not** refund charges or reset the assists counter |
 | **Extra Jar** | Adds one empty normal jar to the current board *and* to every history state (so Undo never removes it). Allowed once per level (`extraJarsPerLevel: 1`) regardless of how many Jar charges the player owns |
 | **Shuffle** | Re-deals the sand of every *free* jar (not sealed, frozen, locked or a funnel), keeping each jar's fill level. Tries up to 40 random deals; accepts the first that differs from the current board, is not already won, and is proven winnable by the solver (40,000-state budget). Undoable. Fails (false) if none is found |
 | **Hint** | Asks the solver (40,000-state budget) for a winning path from the current board and returns its first move, or null if the level is won, unwinnable or the budget ran out. The plan is cached by exact board and served while the player stays on it, so hints never loop (regression-tested) |
 | **Status** | `won` (every jar empty or sealed), `stuck` (not won, no useful move), otherwise `playing` |
-| **Perfect** | A level is Perfect when `assists === 0` at the win |
+| **Perfect** | A level is Perfect when `assists === 0` at the win. Assists are a Hint that returned a move, the extra Jar, and Shuffle |
 
 **Through the UI** (`useBooster`): ignored while a pour is animating or in the tutorial. Undo with nothing to undo, or an extra Jar already used, shows a toast without spending. Otherwise a charge (or the coin price) is spent first and the wallet is restored if the action could not apply (no hint found, no shuffle found).
 
@@ -66,8 +66,7 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
-| Perfect (as built) | `assists == 0` | `assists` = Undo + Hint + extra Jar + Shuffle uses, counted even when the UI refunds the booster | A single Undo makes the level non-Perfect |
-| Perfect (intended) | `assists == 0` where Undo and an unsuccessful Hint do **not** add to `assists` | | Undo three times, win with no other booster: Perfect |
+| Perfect | `assists == 0` | `assists` = Hints that returned a move + extra Jar + Shuffle uses; Undo and a Hint that found nothing add 0 | Undo three times and win with no other booster: Perfect (+10 coins) |
 | Shuffle acceptance | `different board AND not won AND solver says winnable` within 40 tries | | |
 
 ---
@@ -82,10 +81,12 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 - ✅ Shuffle leaves sealed, frozen, locked and funnel jars alone and can be undone.
 - ✅ The wallet is restored if a booster could not apply.
 
-**Not Yet Handled** (**CODE MISMATCH** with the confirmed intent):
-- ⚠️ **Undo counts as an assist**, so any Undo forfeits Perfect. Intended: Undo is free for Perfect.
-- ⚠️ **A Hint that finds no move still counts** as an assist: `hint()` increments the counter *before* solving, and the UI refunds the coin but not the mark. Intended: it should not count.
-- Restart keeps the assist count — matches the confirmed intent ("Restart still keeps the mark").
+- ✅ **Undo is free for Perfect** (M2, fixed 2026-11-08). Verified in the browser: level 5 cleared with an Undo still shows "Perfect!" and pays +30.
+- ✅ **A Hint that finds no move doesn't count** (M2, fixed 2026-11-08): `hint()` increments the counter only when it returns a move.
+- ✅ Restart keeps the assist count, as confirmed.
+
+**Not Yet Handled**:
+- None found in the source.
 
 **Unclear**:
 - ❓ `INTENT UNKNOWN — inferred, not confirmed`: the Jar booster can be bought in stacks of 3 charges but works only once per level. Is the one-per-level cap intended?
@@ -107,14 +108,11 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 
 **What Exists** (covered in `tests/unit/core/session.test.ts`):
 - ✅ Pours, undo, restart, extra Jar, shuffle and hint behave as in 2.1; hints reach a win; shuffle keeps units and fill levels and is undoable.
-- ✅ Assists count undo, hint, extra Jar and shuffle, not pours; Restart doesn't reset them.
-
-**What's Missing** (confirmed intent, not yet true in code):
-- ❌ Undo does not count toward Perfect.
-- ❌ A Hint that returns no move does not count toward Perfect.
+- ✅ Assists count a helpful hint, the extra Jar and shuffle; not pours, Undo or a hint that found nothing; Restart doesn't reset them.
+- ✅ Undo three times and still win Perfect; a null hint leaves `assists` at 0 (tests written first and seen failing on the old code).
 
 **Definition of Done**:
-- [ ] Both Perfect rules changed in `session.ts` with tests that fail first (undo three times and still earn Perfect; a null hint still earns Perfect).
+- [x] Both Perfect rules changed in `session.ts` with tests that fail first.
 - [ ] The two open questions answered.
 
 ---
@@ -125,8 +123,8 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 2. Should Shuffle be limited in how much it changes difficulty?
 
 ### Flagged Follow-Up Work
-- [ ] Change `session.ts` so `undo()` does not increment `assistCount`, and `hint()` increments it only when it returns a move; update `session.test.ts` and the Perfect text in `economy.md`.
-- [ ] Re-run the booster walkthrough and save screenshots in `production/qa/evidence/`.
+- [x] Change `session.ts` so `undo()` does not increment `assistCount`, and `hint()` increments it only when it returns a move.
+- [x] Walkthrough screenshot: `production/qa/evidence/gdd-alignment/m2-perfect-with-undo.png`.
 
 ---
 
@@ -135,3 +133,4 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; Perfect rule confirmed by the owner |
+| 2026-11-08 | Claude | M2 fixed: Undo and an unhelpful Hint no longer count against Perfect |

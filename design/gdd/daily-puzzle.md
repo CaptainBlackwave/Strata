@@ -24,7 +24,7 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 **Current Implementation**: `generateDaily(dateKey)` builds a solver-proven board seeded by the date; `recordDailySolve` and `streakStatus` manage the streak; the home screen shows a card and the win card shows the result with Share.
 
 **Design Intent**:
-- **Everyone gets the same board on the same day** (the premise of Share). **Which day it is should follow UTC, so players worldwide get the same board at the same moment** — `INTENDED — confirmed 2026-11-08`. **CODE MISMATCH**: the code uses the phone's local date (see Edge Cases).
+- **Everyone gets the same board on the same day** (the premise of Share). **Which day it is follows UTC, so players worldwide get the same board at the same moment** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (`utcDateKey`, M4).
 - Monday is easy and the week builds to a hard Sunday (S2-1).
 - Streak coins grow with the streak; every 7 days banks a tide pass that saves one missed day; missing a day without a pass resets (S2-2).
 
@@ -33,6 +33,8 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 ## 2. Detailed Design
 
 ### 2.1 Core Mechanics
+
+**Today** is the UTC calendar date (`utcDateKey`), so the daily switches at 00:00 UTC everywhere.
 
 **Weekly rhythm** (`daily.week`, index 0 = Sunday … 6 = Saturday; the weekday is computed from the date key itself, not the device):
 
@@ -97,8 +99,9 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 - ✅ Weekday and rotation are computed from the date key, so they match on every device for the same key; every day for 8 weeks generates a solvable board.
 - ✅ A bad date in a save is repaired to "no solve yet" (`save-data.md`).
 
+- ✅ **UTC, not local date** (M4, fixed 2026-11-08): the home screen and `startDaily` use `utcDateKey`. Verified in the browser: a phone in UTC+14 whose local date was Monday 9 November got Sunday 8 November's board. Moving the phone's clock still changes the date, since there is no server time.
+
 **Not Yet Handled**:
-- ⚠️ **Local date, not UTC** (**CODE MISMATCH**). `localDateKey(new Date())` is used by the home screen and `startDaily`, so a player in Tokyo and one in New York can be on different dates, and moving the phone's clock forward starts a new "day" and can extend a streak. Intended: UTC.
 - ⚠️ **Clock moved backwards**: if today's key is *earlier* than the last solve, `recordDailySolve` treats it as a break and resets the streak to 1 while `streakStatus` reports "solved today". Switching to UTC lowers the chance but does not remove it.
 - ⚠️ The Saturday mechanic can appear before the player has unlocked it (see Unclear).
 
@@ -128,11 +131,10 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 - ✅ A pass is earned every 7 days (cap 2); one missed day is saved by a pass; otherwise reset to 1 with the best kept.
 - ✅ Saturdays each have exactly one mechanic and all four appear within 8 weeks.
 
-**What's Missing** (confirmed intent, not yet true in code):
-- ❌ The daily is keyed by the **UTC** date.
+- ✅ The daily is keyed by the UTC date; the same instant in four time zones gives the same key (`utcDateKey` tests).
 
 **Definition of Done**:
-- [ ] A UTC date key is used by `showHome`, `startDaily` and the streak, with a test that two time zones on the same instant get the same board and streak state.
+- [x] A UTC date key is used by `showHome`, `startDaily` and the streak, with a test across time zones.
 - [ ] The backwards-clock edge case decided and tested.
 - [ ] The Saturday-unlock question answered.
 
@@ -144,7 +146,7 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 2. What should happen if the date key goes backwards?
 
 ### Flagged Follow-Up Work
-- [ ] Replace `localDateKey(new Date())` call sites with a UTC key; keep the date label readable in the player's locale; update streak tests.
+- [x] Replace `localDateKey(new Date())` call sites with `utcDateKey`.
 - [ ] Add a regression test for the clock-moved-back case.
 
 ---
@@ -154,3 +156,4 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; UTC date confirmed by the owner |
+| 2026-11-08 | Claude | M4 fixed: the daily follows the UTC date |

@@ -70,7 +70,11 @@ export class GameSession {
     return this.extraLeft;
   }
 
-  /** Boosters used this level (undo, hint, extra jar, shuffle). Zero means a "perfect" clear. */
+  /**
+   * Boosters that count against Perfect this level: a hint that returned a move, the
+   * extra jar, and shuffle. Undo is free, and a hint that finds nothing doesn't count
+   * (design/gdd/session-boosters.md, M2). Zero means a Perfect clear.
+   */
   get assists(): number {
     return this.assistCount;
   }
@@ -106,11 +110,13 @@ export class GameSession {
     return true;
   }
 
-  /** Takes back the last pour. Unlimited and free (teardown §3). */
+  /**
+   * Takes back the last pour. Unlimited here (the UI charges a booster for it), and
+   * it never counts against Perfect (design/gdd/session-boosters.md, M2).
+   */
   undo(): boolean {
     const prev = this.history.pop();
     if (!prev) return false;
-    this.assistCount++;
     this.current = prev;
     this.moveCount = Math.max(0, this.moveCount - 1);
     this.emit({ type: 'undo' });
@@ -187,12 +193,14 @@ export class GameSession {
    */
   hint(): Move | null {
     if (this.status === 'won') return null;
-    this.assistCount++;
     // Keep following one plan while the player stays on it. Re-solving from every state
     // can suggest moves that undo each other, so the hints would loop forever.
     const key = exactKey(this.current);
     const onPlan = this.plan?.keys.indexOf(key) ?? -1;
-    if (onPlan >= 0) return this.plan!.steps[onPlan];
+    if (onPlan >= 0) {
+      this.assistCount++;
+      return this.plan!.steps[onPlan];
+    }
     const result = solve(this.current, this.options.hintNodeBudget);
     if (!result.solvable || result.path.length === 0) {
       this.plan = null;
@@ -205,6 +213,7 @@ export class GameSession {
       b = pour(b, m.from, m.to).board;
     }
     this.plan = { keys, steps: [...result.path] };
+    this.assistCount++; // only a hint that actually helps counts against Perfect (M2)
     return result.path[0];
   }
 

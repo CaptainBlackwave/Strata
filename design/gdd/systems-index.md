@@ -25,9 +25,9 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 1 | Pour rules | Core | MVP | Implemented | [pour-rules.md](pour-rules.md) | — |
 | 2 | Level generation | Core | MVP | Implemented (ramp needed) | [level-generation.md](level-generation.md) | 1, 3 |
 | 3 | Jar mechanics | Gameplay | Alpha | Implemented | [jar-mechanics.md](jar-mechanics.md) | 1 |
-| 4 | Session and boosters | Gameplay | MVP | Implemented (Perfect rule differs) | [session-boosters.md](session-boosters.md) | 1, 2, 3, 5 |
-| 5 | Economy | Economy | Vertical Slice | Implemented (replay pay differs) | [economy.md](economy.md) | 4 |
-| 6 | Daily puzzle | Progression | Alpha | Implemented (date key differs) | [daily-puzzle.md](daily-puzzle.md) | 2, 3, 5, 7 |
+| 4 | Session and boosters | Gameplay | MVP | Implemented | [session-boosters.md](session-boosters.md) | 1, 2, 3, 5 |
+| 5 | Economy | Economy | Vertical Slice | Implemented | [economy.md](economy.md) | 4 |
+| 6 | Daily puzzle | Progression | Alpha | Implemented | [daily-puzzle.md](daily-puzzle.md) | 2, 3, 5, 7 |
 | 7 | Shell collection | Progression | Alpha | Implemented | [shell-collection.md](shell-collection.md) | 5, 6 |
 | 8 | Scenes | Meta | Full Vision | Implemented | [scenes.md](scenes.md) | 5 |
 | 9 | Feel, audio and UI | UI | MVP | Implemented (gaps vs UI standard) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10 |
@@ -37,14 +37,14 @@ Systems 2 and 3 depend on each other at the edges: generation places mechanics, 
 
 ---
 
-## Known Gaps: confirmed intent that the code doesn't match yet
+## Known Gaps: confirmed intent vs code
 
-| # | Gap | Document | Owner decision (2026-11-08) |
-|---|-----|----------|------------------------------|
-| M1 | Replays of cleared levels pay full coins | economy.md | First clear only |
-| M2 | Undo and an unsuccessful Hint count against Perfect | session-boosters.md | Undo is free; a failed Hint doesn't count; Restart keeps the mark |
-| M3 | Difficulty is flat from level 45 | level-generation.md | A ramp is needed (shape not yet specified) |
-| M4 | The daily puzzle uses the phone's local date | daily-puzzle.md | UTC |
+| # | Gap | Document | Owner decision (2026-11-08) | Status |
+|---|-----|----------|------------------------------|--------|
+| M1 | Replays of cleared levels paid full coins | economy.md | First clear only | **Fixed** 2026-11-08 |
+| M2 | Undo and an unsuccessful Hint counted against Perfect | session-boosters.md | Undo is free; a failed Hint doesn't count; Restart keeps the mark | **Fixed** 2026-11-08 |
+| M3 | Difficulty is flat from level 45 | level-generation.md | A ramp is needed (shape not yet specified) | Open: needs a decision |
+| M4 | The daily puzzle used the phone's local date | daily-puzzle.md | UTC | **Fixed** 2026-11-08 |
 
 ## Open Questions (`INTENT UNKNOWN`)
 
@@ -68,6 +68,6 @@ Systems 2 and 3 depend on each other at the edges: generation places mechanics, 
 
 ## Next Steps
 
-- Fix M1, M2 and M4 in code (small changes with tests), then re-check the affected documents.
+- ~~Fix M1, M2 and M4 in code~~ (done 2026-11-08; evidence in `production/qa/evidence/gdd-alignment/`).
 - Decide the ramp for M3, then `/balance-check` the curve.
 - `/design-review` each document, then `/review-all-gdds` across the set.
