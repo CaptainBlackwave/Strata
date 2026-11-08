@@ -33,6 +33,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 9 | Feel, audio and UI | UI | MVP | Implemented (gamepad waived) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10, 11 |
 | 10 | Save data | Persistence | MVP | Implemented | [save-data.md](save-data.md) | 5 |
 | 11 | Player profile | Meta | Full Vision | Implemented (PP-1 to PP-10) | [player-profile.md](player-profile.md) | 4–8, 10 |
+| 12 | Level map | UI | Full Vision | Designed (D47–D51), building in sprint 9 | [level-map.md](level-map.md) | 4, 7, 9, 11 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -97,6 +98,15 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D40 | New Year win-card fireworks were faint behind the backdrop | **A short display in front of the backdrop, behind the card, on the win card only** (about 3.5 s, own canvas) | scenes | built in sprint 7 |
 | D41 | Scene names in the picker | **Keep as built**: sentence case; "Harvest moon" for rung 7 | scenes | recorded |
 | D42 | Southern-hemisphere seasons | **Later**: a Settings switch that shifts season windows by 6 months (holidays keep their dates) | scenes | follow-up |
+| D43 | Sprint 8 focus (owner interview, after sprint 7) | **All 8 remaining ladder scenes** plus a **polish pass**; the southern-hemisphere switch (D42) ships with them | scenes | sprint 8 |
+| D44 | Pinch zoom (AX-17) | **Allow pinch zoom**; double-tap zoom stays off on the board and buttons (`touch-action: manipulation`) so fast tapping never zooms | feel-audio-ui, accessibility-requirements | sprint 8 |
+| D45 | 43 px jars at level 120 on 320 px (AX-19) | **Widen the hit area** to at least 44 px using the gap between jars; the drawn jar keeps its size | feel-audio-ui | sprint 8 |
+| D46 | Polish depth | **Code review + tech-debt register**, **the top 15–20 backlog findings**, **background generation** of the next level so slow levels feel instant, and a **"What's new" card** after updates | feel-audio-ui, level-generation | sprint 8 |
+| D47 | Level map timing | **Design in sprint 8, build in sprint 9** | level-map | sprint 8 (design) |
+| D48 | Level map style | **A winding beach path**: level stones on a vertical scrolling shoreline, with scenery changing every 20 levels; opens at your next level | level-map | design |
+| D49 | Level map markers | **All four**: Perfect mark, best pours (on tap), special-level icons (tall jars, shell milestones, new-jar debuts), locked levels ahead shown dimmed | level-map | design |
+| D50 | Replays from the map | **No coins (M1); a replay can earn a missing Perfect mark and beat the best pours.** A level's first Perfect counts once for the Perfect stat and unlocks | level-map, player-profile, economy | design |
+| D51 | Where the map lives | **It replaces Play**: Play opens the map at your next level, with a big "Play · Level N" button on it | level-map, feel-audio-ui | design |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
