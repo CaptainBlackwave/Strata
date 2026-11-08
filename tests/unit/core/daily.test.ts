@@ -11,6 +11,7 @@ import {
   utcDateKey,
   localDateKey,
   recordDailySolve,
+  sharePours,
   streakReward,
   streakStatus,
 } from '../../../src/core/daily';
@@ -47,6 +48,17 @@ describe('weekly rhythm', () => {
 });
 
 describe('generateDaily', () => {
+  it('generates every date of a full year (365 consecutive dates), deterministic per date (F7, GA-DP-1)', () => {
+    const start = dayNumber('2027-01-01');
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(Date.UTC(1970, 0, 1 + start + i)).toISOString().slice(0, 10);
+      const g = generateDaily(d, cfg);
+      expect(generateDaily(d, cfg).board, d).toEqual(g.board);
+      expect(isWon(g.board), d).toBe(false);
+      expect(g.board.jars.some((j) => isSealed(j, g.board.capacity)), d).toBe(false);
+      expect(g.spec.date, d).toBe(d);
+    }
+  });
   it('the same date gives everyone the same board', () => {
     expect(generateDaily('2026-11-08', cfg).board).toEqual(generateDaily('2026-11-08', cfg).board);
   });
@@ -165,5 +177,19 @@ describe('device date going backwards (D10)', () => {
     const st: StreakState = { last: '2026-11-08', streak: 9, best: 9, passes: 1 };
     const back = recordDailySolve(st, '2026-11-06', cfg).state;
     expect(recordDailySolve(back, '2026-11-09', cfg).state.streak).toBe(10);
+  });
+});
+
+describe('owner defaults of 2026-11-08 (GA-DP-5, GA-DP-6)', () => {
+  it('after the clock moves back, Home shows today as not solved (GA-DP-5)', () => {
+    const st: StreakState = { last: '2026-11-08', streak: 9, best: 9, passes: 0 };
+    expect(streakStatus(st, '2026-11-06')).toEqual({ current: 9, solvedToday: false, passAtRisk: false });
+  });
+  it('Share uses the first counted solve of that date, not a replay (GA-DP-6)', () => {
+    expect(sharePours({ date: '2026-11-08', pours: 31 }, '2026-11-08', 24)).toBe(31);
+  });
+  it('Share uses the current solve when no counted solve of that date is recorded', () => {
+    expect(sharePours(null, '2026-11-08', 24)).toBe(24);
+    expect(sharePours({ date: '2026-11-07', pours: 31 }, '2026-11-08', 24)).toBe(24);
   });
 });

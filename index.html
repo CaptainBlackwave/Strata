@@ -21,18 +21,24 @@
           <span class="brand"><span class="brand-name">Strata</span> <em id="challenge-tag" class="tag" hidden>Tall jars</em></span>
           <span id="level-label" class="level-label">Level 1</span>
         </div>
-        <div class="coins" id="coins-chip" aria-live="polite"><i class="coin" aria-hidden="true"></i><span id="coins">0</span></div>
+        <div class="hud-actions">
         <button id="btn-restart" class="icon-btn" type="button" title="Restart (R)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
         </button>
+        <div class="coins" id="coins-chip" aria-live="polite"><i class="coin" aria-hidden="true"></i><span id="coins">0</span></div>
         <button id="btn-settings" class="icon-btn" type="button" title="Settings">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>
         </button>
+        </div>
       </header>
       <div class="subhud"><span id="moves">0</span> <span id="moves-label">pours</span></div>
       <main id="board" class="board" aria-label="Sand jars"></main>
       <div id="coach" class="coach" hidden aria-live="polite"><span class="coach-ring" aria-hidden="true"></span><span id="coach-text" class="coach-text"></span></div>
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <div id="stuck" class="stuck-banner" hidden>
+        <p id="stuck-text" class="stuck-text" aria-live="polite"></p>
+        <button id="btn-stuck-restart" class="secondary stuck-restart" type="button">Restart</button>
+      </div>
       <nav class="toolbar" aria-label="Boosters">
         <button id="btn-undo" class="tool" type="button" data-booster="undo" title="Undo (Z)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
@@ -172,11 +178,24 @@
           </div>
         </div>
       </div>
+      <div id="leave" class="cabinet discard-layer" hidden>
+        <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="leave-title" aria-describedby="leave-text">
+          <h2 id="leave-title">Leave this board?</h2>
+          <p id="leave-text" class="leave-text">Your pours here won't be kept.</p>
+          <div class="sheet-row">
+            <button id="btn-keep-playing" class="secondary" type="button">Keep playing</button>
+            <button id="btn-leave" class="secondary discard-btn" type="button">Leave</button>
+          </div>
+        </div>
+      </div>
       <div id="home" class="home" hidden>
         <div class="home-top">
           <button id="btn-profile" class="profile-chip" type="button" hidden aria-label="Profile">
             <span id="profile-chip-art" class="portrait portrait-sm" aria-hidden="true"></span>
             <span id="profile-chip-plate" class="profile-chip-plate" aria-hidden="true"></span>
+          </button>
+          <button id="btn-home-settings" class="icon-btn home-settings" type="button" title="Settings" aria-label="Settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>
           </button>
         </div>
         <div class="home-inner">

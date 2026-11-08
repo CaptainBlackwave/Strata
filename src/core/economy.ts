@@ -2,10 +2,22 @@
  * Coins and booster charges. Pure functions over an immutable wallet, so the UI
  * never owns economy state. Implements design/competitive-roadmap.md item C2.
  * Coins come only from play: there are no purchases, ads or lives (decisions D1-D3).
+ * A booster marked `free` (Undo, decision D-a in production/qa/sprint-6-findings.md)
+ * costs nothing, is unlimited, and never touches the wallet.
  */
 
 /** The four in-level boosters. */
 export type BoosterId = 'undo' | 'shuffle' | 'extraJar' | 'hint';
+
+/** One booster's tuning in game-config.json. */
+export interface BoosterConfig {
+  /** Charges a new player starts with. */
+  readonly start: number;
+  /** Coins for one use when no charge is stored. */
+  readonly price: number;
+  /** Free and unlimited: using or buying it never changes the wallet (decision D-a). */
+  readonly free?: boolean;
+}
 
 /** The economy part of game-config.json. */
 export interface EconomyConfig {
@@ -15,10 +27,10 @@ export interface EconomyConfig {
     readonly perfectBonus: number;
     readonly challengeBonus: number;
   };
-  readonly boosters: Readonly<Record<BoosterId, { readonly start: number; readonly price: number }>>;
+  readonly boosters: Readonly<Record<BoosterId, BoosterConfig>>;
 }
 
-/** What the player owns. */
+/** What the player owns. A count for a free booster (an old save's undo charges) is kept but never used. */
 export interface Wallet {
   readonly coins: number;
   readonly boosters: Readonly<Record<BoosterId, number>>;
@@ -41,11 +53,18 @@ export function newWallet(config: EconomyConfig): Wallet {
   };
 }
 
+/** True when a booster is free and unlimited. Example: `isFreeBooster('undo', config) // true` */
+export function isFreeBooster(id: BoosterId, config: EconomyConfig): boolean {
+  return config.boosters[id].free === true;
+}
+
 /**
  * Uses one booster: a stored charge if there is one, otherwise buys it with coins.
- * Fails, changing nothing, if neither is possible.
+ * Fails, changing nothing, if neither is possible. A free booster always succeeds and
+ * returns the same wallet object with `paidCoins: 0`.
  */
 export function spendBooster(wallet: Wallet, id: BoosterId, config: EconomyConfig): WalletResult {
+  if (isFreeBooster(id, config)) return { ok: true, wallet, paidCoins: 0 };
   if (wallet.boosters[id] > 0) {
     return { ok: true, wallet: { ...wallet, boosters: { ...wallet.boosters, [id]: wallet.boosters[id] - 1 } }, paidCoins: 0 };
   }
@@ -54,8 +73,9 @@ export function spendBooster(wallet: Wallet, id: BoosterId, config: EconomyConfi
   return { ok: false, wallet, paidCoins: 0 };
 }
 
-/** Buys one stored charge of a booster. */
+/** Buys one stored charge of a booster. For a free booster this is a no-op success (same wallet). */
 export function buyBooster(wallet: Wallet, id: BoosterId, config: EconomyConfig): WalletResult {
+  if (isFreeBooster(id, config)) return { ok: true, wallet, paidCoins: 0 };
   const price = config.boosters[id].price;
   if (wallet.coins < price) return { ok: false, wallet, paidCoins: 0 };
   return {

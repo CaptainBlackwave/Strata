@@ -26,7 +26,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 **Design Intent** (owner decisions S2-3, S2-4):
 - The collectibles are original seashells in themed sets of 5: Tide Pool, Dune Coast, Coral Reef, Deep Blue (sprint 2), then the four **expedition sets** Night Shore, Cold North, Volcanic Sands and Ancient Cliffs (2026-11-08).
 - Shells are guaranteed milestones, never random and never duplicated.
-- Completing a set pays coins and a booster bundle.
+- Completing a set pays coins and a booster bundle. Since D19 (Undo is free, *decided 2026-11-08, built in sprint 6*) the bundle is one Shuffle, one Extra Jar and one Hint charge, with no Undo charge.
 
 ---
 
@@ -34,9 +34,9 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 ### 2.1 Core Mechanics
 
-**Earning a shell**: one on the **first clear** of every 5th level (5, 10, 15 …), and one for the **first daily solve** of each day. They arrive in catalog order. The win card shows the new shell.
+**Earning a shell**: one on the **first clear** of every 5th level (5, 10, 15 …), and one for the **first daily solve** of each day. A daily replay, or a solve dated before the last one (D10), grants nothing. They arrive in catalog order. The win card shows the new shell.
 
-**Set reward**: the shell that completes a set pays 150 coins plus one of each booster, and the card names the set.
+**Set reward**: the shell that completes a set pays 150 coins plus one Shuffle, one Extra Jar and one Hint charge (D19 drops the Undo charge; until it is built the code still adds one Undo charge), and the card names the set.
 
 **After all 40**: each milestone or first daily solve pays 50 coins instead.
 
@@ -55,7 +55,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 | SC-2 | Themes, in order: **Night Shore**, **Cold North**, **Volcanic Sands**, **Ancient Cliffs** |
 | SC-3 | 5 shells per set, like the originals (40 in total) |
 | SC-4 | Artwork: new shapes plus recolours of existing ones; within a set no two shells share both shape and colours |
-| SC-5 | Same set reward as the originals: 150 coins + 1 of each booster |
+| SC-5 | Same set reward as the originals: 150 coins + 1 of each booster (since D19: each limited booster, so no Undo charge) |
 | SC-6 | Small touches per set: Night Shore shells **glow** (soft blue halo; the slow pulse stops under reduced motion, the halo stays); Ancient Cliffs shells are **stone** (speckled texture masked to the shell's outline). Cold North and Volcanic Sands are plain |
 | SC-7 | Players who already own all 20 originals carry on from their next milestone with the first Night Shore shell. No back-pay for milestones that paid 50 coins |
 | SC-8 | Cabinet: one scrolling list; completed sets collapse |
@@ -72,14 +72,14 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 ### 2.2 State and Data
 
 - `Shell`: `{ id, name, kind, colors[body, accent] }`; `ShellSet`: `{ id, name, effect?: 'glow' | 'stone', shells[] }`. `allShells` copies the set's effect onto each shell so the win card and home icon show it too.
-- Config: `collection { everyLevels: 5, coinsWhenComplete: 50, setReward {coins: 150, boosters: one each}, sets[] }`.
+- Config: `collection { everyLevels: 5, coinsWhenComplete: 50, setReward {coins: 150, boosters: one each of shuffle, extraJar, hint (undo removed by D19)}, sets[] }`.
 - Save: the owned shell ids, in the order earned.
 
 **Persistence**: the owned list (`save-data.md`).
 
 ### 2.3 Integration Points
 
-- **Depends on**: `economy.md` (coins and boosters as rewards), `daily-puzzle.md` and the level win flow (the triggers).
+- **Depends on**: `economy.md` (coins and boosters as rewards), `daily-puzzle.md` and the level win flow (`session-boosters.md` win, `level-generation.md` level numbers) (the triggers).
 - **Depended on by**: `feel-audio-ui.md` (win card, home button, cabinet), `save-data.md`, `player-profile.md` (shells owned and sets completed feed its stats and unlocks).
 
 ---
@@ -90,28 +90,31 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 |---|---|---|---|
 | Milestone due | `level > 0 and level mod 5 == 0` | `level` = the level just cleared | Levels 5, 10, 15 |
 | Levels to next shell | `5 − ((furthestLevel − 1) mod 5)` | `furthestLevel − 1` = highest level cleared | Cleared 12 → next at 15, "clear 3 more levels" |
-| Set complete | `all shells of the set owned` | | The 5th Tide Pool shell triggers 150 coins + 1 of each booster |
-| Shell supply | 8 sets × 5 = 40; earned at about 1 per 5 levels plus 1 per day | | About 200 levels by levels alone; a daily player (1 per day + 1 per 5 levels) in roughly a month |
+| Set complete | `all shells of the set owned` | | The 5th Tide Pool shell triggers 150 coins + 1 Shuffle, 1 Jar, 1 Hint |
+| Shell supply | 8 sets × 5 = 40; earned at 1 per 5 levels plus 1 per counted daily | assumed daily player: about 3.5 levels a day (25 a week) and the daily every day | About 200 levels by levels alone. A daily player: 5 shells a week from levels + 7 from dailies ≈ 12 a week, so all 40 in about 3.5 weeks (`player-profile.md` §4 uses the same rate) |
 
 ---
 
 ## 4. Edge Cases
 
 **Handled in Code**:
-- ✅ No duplicates: shells are granted strictly in catalog order; unknown ids in a save are ignored.
+- ✅ No duplicates: shells are granted strictly in catalog order; an unknown id in a save is never granted over. (It is still kept in the save and counted by `save.shells.length` for the home count, the Profile stat and the Gold-frame unlock; see Not Yet Handled.)
 - ✅ When everything is collected, `grantShell` returns nothing and the milestone pays the 50-coin bonus.
 - ✅ A set reward is paid only by the shell that completes the set.
 - ✅ A shell is earned only on a level's *first* clear (replaying a milestone level does not grant another).
 - ✅ Locked shells show a silhouette with no glow or stone effect; the cabinet and win card work at 320 px and at 150% text.
 - ✅ A save that owns all 20 originals gets the first Night Shore shell next; a save that earned 50-coin bonuses keeps them.
+- ✅ "First clear" is `level >= furthest level reached`, and `?level=N` can no longer go beyond the player's progress (D3, **built in sprint 5**), so a shell always needs a genuine first clear.
+- ✅ Replays pay no coins (M1, fixed 2026-11-08, `economy.md`), and replaying a milestone level grants no shell.
+- ✅ Shell order is fixed (D11, as built).
+- ✅ After all 20 originals: more sets (D12), **built 2026-11-08 as four sets (SC-1 to SC-8)**; the 50-coin milestone applies once all 40 are owned.
 
 **Not Yet Handled**:
-- ⚠️ "First clear" is defined as `level >= furthest level reached`, so jumping ahead with `?level=N` to a milestone level (for example `?level=100`) grants a shell without clearing the levels before it. Closed in sprint 5: `?level=N` can no longer go beyond the player's progress.
-- ⚠️ Replaying levels pays coins today (`economy.md`, confirmed mismatch), but shells already require a first clear.
+- ⚠️ Unknown ids in a save (an edited code, or a future id change) are kept and counted, so they can inflate the shell count and unlock the Gold frame without 40 real shells. Owner picks the fix: drop unknown ids at load, or count only catalog ids (GX-15, GB-SC-2).
+- ⚠️ No rule yet for changing the catalog later (inserting or reordering shells would change which shell or set reward a player gets next) (GB-SC-6, owner decision).
 
 **Unclear**:
-- ✅ Decided 2026-11-08: fixed order (as built).
-- ✅ Decided 2026-11-08: plan a **fifth set** as future content; keep the 50-coin milestones until then. **Built 2026-11-08 as four sets (SC-1 to SC-8).**
+- None.
 
 ---
 
@@ -119,7 +122,7 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 
 **Technical Dependencies**: `economy.ts` (`addCoins`, `addBoosters`), `shells.ts` (artwork).
 
-**Design Dependencies**: `economy.md`, `daily-puzzle.md`, `feel-audio-ui.md`, `save-data.md`.
+**Design Dependencies**: `economy.md`, `daily-puzzle.md`, `session-boosters.md` and `level-generation.md` (the level win flow), `feel-audio-ui.md`, `save-data.md`, `player-profile.md`.
 
 **Content Dependencies**: `collection.sets` (8 sets, 40 shells with colours, optional `effect`), `everyLevels`, `coinsWhenComplete`, `setReward`.
 
@@ -134,7 +137,7 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 - ✅ Cabinet: completed sets start collapsed and toggle by tap and keyboard; no mid-word breaks or horizontal overflow at 320 px / 412 px, 100% / 150% text (screenshots in `production/qa/evidence/shell-sets/`).
 - ✅ Shells arrive in catalog order, with no duplicates, until all are owned; then none.
 - ✅ A set completion is reported exactly when its last shell arrives.
-- ✅ Unknown ids in a save are ignored.
+- ✅ Unknown ids in a save are never granted over (they are not dropped; see 4).
 - ✅ A shell is due on every 5th level.
 - ✅ The cabinet fits a 320 px phone with no overlap (walkthrough screenshots in `production/qa/evidence/sprint-2/`).
 
@@ -153,7 +156,7 @@ None open: fixed order; sets 5–8 built.
 ### Flagged Follow-Up Work
 - [x] `?level=N` restricted; shells now need a genuine first clear.
 - [x] More sets (sets 5–8, 2026-11-08).
-- [ ] Owner review of the 20 new shell names and artwork.
+- [x] Owner review of the 20 new shell names and artwork: all approved as they are, no renames or redraws (2026-11-08, sprint 6 Q8; review page `https://claude.ai/artifact/R59gDtKvScKwoXWsVoDcEw`).
 - [ ] Consider seasonal shells once the 40 are completed in testing.
 
 ---
@@ -164,3 +167,4 @@ None open: fixed order; sets 5–8 built.
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude | Expedition sets 5–8 from the owner interview (SC-1 to SC-8) |
+| 2026-11-08 | Claude (sprint 6, F9) | Closed "Not Yet Handled" and "Unclear" items moved to Handled with their decisions (GB-SC-1); unknown-id behaviour stated as built, fix left to the owner (GB-SC-2, GX-15); play rate stated (GB-SC-3); dependencies match 2.3, with the level win flow and player-profile (GB-SC-4); replay and out-of-order dailies grant nothing (GB-SC-7); set reward without Undo (D19) |

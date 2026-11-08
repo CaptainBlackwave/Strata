@@ -3,7 +3,7 @@
  * Every access is guarded, so a private window or blocked storage just means no save.
  * Implements design/game-brief.md MVP 6 and design/competitive-roadmap.md C2/C5.
  */
-import type { StreakState } from '../core/daily';
+import type { DailyShareRecord, StreakState } from '../core/daily';
 import type { ThemeState } from '../core/themes';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
@@ -44,6 +44,8 @@ export interface SaveData {
   profile: Profile;
   /** Lifetime counters that start at 0 from the profile update (player-profile.md §3.4). */
   stats: Stats;
+  /** Pours of the latest date's first counted daily solve, for Share (GA-DP-6). */
+  dailyShare: DailyShareRecord | null;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -84,7 +86,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats() };
+  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null };
 }
 
 /**
@@ -142,6 +144,10 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     },
     profile: { name: str(pr.name), avatar: str(pr.avatar), frame: str(pr.frame), plate: str(pr.plate) },
     stats: Object.fromEntries(STAT_KEYS.map((k) => [k, nonNegInt(st[k], 0)])) as unknown as Stats,
+    dailyShare:
+      isObj(v2.dailyShare) && typeof v2.dailyShare.date === 'string' && DATE_KEY.test(v2.dailyShare.date) && nonNegInt(v2.dailyShare.pours, -1) >= 0
+        ? { date: v2.dailyShare.date, pours: v2.dailyShare.pours as number }
+        : null,
   };
 }
 

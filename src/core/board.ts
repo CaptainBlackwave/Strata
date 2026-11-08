@@ -91,14 +91,16 @@ export function isMonochrome(jar: Jar): boolean {
 
 /**
  * Teardown rule R5: a pour is legal when the source is non-empty, the target has
- * room, and the target is empty or its top colour matches.
+ * room, and the target is empty or its top colour matches. A sealed jar is done and
+ * can't be poured from (decision D-b, production/qa/sprint-6-findings.md GA-PR-1), which
+ * matches the UI and the solver, so `usefulMoves` and `isStuck` follow too.
  */
 export function canPour(board: Board, from: number, to: number): boolean {
   if (from === to) return false;
   const src = board.jars[from];
   const dst = board.jars[to];
   if (!src || !dst) return false;
-  if (isClosed(src) || isClosed(dst) || src.funnel) return false;
+  if (isClosed(src) || isClosed(dst) || src.funnel || isSealed(src, board.capacity)) return false;
   const run = topRun(src);
   if (!run) return false;
   if (dst.units.length >= (dst.cap ?? board.capacity)) return false;
@@ -196,6 +198,70 @@ export function usefulMoves(board: Board): Move[] {
 /** Teardown rule R9: stuck when the level isn't won and no useful pour is left. */
 export function isStuck(board: Board): boolean {
   return !isWon(board) && usefulMoves(board).length === 0;
+}
+
+/** Why a board can certainly no longer be won (decision D-c). */
+export type LostReason = 'funnel' | 'lock';
+
+function countColor(jar: Jar, color: Color): number {
+  let n = 0;
+  for (const u of jar.units) if (u === color) n++;
+  return n;
+}
+
+/**
+ * A cheap, exact dead-end check (decision D-c, production/qa/sprint-6-findings.md GA-JAR-3).
+ * It only reports boards that are certainly lost; `null` means "not proven lost", not
+ * "winnable" (the solver is the only full answer). Works on the settled board.
+ *
+ * - `'funnel'`: a non-empty funnel can never seal, so it can never end empty or sealed:
+ *   it holds two or more colours, has a non-standard capacity, or its colour can't reach
+ *   a full jar any more (units in other funnels never come out).
+ * - `'lock'`: a locked, non-empty, unsealed jar can never open, because its key colour
+ *   can never be sealed for the first time. Units of the key inside jars locked by that
+ *   same key, inside funnels (except the one funnel that could seal it) or inside jars
+ *   behind another lock that can never open are out of reach.
+ *
+ * Example: `lostReason(boardWithMixedFunnel) // 'funnel'`
+ */
+export function lostReason(board: Board): LostReason | null {
+  const b = settle(board);
+  const cap = b.capacity;
+  const sealableFunnel = (j: Jar) => j.funnel === true && (j.cap ?? cap) === cap && (j.units.length === 0 || isMonochrome(j));
+  for (const f of b.jars) {
+    if (!f.funnel || f.units.length === 0) continue;
+    if (!sealableFunnel(f)) return 'funnel';
+    const color = f.units[0];
+    let reach = f.units.length;
+    for (const j of b.jars) if (!j.funnel) reach += countColor(j, color);
+    if (reach < cap) return 'funnel';
+  }
+  const locked = b.jars.filter((j) => j.lock !== undefined && j.units.length > 0 && !isSealed(j, cap));
+  if (locked.length === 0) return null;
+  const keys = [...new Set(locked.map((j) => j.lock!))];
+  // Fixpoint: a key that can never be sealed keeps its jars shut forever, which can trap other keys.
+  const dead = new Set<Color>();
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const key of keys) {
+      if (dead.has(key)) continue;
+      let free = 0;
+      let bestFunnel = 0;
+      for (const j of b.jars) {
+        if (j.funnel) {
+          if (sealableFunnel(j) && j.units.length > 0 && j.units[0] === key) bestFunnel = Math.max(bestFunnel, j.units.length);
+          continue;
+        }
+        if (j.lock !== undefined && (j.lock === key || dead.has(j.lock))) continue;
+        free += countColor(j, key);
+      }
+      if (free + bestFunnel < cap) {
+        dead.add(key);
+        changed = true;
+      }
+    }
+  }
+  return locked.some((j) => dead.has(j.lock!)) ? 'lock' : null;
 }
 
 /**

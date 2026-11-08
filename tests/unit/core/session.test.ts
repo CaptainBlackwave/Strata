@@ -4,7 +4,7 @@ import config from '../../../src/config/game-config.json';
 import { makeBoard, pour } from '../../../src/core/board';
 import { generateLevel } from '../../../src/core/generator';
 import type { GameConfig } from '../../../src/core/levels';
-import { GameSession, type SessionEvent } from '../../../src/core/session';
+import { GameSession, type SessionEvent, sessionOptions } from '../../../src/core/session';
 
 const opts = { extraJarsPerLevel: 1, hintNodeBudget: 10_000 };
 const fresh = () => new GameSession(makeBoard(2, [[0, 1], [1, 0], []]), opts);
@@ -190,5 +190,66 @@ describe('extra Jar has no per-level cap (D5)', () => {
   });
   it('the shipped config sets no cap', () => {
     expect((config as { extraJarsPerLevel: number | null }).extraJarsPerLevel).toBeNull();
+  });
+});
+
+describe('hintResult tells "can\'t be won" apart from "search ran out" (F7, GA-SB-2, production/qa/sprint-6-findings.md)', () => {
+  it('returns the move when there is one, and counts it as an assist like hint()', () => {
+    const s = fresh();
+    const r = s.hintResult();
+    expect('move' in r).toBe(true);
+    if ('move' in r) expect(() => pour(s.board, r.move.from, r.move.to)).not.toThrow();
+    expect(s.assists).toBe(1);
+  });
+  it('says "unwinnable" when the solver proves there is no way to win', () => {
+    const s = new GameSession(makeBoard(2, [[0, 1], [1, 0]]), { ...opts, extraJarsPerLevel: 0 });
+    expect(s.hintResult()).toEqual({ reason: 'unwinnable' });
+    expect(s.assists).toBe(0);
+  });
+  it('says "budget" when the search runs out before an answer', () => {
+    const g = generateLevel(152, config as unknown as GameConfig);
+    const s = new GameSession(g.board, { hintNodeBudget: 1 });
+    expect(s.hintResult()).toEqual({ reason: 'budget' });
+    expect(s.hint()).toBeNull();
+    expect(s.assists).toBe(0);
+  });
+  it('says "unwinnable" on a structurally lost board without needing any search budget', () => {
+    const b = makeBoard(4, [[0, 0, 0], [1, 1, 1], [], [0, 1]]);
+    const lost = { capacity: 4, jars: b.jars.map((j, i) => (i === 3 ? { ...j, funnel: true } : j)) };
+    expect(new GameSession(lost, { hintNodeBudget: 1 }).hintResult()).toEqual({ reason: 'unwinnable' });
+  });
+  it('says "won" once the level is won', () => {
+    const s = fresh();
+    s.pour(0, 2);
+    s.pour(1, 0);
+    s.pour(1, 2);
+    expect(s.hintResult()).toEqual({ reason: 'won' });
+  });
+  it('at the production hint budget, late 16-jar levels (151-155) get a hint, and following hints wins', () => {
+    const cfg = config as unknown as GameConfig;
+    for (let level = 151; level <= 155; level++) {
+      const g = generateLevel(level, cfg);
+      expect(g.board.jars.length, `level ${level}`).toBeGreaterThanOrEqual(15);
+      const s = new GameSession(g.board, sessionOptions(cfg));
+      const first = s.hintResult();
+      expect('move' in first, `level ${level}`).toBe(true);
+      let steps = 0;
+      for (let r = first; 'move' in r && steps < 400; r = s.hintResult(), steps++) expect(s.pour(r.move.from, r.move.to)).toBe(true);
+      expect(s.status, `level ${level}`).toBe('won');
+    }
+  });
+});
+
+describe('sessionOptions', () => {
+  it('reads every session tuning value from game-config.json', () => {
+    const cfg = config as unknown as GameConfig;
+    expect(sessionOptions(cfg)).toEqual({
+      extraJarsPerLevel: cfg.extraJarsPerLevel,
+      hintNodeBudget: cfg.hint.solverNodeBudget,
+      shuffleAttempts: cfg.shuffle.maxAttempts,
+      shuffleNodeBudget: cfg.shuffle.solverNodeBudget,
+      shuffleTotalNodeBudget: cfg.shuffle.totalNodeBudget,
+    });
+    expect(cfg.shuffle.totalNodeBudget).toBeGreaterThan(0);
   });
 });

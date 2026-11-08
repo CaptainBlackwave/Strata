@@ -2,7 +2,7 @@
 status: reverse-documented
 source: src/core/board.ts
 date: 2026-11-08
-verified-by: pending review
+verified-by: pending review (sealed-jar rule D20 and dead-end message D21 decided by the owner 2026-11-08)
 ---
 
 # Pour Rules: Design Document
@@ -12,6 +12,9 @@ verified-by: pending review
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** D20 and D21 are *decided 2026-11-08, built in sprint 6*. Mark them
+> "built in sprint 6" once the code and tests land.
 
 ---
 
@@ -19,14 +22,16 @@ verified-by: pending review
 
 **Purpose**: The core puzzle. The player moves layers of coloured sand between glass jars until every jar is either empty or sealed (full of a single colour).
 
-**Scope**: Pouring, sealing, winning and stuck detection, jar capacity at board level. Special jars (narrow, frozen, locked, funnel) are in `jar-mechanics.md`. How boards are dealt is in `level-generation.md`.
+**Scope**: Pouring, sealing, winning, stuck and dead-end detection, jar capacity at board level. Special jars (narrow, frozen, locked, funnel) are in `jar-mechanics.md`. How boards are dealt is in `level-generation.md`.
 
-**Current Implementation**: Pure functions over an immutable `Board`. Nothing here touches the screen, storage or time, so every rule is unit-tested in Node (`tests/unit/core/board.test.ts`).
+**Current Implementation**: Pure functions over an immutable `Board`. Nothing here touches the screen, storage or time, so every rule is unit-tested in Node (`tests/unit/core/board.test.ts`, with the special-jar conditions in `tests/unit/core/mechanics.test.ts`).
 
-**Design Intent** (from `design/game-brief.md` MVP 1 and `design/reverse-engineering/magic-sort-teardown.md` R1–R9, not inferred from code):
+**Design Intent** (from `design/game-brief.md` MVP 1 and `design/reverse-engineering/magic-sort-teardown.md` teardown rules R1–R9, not inferred from code):
 - Pouring is a single, readable move: lift the top run of one colour, drop it on a matching top or an empty jar.
 - Spare empty jars are the player's working space.
-- Nothing is ever permanently lost: a stuck board is recoverable (undo, shuffle, extra jar).
+- **Sealed means done** (D20): a sealed jar can't be poured from, on screen, in the rules and in the solver.
+- Nothing is ever permanently lost: a stuck board is recoverable through Undo or Restart, which are always free (D19), or Shuffle and the extra jar.
+- **Stuck is not the same as lost.** "Stuck" only means no useful move is left. A board can be unwinnable while moves remain; the game reports the cases it can recognise for certain (D21, 2.1 "Dead end").
 
 ---
 
@@ -36,7 +41,7 @@ verified-by: pending review
 
 **Pour**
 - **Description**: Moves the top run of one colour from jar `from` into jar `to`.
-- **Legal when** (all must hold): `from ≠ to`; both jars exist; neither jar is closed (frozen or locked); the source is not a funnel; the source is not empty; the target has free space (below its own capacity); and the target is empty or its top colour equals the run's colour.
+- **Legal when** (all must hold): `from ≠ to`; both jars exist; neither jar is closed (frozen or locked); the source is not a funnel; **the source is not sealed** (D20, *decided 2026-11-08, built in sprint 6*; the screen already refuses to lift a sealed jar and the solver already prunes it); the source is not empty; the target has free space (below its own capacity); and the target is empty or its top colour equals the run's colour.
 - **Amount**: as many units as fit. See Formulas.
 - **Reveal**: after a pour, the source's buried count is clamped to `length − 1`, so the new top unit is always visible. The target keeps its buried count.
 
@@ -44,7 +49,9 @@ verified-by: pending review
 
 **Win**: every jar is empty or sealed.
 
-**Stuck**: the level is not won and there is no *useful* move. A move is useful unless it moves a whole one-colour jar into an empty jar of the same kind, which only swaps two jars (the player can still make such a pour by hand).
+**Stuck**: the level is not won and there is no *useful* move. A move is useful unless it moves a whole one-colour jar into an empty jar **of the same kind**, which only swaps two jars (the player can still make such a pour by hand). Two jars are the same kind when they have the same capacity (`jarCapacity`) **and** the target is not a funnel. So a pour into an empty narrow jar (capacity 2) or an empty funnel is always useful, because it changes what the board can do. With D20, a sealed jar is no longer a source, so it can't make a board look unstuck.
+
+**Dead end** (D21, *decided 2026-11-08, built in sprint 6*): the level is not won and the board is in a state that can never be won. Only cases that are certain are reported; the cases are defined in `jar-mechanics.md` §2.1 (a funnel holding two or more colours; a lock whose key colour can no longer be sealed). A dead end is shown in the stuck banner with "This board can't be won now: Undo or Restart" (`feel-audio-ui.md`), even if pours are still possible. A board that is unwinnable for any other reason is not reported: the player keeps playing, and stuck still fires if no useful move is left.
 
 **Extra jar**: `addEmptyJar` appends one empty normal jar.
 
@@ -62,7 +69,8 @@ verified-by: pending review
 ### 2.3 Integration Points
 
 - **Used by**: the solver and generator (`level-generation.md`), the session (`session-boosters.md`), and the renderer (`feel-audio-ui.md`).
-- **API surface**: `makeBoard`, `topRun`, `canPour`, `pourAmount`, `pour`, `settle`, `isSealed`, `isWon`, `isStuck`, `legalMoves`, `usefulMoves`, `boardKey`, `jarKey`, `jarCapacity`, `isClosed`, `addEmptyJar`.
+- **Uses**: `jar-mechanics.md` (jar states, and the dead-end cases).
+- **API surface**: `makeBoard`, `topRun`, `canPour`, `pourAmount`, `pour`, `settle`, `isSealed`, `isWon`, `isStuck`, `legalMoves`, `usefulMoves`, `boardKey`, `jarKey`, `jarCapacity`, `isClosed`, `addEmptyJar`, plus the dead-end check (D21, name set when built).
 
 ---
 
@@ -70,8 +78,8 @@ verified-by: pending review
 
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
-| Pour amount | `min(run, free)` | `run`: length of the source's top run; `free`: `capacity(target) − units(target)`; range 1 to capacity | Source `[A,B,B,B]`, target `[B]`, capacity 4: run 3, free 3, moves 3. Target `[B,B,B]`: free 1, moves 1, source keeps `[A,B,B]` |
-| Seal | `units == capacity and all same colour and cap == capacity` | | `[C,C,C,C]` at capacity 4 is sealed; `[C,C,C]` is not |
+| Pour amount | `min(run, free)` | `run`: length of the source's top run; `free`: `jarCapacity(target) − units(target)`; range 1 to `jarCapacity(target)` (2 for a narrow jar, `capacity` otherwise) | Source `[A,B,B,B]`, target `[B]`, capacity 4: run 3, free 3, moves 3. Target `[B,B,B]`: free 1, moves 1, source keeps `[A,B,B]`. Empty narrow target: free 2, moves 2 of the 3 |
+| Seal | `units == capacity and all same colour and jarCapacity == capacity` | | `[C,C,C,C]` at capacity 4 is sealed; `[C,C,C]` is not; a narrow jar `[C,C]` is full but never sealed |
 
 ---
 
@@ -81,14 +89,18 @@ verified-by: pending review
 - ✅ Pour from an empty jar, onto a full jar, onto a mismatched top, onto itself, or with an out-of-range index: refused (`canPour` is false); `pour` throws and never changes the board.
 - ✅ The input board is never mutated: every pour returns a new board.
 - ✅ A buried unit is revealed as soon as it becomes the top.
-- ✅ A whole one-colour jar poured into an empty jar is not counted as progress for stuck detection.
+- ✅ A whole one-colour jar poured into an empty jar of the same kind is not counted as progress for stuck detection.
 - ✅ A partly filled one-colour jar is not sealed.
 
+**Decided 2026-11-08, built in sprint 6**:
+- **Pour from a sealed jar** (D20): refused, like any illegal pour. Before this, `canPour` allowed it, so a sealed jar poured into an empty narrow jar or funnel counted as a useful move the player could not make, and the stuck message never appeared (GA-PR-1).
+- **Known dead end with pours left** (D21): the stuck banner shows the dead-end message. Undo and Restart recover the board.
+
 **Not Yet Handled**:
-- None found in the source.
+- ⚠️ An unwinnable board outside the D21 cases is not detected while useful moves remain (only stuck is).
 
 **Unclear**:
-- ✅ Decided 2026-11-08: keep as built. The stuck message shows as soon as only pointless swap pours remain.
+- ✅ Decided 2026-11-08 (D9): keep as built. The stuck message shows as soon as only pointless swap pours remain.
 
 ---
 
@@ -97,16 +109,16 @@ verified-by: pending review
 **Technical Dependencies**: none (no imports besides types).
 
 **Design Dependencies**:
-- `jar-mechanics.md` extends pour legality and seal rules.
+- `jar-mechanics.md` extends pour legality and seal rules, and defines the dead-end cases.
 - `level-generation.md` relies on `boardKey`, `usefulMoves` and `isWon` for its solver.
-- `session-boosters.md` applies pours and reads `isWon` / `isStuck`.
-- `feel-audio-ui.md` draws the state and asks whether a tap is legal.
+- `session-boosters.md` applies pours and reads `isWon` / `isStuck` and the dead-end check.
+- `feel-audio-ui.md` draws the state, asks whether a tap is legal, and shows the stuck banner.
 
 ---
 
 ## 6. Acceptance Criteria
 
-**What Exists** (implemented and covered in `tests/unit/core/board.test.ts`):
+**What Exists** (implemented and covered in `tests/unit/core/board.test.ts`; the frozen, locked and funnel conditions in `tests/unit/core/mechanics.test.ts`):
 - ✅ A pour is legal only under the conditions in 2.1, and moves `min(run, free)` units.
 - ✅ An illegal pour throws and changes nothing.
 - ✅ A buried unit is revealed once it reaches the top.
@@ -114,16 +126,19 @@ verified-by: pending review
 - ✅ Stuck means not won with no useful move; a swap-only board is stuck.
 - ✅ `boardKey` ignores jar order.
 
-**Definition of Done**: complete.
+**Definition of Done**:
+- [ ] D20: `canPour` refuses a sealed source; a board with a sealed jar, an empty narrow jar and nothing else to do is stuck (board test).
+- [ ] D21: a board with a mixed funnel reports a dead end while pours remain; a board that is only stuck does not (tests in `mechanics.test.ts`).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-None open.
+None open: sealed jars (D20) and dead ends (D21) decided 2026-11-08.
 
 ### Flagged Follow-Up Work
 - [x] Stuck-with-swaps decided: keep as built (2026-11-08).
+- [x] Build D20 and D21 (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 
 ---
 
@@ -132,3 +147,4 @@ None open.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation from `src/core/board.ts` at `6ccece9` |
+| 2026-11-08 | Claude (sprint 6, F9) | D20 (no pour from a sealed jar) and D21 (dead end) recorded; Restart named as a recovery (GX-1); stuck ≠ unwinnable (GA-PR-3); "same kind" defined (GA-PR-2); `free` range and narrow examples (GA-PR-4); AC cites `mechanics.test.ts` (GA-PR-5); teardown rules cited as "teardown R1–R9" so they don't read as roadmap R-numbers |

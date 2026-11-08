@@ -3,7 +3,8 @@
  * hints and status. The UI listens through `onChange`, so nothing here knows about the DOM.
  * Implements design/game-brief.md MVP 1 and MVP 4.
  */
-import { type Board, type Jar, type Move, addEmptyJar, canPour, isClosed, isSealed, isStuck, isWon, jarKey, pour, settle } from './board';
+import { type Board, type Jar, type LostReason, type Move, addEmptyJar, canPour, isClosed, isSealed, isStuck, isWon, jarKey, lostReason as boardLostReason, pour, settle } from './board';
+import type { GameConfig } from './levels';
 import { type Rng, shuffle as shuffleInPlace } from './rng';
 import { solve } from './solver';
 
@@ -29,7 +30,33 @@ export interface SessionOptions {
   readonly shuffleAttempts?: number;
   /** Solver budget used to prove a shuffled board is winnable. Defaults to `hintNodeBudget`. */
   readonly shuffleNodeBudget?: number;
+  /**
+   * Solver states one shuffle may spend across all its attempts (F7, GA-SB-4). Defaults to
+   * the per-attempt budget, so a session built without it still can't freeze for long.
+   */
+  readonly shuffleTotalNodeBudget?: number;
 }
+
+/**
+ * The session tuning from game-config.json, so callers don't map each key by hand.
+ * Example: `new GameSession(level.board, sessionOptions(config))`
+ */
+export function sessionOptions(config: Pick<GameConfig, 'extraJarsPerLevel' | 'hint' | 'shuffle'>): SessionOptions {
+  return {
+    extraJarsPerLevel: config.extraJarsPerLevel,
+    hintNodeBudget: config.hint.solverNodeBudget,
+    shuffleAttempts: config.shuffle.maxAttempts,
+    shuffleNodeBudget: config.shuffle.solverNodeBudget,
+    shuffleTotalNodeBudget: config.shuffle.totalNodeBudget,
+  };
+}
+
+/**
+ * What a hint request found (F7, GA-SB-2). `'unwinnable'`: the board is proven lost
+ * (structurally or by the solver). `'budget'`: the search ran out before an answer, so
+ * the board may still be winnable. `'won'`: the level is already won.
+ */
+export type HintResult = { readonly move: Move } | { readonly reason: 'won' | 'unwinnable' | 'budget' };
 
 /**
  * Example:
@@ -93,6 +120,15 @@ export class GameSession {
     return 'playing';
   }
 
+  /**
+   * Why the current board can certainly no longer be won, or `null` (decision D-c).
+   * Independent of `status`: a lost board can still have legal pours. Undo, restart,
+   * shuffle and the extra jar still work. See `lostReason` in board.ts for the rules.
+   */
+  get lostReason(): LostReason | null {
+    return boardLostReason(this.current);
+  }
+
   /** Subscribes to events. Returns an unsubscribe function. */
   onChange(listener: (e: SessionEvent) => void): () => void {
     this.listeners.add(listener);
@@ -113,8 +149,8 @@ export class GameSession {
   }
 
   /**
-   * Takes back the last pour. Unlimited here (the UI charges a booster for it), and
-   * it never counts against Perfect (design/gdd/session-boosters.md, M2).
+   * Takes back the last pour. Free and unlimited (decision D-a), and it never counts
+   * against Perfect (design/gdd/session-boosters.md, M2).
    */
   undo(): boolean {
     const prev = this.history.pop();
@@ -155,7 +191,8 @@ export class GameSession {
   /**
    * Re-deals the sand in every unsealed jar, keeping each jar's fill level, and only
    * accepts a deal the solver proves winnable. Undoable. Returns false if no such
-   * deal was found or the level is already won.
+   * deal was found or the level is already won. All attempts together spend at most
+   * `shuffleTotalNodeBudget` solver states (F7, GA-SB-4), so it can't freeze the game.
    */
   shuffle(rng: Rng): boolean {
     if (this.status === 'won') return false;
@@ -166,7 +203,9 @@ export class GameSession {
     const before = exactKey(board);
     const attempts = this.options.shuffleAttempts ?? 40;
     const budget = this.options.shuffleNodeBudget ?? this.options.hintNodeBudget;
-    for (let a = 0; a < attempts; a++) {
+    const total = this.options.shuffleTotalNodeBudget ?? budget;
+    let spent = 0;
+    for (let a = 0; a < attempts && spent < total; a++) {
       shuffleInPlace(pool, rng);
       let k = 0;
       const jars: Jar[] = board.jars.map((j, i) => {
@@ -177,7 +216,10 @@ export class GameSession {
       });
       const next: Board = settle({ capacity: board.capacity, jars });
       if (exactKey(next) === before || isWon(next)) continue;
-      if (solve(next, budget).solvable !== true) continue;
+      const allowed = Math.min(budget, total - spent);
+      const proof = solve(next, allowed);
+      spent += Math.min(proof.nodes, allowed);
+      if (proof.solvable !== true) continue;
       this.history.push(board);
       this.current = next;
       this.plan = null;
@@ -192,21 +234,37 @@ export class GameSession {
   /**
    * Suggests the next move from the current board, using the solver.
    * Returns `null` if the board can't be won from here, or the solver ran out of budget.
+   * Use `hintResult()` to tell those two apart.
    */
   hint(): Move | null {
-    if (this.status === 'won') return null;
+    const r = this.hintResult();
+    return 'move' in r ? r.move : null;
+  }
+
+  /**
+   * Like `hint()`, but says why there is no move. Only a result with a move counts
+   * against Perfect (M2). A structurally lost board (`lostReason`) answers at once,
+   * without spending any search.
+   * Example: `const r = s.hintResult(); if ('move' in r) show(r.move); else toast(r.reason);`
+   */
+  hintResult(): HintResult {
+    if (this.status === 'won') return { reason: 'won' };
     // Keep following one plan while the player stays on it. Re-solving from every state
     // can suggest moves that undo each other, so the hints would loop forever.
     const key = exactKey(this.current);
     const onPlan = this.plan?.keys.indexOf(key) ?? -1;
     if (onPlan >= 0) {
       this.assistCount++;
-      return this.plan!.steps[onPlan];
+      return { move: this.plan!.steps[onPlan] };
+    }
+    if (boardLostReason(this.current) !== null) {
+      this.plan = null;
+      return { reason: 'unwinnable' };
     }
     const result = solve(this.current, this.options.hintNodeBudget);
-    if (!result.solvable || result.path.length === 0) {
+    if (result.solvable !== true || result.path.length === 0) {
       this.plan = null;
-      return null;
+      return { reason: result.solvable === null ? 'budget' : 'unwinnable' };
     }
     const keys: string[] = [];
     let b = this.current;
@@ -216,7 +274,7 @@ export class GameSession {
     }
     this.plan = { keys, steps: [...result.path] };
     this.assistCount++; // only a hint that actually helps counts against Perfect (M2)
-    return result.path[0];
+    return { move: result.path[0] };
   }
 
   private emitStatus(): void {

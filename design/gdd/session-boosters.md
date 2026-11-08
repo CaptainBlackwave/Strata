@@ -2,7 +2,7 @@
 status: reverse-documented
 source: src/core/session.ts, src/ui/main.ts
 date: 2026-11-08
-verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
+verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08; free Undo decided 2026-11-08, D19)
 ---
 
 # Session and Boosters: Design Document
@@ -12,6 +12,10 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** items marked *decided 2026-11-08, built in sprint 6* are owner decisions
+> (D19–D21, `systems-index.md`) or approved fixes (`production/qa/sprint-6-findings.md` F1, F2, F7) that the
+> code does not do yet. Mark each "built in sprint 6" once it lands.
 
 ---
 
@@ -24,8 +28,10 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 **Current Implementation**: `GameSession` wraps a `Board`, keeps a history, a move counter and an "assists" counter, and emits events (`pour`, `undo`, `restart`, `extraJar`, `shuffle`, `won`, `stuck`) for the UI. It has no screen dependency.
 
 **Design Intent**:
-- Mistakes are cheap but not free: boosters have limited charges, then coin prices (`economy.md`, decision D3).
+- **Undo is free and unlimited** (D19, amends roadmap R3): no charges, no coins, and it never counts against Perfect. Undo is the calm "tidy-up" tool the brief promises. *Decided 2026-11-08, built in sprint 6.*
+- The other boosters (Shuffle, Extra Jar, Hint) are limited but earnable: stored charges, then coin prices (`economy.md`, roadmap R3). They keep the tension of a real choice.
 - **Perfect means "cleared without leaning on boosters", where Undo is free and a Hint that finds no move doesn't count** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (M2).
+- A stuck or lost board always has a way out that costs nothing: Undo or Restart.
 
 ---
 
@@ -36,17 +42,20 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 | Action | Behaviour |
 |---|---|
 | **Pour** | Applies a legal pour, pushes the previous board on the history, counts a move, emits `pour` (with units moved, colour, whether the target sealed), then `won` or `stuck` if the status changed. Refused (returns false) when illegal or the level is already won |
-| **Undo** | Restores the previous board and takes one move off the counter. The session allows unlimited undos; the UI gates it through the wallet (a charge, or coins). Undo never counts against Perfect |
-| **Restart** | Back to the dealt board, with any extra jar already used re-added; clears history and moves; does **not** refund charges or reset the assists counter |
+| **Undo** | Restores the previous board and takes one move off the counter. Unlimited. **Free** (D19): it spends no charge and no coins, and it never counts against Perfect. *Decided 2026-11-08, built in sprint 6* (until then the UI gates Undo through the wallet: a charge, or 40 coins) |
+| **Restart** | Back to the dealt board, with any extra jar already used re-added; clears history and moves; does **not** refund charges or reset the assists counter. Free |
 | **Extra Jar** | Adds one empty normal jar to the current board *and* to every history state (so Undo never removes it). No per-level cap (decision D5, **built in sprint 5**; `extraJarsPerLevel: null`); limited only by charges and coins |
-| **Shuffle** | Re-deals the sand of every *free* jar (not sealed, frozen, locked or a funnel), keeping each jar's fill level. Tries up to 40 random deals; accepts the first that differs from the current board, is not already won, and is proven winnable by the solver (40,000-state budget). Undoable. Fails (false) if none is found |
-| **Hint** | Asks the solver (40,000-state budget) for a winning path from the current board and returns its first move, or null if the level is won, unwinnable or the budget ran out. The plan is cached by exact board and served while the player stays on it, so hints never loop (regression-tested) |
-| **Status** | `won` (every jar empty or sealed), `stuck` (not won, no useful move), otherwise `playing` |
-| **Perfect** | A level is Perfect when `assists === 0` at the win. Assists are a Hint that returned a move, the extra Jar, and Shuffle |
+| **Shuffle** | Re-deals the sand of every *free* jar (not sealed, frozen, locked or a funnel), keeping each jar's fill level. Tries up to 40 random deals; accepts the first that differs from the current board, is not already won, and is proven winnable by the solver (40,000-state budget per deal). Undoable. Fails (false) if none is found. **Time budget** (F7): the whole shuffle gets a cap on total solver states, so it can never freeze the game on a late board; when the cap is reached it fails and the charge or coins are given back. *Decided 2026-11-08, built in sprint 6* |
+| **Hint** | Asks the solver (40,000-state budget) for a winning path from the current board and returns its first move, or nothing if the level is won, unwinnable or the budget ran out. The plan is cached by exact board and served while the player stays on it, so hints never loop (regression-tested). The result says **why** there is no move (F7): proven unwinnable → "No way forward from here" with Undo and Restart; budget ran out → "Couldn't find a hint this time". *Decided 2026-11-08, built in sprint 6* (today both cases show "No way forward") |
+| **Status** | `won` (every jar empty or sealed), `stuck` (not won, no useful move; `pour-rules.md` §2.1), or a **known dead end** (not won, and `jar-mechanics.md` §2.1 reports a case that can't be won, D21), otherwise `playing` |
+| **Perfect** | A level is Perfect when `assists === 0` at the win. Assists are a Hint that returned a move, the extra Jar, and Shuffle. Undo and Restart are never assists |
 
-**Through the UI** (`useBooster`): ignored while a pour is animating or in the tutorial. Undo with nothing to undo, or an extra Jar already used, shows a toast without spending. Otherwise a charge (or the coin price) is spent first and the wallet is restored if the action could not apply (no hint found, no shuffle found).
+**Through the UI** (`useBooster`): ignored while a pour is animating or in the tutorial. Undo with nothing to undo shows a toast and changes nothing. Otherwise a charge (or the coin price) is spent first, for Shuffle, Jar and Hint only, and the wallet is restored if the action could not apply (no hint found, no shuffle found).
 
-**Player-facing**: a toolbar of four boosters, each with a charge badge that turns into a coin price at zero charges; a restart button; keyboard shortcuts (Z, S, J, H, R); Hint highlights the "from" and "to" jars for 2.4 s.
+**Player-facing**:
+- A toolbar of four boosters. Shuffle, Jar and Hint each have a charge badge that turns into a coin price at zero charges. Undo shows no badge and no price (D19, built in sprint 6). A restart button. Keyboard shortcuts (Z, S, J, H, R).
+- Hint marks the "from" and "to" jars for 2.4 s. The mark is visible under reduced motion and is announced to screen readers ("Hint: pour jar 2 into jar 5"); `feel-audio-ui.md` owns how (F1, decided 2026-11-08, built in sprint 6).
+- When the board is stuck or a known dead end, a **persistent stuck banner** offers Undo, Shuffle, Extra Jar and Restart until the board changes, and names Restart as free (F2; text in `feel-audio-ui.md`). A known dead end says "This board can't be won now: Undo or Restart" (D21). *Decided 2026-11-08, built in sprint 6.*
 
 ### 2.2 State and Data
 
@@ -57,8 +66,8 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 
 ### 2.3 Integration Points
 
-- **Depends on**: `pour-rules.md`, `jar-mechanics.md` (jar states in shuffle and hint), `level-generation.md` (the solver), `economy.md` (charges and prices).
-- **Depended on by**: `economy.md` (Perfect bonus), `daily-puzzle.md` and `feel-audio-ui.md` (events, toolbar), `player-profile.md` (Perfect, boosters applied and pours feed its stats).
+- **Depends on**: `pour-rules.md` (pours, stuck), `jar-mechanics.md` (jar states in shuffle and hint, dead-end cases), `level-generation.md` (the solver), `economy.md` (charges and prices).
+- **Depended on by**: `economy.md` (Perfect bonus), `daily-puzzle.md` and `feel-audio-ui.md` (events, toolbar, stuck banner), `player-profile.md` (Perfect, boosters applied and pours feed its stats), `shell-collection.md` (the level win triggers milestone shells).
 
 ---
 
@@ -66,8 +75,10 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
-| Perfect | `assists == 0` | `assists` = Hints that returned a move + extra Jar + Shuffle uses; Undo and a Hint that found nothing add 0 | Undo three times and win with no other booster: Perfect (+10 coins) |
-| Shuffle acceptance | `different board AND not won AND solver says winnable` within 40 tries | | |
+| Perfect | `assists == 0` | `assists` = Hints that returned a move + extra Jar + Shuffle uses; Undo, Restart and a Hint that found nothing add 0 | Undo three times and win with no other booster: Perfect (+10 coins) |
+| Undo cost | `0` (D19) | | 30 undos on one level cost nothing and still allow Perfect |
+| Shuffle acceptance | `different board AND not won AND solver says winnable` within 40 tries and within the total shuffle state cap (F7) | | |
+| Hint outcome | `move` if the solver finds a path; `unwinnable` if it proves none; `gave up` if the budget ran out | budget 40,000 states | `gave up` → "Couldn't find a hint this time" |
 
 ---
 
@@ -77,20 +88,25 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 - ✅ An illegal pour or a pour after the win is refused and changes nothing.
 - ✅ Undo with an empty history returns false.
 - ✅ An extra Jar added mid-level survives Undo and Restart.
-- ✅ Hints always lead to a win (following 300 hints from a perturbed board on levels 10, 14, 20, 45 reaches `won`).
+- ✅ Hints lead to a win in the tested cases: following 300 hints from a perturbed board on levels 10, 14, 20 and 45 reaches `won` (tests use a 10,000-state budget). Late boards (14 colours, 16+ jars) at the 40,000 production budget are not tested yet; F7 adds that test.
 - ✅ Shuffle leaves sealed, frozen, locked and funnel jars alone and can be undone.
 - ✅ The wallet is restored if a booster could not apply.
-
 - ✅ **Undo is free for Perfect** (M2, fixed 2026-11-08). Verified in the browser: level 5 cleared with an Undo still shows "Perfect!" and pays +30.
 - ✅ **A Hint that finds no move doesn't count** (M2, fixed 2026-11-08): `hint()` increments the counter only when it returns a move.
 - ✅ Restart keeps the assist count, as confirmed.
 
+**Decided 2026-11-08, built in sprint 6**:
+- **Undo is free in coins and charges too** (D19). A player with no coins can always undo. This also removes the old "restart instead of paying for Undo" workaround (GX-4).
+- **Shuffle on a late stuck board** could run 40 proofs of 40,000 states (estimated at about 35 s on the main thread from ~22 µs per state, not measured). A total state cap bounds it (F7); hitting the cap is a failed shuffle with a refund.
+- **Hint budget runs out on a winnable board**: the player sees "Couldn't find a hint this time", never "No way forward" (F7).
+
 **Not Yet Handled**:
-- None found in the source.
+- ⚠️ Shuffle with a very small free pool (for example one free jar) has no rule of its own; it fails after its tries or its cap. Not measured.
 
 **Unclear**:
-- ✅ Decided 2026-11-08: **no cap**. A player may use as many extra Jars on a level as they hold charges (or coins) for (**built in sprint 5**).
-- ✅ Decided 2026-11-08: any winnable shuffle is acceptable (as built).
+- ✅ Decided 2026-11-08: **no cap** on extra Jars (D5). A player may use as many extra Jars on a level as they hold charges (or coins) for (**built in sprint 5**).
+- ✅ Decided 2026-11-08: any winnable shuffle is acceptable (D6, as built).
+- ✅ Decided 2026-11-08: Undo is free and unlimited (D19).
 
 ---
 
@@ -98,9 +114,9 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 
 **Technical Dependencies**: `board.ts`, `solver.ts`, `rng.ts` (shuffle randomness; the UI seeds it from the clock).
 
-**Design Dependencies**: `pour-rules.md`, `jar-mechanics.md`, `level-generation.md`, `economy.md`, `daily-puzzle.md`, `feel-audio-ui.md`, `save-data.md` (booster charges persist there).
+**Design Dependencies**: `pour-rules.md`, `jar-mechanics.md`, `level-generation.md`, `economy.md`, `daily-puzzle.md`, `feel-audio-ui.md`, `player-profile.md`, `shell-collection.md`, `save-data.md` (booster charges persist there).
 
-**Content Dependencies**: `extraJarsPerLevel` 1, `hint.solverNodeBudget` 40,000, `shuffle.maxAttempts` 40, `shuffle.solverNodeBudget` 40,000.
+**Content Dependencies**: `extraJarsPerLevel` `null` (no cap, D5), `hint.solverNodeBudget` 40,000, `shuffle.maxAttempts` 40, `shuffle.solverNodeBudget` 40,000, and the new total shuffle state cap (F7, value set when built). `boosters.undo` no longer sets a charge or a price once D19 is built.
 
 ---
 
@@ -110,21 +126,26 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 - ✅ Pours, undo, restart, extra Jar, shuffle and hint behave as in 2.1; hints reach a win; shuffle keeps units and fill levels and is undoable.
 - ✅ Assists count a helpful hint, the extra Jar and shuffle; not pours, Undo or a hint that found nothing; Restart doesn't reset them.
 - ✅ Undo three times and still win Perfect; a null hint leaves `assists` at 0 (tests written first and seen failing on the old code).
+- ✅ Two extra jars on one level (no cap, `session.test.ts`).
 
 **Definition of Done**:
 - [x] Both Perfect rules changed in `session.ts` with tests that fail first.
 - [x] Open questions answered (2026-11-08).
 - [x] Extra Jar cap removed; two extra jars on one level tested and verified in the browser.
+- [ ] D19: Undo with 0 coins and 0 charges works and leaves the wallet unchanged (unit test); Undo shows no badge or price (screenshot).
+- [ ] F7: Shuffle on a late stuck board ends within its state cap (test); a hint whose budget runs out reports `gave up`, not `unwinnable` (test); at the 40,000 budget, hints return a move on sampled states of levels 100–200 (test).
+- [ ] F2: the stuck banner names Restart and stays until the board changes (screenshot).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-None open: no Jar cap; any winnable shuffle.
+None open: no Jar cap (D5); any winnable shuffle (D6); free Undo (D19).
 
 ### Flagged Follow-Up Work
 - [x] Change `session.ts` so `undo()` does not increment `assistCount`, and `hint()` increments it only when it returns a move.
 - [x] Walkthrough screenshot: `production/qa/evidence/gdd-alignment/m2-perfect-with-undo.png`.
+- [x] Build D19 and F7 (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 
 ---
 
@@ -134,3 +155,4 @@ None open: no Jar cap; any winnable shuffle.
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; Perfect rule confirmed by the owner |
 | 2026-11-08 | Claude | M2 fixed: Undo and an unhelpful Hint no longer count against Perfect |
+| 2026-11-08 | Claude (sprint 6, F9) | D19 free Undo recorded; roadmap decision cited as R3 (GX-8, GA-SB-6); `extraJarsPerLevel` is `null` (GA-SB-1, GX-5); stale "extra Jar already used" toast clause removed (GA-SB-5); hint evidence stated as tested (GA-SB-2); decided sprint 6 items recorded: stuck banner, visible and announced hint, shuffle time budget, "couldn't find a hint this time"; dead-end status (D21) |
