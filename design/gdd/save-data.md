@@ -63,7 +63,7 @@ verified-by: pending review
 ### 2.3 Integration Points
 
 - **Depends on**: `economy.md` (the starting wallet).
-- **Depended on by**: `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md`.
+- **Depended on by**: `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md`, `player-profile.md` (adds the `profile` and `stats` fields, repaired field by field).
 
 ---
 

@@ -58,7 +58,7 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 ### 2.3 Integration Points
 
 - **Depends on**: `pour-rules.md`, `jar-mechanics.md` (jar states in shuffle and hint), `level-generation.md` (the solver), `economy.md` (charges and prices).
-- **Depended on by**: `economy.md` (Perfect bonus), `daily-puzzle.md` and `feel-audio-ui.md` (events, toolbar).
+- **Depended on by**: `economy.md` (Perfect bonus), `daily-puzzle.md` and `feel-audio-ui.md` (events, toolbar), `player-profile.md` (Perfect, boosters applied and pours feed its stats).
 
 ---
 

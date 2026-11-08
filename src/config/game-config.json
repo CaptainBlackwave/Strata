@@ -205,6 +205,36 @@
       }
     ]
   },
+  "profile": {
+    "$comment": "Player profile (design/gdd/player-profile.md). The first item of each list is its default. unlock is null for start items, else {kind, count} with kind one of levels, perfectClears, bestStreak, dailiesSolved, shells, sets. Ids are stored in saves: never rename one. Plate ink must reach 4.5:1 on bg and bg2 (unit-tested).",
+    "name": { "min": 2, "max": 16 },
+    "avatars": [
+      { "id": "sand-jar", "name": "Sand Jar", "bg": "#f6dcb4", "unlock": null },
+      { "id": "beach-hut", "name": "Beach Hut", "bg": "#cfe8e2", "unlock": null },
+      { "id": "sailboat", "name": "Sailboat", "bg": "#cde3f0", "unlock": null },
+      { "id": "sun-hat", "name": "Sun Hat", "bg": "#fbe3c2", "unlock": null },
+      { "id": "lighthouse", "name": "Lighthouse", "bg": "#d7e6f2", "unlock": { "kind": "levels", "count": 25 } },
+      { "id": "sandcastle", "name": "Sandcastle", "bg": "#f3e0bd", "unlock": { "kind": "levels", "count": 50 } },
+      { "id": "anchor", "name": "Anchor", "bg": "#d5ebe6", "unlock": { "kind": "sets", "count": 1 } },
+      { "id": "lantern", "name": "Lantern", "bg": "#e4dcef", "unlock": { "kind": "levels", "count": 100 } }
+    ],
+    "frames": [
+      { "id": "sand", "name": "Plain Sand", "unlock": null },
+      { "id": "rope", "name": "Rope", "unlock": null },
+      { "id": "sea-glass", "name": "Sea Glass", "unlock": null },
+      { "id": "driftwood", "name": "Driftwood", "unlock": { "kind": "perfectClears", "count": 10 } },
+      { "id": "coral", "name": "Coral", "unlock": { "kind": "bestStreak", "count": 14 } },
+      { "id": "gold", "name": "Gold", "unlock": { "kind": "shells", "count": 40 } }
+    ],
+    "plates": [
+      { "id": "cream", "name": "Cream", "bg": "#fffaf1", "edge": "#e0cfb2", "ink": "#4a3b2c", "unlock": null },
+      { "id": "sand-stripes", "name": "Sand Stripes", "bg": "#f8e6c6", "bg2": "#efcf9f", "edge": "#d5a868", "ink": "#4a3b2c", "unlock": null },
+      { "id": "sea-glass", "name": "Sea Glass", "bg": "#d4efe9", "bg2": "#b4dfd5", "edge": "#7cbfb1", "ink": "#1d4a44", "unlock": null },
+      { "id": "driftwood", "name": "Driftwood Sign", "bg": "#8a5f3e", "bg2": "#75502f", "edge": "#55381f", "ink": "#fff6e6", "unlock": { "kind": "levels", "count": 75 } },
+      { "id": "wave", "name": "Wave Ribbon", "bg": "#1f7a70", "bg2": "#18665d", "edge": "#114c45", "ink": "#ffffff", "unlock": { "kind": "dailiesSolved", "count": 30 } },
+      { "id": "gold-leaf", "name": "Gold Leaf", "bg": "#f4d57e", "bg2": "#e2b552", "edge": "#a87a22", "ink": "#3f2b0e", "unlock": { "kind": "sets", "count": 4 } }
+    ]
+  },
   "tutorial": {
     "$comment": "First-launch lesson: one pour seals a jar.",
     "capacity": 4,

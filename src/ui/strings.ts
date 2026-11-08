@@ -118,6 +118,59 @@ const en = {
   boardLabel: 'Sand jars',
   boosterLabel: (name: string, charges: number, price: number) =>
     charges > 0 ? `${name}, ${charges} left` : `${name}, costs ${price} coins`,
+  // Player profile (design/gdd/player-profile.md)
+  profileTitle: 'Profile',
+  profileLabel: (name: string) => `Profile: ${name}`,
+  editProfile: 'Edit profile',
+  editProfileTitle: 'Edit profile',
+  levelBadge: 'Level',
+  statsTitle: 'Stats',
+  statLabels: {
+    levels: 'Levels cleared',
+    perfectClears: 'Perfect clears',
+    streak: 'Daily streak',
+    bestStreak: 'Best streak',
+    dailiesSolved: 'Dailies solved',
+    shells: 'Shells',
+    sets: 'Sets completed',
+    scenes: 'Scenes',
+    pours: 'Total pours',
+    coinsEarned: 'Coins earned',
+    boostersUsed: 'Boosters used',
+  },
+  statsFootnote: 'Some totals count from this update onwards.',
+  tabs: { avatar: 'Avatar', frame: 'Frame', plate: 'Name' },
+  nameLabel: 'Your name',
+  reroll: 'New random name',
+  nameInvalid: (min: number, max: number) => `Use ${min}–${max} letters or numbers`,
+  platesLabel: 'Name plate',
+  saveProfile: 'Save',
+  discardTitle: 'Discard changes?',
+  discard: 'Discard',
+  keepEditing: 'Keep editing',
+  lockedItem: (name: string, req: string) => `${name}, locked: ${req}`,
+  unlockReq: {
+    levels: (n: number) => `Clear ${n} levels`,
+    perfectClears: (n: number) => `Get ${n} perfect clears`,
+    bestStreak: (n: number) => `Reach a ${n}-day streak`,
+    dailiesSolved: (n: number) => `Solve ${n} daily puzzles`,
+    shells: (n: number) => `Collect ${n} shells`,
+    sets: (n: number) => (n === 1 ? 'Complete a shell set' : `Complete ${n} shell sets`),
+  },
+  unlockLine: (name: string, req: string, have: number, need: number) => `${name}: ${req} · ${have}/${need}`,
+  newCosmetic: {
+    avatar: (name: string) => `New avatar: ${name}`,
+    frame: (name: string) => `New frame: ${name}`,
+    plate: (name: string) => `New name plate: ${name}`,
+  },
+  /**
+   * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most
+   * 7 letters and nouns at most 5, so every name fits the 16-character limit (unit-tested).
+   */
+  nameWords: {
+    adjectives: ['Saffron', 'Coral', 'Sage', 'Lagoon', 'Plum', 'Sandy', 'Sunny', 'Breezy', 'Salty', 'Golden', 'Misty', 'Pebbly', 'Tidal', 'Calm', 'Amber', 'Azure'],
+    nouns: ['Gull', 'Tern', 'Dune', 'Wave', 'Tide', 'Cove', 'Reef', 'Kite', 'Sail', 'Jar', 'Shell', 'Pearl', 'Bay', 'Isle', 'Buoy', 'Skiff'],
+  },
 } as const;
 
 /** The active string table. */

@@ -74,7 +74,7 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 ### 2.3 Integration Points
 
 - **Depends on**: `level-generation.md` (`generateFromSpec`), `jar-mechanics.md` (Saturday), `economy.md` (coins), `shell-collection.md` (shell on first solve).
-- **Depended on by**: `feel-audio-ui.md` (home card, win card), `save-data.md`.
+- **Depended on by**: `feel-audio-ui.md` (home card, win card), `save-data.md`, `player-profile.md` (streak, best streak and counted solves feed its stats and unlocks).
 
 ---
 

@@ -1586,3 +1586,418 @@ svg.fx-glow {
 svg.fx-stone {
   filter: drop-shadow(0 1px 0 rgba(61, 50, 38, 0.35));
 }
+
+/* ==== Player profile (design/gdd/player-profile.md) ==== */
+.portrait {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+}
+.portrait svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.portrait-xs { width: 40px; height: 40px; }
+.portrait-sm { width: 44px; height: 44px; }
+.portrait-md { width: 64px; height: 64px; }
+.portrait-lg { width: 88px; height: 88px; }
+.portrait-pick { width: 100%; max-width: 4.5rem; aspect-ratio: 1; height: auto; }
+
+/* Name plates: each has its own fixed colours, so it reads the same in every scene (PP-6). */
+.plate {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0.3em 0.85em;
+  border: 2px solid var(--pl-edge);
+  border-radius: 999px;
+  background: var(--pl-bg);
+  color: var(--pl-ink);
+  font-weight: 800;
+  line-height: 1.2;
+  position: relative;
+}
+.plate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.plate-sm { font-size: 0.875rem; }
+.plate-lg { font-size: 1.0625rem; }
+.plate-lg .plate-text {
+  white-space: normal;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.plate[data-plate='sand-stripes'] {
+  background: linear-gradient(180deg, var(--pl-bg) 0 34%, var(--pl-bg2) 34% 67%, var(--pl-bg) 67%);
+}
+.plate[data-plate='sea-glass'] {
+  background: linear-gradient(135deg, var(--pl-bg), var(--pl-bg2));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7);
+}
+.plate[data-plate='driftwood'] {
+  border-radius: 6px;
+  padding-inline: 1.1em;
+  background: repeating-linear-gradient(176deg, var(--pl-bg) 0 5px, var(--pl-bg2) 5px 7px);
+}
+.plate[data-plate='driftwood']::before,
+.plate[data-plate='driftwood']::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  background: #d9c3a0;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+.plate[data-plate='driftwood']::before { left: 0.45em; }
+.plate[data-plate='driftwood']::after { right: 0.45em; }
+.plate[data-plate='wave'] {
+  border-radius: 6px;
+  padding-bottom: 0.45em;
+  background:
+    radial-gradient(circle at 6px 100%, var(--pl-bg2) 4px, transparent 4.5px) 0 100% / 12px 7px repeat-x,
+    var(--pl-bg);
+}
+.plate[data-plate='gold-leaf'] {
+  border-radius: 9px;
+  background: linear-gradient(160deg, var(--pl-bg), var(--pl-bg2) 62%, var(--pl-bg));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+/* Home chip, top-left in the normal flow so it never overlaps the logo (PP-1). */
+.home-top {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+}
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(18rem, 100%);
+  min-height: 48px;
+  padding: 2px 10px 2px 2px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 rgba(90, 70, 50, 0.12);
+  cursor: pointer;
+}
+.profile-chip[hidden] {
+  display: none;
+}
+.profile-chip:focus-visible,
+.pick:focus-visible,
+.tab:focus-visible,
+.name-input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.profile-chip-plate {
+  display: flex;
+  min-width: 0;
+}
+
+/* Profile screen */
+.profile-card,
+.edit-card {
+  padding-bottom: 16px;
+}
+.profile-head {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding-right: 56px !important;
+  margin: 10px 0 14px;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--surface-2);
+}
+.profile-id {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1 1 9rem;
+  min-width: 0;
+}
+/* The plate's wrapper: shrinks and wraps under the portrait on narrow screens or large text. */
+.profile-plate {
+  display: flex;
+  flex: 1 1 9rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.profile-id .profile-plate {
+  flex: none;
+}
+.level-badge {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.level-badge b {
+  font-size: 1rem;
+  font-weight: 900;
+}
+.edit-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--card);
+}
+.stats-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.stat {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.stat-ico {
+  grid-row: span 2;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.stat dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.stat dd {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 900;
+}
+.stats-note {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+/* Edit Profile sheet */
+.edit-layer { z-index: 27; }
+.discard-layer { z-index: 28; }
+.edit-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  min-width: 0;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.tab {
+  flex: 1;
+  padding: 9px 4px;
+  font: inherit;
+  font-weight: 800;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.tab[aria-selected='true'] {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+.tab-panel {
+  padding: 12px 0 0;
+}
+.tab-panel[hidden] {
+  display: none;
+}
+.pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+  gap: 10px;
+}
+.plate-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+}
+.plate-grid .plate {
+  font-size: 0.875rem;
+}
+.pick {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  padding: 6px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 3px solid transparent;
+  border-radius: 16px;
+  cursor: pointer;
+}
+.pick[aria-checked='true'] {
+  border-color: var(--accent);
+  background: var(--card);
+}
+.pick.locked > :first-child {
+  filter: grayscale(0.85);
+  opacity: 0.45;
+}
+.pick-lock {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--card);
+}
+.pick-lock svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.pick-check {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 80% no-repeat;
+}
+.name-label,
+.plates-label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+.plates-label {
+  margin-top: 6px;
+}
+.name-row {
+  display: flex;
+  gap: 8px;
+}
+.name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--card);
+  border: 2px solid var(--surface-2);
+  border-radius: 12px;
+}
+.name-input[aria-invalid='true'] {
+  border-color: #c8553d;
+}
+.reroll {
+  width: 46px;
+  height: 46px;
+  background: var(--surface-2);
+}
+.name-error {
+  min-height: 1.2em;
+  margin: 4px 0 4px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #b3412b;
+}
+.pick-note {
+  min-height: 1.2em;
+  margin: 10px 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.btn-save-profile:disabled,
+#btn-save-profile:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.discard-card {
+  width: min(340px, 100%);
+  padding: 18px 16px 6px;
+  text-align: center;
+}
+.discard-card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.discard-btn {
+  color: #fff;
+  background: #b3412b;
+}
+
+/* Win card: small avatar and unlock rows (§3.7) */
+.win-card {
+  position: relative;
+}
+.win-avatar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+.win-avatar[hidden] {
+  display: none;
+}
+.win-unlock .win-shell-art {
+  display: grid;
+  place-items: center;
+}
+.win-unlock .win-shell-art .plate {
+  font-size: 0.625rem;
+  padding: 0.25em 0.5em;
+}
+.win-unlocks:empty {
+  display: none;
+}
+body[data-theme='moonlit'] .profile-chip {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}

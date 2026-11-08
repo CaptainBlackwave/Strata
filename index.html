@@ -53,12 +53,14 @@
       </nav>
       <div id="win" class="win" hidden>
         <div class="win-card" role="dialog" aria-modal="true" aria-labelledby="win-title">
+          <span id="win-avatar" class="portrait portrait-xs win-avatar" aria-hidden="true" hidden></span>
           <div class="win-jars" aria-hidden="true"><i></i><i></i><i></i></div>
           <h2 id="win-title">Level cleared</h2>
           <p id="win-text">All jars sorted.</p>
           <div id="win-reward" class="win-reward"><i class="coin" aria-hidden="true"></i><span id="win-coins">+20</span></div>
           <p id="win-note" class="win-note"></p>
           <div id="win-shell" class="win-shell" hidden><span id="win-shell-art" class="win-shell-art"></span><span id="win-shell-text"></span></div>
+          <div id="win-unlocks" class="win-unlocks" aria-live="polite"></div>
           <button id="btn-share" class="secondary share" type="button" hidden>Share</button>
           <button id="btn-next" class="primary" type="button">Continue</button>
         </div>
@@ -118,7 +120,65 @@
           <div id="cabinet-sets"></div>
         </div>
       </div>
+      <div id="profile" class="cabinet" hidden>
+        <div class="cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+          <div class="cabinet-head"><h2 id="profile-title">Profile</h2><button id="btn-close-profile" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <div class="profile-head">
+            <span id="profile-art" class="portrait portrait-lg" aria-hidden="true"></span>
+            <div class="profile-id">
+              <span id="profile-plate" class="profile-plate"></span>
+              <div class="level-badge"><span id="profile-level-label">Level</span> <b id="profile-level">1</b></div>
+            </div>
+            <button id="btn-edit-profile" class="icon-btn edit-btn" type="button" title="Edit profile">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></svg>
+            </button>
+          </div>
+          <h3 id="stats-title" class="stats-title">Stats</h3>
+          <dl id="stats-grid" class="stats-grid"></dl>
+          <p id="stats-note" class="stats-note"></p>
+        </div>
+      </div>
+      <div id="edit-profile" class="cabinet edit-layer" hidden>
+        <div class="cabinet-card edit-card" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+          <div class="cabinet-head"><h2 id="edit-title">Edit profile</h2><button id="btn-close-edit" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <div class="edit-preview"><span id="edit-art" class="portrait portrait-md" aria-hidden="true"></span><span id="edit-plate" class="profile-plate"></span></div>
+          <div class="tabs" role="tablist" aria-labelledby="edit-title">
+            <button id="tab-avatar" class="tab" type="button" role="tab" data-slot="avatar" aria-controls="panel-avatar">Avatar</button>
+            <button id="tab-frame" class="tab" type="button" role="tab" data-slot="frame" aria-controls="panel-frame">Frame</button>
+            <button id="tab-plate" class="tab" type="button" role="tab" data-slot="plate" aria-controls="panel-plate">Name</button>
+          </div>
+          <div id="panel-avatar" class="tab-panel" role="tabpanel" aria-labelledby="tab-avatar"><div id="grid-avatar" class="pick-grid" role="radiogroup" aria-labelledby="tab-avatar"></div></div>
+          <div id="panel-frame" class="tab-panel" role="tabpanel" aria-labelledby="tab-frame" hidden><div id="grid-frame" class="pick-grid" role="radiogroup" aria-labelledby="tab-frame"></div></div>
+          <div id="panel-plate" class="tab-panel" role="tabpanel" aria-labelledby="tab-plate" hidden>
+            <label id="name-label" class="name-label" for="name-input">Your name</label>
+            <div class="name-row">
+              <input id="name-input" class="name-input" type="text" maxlength="32" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="name-error" />
+              <button id="btn-reroll" class="icon-btn reroll" type="button" title="New random name"></button>
+            </div>
+            <p id="name-error" class="name-error" aria-live="polite"></p>
+            <h3 id="plates-label" class="plates-label">Name plate</h3>
+            <div id="grid-plate" class="pick-grid plate-grid" role="radiogroup" aria-labelledby="plates-label"></div>
+          </div>
+          <p id="pick-note" class="pick-note" aria-live="polite"></p>
+          <button id="btn-save-profile" class="primary" type="button">Save</button>
+        </div>
+      </div>
+      <div id="discard" class="cabinet discard-layer" hidden>
+        <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="discard-title">
+          <h2 id="discard-title">Discard changes?</h2>
+          <div class="sheet-row">
+            <button id="btn-keep-editing" class="secondary" type="button">Keep editing</button>
+            <button id="btn-discard" class="secondary discard-btn" type="button">Discard</button>
+          </div>
+        </div>
+      </div>
       <div id="home" class="home" hidden>
+        <div class="home-top">
+          <button id="btn-profile" class="profile-chip" type="button" hidden aria-label="Profile">
+            <span id="profile-chip-art" class="portrait portrait-sm" aria-hidden="true"></span>
+            <span id="profile-chip-plate" class="profile-chip-plate" aria-hidden="true"></span>
+          </button>
+        </div>
         <div class="home-inner">
           <div class="logo-jars" aria-hidden="true"><i></i><i></i><i></i></div>
           <h1 id="home-title" class="home-title">Strata</h1>

@@ -62,7 +62,7 @@ verified-by: pending review
 ### 2.3 Integration Points
 
 - **Depends on**: every rules document (`pour-rules.md`, `jar-mechanics.md`, `session-boosters.md`, `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `level-generation.md`) and `save-data.md`.
-- **Depended on by**: nothing; it is the top of the stack.
+- **Depended on by**: `player-profile.md`, whose home chip, Profile screen, Edit sheet and win-card rows are presented through this layer.
 
 ---
 

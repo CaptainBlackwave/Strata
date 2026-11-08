@@ -53,7 +53,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 ### 2.3 Integration Points
 
 - **Depends on**: `session-boosters.md` (Perfect, booster use), `jar`-level data for the tall-jar flag (`level-generation.md`).
-- **Depended on by**: `daily-puzzle.md`, `shell-collection.md`, `scenes.md` (all add or spend coins), `feel-audio-ui.md` (HUD, win card), `save-data.md`.
+- **Depended on by**: `daily-puzzle.md`, `shell-collection.md`, `scenes.md` (all add or spend coins), `feel-audio-ui.md` (HUD, win card), `save-data.md`, `player-profile.md` (counts coins credited by play as "Coins earned").
 
 ---
 
