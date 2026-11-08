@@ -1713,6 +1713,7 @@ function wireInput(): void {
   const relayout = () => {
     window.clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(() => {
+      if (!session) return; // the first board is still being made in the worker (P4); it lays out when it arrives
       if (busy || returning.size) return relayout();
       const r = boardEl.getBoundingClientRect();
       if (Math.abs(r.width - laidOut.w) < 1 && Math.abs(r.height - laidOut.h) < 1) return;
