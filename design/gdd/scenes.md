@@ -90,7 +90,7 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 - A scene whose window includes today's local date shows an **"In season"** badge in the picker.
 - With **Match my clock** on, an owned *holiday* scene that is in season replaces the time-of-day scene for its whole window. If two overlap, the higher rung wins.
 - Season-long scenes (High Summer, Spring Blossom, Autumn Shore, Winter Snow) only get the badge. They don't take over the clock for three months.
-- Windows use northern-hemisphere seasons. A southern-hemisphere option is a follow-up.
+- Windows use northern-hemisphere seasons by default. The Settings switch **Southern hemisphere seasons** (D42, built in sprint 8) shifts the *season* windows by six months; holiday and sky windows keep their dates.
 
 **Looks (the build brief):**
 - **Sea Fog:** pale grey-green sky, misted sea, softened glass edges. A calm, low-contrast look that still passes the contrast test.

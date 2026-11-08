@@ -92,7 +92,7 @@ const en = {
     button: "What's new",
     lines: [
       'Undo is free now.',
-      'Four new scenes to buy, with more on the way.',
+      'Twelve new scenes to buy, from sea fog to aurora night.',
       "A banner tells you when you're stuck, and hints are clearer.",
       'Jars are easier to tap, and you can pinch to zoom.',
       'Sealed jars now show their sand.',
