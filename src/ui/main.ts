@@ -396,7 +396,7 @@ function introduce(ids: readonly MechanicId[]): void {
 }
 
 function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
-  $('intro-kicker').textContent = kicker;
+  $('intro-title').textContent = kicker;
   $('intro-list').replaceChildren(
     ...ids.map((id) => {
       const row = document.createElement('div');
