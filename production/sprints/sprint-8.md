@@ -14,10 +14,10 @@ Finish the 12-scene ladder and make the game feel finished: accessible zoom and 
 | P2 | **Southern-hemisphere switch** (D42): a Settings toggle that shifts *season* windows by 6 months; holidays keep their dates | `scenes.md` | Unit tests for the shift. The badge follows the switch |
 | P3 | **Zoom and tap areas**: allow pinch zoom, keep double-tap zoom off on the board and buttons (D44); jar hit areas at least 44 px (D45); the intro dialog gets a name (AX-14) | `accessibility-audit.md` | Measured on iPhone SE at 100% and 150% text; screenshots |
 | P4 | **Instant level starts**: generate the next level in the background (a Web Worker or idle time) while the current one is played, so slow levels (141, 185) start at once | D46, sweep timings | Next-level start under 50 ms on a cached level. Works offline (service worker). The board is identical to direct generation (test) |
-| P5 | **"What's new" card**: shown once after an update (per version), with 3–5 short lines; can be reopened from Settings | D46 | Shown once per version and never on a first install. Screenshot |
+| P5 | **"What's new" card**: shown once after an update (per version), with 3–5 short plain lines (D52); can be reopened from Settings | D46, D52 | Shown once per version and never on a first install. Screenshot |
 | P6 | **Code review and tech-debt register**: run `/code-review` on `src/`, write `docs/tech-debt.md`, and fix the clear wins | D46 | The register lists each item with its size. Fixes come with tests |
 | P7 | **Top backlog findings**: triage the ~117 minor review findings from sprint 6 and fix the 15–20 with the most player value | `production/qa/sprint-6/*` | A triage table in `production/qa/sprint-8/backlog-triage.md`; every fix verified |
-| P8 | **Level map design sign-off** (D47–D51): settle the DRAFT items in `level-map.md` with the owner | `level-map.md` | All DRAFT marks resolved, ready to build in sprint 9 |
+| P8 | ~~Level map design sign-off~~ **Done 2026-11-08 (D52)** | `level-map.md` | Signed off; ready to build in sprint 9 |
 
 ### Should Have
 | ID | Task | Source | Acceptance Criteria |

@@ -1,5 +1,5 @@
 ---
-status: designed (owner interview 2026-11-08, D47–D51); build in sprint 9; sections marked DRAFT await owner sign-off
+status: designed and signed off (owner interview 2026-11-08, D47–D52); build in sprint 9
 source: to be built in src/ui/ (map screen) and src/core/ (pure marker and replay rules)
 date: 2026-11-08
 verified-by: owner interview 2026-11-08
@@ -40,7 +40,7 @@ verified-by: owner interview 2026-11-08
 - A large primary button, "Play · Level N", sits fixed at the bottom. One tap starts the next level, so the old one-tap start is only one tap longer.
 - Keyboard: Enter on the map plays the next level.
 
-**Path** (DRAFT):
+**Path** (signed off, D52):
 - The stones snake up the screen, bottom to top in level order, about 6 to a screen height on a phone.
 - The scenery behind them changes every 20 levels: rock pools, dunes, a pier, a lighthouse point, a cove, and so on, cycling.
 - The current scene's colours apply.
@@ -68,7 +68,7 @@ verified-by: owner interview 2026-11-08
 ### 2.2 State and Data
 - The save gains `perfect: number[]` (or a bit set): the levels cleared Perfect, which feeds the marks and the D50 rule. `best` already holds the best pours per level.
 - Specials come from the level spec (`challenge`, `milestoneDue`, the mechanic `unlockAt`), so nothing new is stored for them.
-- `stats.perfectClears` today counts first clears only. Under D50 it counts the **first Perfect of each level**, from a first clear or a replay. The migration is: existing saves don't know which levels were Perfect, so the `perfect` list starts empty and the counter keeps its value. A replayed Perfect of a level already counted as a first-clear Perfect could then count twice. To avoid that, the counter only increments when the level isn't in `perfect`, **and** the replay is of a level cleared after the update or not counted before. DRAFT: owner to confirm the simple rule, "count once per level from now on".
+- `stats.perfectClears` counts **each level's first Perfect from the update onwards, once** (D52): from a first clear or a replay, it adds 1 when the level isn't yet in `perfect`. Old saves start with an empty `perfect` list and keep their counter value, so the stat only ever grows. A level that was Perfect before the update can count once more when it is replayed Perfect. The owner accepted that.
 
 ### 2.3 Integration Points
 - **Depends on**:
@@ -101,11 +101,11 @@ See 2.3.
 - [ ] Screenshots: the map at levels 3, 60 and 201; a tap card; a locked stone; 150% text at 320 px; and reduced motion.
 
 ## Open Questions and Follow-Up Work
-- DRAFT items above (path density and scenery cycle, the Perfect counter migration) are for owner sign-off in sprint 8.
-- Does the daily appear on the map? Proposed: no, it keeps its own card on Home.
+- Signed off 2026-11-08 (D52): about 6 stones per screen with new scenery every 20 levels, Perfect counted once per level from the update onwards, and the daily stays on its Home card, not on the map.
 
 ## Version History
 
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude | Designed from the owner interview (D47–D51); drafts flagged for sign-off |
+| 2026-11-08 | Claude | Drafts signed off by the owner (D52) |

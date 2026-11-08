@@ -33,7 +33,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 9 | Feel, audio and UI | UI | MVP | Implemented (gamepad waived) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10, 11 |
 | 10 | Save data | Persistence | MVP | Implemented | [save-data.md](save-data.md) | 5 |
 | 11 | Player profile | Meta | Full Vision | Implemented (PP-1 to PP-10) | [player-profile.md](player-profile.md) | 4–8, 10 |
-| 12 | Level map | UI | Full Vision | Designed (D47–D51), building in sprint 9 | [level-map.md](level-map.md) | 4, 7, 9, 11 |
+| 12 | Level map | UI | Full Vision | Designed and signed off (D47–D52), building in sprint 9 | [level-map.md](level-map.md) | 4, 7, 9, 11 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -107,6 +107,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D49 | Level map markers | **All four**: Perfect mark, best pours (on tap), special-level icons (tall jars, shell milestones, new-jar debuts), locked levels ahead shown dimmed | level-map | design |
 | D50 | Replays from the map | **No coins (M1); a replay can earn a missing Perfect mark and beat the best pours.** A level's first Perfect counts once for the Perfect stat and unlocks | level-map, player-profile, economy | design |
 | D51 | Where the map lives | **It replaces Play**: Play opens the map at your next level, with a big "Play · Level N" button on it | level-map, feel-audio-ui | design |
+| D52 | Level map drafts and the "What's new" tone | **Signed off**: about 6 stones per screen, scenery every 20 levels; Perfect counted once per level from the update onwards; the daily stays on Home, not on the map; "What's new" is 3–5 short lines, shown once per version, reopenable from Settings | level-map, feel-audio-ui | design |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
