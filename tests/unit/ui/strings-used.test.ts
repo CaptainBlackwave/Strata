@@ -7,9 +7,9 @@ import { t } from '../../../src/ui/strings';
 const sources = import.meta.glob(['../../../src/ui/*.ts', '!../../../src/ui/strings.ts'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
 const code = Object.values(sources).join('\n');
 
-/** A key is used as `t.key` in the code, or by `data-s="key"` in index.html (applyStrings reads those). */
+/** A key is used as `t.key` in the code, or by a `data-s`, `data-s-title` or `data-s-label` attribute in index.html (a nested `group.key` counts for `group`). */
 function isUsed(key: string): boolean {
-  return new RegExp(`\\bt\\.${key}\\b`).test(code) || html.includes(`data-s="${key}"`);
+  return new RegExp(`\\bt\\.${key}\\b`).test(code) || new RegExp(`data-s(?:-title|-label)?="${key}(?:\\.[^"]*)?"`).test(html);
 }
 
 describe('strings.ts (TD-10)', () => {

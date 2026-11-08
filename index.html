@@ -22,22 +22,22 @@
           <span id="level-label" class="level-label">Level 1</span>
         </div>
         <div class="hud-actions">
-        <button id="btn-restart" class="icon-btn" type="button" title="Restart (R)">
+        <button id="btn-restart" data-s-title="restart" class="icon-btn" type="button" title="Restart (R)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
         </button>
         <div class="coins" id="coins-chip" aria-live="polite"><i class="coin" aria-hidden="true"></i><span id="coins">0</span><span class="sr-only coins-sr"> coins</span></div>
-        <button id="btn-settings" class="icon-btn" type="button" title="Settings">
+        <button id="btn-settings" data-s-title="settings" class="icon-btn" type="button" title="Settings">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>
         </button>
         </div>
       </header>
-      <div class="subhud"><span id="moves">0</span> <span id="moves-label">pours</span></div>
-      <main id="board" class="board" aria-label="Sand jars"></main>
+      <div class="subhud"><span id="moves">0</span> <span id="moves-label" data-s="pours">pours</span></div>
+      <main id="board" data-s-label="boardLabel" class="board" aria-label="Sand jars"></main>
       <div id="coach" class="coach" hidden aria-live="polite"><span class="coach-ring" aria-hidden="true"></span><span id="coach-text" class="coach-text"></span></div>
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
       <div id="stuck" class="stuck-banner" hidden>
         <p id="stuck-text" class="stuck-text" aria-live="polite"></p>
-        <button id="btn-stuck-restart" class="secondary stuck-restart" type="button">Restart</button>
+        <button id="btn-stuck-restart" data-s="restart" class="secondary stuck-restart" type="button">Restart</button>
       </div>
       <nav class="toolbar" aria-label="Boosters">
         <button id="btn-undo" class="tool" type="button" data-booster="undo" title="Undo (Z)">
@@ -67,141 +67,141 @@
           <p id="win-note" class="win-note"></p>
           <div id="win-shell" class="win-shell" hidden><span id="win-shell-art" class="win-shell-art"></span><span id="win-shell-text"></span></div>
           <div id="win-unlocks" class="win-unlocks" aria-live="polite"></div>
-          <button id="btn-share" class="secondary share" type="button" hidden>Share</button>
+          <button id="btn-share" data-s="share" class="secondary share" type="button" hidden>Share</button>
           <p id="share-status" class="share-status" role="status"></p>
           <div class="win-actions">
-            <button id="btn-win-home" class="secondary" type="button" hidden>Home</button>
+            <button id="btn-win-home" data-s="home" class="secondary" type="button" hidden>Home</button>
             <button id="btn-next" class="primary" type="button">Continue</button>
           </div>
         </div>
       </div>
       <div id="settings" class="sheet" hidden>
         <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-          <h2 id="settings-title">Settings</h2>
+          <h2 id="settings-title" data-s="settings">Settings</h2>
           <label class="toggle"><span data-s="sound">Sound effects</span><input type="checkbox" id="set-sound" /></label>
           <label class="toggle"><span data-s="music">Music</span><input type="checkbox" id="set-music" /></label>
           <label class="toggle"><span data-s="haptics">Vibration</span><input type="checkbox" id="set-haptics" /></label>
-          <label class="toggle"><span class="toggle-text"><span data-s="patterns">Colour patterns</span><small id="patterns-help" class="toggle-help" aria-hidden="true"></small></span><input type="checkbox" id="set-patterns" aria-describedby="patterns-help" /></label>
+          <label class="toggle"><span class="toggle-text"><span data-s="patterns">Colour patterns</span><small id="patterns-help" data-s="patternsTitle" class="toggle-help" aria-hidden="true"></small></span><input type="checkbox" id="set-patterns" aria-describedby="patterns-help" /></label>
           <label class="toggle"><span data-s="southern">Southern hemisphere seasons</span><input type="checkbox" id="set-southern" /></label>
           <div class="sheet-row">
-            <button id="btn-home" class="secondary" type="button">Home</button>
-            <button id="btn-tutorial" class="secondary" type="button">Replay tutorial</button>
-            <button id="btn-guide" class="secondary" type="button">Jar guide</button>
+            <button id="btn-home" data-s="home" class="secondary" type="button">Home</button>
+            <button id="btn-tutorial" data-s="replayTutorial" class="secondary" type="button">Replay tutorial</button>
+            <button id="btn-guide" data-s="jarGuide" class="secondary" type="button">Jar guide</button>
           </div>
           <div class="sheet-row">
-            <button id="btn-scenes-2" class="secondary" type="button">Scenes</button>
-            <button id="btn-savecode" class="secondary" type="button">Save code</button>
-            <button id="btn-whatsnew" class="secondary" type="button">What's new</button>
+            <button id="btn-scenes-2" data-s="scenes" class="secondary" type="button">Scenes</button>
+            <button id="btn-savecode" data-s="saveCode" class="secondary" type="button">Save code</button>
+            <button id="btn-whatsnew" data-s="whatsNew.button" class="secondary" type="button">What's new</button>
           </div>
-          <button id="btn-close-settings" class="primary" type="button">Close</button>
+          <button id="btn-close-settings" data-s="close" class="primary" type="button">Close</button>
         </div>
       </div>
       <div id="transfer" class="sheet" hidden>
         <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
-          <h2 id="transfer-title">Save code</h2>
-          <label id="code-mine-label" class="transfer-label" for="transfer-code">Your code</label>
+          <h2 id="transfer-title" data-s="saveCode">Save code</h2>
+          <label id="code-mine-label" data-s="yourCode" class="transfer-label" for="transfer-code">Your code</label>
           <textarea id="transfer-code" class="transfer-code" rows="3" readonly spellcheck="false" autocomplete="off" aria-describedby="copy-status"></textarea>
           <p id="copy-status" class="transfer-status" aria-live="polite"></p>
-          <button id="btn-copy-code" class="secondary transfer-btn" type="button">Copy code</button>
-          <label id="code-paste-label" class="transfer-label" for="transfer-paste">Paste a code to restore</label>
+          <button id="btn-copy-code" data-s="copyCode" class="secondary transfer-btn" type="button">Copy code</button>
+          <label id="code-paste-label" data-s="pasteCode" class="transfer-label" for="transfer-paste">Paste a code to restore</label>
           <textarea id="transfer-paste" class="transfer-code" rows="3" spellcheck="false" autocomplete="off" aria-describedby="transfer-status"></textarea>
           <p id="transfer-status" class="transfer-status" aria-live="polite"></p>
           <button id="btn-restore-code" class="secondary transfer-btn" type="button">Restore from code</button>
-          <button id="btn-close-transfer" class="primary" type="button">Close</button>
+          <button id="btn-close-transfer" data-s="close" class="primary" type="button">Close</button>
         </div>
       </div>
       <div id="scenes" class="sheet" hidden>
         <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="scenes-title">
-          <div class="cabinet-head"><h2 id="scenes-title">Scenes</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="scenes-coins">0</span><span class="sr-only coins-sr"> coins</span></div></div>
+          <div class="cabinet-head"><h2 id="scenes-title" data-s="scenes">Scenes</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="scenes-coins">0</span><span class="sr-only coins-sr"> coins</span></div></div>
           <div id="scene-grid" class="scene-grid"></div>
           <p id="scene-previewing" class="scene-previewing" aria-live="polite"></p>
           <button id="btn-scene-buy" class="primary scene-buy" type="button" hidden>Buy</button>
-          <label class="toggle"><span class="toggle-text"><span id="scenes-auto-label">Match my clock</span><small id="scenes-auto-help" class="toggle-help" aria-hidden="true"></small></span><input type="checkbox" id="set-auto" aria-describedby="scenes-auto-help" /></label>
+          <label class="toggle"><span class="toggle-text"><span id="scenes-auto-label" data-s="matchClock">Match my clock</span><small id="scenes-auto-help" data-s="matchClockOff" class="toggle-help" aria-hidden="true"></small></span><input type="checkbox" id="set-auto" aria-describedby="scenes-auto-help" /></label>
           <p id="scenes-auto-note" class="cabinet-next"></p>
-          <button id="btn-close-scenes" class="secondary" type="button">Close</button>
+          <button id="btn-close-scenes" data-s="close" class="secondary" type="button">Close</button>
         </div>
       </div>
       <div id="intro" class="cabinet" hidden>
         <div class="cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
           <p id="intro-title" class="intro-kicker">New jar!</p>
           <div id="intro-list"></div>
-          <button id="btn-intro-ok" class="primary" type="button">Got it</button>
+          <button id="btn-intro-ok" data-s="gotIt" class="primary" type="button">Got it</button>
         </div>
       </div>
       <div id="whatsnew" class="cabinet" hidden>
         <div class="cabinet-card intro-card whatsnew-card" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
-          <h2 id="whatsnew-title" class="whatsnew-title">What's new</h2>
+          <h2 id="whatsnew-title" data-s="whatsNew.title" class="whatsnew-title">What's new</h2>
           <ul id="whatsnew-list" class="whatsnew-list"></ul>
-          <button id="btn-whatsnew-ok" class="primary" type="button">Got it</button>
+          <button id="btn-whatsnew-ok" data-s="gotIt" class="primary" type="button">Got it</button>
         </div>
       </div>
       <div id="cabinet" class="cabinet" hidden>
         <div class="cabinet-card" role="dialog" aria-modal="true" aria-labelledby="cabinet-title">
-          <div class="cabinet-head"><h2 id="cabinet-title">Shell cabinet</h2><button id="btn-close-cabinet" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <div class="cabinet-head"><h2 id="cabinet-title">Shell cabinet</h2><button id="btn-close-cabinet" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="cabinet-next" class="cabinet-next"></p>
           <div id="cabinet-sets"></div>
         </div>
       </div>
       <div id="profile" class="cabinet" hidden>
         <div class="cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
-          <div class="cabinet-head"><h2 id="profile-title">Profile</h2><button id="btn-close-profile" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <div class="cabinet-head"><h2 id="profile-title" data-s="profileTitle">Profile</h2><button id="btn-close-profile" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div class="profile-head">
             <span id="profile-art" class="portrait portrait-lg" aria-hidden="true"></span>
             <div class="profile-id">
               <span id="profile-plate" class="profile-plate"></span>
-              <div class="level-badge"><span id="profile-level-label">On level</span> <b id="profile-level">1</b></div>
+              <div class="level-badge"><span id="profile-level-label" data-s="levelBadge">On level</span> <b id="profile-level">1</b></div>
             </div>
-            <button id="btn-edit-profile" class="icon-btn edit-btn" type="button" title="Edit profile">
+            <button id="btn-edit-profile" data-s-title="editProfile" data-s-label="editProfile" class="icon-btn edit-btn" type="button" title="Edit profile">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></svg>
             </button>
           </div>
-          <h3 id="stats-title" class="stats-title">Stats</h3>
+          <h3 id="stats-title" data-s="statsTitle" class="stats-title">Stats</h3>
           <dl id="stats-grid" class="stats-grid"></dl>
           <p id="stats-note" class="stats-note"></p>
         </div>
       </div>
       <div id="edit-profile" class="cabinet edit-layer" hidden>
         <div class="cabinet-card edit-card" role="dialog" aria-modal="true" aria-labelledby="edit-title">
-          <div class="cabinet-head"><h2 id="edit-title">Edit profile</h2><button id="btn-close-edit" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <div class="cabinet-head"><h2 id="edit-title" data-s="editProfileTitle">Edit profile</h2><button id="btn-close-edit" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div class="edit-preview"><span id="edit-art" class="portrait portrait-md" aria-hidden="true"></span><span id="edit-plate" class="profile-plate"></span></div>
           <div class="tabs" role="tablist" aria-labelledby="edit-title">
-            <button id="tab-avatar" class="tab" type="button" role="tab" data-slot="avatar" aria-controls="panel-avatar">Avatar</button>
-            <button id="tab-frame" class="tab" type="button" role="tab" data-slot="frame" aria-controls="panel-frame">Frame</button>
-            <button id="tab-plate" class="tab" type="button" role="tab" data-slot="plate" aria-controls="panel-plate">Name</button>
+            <button id="tab-avatar" data-s="tabs.avatar" class="tab" type="button" role="tab" data-slot="avatar" aria-controls="panel-avatar">Avatar</button>
+            <button id="tab-frame" data-s="tabs.frame" class="tab" type="button" role="tab" data-slot="frame" aria-controls="panel-frame">Frame</button>
+            <button id="tab-plate" data-s="tabs.plate" class="tab" type="button" role="tab" data-slot="plate" aria-controls="panel-plate">Name</button>
           </div>
           <div id="panel-avatar" class="tab-panel" role="tabpanel" aria-labelledby="tab-avatar"><div id="grid-avatar" class="pick-grid" role="radiogroup" aria-labelledby="tab-avatar"></div></div>
           <div id="panel-frame" class="tab-panel" role="tabpanel" aria-labelledby="tab-frame" hidden><div id="grid-frame" class="pick-grid" role="radiogroup" aria-labelledby="tab-frame"></div></div>
           <div id="panel-plate" class="tab-panel" role="tabpanel" aria-labelledby="tab-plate" hidden>
-            <label id="name-label" class="name-label" for="name-input">Your name</label>
+            <label id="name-label" data-s="nameLabel" class="name-label" for="name-input">Your name</label>
             <div class="name-row">
               <input id="name-input" class="name-input" type="text" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="name-error" />
-              <button id="btn-reroll" class="icon-btn reroll" type="button" title="New random name"></button>
+              <button id="btn-reroll" data-s-title="reroll" data-s-label="reroll" class="icon-btn reroll" type="button" title="New random name"></button>
             </div>
             <p id="name-error" class="name-error" aria-live="polite"></p>
-            <h3 id="plates-label" class="plates-label">Name plate</h3>
+            <h3 id="plates-label" data-s="platesLabel" class="plates-label">Name plate</h3>
             <div id="grid-plate" class="pick-grid plate-grid" role="radiogroup" aria-labelledby="plates-label"></div>
           </div>
           <p id="pick-note" class="pick-note" aria-live="polite"></p>
           <p id="save-error" class="name-error save-error" aria-live="polite"></p>
-          <button id="btn-save-profile" class="primary" type="button" aria-describedby="save-error">Save</button>
+          <button id="btn-save-profile" data-s="saveProfile" class="primary" type="button" aria-describedby="save-error">Save</button>
         </div>
       </div>
       <div id="discard" class="cabinet discard-layer" hidden>
         <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="discard-title">
-          <h2 id="discard-title">Discard changes?</h2>
+          <h2 id="discard-title" data-s="discardTitle">Discard changes?</h2>
           <div class="sheet-row">
-            <button id="btn-keep-editing" class="secondary" type="button">Keep editing</button>
-            <button id="btn-discard" class="secondary discard-btn" type="button">Discard</button>
+            <button id="btn-keep-editing" data-s="keepEditing" class="secondary" type="button">Keep editing</button>
+            <button id="btn-discard" data-s="discard" class="secondary discard-btn" type="button">Discard</button>
           </div>
         </div>
       </div>
       <div id="leave" class="cabinet discard-layer" hidden>
         <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="leave-title" aria-describedby="leave-text">
-          <h2 id="leave-title">Leave this board?</h2>
-          <p id="leave-text" class="leave-text">Your pours here won't be kept.</p>
+          <h2 id="leave-title" data-s="leaveTitle">Leave this board?</h2>
+          <p id="leave-text" data-s="leaveText" class="leave-text">Your pours here won't be kept.</p>
           <div class="sheet-row">
-            <button id="btn-keep-playing" class="secondary" type="button">Keep playing</button>
-            <button id="btn-leave" class="secondary discard-btn" type="button">Leave</button>
+            <button id="btn-keep-playing" data-s="keepPlaying" class="secondary" type="button">Keep playing</button>
+            <button id="btn-leave" data-s="leave" class="secondary discard-btn" type="button">Leave</button>
           </div>
         </div>
       </div>
@@ -211,14 +211,14 @@
             <span id="profile-chip-art" class="portrait portrait-sm" aria-hidden="true"></span>
             <span id="profile-chip-plate" class="profile-chip-plate" aria-hidden="true"></span>
           </button>
-          <button id="btn-home-settings" class="icon-btn home-settings" type="button" title="Settings" aria-label="Settings">
+          <button id="btn-home-settings" data-s-title="settings" data-s-label="settings" class="icon-btn home-settings" type="button" title="Settings" aria-label="Settings">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>
           </button>
         </div>
         <div class="home-inner">
           <div class="logo-jars" aria-hidden="true"><i></i><i></i><i></i></div>
-          <h1 id="home-title" class="home-title">Strata</h1>
-          <p id="home-tagline" class="home-tagline">Sort the sand. Seal the jars.</p>
+          <h1 id="home-title" data-s="brand" class="home-title">Strata</h1>
+          <p id="home-tagline" data-s="tagline" class="home-tagline">Sort the sand. Seal the jars.</p>
           <div class="coins home-coins"><i class="coin" aria-hidden="true"></i><span id="home-coins">0</span><span class="sr-only coins-sr"> coins</span></div>
           <button id="btn-play" class="primary play" type="button">Play</button>
           <button id="btn-daily" class="daily-card" type="button">
@@ -227,7 +227,7 @@
           </button>
           <div class="home-row">
             <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
-            <button id="btn-scenes" class="secondary shells-btn" type="button"><span class="scene-ico" aria-hidden="true"></span><span id="scenes-label">Scenes</span></button>
+            <button id="btn-scenes" class="secondary shells-btn" type="button"><span class="scene-ico" aria-hidden="true"></span><span id="scenes-label" data-s="scenes">Scenes</span></button>
           </div>
         </div>
       </div>

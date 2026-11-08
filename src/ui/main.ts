@@ -1830,66 +1830,24 @@ function openSettings(): void {
   openLayer(settingsEl, $('set-sound'));
 }
 
+/** Reads a string from the table by key, with `a.b` for nested groups. Undefined if absent or not a string. */
+function stringFor(key: string | undefined): string | undefined {
+  const v = (key ?? '').split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], t);
+  return typeof v === 'string' ? v : undefined;
+}
+
+/**
+ * Fills the static labels. index.html names the key on each element: `data-s` sets the text,
+ * `data-s-title` the title, `data-s-label` the aria-label (tests/unit/ui/index-strings.test.ts
+ * checks every key exists). Only what needs code stays here.
+ */
 function applyStrings(): void {
   for (const btn of toolButtons) (btn.querySelector('.tool-name') as HTMLElement).textContent = BOOSTER_NAMES[btn.dataset.booster as BoosterId];
-  $('moves-label').textContent = t.pours;
-  $('btn-restart').title = t.restart;
-  $('btn-stuck-restart').textContent = t.restart;
-  $('btn-settings').title = t.settings;
-  $('btn-home-settings').title = t.settings;
-  $('btn-home-settings').setAttribute('aria-label', t.settings);
-  $('settings-title').textContent = t.settings;
-  for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns' | 'southern'];
-  $('btn-home').textContent = t.home;
-  $('btn-tutorial').textContent = t.replayTutorial;
-  $('btn-guide').textContent = t.jarGuide;
-  $('btn-whatsnew').textContent = t.whatsNew.button;
-  $('whatsnew-title').textContent = t.whatsNew.title;
-  $('btn-whatsnew-ok').textContent = t.gotIt;
-  $('btn-savecode').textContent = t.saveCode;
-  $('transfer-title').textContent = t.saveCode;
-  $('btn-copy-code').textContent = t.copyCode;
-  $('code-mine-label').textContent = t.yourCode;
-  $('code-paste-label').textContent = t.pasteCode;
-  $('btn-close-transfer').textContent = t.close;
-  $('scenes-label').textContent = t.scenes;
-  $('btn-scenes-2').textContent = t.scenes;
-  $('scenes-title').textContent = t.scenes;
-  $('scenes-auto-label').textContent = t.matchClock;
-  $('scenes-auto-help').textContent = t.matchClockOff; // UX-scenes-2
-  $('btn-close-scenes').textContent = t.close;
-  $('btn-intro-ok').textContent = t.gotIt;
-  $('btn-close-settings').textContent = t.close;
-  $('patterns-help').textContent = t.patternsTitle; // UX-settings-5
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = stringFor(el.dataset.s) ?? el.textContent;
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s-title]')) el.title = stringFor(el.dataset.sTitle) ?? el.title;
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s-label]')) el.setAttribute('aria-label', stringFor(el.dataset.sLabel) ?? '');
   for (const el of document.querySelectorAll<HTMLElement>('.coins-sr')) el.textContent = ` ${t.coins}`; // UX-home-2
-  $('home-title').textContent = t.brand;
-  $('home-tagline').textContent = t.tagline;
-  $('btn-share').textContent = t.share;
-  $('btn-win-home').textContent = t.home;
-  $('btn-close-cabinet').title = t.close;
-  $('profile-title').textContent = t.profileTitle;
-  $('btn-close-profile').title = t.close;
-  $('btn-edit-profile').title = t.editProfile;
-  $('btn-edit-profile').setAttribute('aria-label', t.editProfile);
-  $('profile-level-label').textContent = t.levelBadge;
-  $('stats-title').textContent = t.statsTitle;
-  $('edit-title').textContent = t.editProfileTitle;
-  $('btn-close-edit').title = t.close;
-  for (const slot of SLOTS) $(`tab-${slot}`).textContent = t.tabs[slot];
-  $('name-label').textContent = t.nameLabel;
   $('btn-reroll').innerHTML = DICE_SVG;
-  $('btn-reroll').title = t.reroll;
-  $('btn-reroll').setAttribute('aria-label', t.reroll);
-  $('plates-label').textContent = t.platesLabel;
-  $('btn-save-profile').textContent = t.saveProfile;
-  $('discard-title').textContent = t.discardTitle;
-  $('leave-title').textContent = t.leaveTitle;
-  $('leave-text').textContent = t.leaveText;
-  $('btn-keep-playing').textContent = t.keepPlaying;
-  $('btn-leave').textContent = t.leave;
-  $('btn-keep-editing').textContent = t.keepEditing;
-  $('btn-discard').textContent = t.discard;
-  boardEl.setAttribute('aria-label', t.boardLabel);
 }
 
 // ---- Offline install (sprint 3, T8) ------------------------------------
