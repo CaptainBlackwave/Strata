@@ -1636,15 +1636,26 @@ function wireInput(): void {
     }
   });
 
+  // Re-lay out the jars whenever the board's own size changes, not only on a window resize:
+  // the HUD can wrap to two rows after a level starts (a long "Level 120" plus the Tall jars
+  // tag at large text on a narrow phone), which shrinks the board after the jars were sized,
+  // so the bottom row ran under the toolbar (found in sprint 8, P3). Text-size changes and
+  // rotation are covered too. A pour in progress defers the rebuild until it settles.
   let resizeTimer = 0;
-  window.addEventListener('resize', () => {
+  let laidOut = { w: 0, h: 0 };
+  const relayout = () => {
     window.clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(() => {
-      if (busy || returning.size) return;
+      if (busy || returning.size) return relayout();
+      const r = boardEl.getBoundingClientRect();
+      if (Math.abs(r.width - laidOut.w) < 1 && Math.abs(r.height - laidOut.h) < 1) return;
+      laidOut = { w: r.width, h: r.height };
       buildJars();
       if (mode === 'tutorial' && !coachEl.hidden) coach(selected === null ? 0 : selected === 0 ? 1 : 0, coachText.textContent ?? '');
     }, 120);
-  });
+  };
+  window.addEventListener('resize', relayout);
+  if ('ResizeObserver' in window) new ResizeObserver(relayout).observe(boardEl);
 }
 
 function openSettings(): void {
