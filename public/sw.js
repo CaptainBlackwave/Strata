@@ -72,7 +72,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE);
-      const hit = await cache.match(req, { ignoreSearch: true });
+      // ignoreVary: a host may send `Vary: Origin` (vite preview does), and module scripts are
+      // requested in CORS mode with an Origin header, so without it the cached copy never matches.
+      const hit = await cache.match(req, { ignoreSearch: true, ignoreVary: true });
       if (hit) return hit;
       const res = await fetch(req);
       if (res.ok) await cache.put(req, res.clone());
