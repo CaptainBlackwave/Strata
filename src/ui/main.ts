@@ -10,8 +10,9 @@ import { type Board, type Jar, canPour, isClosed, isSealed, pourAmount } from '.
 import { type CollectionConfig, allShells, grantShell, knownShells, milestoneDue, setProgress } from '../core/collection';
 import { type DailyConfig, generateDaily, recordDailySolve, sharePours, streakStatus, utcDateKey, weekday } from '../core/daily';
 import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, isFreeBooster, spendBooster } from '../core/economy';
-import { generateLevel, tutorialBoard } from '../core/generator';
+import { tutorialBoard } from '../core/generator';
 import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
+import { type GenPort, type PreparedLevel, Prefetcher } from '../core/prefetch';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent, sessionOptions } from '../core/session';
 import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, inSeason, localDateKey } from '../core/themes';
@@ -144,6 +145,9 @@ let hintTimer = 0;
 let restartTimer = 0; // Restart's second-tap window (F6); declared before boot uses it
 const audio = new GameAudio(save.settings);
 const shuffleRng = createRng(Date.now() >>> 0);
+/** Background generation of upcoming levels (sprint 8 P4, D46); declared before boot uses it. */
+const prefetcher = new Prefetcher(config, workerPort);
+let startToken = 0; // the latest startLevel call; an older one still waiting gives way
 
 // ---- Boot ---------------------------------------------------------------
 
@@ -163,7 +167,10 @@ if (qaLevel) {
   level = launchLevel(levelParam, save.level); // replay only, never beyond progress (D3)
   startLevel(level);
 } else {
-  startLevel(level);
+  // P4: the home screen covers the board, so the first board is made in the worker while
+  // the player looks at home, then the next one. Without a worker this is synchronous as before.
+  prefetcher.request([level, level + 1]);
+  startLevel(level, true);
   showHome();
 }
 
@@ -771,16 +778,54 @@ function startTutorial(): void {
   coach(0, t.tutorialLift);
 }
 
-function startLevel(n: number): void {
+/**
+ * Starts numbered level `n` (P4): instantly from the prefetch cache when the worker already
+ * made it; by waiting for the worker when it is making it now (a "Preparing" toast only after
+ * 150 ms, `quiet` skips it); otherwise by generating synchronously, as before P4.
+ */
+function startLevel(n: number, quiet = false): void {
   mode = 'level';
   level = n;
-  const gen = generateLevel(n, config);
+  const token = ++startToken;
+  const ready = prefetcher.get(n);
+  if (ready) return showLevel(ready);
+  if (!prefetcher.pending(n)) return showLevel(prefetcher.generateNow(n));
+  busy = true; // the previous board (if any) takes no input until the new one arrives
+  let toasted = false;
+  const spinner = quiet ? 0 : window.setTimeout(() => {
+    toasted = true;
+    showToast(t.preparingLevel);
+  }, 150);
+  void prefetcher.wait(n).then((p) => {
+    window.clearTimeout(spinner);
+    if (toasted) toastEl.classList.remove('show');
+    if (token !== startToken || mode !== 'level' || level !== n) return; // the player moved on
+    showLevel(p ?? prefetcher.generateNow(n)); // worker failed or timed out: synchronous
+  });
+}
+
+/** Puts a prepared level on the board, then prefetches what the player can start next. */
+function showLevel(gen: PreparedLevel): void {
+  const n = gen.level;
   beginSession(gen.board, gen.spec.challenge);
   levelLabel.textContent = t.level(n);
   challengeTag.textContent = t.challenge;
   challengeTag.hidden = !gen.spec.challenge;
   coach(null);
   introduce(gen.spec.mechanics);
+  // Next (n + 1, also after a replay) and Play from home (save.level).
+  prefetcher.request([n + 1, save.level].filter((l) => l !== n));
+}
+
+/** The Web Worker behind the prefetcher, or `null` where workers are unavailable. */
+function workerPort(): GenPort | null {
+  if (typeof Worker === 'undefined') return null;
+  const w = new Worker(new URL('./gen-worker.ts', import.meta.url), { type: 'module' });
+  const port: GenPort = { post: (req) => w.postMessage(req), onMessage: null, onError: null, terminate: () => w.terminate() };
+  w.onmessage = (e: MessageEvent) => port.onMessage?.(e.data);
+  w.onerror = () => port.onError?.();
+  w.onmessageerror = () => port.onError?.();
+  return port;
 }
 
 function beginSession(board: Board, isChallenge: boolean): void {
