@@ -1104,8 +1104,39 @@ body {
 }
 .shell-set-head {
   display: flex;
+  width: 100%;
   justify-content: space-between;
   align-items: baseline;
+  gap: 8px;
+  padding: 2px 0 6px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.shell-set-head span::after {
+  content: '';
+  display: inline-block;
+  width: 0.45em;
+  height: 0.45em;
+  margin-left: 0.5em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-0.15em) rotate(45deg);
+  transition: transform 0.2s;
+}
+.shell-set-head[aria-expanded='false'] span::after {
+  transform: translateY(0) rotate(-45deg);
+}
+.shell-set-head:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.shell-set.complete .shell-set-head[aria-expanded='false'] {
+  padding-bottom: 4px;
 }
 .shell-set-head h3 {
   margin: 0;
@@ -1118,7 +1149,9 @@ body {
 }
 .shell-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* Columns are sized in rem: five across at normal text, fewer and wider when the
+     player's text size is larger, so names never break mid-word (A5, D14). */
+  grid-template-columns: repeat(auto-fill, minmax(max(3.25rem, calc((100% - 16px) / 5)), 1fr));
   gap: 4px;
   margin-top: 6px;
 }
@@ -1127,6 +1160,10 @@ body {
   text-align: center;
 }
 .shell-cell svg {
+  display: block;
+  width: 100%;
+  max-width: 4rem;
+  margin: 0 auto;
   height: auto;
   aspect-ratio: 1;
 }
@@ -1135,7 +1172,9 @@ body {
   font-weight: 700;
   line-height: 1.15;
   min-height: 2.3em;
+  -webkit-hyphens: auto;
   hyphens: auto;
+  overflow-wrap: anywhere;
 }
 .shell-cell.locked figcaption {
   color: var(--ink-soft);
@@ -1522,4 +1561,28 @@ body[data-theme='moonlit'] .home::before {
 }
 .sheet-row .secondary {
   flex: 1 1 8rem;
+}
+
+/* ==== Shell sets 5-8 (design/gdd/shell-collection.md, SC-6) ==== */
+/* Night Shore glows softly; the pulse stops under reduced motion and the glow stays. */
+svg.fx-glow {
+  filter: drop-shadow(0 0 3px rgba(150, 200, 255, 0.95)) drop-shadow(0 0 8px rgba(90, 150, 230, 0.6));
+  animation: shell-glow 3.2s ease-in-out infinite alternate;
+}
+@keyframes shell-glow {
+  from {
+    filter: drop-shadow(0 0 2px rgba(150, 200, 255, 0.8)) drop-shadow(0 0 5px rgba(90, 150, 230, 0.45));
+  }
+  to {
+    filter: drop-shadow(0 0 4px rgba(170, 215, 255, 1)) drop-shadow(0 0 11px rgba(90, 150, 230, 0.7));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  svg.fx-glow {
+    animation: none;
+  }
+}
+/* Ancient Cliffs: the speckle is in the SVG; a faint stone edge sets it apart. */
+svg.fx-stone {
+  filter: drop-shadow(0 1px 0 rgba(61, 50, 38, 0.35));
 }

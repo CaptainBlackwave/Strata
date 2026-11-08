@@ -343,24 +343,39 @@ function openCabinet(): void {
     ...setProgress(save.shells, config).map((p) => {
       const sec = document.createElement('section');
       sec.className = `shell-set${p.complete ? ' complete' : ''}`;
-      const head = document.createElement('div');
+      // Completed sets start collapsed so the list stays short; tap the header to open one.
+      const head = document.createElement('button');
+      head.type = 'button';
       head.className = 'shell-set-head';
       head.innerHTML = `<h3></h3><span>${p.owned}/${p.total}</span>`;
       head.querySelector('h3')!.textContent = p.set.name;
+      head.setAttribute('aria-expanded', String(!p.complete));
+      const body = document.createElement('div');
+      body.className = 'shell-set-body';
+      body.id = `shell-set-${p.set.id}`;
+      body.hidden = p.complete;
+      head.setAttribute('aria-controls', body.id);
+      head.addEventListener('click', () => {
+        const open = head.getAttribute('aria-expanded') !== 'true';
+        head.setAttribute('aria-expanded', String(open));
+        body.hidden = !open;
+        audio.play(open ? 'select' : 'deselect');
+      });
       const grid = document.createElement('div');
       grid.className = 'shell-grid';
       for (const sh of p.set.shells) {
         const has = owned.has(sh.id);
         const cell = document.createElement('figure');
         cell.className = has ? 'shell-cell' : 'shell-cell locked';
-        cell.innerHTML = `${shellSvg(sh, !has)}<figcaption></figcaption>`;
+        cell.innerHTML = `${shellSvg({ ...sh, effect: p.set.effect }, !has)}<figcaption></figcaption>`;
         cell.querySelector('figcaption')!.textContent = has ? sh.name : t.lockedShell;
         grid.appendChild(cell);
       }
       const note = document.createElement('p');
       note.className = 'shell-set-note';
       note.textContent = p.complete ? t.setDone : t.setRewardNote(config.collection.setReward.coins);
-      sec.append(head, grid, note);
+      body.append(grid, note);
+      sec.append(head, body);
       return sec;
     }),
   );

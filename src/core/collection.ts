@@ -17,8 +17,13 @@ export interface Shell {
 export interface ShellSet {
   readonly id: string;
   readonly name: string;
+  /** A cabinet effect for the whole set: Night Shore glows, Ancient Cliffs are stone. */
+  readonly effect?: ShellEffect;
   readonly shells: readonly Shell[];
 }
+
+/** Optional per-set look (shell-collection.md decision SC-6). */
+export type ShellEffect = 'glow' | 'stone';
 
 /** The collection part of game-config.json. */
 export interface CollectionConfig {
@@ -31,15 +36,15 @@ export interface CollectionConfig {
 }
 
 /** Every shell in catalog order, tagged with its set id. */
-export function allShells(config: CollectionConfig): (Shell & { readonly setId: string })[] {
-  return config.collection.sets.flatMap((set) => set.shells.map((s) => ({ ...s, setId: set.id })));
+export function allShells(config: CollectionConfig): (Shell & { readonly setId: string; readonly effect?: ShellEffect })[] {
+  return config.collection.sets.flatMap((set) => set.shells.map((s) => ({ ...s, setId: set.id, ...(set.effect ? { effect: set.effect } : {}) })));
 }
 
 /** The result of granting a shell. */
 export interface GrantResult {
   readonly owned: string[];
   /** The new shell, or null when the collection is already complete. */
-  readonly shell: (Shell & { readonly setId: string }) | null;
+  readonly shell: (Shell & { readonly setId: string; readonly effect?: ShellEffect }) | null;
   /** The set this shell completed, if any. */
   readonly completedSet: ShellSet | null;
 }

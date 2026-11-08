@@ -63,7 +63,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D9 | Stuck message with swap-only pours | Keep as built | pour-rules | no |
 | D10 | Device date goes backwards | Don't punish: ignore that solve for the streak | daily-puzzle | built (sprint 5) |
 | D11 | Shell order | Fixed | shell-collection | no |
-| D12 | After all 20 shells | A fifth set later (future content); 50 coins until then | shell-collection | content later |
+| D12 | After all 20 shells | More sets: built as four expedition sets, 40 shells (SC-1 to SC-8) | shell-collection | built 2026-11-08 |
 | D13 | Gamepad | Waived for Strata | feel-audio-ui, accessibility-requirements | recorded |
 | D14 | Text size | Follow the phone/browser text-size setting | feel-audio-ui, accessibility-requirements | built (sprint 5) |
 | D15 | Volume control | Keep on/off toggles | feel-audio-ui | no |
@@ -89,5 +89,5 @@ Not asked in the interview: whether scenes need anything beyond the four (giftin
 - ~~Fix M1, M2 and M4 in code~~ (done 2026-11-08; evidence in `production/qa/evidence/gdd-alignment/`).
 - ~~Build D1, D3, D5, D8, D10, D14 and D16~~ (done in sprint 5: `production/sprints/sprint-5.md`).
 - `/balance-check` the ramp and the economy, then playtest levels 60–150.
-- Plan the fifth shell set (D12) as future content.
+- ~~Plan the fifth shell set (D12)~~ (built as sets 5–8, 2026-11-08; evidence in `production/qa/evidence/shell-sets/`).
 - `/design-review` each document, then `/review-all-gdds` across the set.

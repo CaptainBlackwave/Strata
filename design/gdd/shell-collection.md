@@ -1,8 +1,8 @@
 ---
 status: reverse-documented
-source: src/core/collection.ts, src/ui/shells.ts, src/ui/main.ts
+source: src/core/collection.ts, src/ui/shells.ts, src/ui/main.ts, src/ui/style.css
 date: 2026-11-08
-verified-by: pending review (the collectible, milestones and set rewards were chosen by the owner in sprint 2, decisions S2-3 and S2-4)
+verified-by: pending review (the collectible, milestones and set rewards were chosen by the owner in sprint 2, decisions S2-3 and S2-4; sets 5–8 by the owner interview of 2026-11-08, SC-1 to SC-8)
 ---
 
 # Shell Collection: Design Document
@@ -19,12 +19,12 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Purpose**: A long-term goal beyond the next level: fill a cabinet of seashells.
 
-**Scope**: The 20 shells, how they are earned, set rewards, the cabinet screen and the shell artwork. The daily puzzle that also grants shells is in `daily-puzzle.md`.
+**Scope**: The 40 shells, how they are earned, set rewards, the cabinet screen and the shell artwork. The daily puzzle that also grants shells is in `daily-puzzle.md`.
 
-**Current Implementation**: `grantShell` hands out the next unowned shell in catalog order; `milestoneDue` says which levels earn one; the cabinet lists four sets with progress; each shell is an SVG drawn in code from a `kind` and two colours.
+**Current Implementation**: `grantShell` hands out the next unowned shell in catalog order; `milestoneDue` says which levels earn one; the cabinet lists eight sets with progress (completed sets collapsed); each shell is an SVG drawn in code from a `kind` and two colours.
 
 **Design Intent** (owner decisions S2-3, S2-4):
-- The collectibles are original seashells in four themed sets: Tide Pool, Dune Coast, Coral Reef, Deep Blue (5 each).
+- The collectibles are original seashells in themed sets of 5: Tide Pool, Dune Coast, Coral Reef, Deep Blue (sprint 2), then the four **expedition sets** Night Shore, Cold North, Volcanic Sands and Ancient Cliffs (2026-11-08).
 - Shells are guaranteed milestones, never random and never duplicated.
 - Completing a set pays coins and a booster bundle.
 
@@ -38,15 +38,40 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Set reward**: the shell that completes a set pays 150 coins plus one of each booster, and the card names the set.
 
-**After all 20**: each milestone or first daily solve pays 50 coins instead.
+**After all 40**: each milestone or first daily solve pays 50 coins instead.
 
-**Cabinet**: opened from the home screen. Shows each set with `owned/total`, owned shells by name, locked shells as soft silhouettes with "?", "Next shell: clear N more levels", and "Complete the set: 150 coins + 1 of each booster" until a set is done ("Set complete ✓" afterwards).
+**Cabinet**: opened from the home screen. One scrolling list. Each set's header is a button showing the name, `owned/total` and a chevron; **completed sets start collapsed** and the header expands or collapses them (`aria-expanded`, keyboard Enter/Space). An open set shows owned shells by name, locked shells as soft silhouettes with "?", "Next shell: clear N more levels", and "Complete the set: 150 coins + 1 of each booster" until a set is done ("Set complete ✓" afterwards).
 
-**Artwork**: 14 shell shapes (scallop, clam, spiral, limpet, star, dollar, razor, moon, conch, cowrie, auger, nautilus, abalone, oyster), each drawn as SVG and recoloured per shell. No image files.
+**Artwork**: 20 shell shapes, each drawn as SVG and recoloured per shell. No image files.
+- Sprint 2 (14): scallop, clam, spiral, limpet, star, dollar, razor, moon, conch, cowrie, auger, nautilus, abalone, oyster.
+- Expedition sets (6 new): turban, cone, urchin, heart (heart cockle), tusk (tusk shell), ammonite (fossil).
+- Grid columns are sized in `rem`: 5 across on most phones, fewer and wider at large text sizes, so names never break mid-word; art is capped at 4 rem.
+
+### 2.1a Expedition sets (owner interview, 2026-11-08)
+
+| # | Decision |
+|---|---|
+| SC-1 | Four new sets, not one: the "fifth set" of D12 became sets 5–8 |
+| SC-2 | Themes, in order: **Night Shore**, **Cold North**, **Volcanic Sands**, **Ancient Cliffs** |
+| SC-3 | 5 shells per set, like the originals (40 in total) |
+| SC-4 | Artwork: new shapes plus recolours of existing ones; within a set no two shells share both shape and colours |
+| SC-5 | Same set reward as the originals: 150 coins + 1 of each booster |
+| SC-6 | Small touches per set: Night Shore shells **glow** (soft blue halo; the slow pulse stops under reduced motion, the halo stays); Ancient Cliffs shells are **stone** (speckled texture masked to the shell's outline). Cold North and Volcanic Sands are plain |
+| SC-7 | Players who already own all 20 originals carry on from their next milestone with the first Night Shore shell. No back-pay for milestones that paid 50 coins |
+| SC-8 | Cabinet: one scrolling list; completed sets collapse |
+
+| Set | Shells (shape) |
+|---|---|
+| Night Shore (glow) | Silver Turban (turban), Moonlit Cone (cone), Glow Urchin (urchin), Ghost Scallop (scallop), Star Cowrie (cowrie) |
+| Cold North | Frost Whelk (conch), Ice Periwinkle (spiral), Snow Cockle (heart), Northern Tusk (tusk), Slate Mussel (clam) |
+| Volcanic Sands | Ember Cone (cone), Obsidian Turban (turban), Lava Scallop (scallop), Ash Urchin (urchin), Cinder Cowrie (cowrie) |
+| Ancient Cliffs (stone) | Spiral Ammonite (ammonite), Ribbed Ammonite (ammonite), Stone Scallop (scallop), Fossil Tusk (tusk), Fossil Heart (heart) |
+
+Names are placeholders the owner may rename; ids stay fixed once shipped, because saves store them.
 
 ### 2.2 State and Data
 
-- `Shell`: `{ id, name, kind, colors[body, accent] }`; `ShellSet`: `{ id, name, shells[] }`.
+- `Shell`: `{ id, name, kind, colors[body, accent] }`; `ShellSet`: `{ id, name, effect?: 'glow' | 'stone', shells[] }`. `allShells` copies the set's effect onto each shell so the win card and home icon show it too.
 - Config: `collection { everyLevels: 5, coinsWhenComplete: 50, setReward {coins: 150, boosters: one each}, sets[] }`.
 - Save: the owned shell ids, in the order earned.
 
@@ -66,7 +91,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 | Milestone due | `level > 0 and level mod 5 == 0` | `level` = the level just cleared | Levels 5, 10, 15 |
 | Levels to next shell | `5 − ((furthestLevel − 1) mod 5)` | `furthestLevel − 1` = highest level cleared | Cleared 12 → next at 15, "clear 3 more levels" |
 | Set complete | `all shells of the set owned` | | The 5th Tide Pool shell triggers 150 coins + 1 of each booster |
-| Shell supply | 4 sets × 5 = 20; earned at about 1 per 5 levels plus 1 per day | | About 100 levels, or a mix of days and levels |
+| Shell supply | 8 sets × 5 = 40; earned at about 1 per 5 levels plus 1 per day | | About 200 levels by levels alone; a daily player (1 per day + 1 per 5 levels) in roughly a month |
 
 ---
 
@@ -77,7 +102,8 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 - ✅ When everything is collected, `grantShell` returns nothing and the milestone pays the 50-coin bonus.
 - ✅ A set reward is paid only by the shell that completes the set.
 - ✅ A shell is earned only on a level's *first* clear (replaying a milestone level does not grant another).
-- ✅ Locked shells show a silhouette; the cabinet and win card work at 320 px.
+- ✅ Locked shells show a silhouette with no glow or stone effect; the cabinet and win card work at 320 px and at 150% text.
+- ✅ A save that owns all 20 originals gets the first Night Shore shell next; a save that earned 50-coin bonuses keeps them.
 
 **Not Yet Handled**:
 - ⚠️ "First clear" is defined as `level >= furthest level reached`, so jumping ahead with `?level=N` to a milestone level (for example `?level=100`) grants a shell without clearing the levels before it. Closed in sprint 5: `?level=N` can no longer go beyond the player's progress.
@@ -85,7 +111,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Unclear**:
 - ✅ Decided 2026-11-08: fixed order (as built).
-- ✅ Decided 2026-11-08: plan a **fifth set** (for example "Night Shore") as future content; keep the 50-coin milestones until then.
+- ✅ Decided 2026-11-08: plan a **fifth set** as future content; keep the 50-coin milestones until then. **Built 2026-11-08 as four sets (SC-1 to SC-8).**
 
 ---
 
@@ -95,14 +121,17 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Design Dependencies**: `economy.md`, `daily-puzzle.md`, `feel-audio-ui.md`, `save-data.md`.
 
-**Content Dependencies**: `collection.sets` (20 shells with colours), `everyLevels`, `coinsWhenComplete`, `setReward`.
+**Content Dependencies**: `collection.sets` (8 sets, 40 shells with colours, optional `effect`), `everyLevels`, `coinsWhenComplete`, `setReward`.
 
 ---
 
 ## 6. Acceptance Criteria
 
 **What Exists** (covered in `tests/unit/core/collection.test.ts`):
-- ✅ Shell ids are unique and there are 20.
+- ✅ Shell ids are unique.
+- ✅ There are 8 sets of 5 in the agreed order; an owner of the first 20 gets a Night Shore shell next; the new sets complete in order and pay the same reward; Night Shore glows and Ancient Cliffs is stone (`collection.test.ts`, "expedition sets").
+- ✅ Every catalog shape has artwork, the 6 new shapes exist and are used, each shape draws differently, effects are marked on the SVG and dropped when locked, and no two shells in a set share shape and colours (`shell-art.test.ts`).
+- ✅ Cabinet: completed sets start collapsed and toggle by tap and keyboard; no mid-word breaks or horizontal overflow at 320 px / 412 px, 100% / 150% text (screenshots in `production/qa/evidence/shell-sets/`).
 - ✅ Shells arrive in catalog order, with no duplicates, until all are owned; then none.
 - ✅ A set completion is reported exactly when its last shell arrives.
 - ✅ Unknown ids in a save are ignored.
@@ -111,6 +140,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Definition of Done**:
 - [x] 20 shells, milestones, set rewards, cabinet, artwork.
+- [x] Expedition sets 5–8: 20 more shells, 6 new shapes, glow and stone, collapsible cabinet.
 - [x] Open questions answered (2026-11-08).
 - [x] Skip-ahead gap closed alongside the `?level=N` fix.
 
@@ -118,11 +148,13 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 ## Open Questions and Follow-Up Work
 
-None open: fixed order; a fifth set later.
+None open: fixed order; sets 5–8 built.
 
 ### Flagged Follow-Up Work
 - [x] `?level=N` restricted; shells now need a genuine first clear.
-- [ ] Consider a fifth set or seasonal shells when the collection is completed in testing.
+- [x] More sets (sets 5–8, 2026-11-08).
+- [ ] Owner review of the 20 new shell names and artwork.
+- [ ] Consider seasonal shells once the 40 are completed in testing.
 
 ---
 
@@ -131,3 +163,4 @@ None open: fixed order; a fifth set later.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
+| 2026-11-08 | Claude | Expedition sets 5–8 from the owner interview (SC-1 to SC-8) |

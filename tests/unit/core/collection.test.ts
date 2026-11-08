@@ -65,3 +65,35 @@ describe('progress and milestones', () => {
     expect(milestoneDue(n + 1, cfg)).toBe(false);
   });
 });
+
+describe('expedition sets (shell sets 5-8, owner interview 2026-11-08)', () => {
+  // design/gdd/shell-collection.md, decisions SC-1 to SC-8.
+  it('there are 8 sets of 5: the original four, then Night Shore, Cold North, Volcanic Sands, Ancient Cliffs', () => {
+    const sets = cfg.collection.sets;
+    expect(sets.map((s) => s.name)).toEqual(['Tide Pool', 'Dune Coast', 'Coral Reef', 'Deep Blue', 'Night Shore', 'Cold North', 'Volcanic Sands', 'Ancient Cliffs']);
+    for (const s of sets) expect(s.shells, s.name).toHaveLength(5);
+    expect(allShells(cfg)).toHaveLength(40);
+  });
+  it('a player who already owns all 20 original shells gets the first Night Shore shell next', () => {
+    const original = allShells(cfg).slice(0, 20).map((s) => s.id);
+    const r = grantShell(original, cfg);
+    expect(r.shell?.setId).toBe('night');
+    expect(r.completedSet).toBeNull();
+  });
+  it('the new sets pay the same set reward as the originals', () => {
+    let owned = allShells(cfg).slice(0, 20).map((s) => s.id);
+    const completed: string[] = [];
+    for (let i = 0; i < 20; i++) {
+      const r = grantShell(owned, cfg);
+      owned = r.owned;
+      if (r.completedSet) completed.push(r.completedSet.id);
+    }
+    expect(completed).toEqual(['night', 'north', 'volcanic', 'ancient']);
+    expect(cfg.collection.setReward.coins).toBe(150);
+  });
+  it('Night Shore glows and Ancient Cliffs are stone; the other new sets are plain', () => {
+    const effect = Object.fromEntries(cfg.collection.sets.map((s) => [s.id, s.effect ?? null]));
+    expect(effect).toMatchObject({ night: 'glow', ancient: 'stone', north: null, volcanic: null, tidepool: null });
+    expect(allShells(cfg).find((s) => s.setId === 'night')?.effect).toBe('glow');
+  });
+});
