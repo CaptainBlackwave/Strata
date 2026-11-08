@@ -948,7 +948,7 @@ function sealFx(i: number, color: string): void {
   el.classList.add('just-sealed');
   window.setTimeout(() => {
     sparkleAround(el, color);
-    sceneSealBurst(el, color); // New Year: a small firework above the jar
+    sceneSealBurst(el, color); // tier 3 scenes: a firework, a meteor or an aurora ripple
     audio.play('seal');
   }, reducedMotion() ? 0 : 180);
 }
@@ -958,7 +958,7 @@ function showWin(): void {
   coach(null);
   const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
   celebrate(colors);
-  sceneWinDisplay(colors); // New Year: fireworks around the win card
+  sceneWinDisplay(colors); // tier 3 scenes: fireworks, a meteor shower or an aurora wave by the win card
   hideToast(); // a leftover hint or refusal toast must not sit over the win card
   audio.play('win');
   $('win-shell').hidden = true;
