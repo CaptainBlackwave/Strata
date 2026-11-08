@@ -15,9 +15,17 @@ export interface Jar {
    * Always below `units.length` for a non-empty jar, so the top is always visible.
    */
   readonly hidden: number;
+  /** Narrow jar: its own smaller capacity. Narrow jars never seal, so they must end empty. */
+  readonly cap?: number;
+  /** Frozen jar: no pours in or out until any jar seals (sprint-3 decision S3-5). */
+  readonly frozen?: boolean;
+  /** Locked lid: no pours in or out until a jar of this colour seals. */
+  readonly lock?: Color;
+  /** One-way funnel: can be poured into, never out of. */
+  readonly funnel?: boolean;
 }
 
-/** A whole puzzle. Every jar shares the same capacity. */
+/** A whole puzzle. `capacity` is the normal jar size; narrow jars override it with `cap`. */
 export interface Board {
   readonly capacity: number;
   readonly jars: readonly Jar[];
@@ -57,9 +65,22 @@ export function topRun(jar: Jar): Run | null {
   return { color, count };
 }
 
-/** A jar is sealed when it is full of a single colour. */
+/** How many units jar `i` can hold. Example: `jarCapacity(board, 2) // 2 for a narrow jar` */
+export function jarCapacity(board: Board, i: number): number {
+  return board.jars[i].cap ?? board.capacity;
+}
+
+/** True when a jar can't be poured into or out of right now (frozen or locked). */
+export function isClosed(jar: Jar): boolean {
+  return jar.frozen === true || jar.lock !== undefined;
+}
+
+/**
+ * A jar is sealed when it is full of a single colour at the board's normal capacity.
+ * Narrow jars never seal.
+ */
 export function isSealed(jar: Jar, capacity: number): boolean {
-  if (jar.units.length !== capacity) return false;
+  if ((jar.cap ?? capacity) !== capacity || jar.units.length !== capacity) return false;
   return jar.units.every((c) => c === jar.units[0]);
 }
 
@@ -77,9 +98,10 @@ export function canPour(board: Board, from: number, to: number): boolean {
   const src = board.jars[from];
   const dst = board.jars[to];
   if (!src || !dst) return false;
+  if (isClosed(src) || isClosed(dst) || src.funnel) return false;
   const run = topRun(src);
   if (!run) return false;
-  if (dst.units.length >= board.capacity) return false;
+  if (dst.units.length >= (dst.cap ?? board.capacity)) return false;
   const dstTop = topRun(dst);
   return dstTop === null || dstTop.color === run.color;
 }
@@ -88,7 +110,7 @@ export function canPour(board: Board, from: number, to: number): boolean {
 export function pourAmount(board: Board, from: number, to: number): number {
   if (!canPour(board, from, to)) return 0;
   const run = topRun(board.jars[from])!;
-  const free = board.capacity - board.jars[to].units.length;
+  const free = jarCapacity(board, to) - board.jars[to].units.length;
   return Math.min(run.count, free);
 }
 
@@ -110,10 +132,35 @@ export function pour(board: Board, from: number, to: number): PourResult {
   const dst = board.jars[to];
   const color = src.units[src.units.length - 1];
   const newSrcUnits = src.units.slice(0, src.units.length - moved);
-  const newSrc: Jar = { units: newSrcUnits, hidden: clampHidden(src.hidden, newSrcUnits.length) };
-  const newDst: Jar = { units: [...dst.units, ...new Array<Color>(moved).fill(color)], hidden: dst.hidden };
+  const newSrc: Jar = { ...src, units: newSrcUnits, hidden: clampHidden(src.hidden, newSrcUnits.length) };
+  const newDst: Jar = { ...dst, units: [...dst.units, ...new Array<Color>(moved).fill(color)] };
   const jars = board.jars.map((j, i) => (i === from ? newSrc : i === to ? newDst : j));
-  return { board: { capacity: board.capacity, jars }, moved, color };
+  return { board: settle({ capacity: board.capacity, jars }), moved, color };
+}
+
+/**
+ * Applies the seal-triggered rules: once any jar is sealed every frozen jar thaws,
+ * and a locked lid opens when a jar of its colour is sealed. Returns the same
+ * board object when nothing changes.
+ */
+export function settle(board: Board): Board {
+  const sealedColors = new Set<Color>();
+  for (const j of board.jars) if (isSealed(j, board.capacity)) sealedColors.add(j.units[0]);
+  if (sealedColors.size === 0) return board;
+  let changed = false;
+  const jars = board.jars.map((j) => {
+    const thaw = j.frozen === true;
+    const unlock = j.lock !== undefined && sealedColors.has(j.lock);
+    if (!thaw && !unlock) return j;
+    changed = true;
+    const { frozen, lock, ...rest } = j;
+    return {
+      ...rest,
+      ...(!thaw && frozen !== undefined ? { frozen } : {}),
+      ...(!unlock && lock !== undefined ? { lock } : {}),
+    } as Jar;
+  });
+  return changed ? { capacity: board.capacity, jars } : board;
 }
 
 /** Teardown rule R8: won when every jar is empty or sealed. */
@@ -140,7 +187,9 @@ export function usefulMoves(board: Board): Move[] {
   return legalMoves(board).filter(({ from, to }) => {
     const src = board.jars[from];
     const dst = board.jars[to];
-    return !(dst.units.length === 0 && isMonochrome(src));
+    // Moving a whole one-colour jar into an empty jar of the same kind only swaps them.
+    const sameKind = jarCapacity(board, from) === jarCapacity(board, to) && !dst.funnel;
+    return !(dst.units.length === 0 && isMonochrome(src) && sameKind);
   });
 }
 
@@ -155,9 +204,15 @@ export function isStuck(board: Board): boolean {
  */
 export function boardKey(board: Board): string {
   return board.jars
-    .map((j) => j.units.join(','))
+    .map(jarKey)
     .sort()
     .join('|');
+}
+
+/** One jar's state and contents as a string (used by solver and plan keys). */
+export function jarKey(j: Jar): string {
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}`;
+  return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 
 /** Adds one empty jar (the extra-jar booster). */

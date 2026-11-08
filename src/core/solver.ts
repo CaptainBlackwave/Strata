@@ -3,7 +3,7 @@
  * Proves generated levels are solvable (design/game-brief.md MVP 2) and powers hints.
  * It finds *a* solution, not necessarily the shortest one.
  */
-import { type Board, type Move, boardKey, isSealed, isWon, pour, topRun, usefulMoves } from './board';
+import { type Board, type Move, boardKey, isSealed, isWon, jarCapacity, pour, topRun, usefulMoves } from './board';
 
 /** The outcome of a solve attempt. */
 export interface SolveResult {
@@ -52,15 +52,23 @@ export function solve(board: Board, nodeBudget: number): SolveResult {
  * and sealed jars are never poured from), best-first by a cheap heuristic.
  */
 function orderedMoves(board: Board): Move[] {
-  const firstEmpty = board.jars.findIndex((j) => j.units.length === 0);
+  // Symmetry pruning: of several empty jars of the same kind, only try the first.
+  const firstEmptyOfKind = new Map<string, number>();
+  board.jars.forEach((j, i) => {
+    if (j.units.length) return;
+    const kind = `${jarCapacity(board, i)}${j.funnel ? 'U' : ''}${j.frozen ? 'F' : ''}${j.lock ?? ''}`;
+    if (!firstEmptyOfKind.has(kind)) firstEmptyOfKind.set(kind, i);
+  });
+  const firstEmpties = new Set(firstEmptyOfKind.values());
+  const isFirstEmpty = (i: number) => firstEmpties.has(i);
   const scored: { move: Move; score: number }[] = [];
   for (const move of usefulMoves(board)) {
     const src = board.jars[move.from];
     const dst = board.jars[move.to];
     if (isSealed(src, board.capacity)) continue;
-    if (dst.units.length === 0 && move.to !== firstEmpty) continue;
+    if (dst.units.length === 0 && !isFirstEmpty(move.to)) continue;
     const run = topRun(src)!;
-    const free = board.capacity - dst.units.length;
+    const free = jarCapacity(board, move.to) - dst.units.length;
     let score = 0;
     if (dst.units.length > 0) score += 2; // stacking onto a match beats using a spare jar
     if (run.count <= free) score += 1; // the whole run moves

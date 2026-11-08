@@ -2,9 +2,9 @@
  * Seeded level generator that only returns solver-proven boards.
  * Implements design/game-brief.md MVP 2.
  */
-import { type Board, type Color, isSealed, makeBoard } from './board';
+import { type Board, type Color, type Jar, isSealed, makeBoard } from './board';
 import { type GameConfig, type LevelSpec, levelSpec } from './levels';
-import { createRng, mixSeed, shuffle } from './rng';
+import { type Rng, createRng, mixSeed, shuffle } from './rng';
 import { solve } from './solver';
 
 /** A generated level along with its proof of solvability. */
@@ -49,7 +49,9 @@ export function generateFromSpec(spec: LevelSpec, baseSeed: number, config: Game
   const { maxAttempts, solverNodeBudget, maxSealedAtStart } = config.generator;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const seed = mixSeed(baseSeed, attempt);
-    const board = dealBoard(spec, seed);
+    const dealt = dealBoard(spec, seed);
+    // Mechanics use their own RNG stream, so a plain level's deal is untouched.
+    const board = spec.mechanics.length ? applyMechanics(dealt, spec, createRng(mixSeed(seed, 0xa11ce)), config) : dealt;
     const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length;
     if (sealed > maxSealedAtStart) continue;
     const result = solve(board, solverNodeBudget);
@@ -58,6 +60,34 @@ export function generateFromSpec(spec: LevelSpec, baseSeed: number, config: Game
     }
   }
   throw new Error(`No solvable board for ${spec.level > 0 ? `level ${spec.level}` : 'this spec'} after ${maxAttempts} attempts`);
+}
+
+/**
+ * Places a spec's mechanics on a dealt board. Narrow and funnel add an extra jar;
+ * frozen and locked change random filled jars. A lock never uses a colour that
+ * is inside its own jar (that would be an instant deadlock).
+ */
+export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: GameConfig): Board {
+  const jars: Jar[] = [...board.jars];
+  const filled = () => jars.map((j, i) => (j.units.length && !j.frozen && j.lock === undefined ? i : -1)).filter((i) => i >= 0);
+  const pick = <T,>(xs: T[]) => xs[Math.floor(rng() * xs.length)];
+  for (const id of spec.mechanics) {
+    const tune = config.mechanics.list.find((m) => m.id === id);
+    if (id === 'narrow') jars.push({ units: [], hidden: 0, cap: tune?.cap ?? 2 });
+    else if (id === 'funnel') jars.push({ units: [], hidden: 0, funnel: true });
+    else if (id === 'frozen') {
+      for (let k = 0; k < (tune?.count ?? 1); k++) {
+        const i = pick(filled());
+        if (i !== undefined) jars[i] = { ...jars[i], frozen: true };
+      }
+    } else if (id === 'locked') {
+      const i = pick(filled());
+      if (i === undefined) continue;
+      const absent = Array.from({ length: spec.colors }, (_, c) => c).filter((c) => !jars[i].units.includes(c));
+      if (absent.length) jars[i] = { ...jars[i], lock: pick(absent) };
+    }
+  }
+  return { capacity: board.capacity, jars };
 }
 
 /** The first-launch tutorial board from config: one pour seals a jar. */

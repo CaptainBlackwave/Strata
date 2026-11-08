@@ -14,6 +14,8 @@ export interface DailyDay {
   readonly capacity: number;
   readonly spare: number;
   readonly buriedDepth: number;
+  /** `rotate`: feature one mechanic, cycling through all of them week by week (S3-4). */
+  readonly mechanic?: 'rotate';
 }
 
 /** The daily part of game-config.json. */
@@ -81,6 +83,7 @@ export function dailySpec(key: string, config: GameConfig & DailyConfig): DailyS
     spare: day.spare,
     buriedDepth: day.buriedDepth,
     challenge: day.capacity > 4,
+    mechanics: day.mechanic === 'rotate' ? [config.mechanics.list[Math.floor(dayNumber(key) / 7) % config.mechanics.list.length].id] : [],
   };
 }
 

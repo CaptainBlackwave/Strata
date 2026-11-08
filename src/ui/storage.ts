@@ -31,6 +31,8 @@ export interface SaveData {
   daily: StreakState;
   /** Owned shell ids, in the order they were earned. */
   shells: string[];
+  /** Jar mechanics whose intro card has been shown. */
+  seenMechanics: string[];
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -64,9 +66,12 @@ function read(store: KeyValueStore | null, key: string): unknown {
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object';
 const nonNegInt = (v: unknown, fallback: number) => (Number.isInteger(v) && (v as number) >= 0 ? (v as number) : fallback);
 
+/** A de-duplicated list of the strings in `v`, or [] if it isn't an array. */
+const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : []);
+
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [] };
+  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [] };
 }
 
 /**
@@ -112,7 +117,8 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       best: nonNegInt(d.best, 0),
       passes: nonNegInt(d.passes, 0),
     },
-    shells: Array.isArray(v2.shells) ? [...new Set(v2.shells.filter((x): x is string => typeof x === 'string'))] : [],
+    shells: strings(v2.shells),
+    seenMechanics: strings(v2.seenMechanics),
   };
 }
 

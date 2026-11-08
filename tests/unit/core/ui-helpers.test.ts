@@ -39,6 +39,7 @@ describe('save storage', () => {
     save.settings = { sound: false, music: true, haptics: false, patterns: true };
     save.daily = { last: '2026-11-08', streak: 3, best: 9, passes: 1 };
     save.shells = ['periwinkle', 'limpet'];
+    save.seenMechanics = ['narrow'];
     writeSave(save, s);
     expect(loadSave(econ, s)).toEqual(save);
   });
@@ -78,6 +79,7 @@ describe('save storage', () => {
     const save = loadSave(econ, s);
     expect(save.daily.streak).toBe(0);
     expect(save.shells).toEqual([]);
+    expect(save.seenMechanics).toEqual([]);
     expect(save.level).toBe(9);
   });
   it('falls back on corrupt JSON', () => {

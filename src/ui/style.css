@@ -1127,3 +1127,180 @@ body {
   font-size: 11px;
   color: var(--ink-soft);
 }
+
+/* ==== Sprint 3: jar mechanics (production/sprints/sprint-3.md) ==== */
+.rows {
+  align-items: flex-end;
+}
+.padlock,
+.funnel-mark,
+.ice {
+  display: none;
+}
+
+/* Frozen: frosted glass that cracks away on thaw */
+:is(.jar, .mini-jar).frozen .ice,
+.jar.thawing .ice {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' fill='none'%3E%3Cpath d='M20 6v28M8 13l24 14M8 27l24-14'/%3E%3Cpath d='M16 8l4 4 4-4M16 32l4-4 4 4'/%3E%3C/g%3E%3C/svg%3E") center 38% / 62% no-repeat,
+    linear-gradient(160deg, rgba(235, 248, 255, 0.92), rgba(186, 222, 245, 0.78) 60%, rgba(214, 236, 250, 0.9));
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+}
+.jar.thawing .ice {
+  animation: thaw 760ms ease-in forwards;
+}
+@keyframes thaw {
+  30% {
+    transform: scale(1.04);
+    filter: brightness(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85) translateY(10%);
+    clip-path: polygon(0 0, 40% 10%, 100% 0, 90% 60%, 100% 100%, 55% 85%, 0 100%, 10% 45%);
+  }
+}
+
+/* Locked lid: a padlock in the key colour, sitting on the rim */
+:is(.jar, .mini-jar).locked .padlock,
+.jar.unlocking .padlock {
+  display: block;
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: calc(var(--jar-w) * 0.18 - 2px);
+  width: calc(var(--jar-w) * 0.46);
+  height: calc(var(--jar-w) * 0.38);
+  transform: translate(-50%, -30%);
+  border-radius: 6px;
+  background-color: var(--lock);
+  border: 2.5px solid var(--ink);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+}
+:is(.jar, .mini-jar) .padlock::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 58%;
+  height: 70%;
+  transform: translateX(-50%);
+  border: 2.5px solid var(--ink);
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+}
+:is(.jar, .mini-jar) .padlock::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  width: 4px;
+  height: 36%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: var(--ink);
+}
+.jar.locked .glass {
+  filter: saturate(0.85);
+}
+.jar.unlocking .padlock {
+  animation: unlock 800ms ease-in forwards;
+}
+@keyframes unlock {
+  25% {
+    transform: translate(-50%, -60%) rotate(-12deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -220%) rotate(25deg) scale(0.8);
+  }
+}
+
+/* One-way funnel: a funnel on the rim, and the glass tinted */
+:is(.jar, .mini-jar).funnel .funnel-mark {
+  display: block;
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: calc(var(--jar-w) * 0.18 - var(--jar-w) * 0.3);
+  width: calc(var(--jar-w) * 0.95);
+  height: calc(var(--jar-w) * 0.42);
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #f5ead8, #d9c3a5);
+  clip-path: polygon(0 0, 100% 0, 64% 100%, 36% 100%);
+  filter: drop-shadow(0 2px 0 rgba(90, 70, 50, 0.4));
+}
+:is(.jar, .mini-jar).funnel .glass {
+  background:
+    repeating-linear-gradient(0deg, rgba(122, 80, 56, 0.08) 0 6px, transparent 6px 12px),
+    var(--glass);
+  border-style: solid dashed;
+}
+
+/* Narrow jar: slimmer glass (its height is set per jar in main.ts) */
+.jar.narrow .glass {
+  left: 18%;
+  right: 18%;
+  border-radius: calc(var(--jar-w) * 0.1) calc(var(--jar-w) * 0.1) calc(var(--jar-w) * 0.24) calc(var(--jar-w) * 0.24);
+}
+.jar.narrow .sand {
+  border-radius: 0 0 calc(var(--jar-w) * 0.2) calc(var(--jar-w) * 0.2);
+}
+
+/* Intro card and jar guide */
+.intro-card {
+  width: min(380px, 100%);
+  padding-bottom: 16px;
+}
+.intro-kicker {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.intro-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 4px 12px;
+  border-bottom: 1px solid rgba(90, 70, 50, 0.12);
+}
+.intro-row:last-child {
+  border-bottom: 0;
+  margin-bottom: 8px;
+}
+.intro-row h2 {
+  margin: 0 0 2px;
+  font-size: 18px;
+}
+.intro-row p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+.intro-row.unknown .mini-jar {
+  filter: grayscale(1) opacity(0.5);
+}
+.mini-jar {
+  --jar-w: 46px;
+  --jar-h: 84px;
+  --unit-h: 20px;
+  position: relative;
+  flex: none;
+  display: block;
+  width: var(--jar-w);
+  height: calc(var(--jar-h) + 14px);
+}
+.mini-jar.narrow .glass {
+  height: 50px;
+  left: 18%;
+  right: 18%;
+}

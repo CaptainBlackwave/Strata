@@ -19,6 +19,19 @@
     "maxAttempts": 40,
     "solverNodeBudget": 40000
   },
+  "mechanics": {
+    "$comment": "Sprint 3 (S3-1..S3-3): unlock every 20 levels, easiest first; each debuts on its unlock level, then appears in about `chance` of levels; two can combine from `comboFrom`. Narrow and funnel add an extra jar; frozen and locked change existing filled jars.",
+    "salt": 9137,
+    "chance": 0.34,
+    "comboFrom": 101,
+    "comboChance": 0.45,
+    "list": [
+      { "id": "narrow", "unlockAt": 21, "cap": 2 },
+      { "id": "frozen", "unlockAt": 41, "count": 1 },
+      { "id": "locked", "unlockAt": 61 },
+      { "id": "funnel", "unlockAt": 81 }
+    ]
+  },
   "daily": {
     "$comment": "Weekly rhythm: index 0 = Sunday ... 6 = Saturday (JS getUTCDay of the date string). Monday is easy, Sunday is the hard tall-jar finale.",
     "seedSalt": 7351,
@@ -29,7 +42,7 @@
       { "name": "medium", "colors": 7, "capacity": 4, "spare": 2, "buriedDepth": 1 },
       { "name": "medium", "colors": 8, "capacity": 4, "spare": 2, "buriedDepth": 1 },
       { "name": "tricky", "colors": 9, "capacity": 4, "spare": 2, "buriedDepth": 2 },
-      { "name": "tricky", "colors": 10, "capacity": 4, "spare": 2, "buriedDepth": 2 }
+      { "name": "tricky", "colors": 10, "capacity": 4, "spare": 2, "buriedDepth": 2, "mechanic": "rotate" }
     ],
     "streak": {
       "baseCoins": 30,

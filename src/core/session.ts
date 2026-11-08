@@ -3,7 +3,7 @@
  * hints and status. The UI listens through `onChange`, so nothing here knows about the DOM.
  * Implements design/game-brief.md MVP 1 and MVP 4.
  */
-import { type Board, type Jar, type Move, addEmptyJar, canPour, isSealed, isStuck, isWon, pour } from './board';
+import { type Board, type Jar, type Move, addEmptyJar, canPour, isClosed, isSealed, isStuck, isWon, jarKey, pour, settle } from './board';
 import { type Rng, shuffle as shuffleInPlace } from './rng';
 import { solve } from './solver';
 
@@ -152,7 +152,8 @@ export class GameSession {
   shuffle(rng: Rng): boolean {
     if (this.status === 'won') return false;
     const board = this.current;
-    const open = board.jars.map((j, i) => (isSealed(j, board.capacity) ? -1 : i)).filter((i) => i >= 0);
+    // Only free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand.
+    const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.funnel ? -1 : i)).filter((i) => i >= 0);
     const pool = open.flatMap((i) => board.jars[i].units);
     const before = exactKey(board);
     const attempts = this.options.shuffleAttempts ?? 40;
@@ -164,9 +165,9 @@ export class GameSession {
         if (!open.includes(i)) return j;
         const units = pool.slice(k, k + j.units.length);
         k += j.units.length;
-        return { units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)) };
+        return { ...j, units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)) };
       });
-      const next: Board = { capacity: board.capacity, jars };
+      const next: Board = settle({ capacity: board.capacity, jars });
       if (exactKey(next) === before || isWon(next)) continue;
       if (solve(next, budget).solvable !== true) continue;
       this.history.push(board);
@@ -220,5 +221,5 @@ export class GameSession {
 
 /** An order-sensitive board key. Plans use jar indices, so jar order matters here. */
 function exactKey(board: Board): string {
-  return board.jars.map((j) => j.units.join(',')).join('|');
+  return board.jars.map(jarKey).join('|');
 }

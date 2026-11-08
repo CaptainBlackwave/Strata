@@ -1,5 +1,7 @@
 # Sprint 3: new jar mechanics and offline install
 
+> **Status: complete (2026-11-08).** Evidence: `production/qa/evidence/sprint-3/`. All Must Have and Should Have tasks are done, plus T11. T12 is covered by the Jar guide, which shows "Unlocks at level N". Deviation: T8 has no "tap to refresh" toast; the page is network-first instead, so every launch with signal loads the latest deploy and the toast isn't needed.
+
 ## Sprint Goal
 Give long-term players something new every 20 levels (four jar mechanics, each introduced with a
 short card) and make the home-screen app work with no signal.
@@ -29,13 +31,13 @@ winnable) and retained phone screenshots.
 | S3-5 | Frozen jars **thaw when any jar seals** (all frozen jars at once) |
 | S3-6 | Next sprint: **time-of-day scenes** (Dawn, Midday, Sunset, Moonlit tide), ~300–800 coins each. Backend social is **deferred** |
 
-## Mechanic rules (proposed defaults, so tell me if any are wrong)
+## Mechanic rules (as built)
 | Mechanic | Rule | Reads as |
 |---|---|---|
-| **Narrow jar** | Holds 2 units instead of the level's capacity. It seals when full of one colour (2 units), and that colour's other units must fill other jars | A slim tube |
+| **Narrow jar** | An extra jar holding 2 units. It never seals, so it must end empty: working space with a catch | A short, slim tube |
 | **Frozen jar** | Starts iced: it can't be poured into or out of. It thaws the moment any jar seals | Frosted glass with a crack animation on thaw |
 | **Locked lid** | A padlock in colour X: closed to pours in and out until a jar of colour X is sealed | A coloured padlock on the rim |
-| **One-way funnel** | You can pour into it but never out of it. It seals as normal when full of one colour, so a mixed funnel is a dead end (undo exists) | A funnel on the rim |
+| **One-way funnel** | An extra empty jar you can pour into but never out of. It seals as normal when full of one colour, so a mixed funnel is a dead end (undo exists) | A funnel on the rim, striped glass |
 
 ## Tasks
 

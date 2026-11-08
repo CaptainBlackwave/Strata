@@ -6,12 +6,12 @@
  */
 import './style.css';
 import rawConfig from '../config/game-config.json';
-import { type Board, canPour, isSealed, pourAmount } from '../core/board';
+import { type Board, type Jar, canPour, isClosed, isSealed, pourAmount } from '../core/board';
 import { type CollectionConfig, allShells, grantShell, milestoneDue, setProgress } from '../core/collection';
 import { type DailyConfig, generateDaily, localDateKey, recordDailySolve, streakStatus, weekday } from '../core/daily';
 import { type BoosterId, type EconomyConfig, addBoosters, addCoins, levelReward, spendBooster } from '../core/economy';
 import { generateLevel, tutorialBoard } from '../core/generator';
-import type { GameConfig } from '../core/levels';
+import type { GameConfig, MechanicId } from '../core/levels';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent } from '../core/session';
 import { GameAudio } from './audio';
@@ -114,6 +114,46 @@ function startDaily(): void {
   challengeTag.textContent = t.dailyTag(dailyName);
   challengeTag.hidden = false;
   coach(null);
+  introduce(gen.spec.mechanics);
+}
+
+const MECHANICS: MechanicId[] = ['narrow', 'frozen', 'locked', 'funnel'];
+
+/** A tiny static jar illustrating a mechanic, built from the same classes as the board. */
+function miniJar(id: MechanicId): string {
+  const lockC = config.palette[2].hex;
+  const units = id === 'narrow' ? ['#2a9d8f'] : id === 'funnel' ? ['#f2a541', '#f2a541'] : ['#c8553d', '#2a9d8f', '#f2a541'];
+  const sand = units.map((c) => `<span class="unit" style="--c:${c}"></span>`).join('');
+  const extra = id === 'frozen' ? '<span class="ice"></span>' : '';
+  const top = id === 'locked' ? `<span class="padlock" style="--lock:${lockC}"></span>` : id === 'funnel' ? '<span class="funnel-mark"></span>' : '';
+  return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span></span>`;
+}
+
+/** Shows the intro card for any mechanic on this board the player hasn't met yet. */
+function introduce(ids: readonly MechanicId[]): void {
+  const fresh = ids.filter((id) => !save.seenMechanics.includes(id));
+  if (!fresh.length) return;
+  save.seenMechanics = [...save.seenMechanics, ...fresh];
+  writeSave(save);
+  showMechanicCards(fresh, t.newJar);
+}
+
+function showMechanicCards(ids: readonly MechanicId[], kicker: string): void {
+  $('intro-kicker').textContent = kicker;
+  $('intro-list').replaceChildren(
+    ...ids.map((id) => {
+      const row = document.createElement('div');
+      const unlockAt = config.mechanics.list.find((m) => m.id === id)!.unlockAt;
+      const known = save.seenMechanics.includes(id) || save.level > unlockAt;
+      row.className = `intro-row${known ? '' : ' unknown'}`;
+      row.innerHTML = `${miniJar(id)}<div><h2></h2><p></p></div>`;
+      row.querySelector('h2')!.textContent = t.mechanics[id].name;
+      row.querySelector('p')!.textContent = known ? t.mechanics[id].rule : t.unlocksAt(unlockAt);
+      return row;
+    }),
+  );
+  $('intro').hidden = false;
+  $('btn-intro-ok').focus();
 }
 
 /** Grants the next shell (or the completion bonus) and fills the win card's shell row. */
@@ -215,6 +255,7 @@ function startLevel(n: number): void {
   challengeTag.textContent = t.challenge;
   challengeTag.hidden = !gen.spec.challenge;
   coach(null);
+  introduce(gen.spec.mechanics);
 }
 
 function beginSession(board: Board, isChallenge: boolean): void {
@@ -256,6 +297,8 @@ function onSessionEvent(e: SessionEvent): void {
     case 'pour':
       updateJar(e.move.from);
       updateJar(e.move.to, session.board.jars[e.move.to].units.length - e.moved);
+      // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
+      session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
       break;
     case 'extraJar':
@@ -390,7 +433,9 @@ function buildJars(): void {
     jar.type = 'button';
     jar.className = 'jar';
     jar.dataset.index = String(i);
-    jar.innerHTML = '<span class="cork" aria-hidden="true"></span><span class="glass"><span class="sand"></span><span class="shine"></span></span>';
+    jar.innerHTML =
+      '<span class="cork" aria-hidden="true"></span><span class="padlock" aria-hidden="true"></span><span class="funnel-mark" aria-hidden="true"></span>' +
+      '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>';
     jar.addEventListener('click', () => onJarTap(i));
     rows.appendChild(jar);
     return jar;
@@ -437,10 +482,51 @@ function updateJar(i: number, growFrom = Infinity): void {
   const sealed = isSealed(jar, board.capacity);
   el.classList.toggle('sealed', sealed);
   if (!sealed) el.classList.remove('just-sealed');
+  renderMechanics(el, jar);
   el.classList.toggle('selected', selected === i);
   el.setAttribute('aria-pressed', String(selected === i));
   const contents = jar.units.length ? jar.units.map((c, k) => (k < jar.hidden ? t.buried : config.palette[c].id)).join(', ') : t.jarEmpty;
-  el.setAttribute('aria-label', t.jarLabel(i, sealed ? `${contents} (${t.sealed})` : contents));
+  const states = [
+    jar.cap !== undefined ? t.jarStates.narrow : '',
+    jar.frozen ? t.jarStates.frozen : '',
+    jar.lock !== undefined ? t.jarStates.locked(config.palette[jar.lock].id) : '',
+    jar.funnel ? t.jarStates.funnel : '',
+    sealed ? t.sealed : '',
+  ].filter(Boolean);
+  el.setAttribute('aria-label', t.jarLabel(i, states.length ? `${contents} (${states.join(', ')})` : contents));
+}
+
+/** Draws a jar's mechanic state, and plays the thaw/unlock effect when one ends. */
+function renderMechanics(el: HTMLElement, jar: Jar): void {
+  const wasFrozen = el.dataset.frozen === '1';
+  const wasLocked = el.dataset.lock !== undefined && el.dataset.lock !== '';
+  el.classList.toggle('narrow', jar.cap !== undefined);
+  el.classList.toggle('funnel', jar.funnel === true);
+  el.classList.toggle('frozen', jar.frozen === true);
+  el.classList.toggle('locked', jar.lock !== undefined);
+  const glass = el.querySelector('.glass') as HTMLElement;
+  if (jar.cap !== undefined) glass.style.height = `${unitHeight * jar.cap + Math.round(unitHeight * 0.45)}px`;
+  else glass.style.removeProperty('height');
+  const padlock = el.querySelector('.padlock') as HTMLElement;
+  if (jar.lock !== undefined) {
+    padlock.style.setProperty('--lock', config.palette[jar.lock].hex);
+    padlock.className = `padlock${save.settings.patterns ? ` pat-${jar.lock % 12}` : ''}`;
+  }
+  if (wasFrozen && !jar.frozen) mechanicFx(el, 'thawing', t.thawed);
+  if (wasLocked && jar.lock === undefined) mechanicFx(el, 'unlocking', t.unlocked);
+  el.dataset.frozen = jar.frozen ? '1' : '';
+  el.dataset.lock = jar.lock !== undefined ? String(jar.lock) : '';
+}
+
+function mechanicFx(el: HTMLElement, cls: string, label: string): void {
+  showToast(label);
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+  window.setTimeout(() => el.classList.remove(cls), 900);
+  audio.play('booster');
+  const r = el.getBoundingClientRect();
+  burst({ x: r.left + r.width / 2, y: r.top + r.height * 0.3, colors: ['#dff3ff', '#ffffff', '#b9e0f5'], count: 14, spread: r.width, size: 5, duration: 600, className: 'spark' });
 }
 
 function updateHud(): void {
@@ -474,7 +560,15 @@ function setSelected(i: number | null): void {
 
 function isLiftable(i: number): boolean {
   const jar = session.board.jars[i];
-  return !!jar && jar.units.length > 0 && !isSealed(jar, session.board.capacity);
+  return !!jar && jar.units.length > 0 && !isSealed(jar, session.board.capacity) && !isClosed(jar) && !jar.funnel;
+}
+
+/** Explains why a mechanic jar refused a tap. */
+function explain(i: number): void {
+  const jar = session.board.jars[i];
+  if (!jar) return;
+  const id: MechanicId | null = jar.frozen ? 'frozen' : jar.lock !== undefined ? 'locked' : jar.funnel ? 'funnel' : jar.cap !== undefined ? 'narrow' : null;
+  if (id) showToast(t.mechanics[id].tap);
 }
 
 function onJarTap(i: number): void {
@@ -487,6 +581,7 @@ function onJarTap(i: number): void {
       if (mode === 'tutorial') coach(i === 0 ? 1 : 0, t.tutorialPour);
     } else {
       nope(i);
+      explain(i);
     }
     return;
   }
@@ -752,6 +847,11 @@ function wireInput(): void {
     settingsEl.hidden = true;
     showHome();
   });
+  $('btn-guide').addEventListener('click', () => {
+    settingsEl.hidden = true;
+    showMechanicCards(MECHANICS, t.jarGuide);
+  });
+  $('btn-intro-ok').addEventListener('click', () => ($('intro').hidden = true));
   $('btn-tutorial').addEventListener('click', () => {
     settingsEl.hidden = true;
     startTutorial();
@@ -767,6 +867,10 @@ function wireInput(): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!$('intro').hidden) {
+      if (e.key === 'Escape' || e.key === 'Enter') $('intro').hidden = true;
+      return;
+    }
     if (!$('cabinet').hidden) {
       if (e.key === 'Escape') $('cabinet').hidden = true;
       return;
@@ -828,10 +932,21 @@ function applyStrings(): void {
   for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns'];
   $('btn-home').textContent = t.home;
   $('btn-tutorial').textContent = t.replayTutorial;
+  $('btn-guide').textContent = t.jarGuide;
+  $('btn-intro-ok').textContent = t.gotIt;
   $('btn-close-settings').textContent = t.close;
   $('home-title').textContent = t.brand;
   $('home-tagline').textContent = t.tagline;
   $('btn-share').textContent = t.share;
   $('btn-close-cabinet').title = t.close;
   boardEl.setAttribute('aria-label', t.boardLabel);
+}
+
+// ---- Offline install (sprint 3, T8) ------------------------------------
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      /* offline support unavailable; the game still works online */
+    });
+  });
 }
