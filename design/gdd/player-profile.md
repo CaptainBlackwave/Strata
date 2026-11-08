@@ -11,7 +11,7 @@ verified-by: owner interview 2026-11-08
 > interview of 2026-11-08 (PP-1 to PP-10). The owner's reference screenshots, taken from
 > another game, were used **only for layout and flow** (a stats grid, an edit sheet with tabs
 > and a Save button). No art, characters, names or features were taken from them. The
-> project's CLAUDE.md and decision D5 ("no mascots") apply.
+> project's CLAUDE.md and roadmap decision R5 ("no mascots", `design/competitive-roadmap.md`) apply.
 
 ---
 
@@ -30,8 +30,8 @@ verified-by: owner interview 2026-11-08
 | PP-1 | **Entry point**: a round avatar chip with its frame at the top-left of the home screen, with the name on a small plate beside it. It opens Profile |
 | PP-2 | **Profile screen**: a header card (avatar in its frame, the name on its plate, a **Level N** badge, an edit button), then a stats grid |
 | PP-3 | **Stats**: core progress, perfect clears, lifetime totals and scenes (all four groups; the list is in 3.4) |
-| PP-4 | **Avatars**: original **seaside objects** drawn as SVG in the house style. No characters or creatures, so D5 holds |
-| PP-5 | **Names**: a friendly generated name for new players (adjective + seaside noun + 2 digits) with a re-roll button. Players may also type their own: 2–16 characters, letters, numbers and single spaces. The name is kept on this device only |
+| PP-4 | **Avatars**: original **seaside objects** drawn as SVG in the house style. No characters or creatures, so roadmap R5 holds |
+| PP-5 | **Names**: a friendly generated name for new players (adjective + seaside noun + 2 digits) with a re-roll button. Players may also type their own: 2–16 characters, letters, numbers and single spaces (single hyphens were added during the build, see 3.5). The name is kept on this device only |
 | PP-6 | **Name art = name plates**: styled banners behind the name. Every plate has its own fixed colours, so it reads the same in all 4 scenes |
 | PP-7 | **Unlocks are earned by milestones only.** Coins are not involved. Locked items show how to earn them and the player's progress |
 | PP-8 | **Edit sheet**: tabs **Avatar / Frame / Name** (the name field and the plates are on Name). The preview card updates as you tap. **Save** commits. Closing with unsaved changes asks "Discard changes?" |
@@ -80,13 +80,13 @@ verified-by: owner interview 2026-11-08
 | Stat | Value | Source | New counter? |
 |---|---|---|---|
 | Levels cleared | `save.level − 1` | existing | no |
-| Perfect clears | first clears of a level with no boosters used (D4's Perfect) | `stats.perfectClears` | **yes** |
+| Perfect clears | first clears of a level won with `session.assists === 0`: the Perfect rule of `session-boosters.md` §2.1/§3 (M2). Undo is free and never counts (D19), and a Hint that finds nothing doesn't count | `stats.perfectClears` | **yes** |
 | Daily streak | the live streak, as on the home card (`streakStatus(...).current`) | existing | no |
 | Best streak | `daily.best` | existing | no |
 | Dailies solved | daily solves that count (not replays, not out-of-order) | `stats.dailiesSolved` | **yes** |
-| Shells | `owned / 40` | existing | no |
-| Sets completed | `completed / 8` | existing (`setProgress`) | no |
-| Scenes | `owned / total` (4 scenes) | existing | no |
+| Shells | `owned / total`, total from `collection.sets` in config (40 today) | existing | no |
+| Sets completed | `completed / total`, total from config (8 today) (`setProgress`) | existing | no |
+| Scenes | `owned / total`, total from `themes.list` in config (4 today) | existing | no |
 | Total pours | the sum of `moves` of every solved level or daily, replays included | `stats.pours` | **yes** |
 | Coins earned | all coins credited by play: level rewards, daily rewards, set bonuses, the all-shells bonus | `stats.coinsEarned` | **yes** |
 | Boosters used | boosters that were applied (from a charge or bought with coins). Refunded attempts do not count | `stats.boostersUsed` | **yes** |
@@ -188,15 +188,15 @@ All three lists live in `game-config.json` under `profile`. Ids are fixed once s
 | Progress line | `min(progress[kind], count) / count` | | "Clear 25 levels · 12/25" |
 | Newly unlocked | `unlocked(after) − unlocked(before)` | before and after one win | Clearing level 25 adds Lighthouse |
 | Total pours | `pours += session.moves` on every solved level or daily | `moves` ≥ 1 | A 31-pour daily adds 31 |
-| Coins earned | `coinsEarned += c` for every play reward `c` credited | | Level reward 25 + set bonus 150 → +175 |
+| Coins earned | `coinsEarned += c` for every play reward `c` credited | | Perfect clear 30 + set bonus 150 → +180 (level rewards are 20, 30, 50 or 60, `economy.md` §3) |
 | Generated names | `16 × 16 × 90 = 23,040` combinations; length ≤ `7 + 1 + 5 + 1 + 2 = 16` | | Collisions don't matter, since names are device-local |
 
-**Pacing of the unlocks** (rationale for the counts):
-- Levels: 25 / 50 / 75 / 100 levels arrive at roughly 1, 2, 3 and 4 weeks for a daily player, matching shell pacing (`shell-collection.md` §3).
+**Pacing of the unlocks** (rationale for the counts). Assumed play rate: a daily player clears about 3.5 levels a day (25 a week) and solves the daily every day, the same rate as `shell-collection.md` §3.
+- Levels: 25 / 50 / 75 / 100 levels arrive at roughly 1, 2, 3 and 4 weeks at that rate.
 - 10 perfect clears is a first-week goal.
 - A best streak of 14 is two tide-pass cycles (S2-2).
 - 30 dailies solved is about a month.
-- 1 set ≈ 25 levels.
+- 1 set (5 shells): about 25 levels for a player who skips the daily. A daily player earns about 1.7 shells a day (0.7 from levels + 1 from the daily), so a set every 3 days, or about 10 levels.
 - 4 sets is the halfway point of the cabinet; all 40 shells is the long goal.
 
 ---
@@ -213,6 +213,7 @@ All three lists live in `game-config.json` under `profile`. Ids are fixed once s
 | Re-roll gives the current name | Allowed (1 in 23,040). No retry is needed |
 | Tap a locked item | Only the requirement line shows. The selection does not change |
 | Close the Edit sheet after only toggling back to the saved choice | Draft equals saved, so it closes with no prompt |
+| Escape on the "Discard changes?" dialog | Means **Keep editing**: the dialog closes and the draft is kept |
 | Win unlocks two items at once (level 100 + a 4th set) | Two notice rows, in config order (avatars, frames, plates) |
 | A daily replay, or a solve with the device date moved back | Neither `dailiesSolved` nor `coinsEarned` changes. `pours` still counts, because it was a real solved puzzle |
 | A level replay | `pours` counts. `perfectClears` and `coinsEarned` don't, because replays are not first clears and pay nothing (M1) |
@@ -231,7 +232,7 @@ All three lists live in `game-config.json` under `profile`. Ids are fixed once s
   - `daily-puzzle.md` (streak, counted solves)
   - `shell-collection.md` (shells and sets as unlock progress)
   - `scenes.md` (scenes owned, and plates must read in every scene)
-- **Depended on by**: nothing; it sits at the top of the stack with `feel-audio-ui.md`, which presents its home chip, dialogs and win-card rows (and lists it as a dependant).
+- **Depended on by**: `feel-audio-ui.md`, which presents its home chip, Profile screen, Edit sheet and win-card rows (`systems-index.md` row 9 lists system 11). This system does not depend on feel-audio-ui.
 - **Technical**:
   - `collection.ts` (`setProgress`)
   - `daily.ts` (`streakStatus`)
@@ -245,7 +246,7 @@ All three lists live in `game-config.json` under `profile`. Ids are fixed once s
 | Knob | Where | Default | Safe range | Affects |
 |---|---|---|---|---|
 | `profile.name.min` / `max` | config | 2 / 16 | min 1–3, max 12–20 | Name length, and chip layout at 320 px (re-screenshot if max > 16) |
-| Each item's `unlock.count` | config | see 3.6 | ≥ 1, below the content cap (levels ≤ ~500, shells ≤ 40, sets ≤ 8) | When cosmetics arrive |
+| Each item's `unlock.count` | config | see 3.6 | ≥ 1; levels within the range generation has been swept (≤ ~500, `level-generation.md` §4; levels themselves are endless); shells and sets ≤ the config totals (40, 8) | When cosmetics arrive |
 | Each item's `unlock.kind` | config | see 3.6 | one of the six kinds | What the player chases |
 | Plate colours (`bg`, `edge`, `ink`) | config | see art | ink vs bg contrast ≥ 4.5 : 1 | Readability, enforced by a unit test |
 | Name word lists | `strings.ts` | 16 × 16 | ≥ 8 each | Variety of generated names |
@@ -297,3 +298,4 @@ None open: the owner answered every interview question.
 |------|--------|---------|
 | 2026-11-08 | Claude | Designed from the owner interview (PP-1 to PP-10) |
 | 2026-11-08 | Claude | Built; word lists shortened to fit the 16-character limit; scenes count corrected to 4; chip shown after the tutorial |
+| 2026-11-08 | Claude (sprint 6, F9) | Perfect clears use M2's rule `assists === 0` (GX-2, GB-PP-1); roadmap decisions cited as R4/R5 (GX-8, GB-PP-2); hyphen note on PP-5; play-rate assumption stated and the daily-player set line added (GB-PP-6); coins-earned example fixed (GB-PP-8); totals read from config (GB-PP-9); Escape on "Discard changes?" (GB-PP-10); depended on by feel-audio-ui (GX-10); unlock-count range reworded (GB-PP-7) |

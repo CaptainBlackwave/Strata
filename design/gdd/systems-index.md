@@ -26,15 +26,15 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 2 | Level generation | Core | MVP | Implemented | [level-generation.md](level-generation.md) | 1, 3 |
 | 3 | Jar mechanics | Gameplay | Alpha | Implemented | [jar-mechanics.md](jar-mechanics.md) | 1 |
 | 4 | Session and boosters | Gameplay | MVP | Implemented | [session-boosters.md](session-boosters.md) | 1, 2, 3, 5 |
-| 5 | Economy | Economy | Vertical Slice | Implemented | [economy.md](economy.md) | 4 |
+| 5 | Economy | Economy | Vertical Slice | Implemented | [economy.md](economy.md) | 2, 4 |
 | 6 | Daily puzzle | Progression | Alpha | Implemented | [daily-puzzle.md](daily-puzzle.md) | 2, 3, 5, 7 |
-| 7 | Shell collection | Progression | Alpha | Implemented | [shell-collection.md](shell-collection.md) | 5, 6 |
+| 7 | Shell collection | Progression | Alpha | Implemented | [shell-collection.md](shell-collection.md) | 2, 4, 5, 6 |
 | 8 | Scenes | Meta | Full Vision | Implemented | [scenes.md](scenes.md) | 5 |
-| 9 | Feel, audio and UI | UI | MVP | Implemented (gamepad waived) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10 |
+| 9 | Feel, audio and UI | UI | MVP | Implemented (gamepad waived) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10, 11 |
 | 10 | Save data | Persistence | MVP | Implemented | [save-data.md](save-data.md) | 5 |
 | 11 | Player profile | Meta | Full Vision | Implemented (PP-1 to PP-10) | [player-profile.md](player-profile.md) | 4–8, 10 |
 
-Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules.
+Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
 ---
 
@@ -49,7 +49,9 @@ Systems 2 and 3 depend on each other at the edges: generation places mechanics, 
 
 ## Decisions (owner interview, 2026-11-08)
 
-Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision needs code.
+Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision needs code. D19–D23 come from the sprint 6 findings report (`production/qa/sprint-6-findings.md`, decisions D-a to D-f).
+
+**Numbering:** "D" means only this table. The roadmap's own decisions are **R1–R5** (`design/competitive-roadmap.md`, renamed from D1–D5 on 2026-11-08); cite them as "roadmap R3".
 
 | # | Question | Decision | Document | Build |
 |---|----------|----------|----------|-------|
@@ -71,6 +73,16 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D16 | Save backup | Export/import save code | save-data | built (sprint 5) |
 | D17 | Scene sound | Shared music | scenes | no |
 | D18 | Share link | The GitHub Pages address | daily-puzzle | no |
+| D19 | Should Undo cost anything? (D-a, sprint 6) | **Undo is free and unlimited**: no charges, no coins, never counts against Perfect. Shuffle, Extra Jar and Hint stay limited. Set rewards no longer grant Undo charges. Amends roadmap R3 | session-boosters, economy, game-brief | building in sprint 6 |
+| D20 | Can a sealed jar be poured from? (D-b) | **No.** The rules match the screen and the solver, and stuck detection follows | pour-rules | building in sprint 6 |
+| D21 | Say when a board can no longer be won? (D-c) | **Yes, for certain cases only**: a funnel holding mixed colours, or a lock whose key colour can no longer be sealed. The stuck banner says "This board can't be won now: Undo or Restart" | jar-mechanics, pour-rules | building in sprint 6 |
+| D22 | How many mechanics per level? (D-d) | **Up to 3 from level 101** (the spare-jar swap can add a narrow or funnel to a level that rolled two); part of the D1 ramp | jar-mechanics, level-generation | no (documents the built behaviour) |
+| D23 | Economy and difficulty targets (D-e, D-f) | **Deferred** to a later balance sprint. GA-ECON-1, GX-11 and GX-13 stay open, owner-acknowledged | economy, level-generation | no |
+
+**Defaults accepted by the owner (2026-11-08, sprint 6):**
+- GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
+- GA-DP-5: after the device clock moves back, Home shows today's real state, not "Solved today" (`daily-puzzle.md`).
+- GA-DP-6: Share uses the pour count of the first counted solve of that date (`daily-puzzle.md`).
 
 Not asked in the interview: whether scenes need anything beyond the four (gifting, re-buying). Recorded in `scenes.md` as "no change" until the owner says otherwise.
 
@@ -89,7 +101,8 @@ Not asked in the interview: whether scenes need anything beyond the four (giftin
 
 - ~~Fix M1, M2 and M4 in code~~ (done 2026-11-08; evidence in `production/qa/evidence/gdd-alignment/`).
 - ~~Build D1, D3, D5, D8, D10, D14 and D16~~ (done in sprint 5: `production/sprints/sprint-5.md`).
-- `/balance-check` the ramp and the economy, then playtest levels 60–150.
+- `/balance-check` the ramp and the economy, then playtest levels 60–150. **Deferred by D23** to a later balance sprint (targets first).
+- Sprint 6 builds D19–D21 and the fix bundles F1–F8 (`production/qa/sprint-6-findings.md`); each owning GDD marks them "decided 2026-11-08, building in sprint 6" until built.
 - ~~Plan the fifth shell set (D12)~~ (built as sets 5–8, 2026-11-08; evidence in `production/qa/evidence/shell-sets/`).
 - ~~Build the player profile (PP-1 to PP-10)~~ (done 2026-11-08; evidence in `production/qa/evidence/player-profile/`).
 - `/design-review` each document, then `/review-all-gdds` across the set.
