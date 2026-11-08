@@ -86,14 +86,14 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D29 | Formal pillars? (GX-7) | **Yes**: four pillars and an anti-pillar list, approved as drafted | game-brief | recorded |
 | D30 | Normalise names? (GB-PP-4) | **Yes**: stored in Unicode NFC, so a name typed two ways is one name | player-profile | built in sprint 7 |
 | D31 | Presentation timings in config? (GB-FA-8) | **Exempt**: they stay in `src/ui/` as named constants; gameplay values stay in config | feel-audio-ui | recorded |
-| D32 | Coins after the scenes? (GX-11, D23) | **A scene ladder**: about 12 more scenes (seasons, weather, holidays, special skies) with rising prices and 3 animation tiers (colour, one ambient layer, layered and reactive). Design all, build the first 4 in sprint 7 | scenes, economy | sprint 7 |
-| D33 | Seasonal and holiday availability? | **Buy any time, kept forever**; an "in season" badge on their dates, and Match my clock can switch to them | scenes | sprint 7 |
+| D32 | Coins after the scenes? (GX-11, D23) | **A scene ladder**: about 12 more scenes (seasons, weather, holidays, special skies) with rising prices and 3 animation tiers (colour, one ambient layer, layered and reactive). Design all, build the first 4 in sprint 7 | scenes, economy | built in sprint 7 |
+| D33 | Seasonal and holiday availability? | **Buy any time, kept forever**; an "in season" badge on their dates, and Match my clock can switch to them | scenes | built in sprint 7 |
 | D34 | Difficulty target? (GX-13, D23) | **Pours per level band** (median and max), measured by the solver and enforced by a test | level-generation | sprint 7 |
 | D35 | Playtest approach? | **Simulated sweep, then a short owner list** of specific levels to play on a phone | level-generation, economy | sprint 7 |
-| D36 | Level length vs "1–3 minute bites"? (B2) | **Keep today's boards and change the brief**: 1–3 minute bites early, 3–5 minutes from level 40. Targets from level 41: median ≤ 56 pours, max ≤ 70; levels over their band's max are re-dealt (only 153 and 161 today) | level-generation, game-brief | sprint 7 |
-| D37 | Scene ladder prices (B3) | **Approved**: `round50(2500 × 1.15^(n−1))` for 12 rungs (re-fitted after D38); the original three keep 300 / 500 / 800 | scenes, economy | sprint 7 |
+| D36 | Level length vs "1–3 minute bites"? (B2) | **Keep today's boards and change the brief**: 1–3 minute bites early, 3–5 minutes from level 40. Targets from level 41: median ≤ 56 pours, max ≤ 70; levels over their band's max are re-dealt (only 153 and 161 today) | level-generation, game-brief | built in sprint 7 |
+| D37 | Scene ladder prices (B3) | **Approved**: `round50(2500 × 1.15^(n−1))` for 12 rungs (re-fitted after D38); the original three keep 300 / 500 / 800 | scenes, economy | built in sprint 7 |
 | D38 | The endless 50-coin bonus after all 40 shells? | **Removed** (`coinsWhenComplete: 0`): it was about 24% of a regular player's late income | shell-collection, economy | built in sprint 7 |
-| D39 | Which 4 ladder scenes first? | **One per tier**: Sea Fog (1), Winter Snow and Harvest Moon Lanterns (2), New Year Fireworks (3) | scenes | sprint 7 |
+| D39 | Which 4 ladder scenes first? | **One per tier**: Sea Fog (1), Winter Snow and Harvest Moon Lanterns (2), New Year Fireworks (3) | scenes | built in sprint 7 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

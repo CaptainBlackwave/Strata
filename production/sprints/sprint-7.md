@@ -1,6 +1,6 @@
 # Sprint 7: balance and the scene ladder
 
-> **Status: in progress (2026-11-08).** Chosen in the owner interview of 2026-11-08 (decisions D26–D35 in `design/gdd/systems-index.md`). This picks up D23, the economy and difficulty targets deferred in sprint 6.
+> **Status: built (2026-11-08); owner playtest (B8) pending after merge.** B1–B7 done; 351 tests pass. Chosen in the owner interview of 2026-11-08 (decisions D26–D35 in `design/gdd/systems-index.md`). This picks up D23, the economy and difficulty targets deferred in sprint 6.
 
 ## Sprint Goal
 Give difficulty a measurable target and give coins a lasting purpose. Measure levels 1–200, set a pours-per-band target and enforce it in tests. Design a ladder of about 12 scenes priced to the coin model, and build the first 4. Also build the small decisions from the interview.
