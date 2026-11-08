@@ -73,17 +73,17 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 | Rung | Scene | Kind | Tier | Price | In season (local date) | Built |
 |---|---|---|---|---|---|---|
 | 1 | **Sea Fog** (`seafog`, shown as "Sea fog") | weather | 1 | 2,500 | any time | **built, sprint 7** |
-| 2 | High Summer | season | 1 | 2,900 | Jun 1 – Aug 31 | later |
-| 3 | Spring Blossom | season | 1 | 3,300 | Mar 1 – May 31 | later |
-| 4 | Autumn Shore | season | 1 | 3,800 | Sep 1 – Nov 30 | later |
-| 5 | Rainbow After Rain | weather | 1 | 4,350 | any time | later |
+| 2 | **High Summer** (`highsummer`, "High summer") | season | 1 | 2,900 | Jun 1 – Aug 31 | **built, sprint 8** |
+| 3 | **Spring Blossom** (`springblossom`, "Spring blossom") | season | 1 | 3,300 | Mar 1 – May 31 | **built, sprint 8** |
+| 4 | **Autumn Shore** (`autumnshore`, "Autumn shore") | season | 1 | 3,800 | Sep 1 – Nov 30 | **built, sprint 8** |
+| 5 | **Rainbow After Rain** (`rainbowafterrain`, "Rainbow after rain") | weather | 1 | 4,350 | any time | **built, sprint 8** |
 | 6 | **Winter Snow** (`wintersnow`, "Winter snow") | season | 2 | 5,050 | Dec 1 – Feb 28/29 | **built, sprint 7** |
 | 7 | **Harvest Moon Lanterns** (`harvestmoon`, shown as "Harvest moon" to fit the picker) | holiday | 2 | 5,800 | Sep 15 – Oct 15 | **built, sprint 7** |
-| 8 | Soft Rain | weather | 2 | 6,650 | any time | later |
-| 9 | Winter Lights | holiday | 2 | 7,650 | Dec 1 – Jan 6 | later |
+| 8 | **Soft Rain** (`softrain`, "Soft rain") | weather | 2 | 6,650 | any time | **built, sprint 8** |
+| 9 | **Winter Lights** (`winterlights`, "Winter lights") | holiday | 2 | 7,650 | Dec 1 – Jan 6 | **built, sprint 8** |
 | 10 | **New Year Fireworks** (`newyear`, "New Year fireworks") | holiday | 3 | 8,800 | Dec 28 – Jan 7 | **built, sprint 7** |
-| 11 | Meteor Shower | special sky | 3 | 10,100 | Aug 10 – Aug 14 (Perseids) | later |
-| 12 | Aurora Night | special sky | 3 | 11,650 | any time | later |
+| 11 | **Meteor Shower** (`meteorshower`, "Meteor shower") | special sky | 3 | 10,100 | Aug 10 – Aug 14 (Perseids) | **built, sprint 8** |
+| 12 | **Aurora Night** (`auroranight`, "Aurora night") | special sky | 3 | 11,650 | any time | **built, sprint 8** |
 
 **Availability (D33):**
 - Every scene can be bought any time and is kept forever.
@@ -102,7 +102,7 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 
 **Names (D41):** the picker shows sentence-case names to match "Moonlit tide": Sea fog, Winter snow, Harvest moon (rung 7's full name, Harvest Moon Lanterns, is too long for the two-column picker), New Year fireworks.
 
-**Southern hemisphere (D42, later):** season windows stay northern for now. A later sprint adds a Settings switch that shifts the *season* windows by six months; holidays keep their dates.
+**Southern hemisphere (D42, built in sprint 8 P2):** a Settings switch, "Southern hemisphere seasons" (`settings.southern`, off by default), shifts the *season* windows by six months, keeping whole months (High Summer becomes Dec 1 – Feb 28/29, Winter Snow Jun 1 – Aug 31). Holiday and special-sky windows keep their dates. The "In season" badge and Match my clock follow the switch; season scenes still never take over the clock (`themes.ts` `seasonWindow`, `inSeason(theme, dateKey, { southern })`).
 
 **Build order:** rungs ship out of order (D39 picked one scene per tier first). The picker lists scenes by price, so the rungs that aren't built yet are simply absent until later sprints, and the prices of the built ones never change when the rest arrive.
 
@@ -195,3 +195,4 @@ None open on sound (D17).
 | 2026-11-08 | Claude (sprint 6, F9) | Scene cost now links to `economy.md` (GX-16, GB-SN-3); scene sound moved to Handled and the un-asked question listed as open (GB-SN-1); §5 matches §2.3 (GB-SN-5); local hour vs UTC daily noted (GX-18) |
 | 2026-11-08 | Claude (sprint 7, B4) | Scene ladder: 12 rungs, price formula from the coin model, 3 animation tiers, season windows and holiday clock switching (D32, D33, D37, D39) |
 | 2026-11-08 | Claude (sprint 7, B5) | Sea Fog, Winter Snow, Harvest Moon Lanterns and New Year Fireworks built (`themes.ts` `inSeason`, `localDateKey`, holiday clock takeover; `scene-fx.ts` canvas layer at 1x, ≤ 30 fps, ≤ 60 particles). Main-thread cost about 30 ms/s in headless Chromium (`production/qa/evidence/sprint-7/README.md`) |
+| 2026-11-08 | Claude (sprint 8, P1 and P2) | The other 8 rungs built (High Summer, Spring Blossom, Autumn Shore, Rainbow After Rain as tier 1 CSS; Soft Rain and Winter Lights as tier 2 layers; Meteor Shower and Aurora Night as tier 3 layers with seal and win-card reactions, D40 pattern). Southern-hemisphere season switch (D42). Evidence: `production/qa/evidence/sprint-8/README-scenes.md` |

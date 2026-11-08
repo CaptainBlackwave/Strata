@@ -19,6 +19,8 @@ export interface Settings {
   music: boolean;
   haptics: boolean;
   patterns: boolean;
+  /** Season scenes use southern-hemisphere windows, six months on (D42, sprint 8 P2). Off by default. */
+  southern: boolean;
 }
 
 /** Everything we persist. */
@@ -61,7 +63,7 @@ export interface KeyValueStore {
   setItem(key: string, value: string): void;
 }
 
-const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, patterns: false };
+const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, patterns: false, southern: false };
 const BOOSTERS: BoosterId[] = ['undo', 'shuffle', 'extraJar', 'hint'];
 const NO_STREAK: StreakState = { last: null, streak: 0, best: 0, passes: 0 };
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
@@ -136,6 +138,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       music: typeof s.music === 'boolean' ? s.music : DEFAULT_SETTINGS.music,
       haptics: typeof s.haptics === 'boolean' ? s.haptics : DEFAULT_SETTINGS.haptics,
       patterns: typeof s.patterns === 'boolean' ? s.patterns : DEFAULT_SETTINGS.patterns,
+      southern: typeof s.southern === 'boolean' ? s.southern : DEFAULT_SETTINGS.southern,
     },
     daily: {
       last: typeof d.last === 'string' && DATE_KEY.test(d.last) ? d.last : null,

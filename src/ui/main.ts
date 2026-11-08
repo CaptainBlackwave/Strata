@@ -232,7 +232,7 @@ function restoreSaveCode(): void {
 
 function currentTheme(): string {
   const now = new Date();
-  return activeTheme(save.themes, now.getHours(), config, localDateKey(now)); // holiday scenes follow the local date (B5)
+  return activeTheme(save.themes, now.getHours(), config, localDateKey(now), { southern: save.settings.southern }); // holiday scenes follow the local date (B5)
 }
 
 /** Applies a scene's colour tokens. Sand colours are never touched (decision S4-4). */
@@ -277,7 +277,7 @@ function renderScenes(): void {
       card.innerHTML = `<span class="scene-swatch" style="--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})"><i></i><i></i><i></i></span><span class="scene-name"></span><span class="scene-status"></span>`;
       card.querySelector('.scene-swatch')!.setAttribute('data-scene', theme.id);
       card.querySelector('.scene-name')!.textContent = theme.name;
-      const badges = [inSeason(theme, today) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
+      const badges = [inSeason(theme, today, { southern: save.settings.southern }) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
       if (badges.length) {
         const row = document.createElement('span');
         row.className = 'scene-badges';
@@ -1013,7 +1013,7 @@ function sealFx(i: number, color: string): void {
   el.classList.add('just-sealed');
   window.setTimeout(() => {
     sparkleAround(el, color);
-    sceneSealBurst(el, color); // New Year: a small firework above the jar
+    sceneSealBurst(el, color); // tier 3 scenes: a firework, a meteor or an aurora ripple
     audio.play('seal');
   }, reducedMotion() ? 0 : 180);
 }
@@ -1023,7 +1023,7 @@ function showWin(): void {
   coach(null);
   const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
   celebrate(colors);
-  sceneWinDisplay(colors); // New Year: fireworks around the win card
+  sceneWinDisplay(colors); // tier 3 scenes: fireworks, a meteor shower or an aurora wave by the win card
   hideToast(); // a leftover hint or refusal toast must not sit over the win card
   audio.play('win');
   $('win-shell').hidden = true;
@@ -1627,12 +1627,13 @@ function wireInput(): void {
       startTutorial();
     }),
   );
-  for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) {
+  for (const key of ['sound', 'music', 'haptics', 'patterns', 'southern'] as const) {
     $<HTMLInputElement>(`set-${key}`).addEventListener('change', (e) => {
       save.settings[key] = (e.target as HTMLInputElement).checked;
       writeSave(save);
       audio.configure(save.settings);
       if (key === 'patterns') renderAllJars();
+      if (key === 'southern') applyTheme(currentTheme()); // the In season badge and Match my clock follow it (P2)
     });
   }
 
@@ -1727,7 +1728,7 @@ function wireInput(): void {
 }
 
 function openSettings(): void {
-  for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) $<HTMLInputElement>(`set-${key}`).checked = save.settings[key];
+  for (const key of ['sound', 'music', 'haptics', 'patterns', 'southern'] as const) $<HTMLInputElement>(`set-${key}`).checked = save.settings[key];
   $('btn-home').hidden = layers.has(homeEl); // already Home when opened from Home
   openLayer(settingsEl, $('set-sound'));
 }
@@ -1741,7 +1742,7 @@ function applyStrings(): void {
   $('btn-home-settings').title = t.settings;
   $('btn-home-settings').setAttribute('aria-label', t.settings);
   $('settings-title').textContent = t.settings;
-  for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns'];
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns' | 'southern'];
   $('btn-home').textContent = t.home;
   $('btn-tutorial').textContent = t.replayTutorial;
   $('btn-guide').textContent = t.jarGuide;

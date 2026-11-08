@@ -34,6 +34,7 @@ const en = {
   haptics: 'Vibration',
   patterns: 'Colour patterns',
   patternsTitle: 'Show a texture on each colour (colour-blind aid)',
+  southern: 'Southern hemisphere seasons',
   replayTutorial: 'Replay tutorial',
   home: 'Home',
   winTitle: 'Level cleared',

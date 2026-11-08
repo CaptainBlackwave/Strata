@@ -2243,6 +2243,125 @@ input[type='text'] {
     radial-gradient(circle at 14% 18%, #9cc4ff 0 1.5px, transparent 2px), radial-gradient(circle at 82% 22%, #fff6d8 0 1.2px, transparent 2px);
 }
 
+/* ==== Sprint 8 P1: the rest of the scene ladder (design/gdd/scenes.md 2.1a) ==== */
+/* Swatch previews */
+.scene-swatch[data-scene='highsummer']::after {
+  background: radial-gradient(circle at 78% 26%, #fff6c8 0 6px, rgba(255, 214, 102, 0.55) 7px 11px, transparent 12px);
+}
+.scene-swatch[data-scene='springblossom']::after {
+  background:
+    radial-gradient(3px 2px at 18% 24%, #f4a6c0 99%, transparent), radial-gradient(2px 3px at 34% 14%, #f8c3d4 99%, transparent),
+    radial-gradient(3px 2px at 76% 30%, #f4a6c0 99%, transparent), radial-gradient(2px 2px at 88% 16%, #fbd6e2 99%, transparent);
+}
+.scene-swatch[data-scene='autumnshore']::after {
+  background:
+    radial-gradient(3px 2px at 16% 22%, #d9642a 99%, transparent), radial-gradient(2px 3px at 30% 36%, #e8a33a 99%, transparent),
+    radial-gradient(3px 2px at 80% 18%, #b8432a 99%, transparent), radial-gradient(2px 3px at 70% 34%, #e8a33a 99%, transparent);
+}
+.scene-swatch[data-scene='rainbowafterrain']::after {
+  background: radial-gradient(circle 36px at 50% 80%, transparent 0 70%, rgba(232, 92, 80, 0.75) 71% 76%, rgba(240, 180, 60, 0.75) 76% 81%, rgba(110, 190, 120, 0.75) 81% 86%, rgba(90, 140, 220, 0.75) 86% 91%, rgba(150, 110, 200, 0.75) 91% 96%, transparent 97%);
+}
+
+/* High summer (tier 1): a bright sun in the empty top-right of the home sky; a warm haze on the board's horizon */
+body[data-theme='highsummer'] .home::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: calc(max(18px, env(safe-area-inset-top)) + 66px);
+  right: 24px;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 45% 42%, #fffbe6, #ffe48a 60%, #ffd35c);
+  box-shadow: 0 0 0 16px rgba(255, 226, 120, 0.14), 0 0 80px rgba(255, 210, 90, 0.5);
+}
+body[data-theme='highsummer']::before {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 24%;
+  height: 120px;
+  pointer-events: none;
+  background: radial-gradient(60% 100% at 50% 100%, rgba(255, 236, 170, 0.45), transparent 70%);
+}
+
+/* Spring blossom and Autumn shore (tier 1): a few still petals or leaves near the edges, clear of the centred text */
+body[data-theme='springblossom']::before,
+body[data-theme='springblossom'] .home::before,
+body[data-theme='autumnshore']::before,
+body[data-theme='autumnshore'] .home::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+body[data-theme='springblossom']::before,
+body[data-theme='springblossom'] .home::before {
+  background:
+    radial-gradient(7px 4px at 7% 22%, #f2a2bd 99%, transparent), radial-gradient(4px 6px at 14% 31%, #f7c0d2 99%, transparent),
+    radial-gradient(6px 4px at 5% 47%, #f6b3c9 99%, transparent), radial-gradient(5px 4px at 92% 19%, #f2a2bd 99%, transparent),
+    radial-gradient(4px 6px at 86% 34%, #fbd3e0 99%, transparent), radial-gradient(7px 4px at 95% 52%, #f7c0d2 99%, transparent),
+    radial-gradient(5px 3px at 10% 68%, #f6b3c9 99%, transparent), radial-gradient(4px 5px at 90% 72%, #f2a2bd 99%, transparent);
+  opacity: 0.85;
+}
+body[data-theme='autumnshore']::before,
+body[data-theme='autumnshore'] .home::before {
+  background:
+    radial-gradient(7px 4px at 6% 24%, #d0602a 99%, transparent), radial-gradient(4px 6px at 13% 36%, #e3a03a 99%, transparent),
+    radial-gradient(6px 4px at 4% 52%, #b9452a 99%, transparent), radial-gradient(5px 4px at 93% 21%, #e3a03a 99%, transparent),
+    radial-gradient(4px 7px at 87% 37%, #d0602a 99%, transparent), radial-gradient(7px 4px at 95% 55%, #c8892e 99%, transparent),
+    radial-gradient(5px 3px at 9% 70%, #c8892e 99%, transparent), radial-gradient(4px 6px at 91% 74%, #b9452a 99%, transparent);
+  opacity: 0.8;
+}
+
+/* Rainbow after rain (tier 1): a soft static arc over the home sea, behind the content */
+body[data-theme='rainbowafterrain'] .home::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  bottom: 21%;
+  height: 92vw;
+  pointer-events: none;
+  background: radial-gradient(circle 88vw at 50% 100%, transparent 0 76%, rgba(232, 92, 80, 0.5) 77% 80%, rgba(240, 168, 60, 0.5) 80% 83%, rgba(236, 214, 90, 0.5) 83% 86%, rgba(110, 190, 120, 0.5) 86% 89%, rgba(90, 140, 220, 0.5) 89% 92%, rgba(150, 110, 200, 0.5) 92% 95%, transparent 96%);
+  opacity: 0.55;
+}
+
+/* ---- Sprint 8 P1, tier 2 and 3 (layers are scene-fx.ts) ---- */
+.scene-swatch[data-scene='softrain']::after {
+  background: repeating-linear-gradient(105deg, transparent 0 7px, rgba(52, 72, 92, 0.35) 7px 8px);
+}
+.scene-swatch[data-scene='winterlights']::after {
+  background:
+    radial-gradient(circle at 15% 22%, #ffd27a 0 2px, transparent 3px), radial-gradient(circle at 38% 30%, #ff9a85 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 30%, #a6e3c4 0 2px, transparent 3px), radial-gradient(circle at 85% 22%, #9cc4ff 0 2px, transparent 3px);
+}
+/* The dark ladder scenes get the same dark-scene touches as Moonlit tide (kept here so the sprint 7 lists stay untouched) */
+body:is([data-theme='winterlights'], [data-theme='meteorshower'], [data-theme='auroranight']) {
+  color-scheme: dark;
+}
+body:is([data-theme='winterlights'], [data-theme='meteorshower'], [data-theme='auroranight']) .glass::before {
+  background: rgba(255, 255, 255, 0.15);
+}
+body:is([data-theme='winterlights'], [data-theme='meteorshower'], [data-theme='auroranight']) :is(.tool, .daily-card, .profile-chip) {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+.scene-swatch[data-scene='meteorshower']::after {
+  background:
+    linear-gradient(150deg, transparent 0 34%, rgba(238, 241, 255, 0.85) 35% 36%, transparent 37%),
+    radial-gradient(1.5px 1.5px at 20% 20%, #fff 99%, transparent), radial-gradient(1.5px 1.5px at 75% 14%, #fff 99%, transparent),
+    radial-gradient(1.2px 1.2px at 45% 40%, #fff 99%, transparent);
+}
+.scene-swatch[data-scene='auroranight']::after {
+  background:
+    radial-gradient(120% 26% at 40% 22%, rgba(95, 214, 168, 0.6), transparent 70%),
+    radial-gradient(100% 20% at 62% 36%, rgba(160, 130, 230, 0.5), transparent 70%);
+}
+
 /* Sea fog (tier 1): static mist low over the sea, on the board and the home screen */
 body[data-theme='seafog']::before,
 body[data-theme='seafog'] .home::before {
