@@ -2517,3 +2517,20 @@ body[data-theme='harvestmoon']::before {
   color: var(--ink-soft);
   text-align: left;
 }
+
+/* UX-all-6: a light tint on hover, only on devices that can hover (no sticky hover on touch). */
+@media (hover: hover) {
+  .primary:hover:not(:disabled),
+  .secondary:hover:not(:disabled),
+  .tool:hover:not(:disabled),
+  .icon-btn:hover:not(:disabled),
+  .daily-card:hover,
+  .shells-btn:hover,
+  .scene-card:hover,
+  .profile-chip:hover,
+  .shell-set-head:hover,
+  .tab:hover,
+  .pick:hover {
+    filter: brightness(1.06) saturate(1.05);
+  }
+}
