@@ -780,15 +780,24 @@ function showUnlocks(items: SlotItem[]): void {
 async function shareDaily(): Promise<void> {
   const url = location.href.split('?')[0].split('#')[0];
   const text = t.shareText(dailyDate, dailyName, sharePours(save.dailyShare, dailyDate, session.moves), save.daily.streak, url);
-  try {
-    if (navigator.share) {
+  // The outcome shows inside the card, not as a toast under the overlay (UX-win-4).
+  const status = $('share-status');
+  status.textContent = '';
+  if (navigator.share) {
+    try {
       await navigator.share({ text });
+      status.textContent = t.shared;
       return;
+    } catch (e) {
+      if ((e as DOMException).name === 'AbortError') return; // the player closed the share sheet
+      // any other failure: fall back to copying
     }
+  }
+  try {
     await navigator.clipboard.writeText(text);
-    showToast(t.copied);
+    status.textContent = t.copied;
   } catch {
-    /* the share sheet was dismissed, or the clipboard is blocked */
+    status.textContent = t.shareFailed;
   }
 }
 
@@ -1040,6 +1049,8 @@ function showWin(): void {
   $('win-shell').hidden = true;
   $('btn-share').hidden = true;
   $('win-unlocks').replaceChildren();
+  $('share-status').textContent = '';
+  $('btn-win-home').hidden = mode !== 'level'; // a level card can stop here (UX-win-2); the daily's Continue is already Home
   $('win-avatar').hidden = mode === 'tutorial';
   if (mode !== 'tutorial') $('win-avatar').innerHTML = portraitOf(save.profile);
   const before = progressNow();
@@ -1070,6 +1081,7 @@ function showWin(): void {
     $('btn-share').hidden = false;
     btnNext.textContent = t.home;
     if (counts) countUp($('win-coins'), r.reward);
+    $('win-reward-sr').textContent = `${t.reward(r.reward)} ${t.coins}`;
   } else {
     const perfect = session.assists === 0;
     const firstClear = level >= save.level;
@@ -1090,7 +1102,17 @@ function showWin(): void {
     $('win-note').textContent = !firstClear ? t.replayNote : perfect ? t.perfectNote : '';
     btnNext.textContent = t.next;
     if (firstClear) countUp($('win-coins'), reward);
+    $('win-reward-sr').textContent = `${t.reward(reward)} ${t.coins}`;
   }
+  // Focus lands on Continue, so the dialog describes the result: only the parts shown this time (UX-win-3).
+  const described = [
+    'win-text',
+    !$('win-reward').hidden && 'win-reward-sr',
+    $('win-note').textContent && 'win-note',
+    !$('win-shell').hidden && 'win-shell-text',
+    $('win-unlocks').childElementCount > 0 && 'win-unlocks',
+  ].filter(Boolean);
+  winEl.querySelector('.win-card')!.setAttribute('aria-describedby', described.join(' '));
   window.setTimeout(() => openLayer(winEl, btnNext, null), reducedMotion() ? 0 : ANIM.winDelay);
 }
 
@@ -1601,6 +1623,7 @@ function wireInput(): void {
     if (mode === 'daily') showHome();
     else startLevel(mode === 'tutorial' ? 1 : level + 1);
   });
+  $('btn-win-home').addEventListener('click', showHome); // showHome closes the card
   $('btn-daily').addEventListener('click', startDaily);
   $('btn-scenes').addEventListener('click', () => openScenes());
   $('btn-scenes-2').addEventListener('click', () => openScenes(closeLayer(settingsEl, false)));
@@ -1800,6 +1823,7 @@ function applyStrings(): void {
   $('home-title').textContent = t.brand;
   $('home-tagline').textContent = t.tagline;
   $('btn-share').textContent = t.share;
+  $('btn-win-home').textContent = t.home;
   $('btn-close-cabinet').title = t.close;
   $('profile-title').textContent = t.profileTitle;
   $('btn-close-profile').title = t.close;

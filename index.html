@@ -58,17 +58,21 @@
         </button>
       </nav>
       <div id="win" class="win" hidden>
-        <div class="win-card" role="dialog" aria-modal="true" aria-labelledby="win-title">
+        <div class="win-card" role="dialog" aria-modal="true" aria-labelledby="win-title" aria-describedby="win-text">
           <span id="win-avatar" class="portrait portrait-xs win-avatar" aria-hidden="true" hidden></span>
           <div class="win-jars" aria-hidden="true"><i></i><i></i><i></i></div>
           <h2 id="win-title">Level cleared</h2>
           <p id="win-text">All jars sorted.</p>
-          <div id="win-reward" class="win-reward"><i class="coin" aria-hidden="true"></i><span id="win-coins">+20</span></div>
+          <div id="win-reward" class="win-reward"><i class="coin" aria-hidden="true"></i><span id="win-coins" aria-hidden="true">+20</span><span id="win-reward-sr" class="sr-only"></span></div>
           <p id="win-note" class="win-note"></p>
           <div id="win-shell" class="win-shell" hidden><span id="win-shell-art" class="win-shell-art"></span><span id="win-shell-text"></span></div>
           <div id="win-unlocks" class="win-unlocks" aria-live="polite"></div>
           <button id="btn-share" class="secondary share" type="button" hidden>Share</button>
-          <button id="btn-next" class="primary" type="button">Continue</button>
+          <p id="share-status" class="share-status" role="status"></p>
+          <div class="win-actions">
+            <button id="btn-win-home" class="secondary" type="button" hidden>Home</button>
+            <button id="btn-next" class="primary" type="button">Continue</button>
+          </div>
         </div>
       </div>
       <div id="settings" class="sheet" hidden>

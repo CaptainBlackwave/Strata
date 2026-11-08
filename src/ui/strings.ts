@@ -63,6 +63,8 @@ const en = {
   earnedPass: 'You earned a tide pass',
   share: 'Share',
   copied: 'Result copied',
+  shared: 'Shared',
+  shareFailed: 'Couldn\u2019t share. Try again.',
   shareText: (date: string, difficulty: string, moves: number, streak: number, url: string) =>
     `Strata Daily ${date} (${difficulty})\nSolved in ${moves} pours · ${streak}-day streak\n${url}`,
   shells: 'Shells',
