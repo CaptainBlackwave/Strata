@@ -191,7 +191,8 @@ export class GameSession {
   /**
    * Re-deals the sand in every unsealed jar, keeping each jar's fill level, and only
    * accepts a deal the solver proves winnable. Undoable. Returns false if no such
-   * deal was found or the level is already won.
+   * deal was found or the level is already won. All attempts together spend at most
+   * `shuffleTotalNodeBudget` solver states (F7, GA-SB-4), so it can't freeze the game.
    */
   shuffle(rng: Rng): boolean {
     if (this.status === 'won') return false;
@@ -202,7 +203,9 @@ export class GameSession {
     const before = exactKey(board);
     const attempts = this.options.shuffleAttempts ?? 40;
     const budget = this.options.shuffleNodeBudget ?? this.options.hintNodeBudget;
-    for (let a = 0; a < attempts; a++) {
+    const total = this.options.shuffleTotalNodeBudget ?? budget;
+    let spent = 0;
+    for (let a = 0; a < attempts && spent < total; a++) {
       shuffleInPlace(pool, rng);
       let k = 0;
       const jars: Jar[] = board.jars.map((j, i) => {
@@ -213,7 +216,10 @@ export class GameSession {
       });
       const next: Board = settle({ capacity: board.capacity, jars });
       if (exactKey(next) === before || isWon(next)) continue;
-      if (solve(next, budget).solvable !== true) continue;
+      const allowed = Math.min(budget, total - spent);
+      const proof = solve(next, allowed);
+      spent += Math.min(proof.nodes, allowed);
+      if (proof.solvable !== true) continue;
       this.history.push(board);
       this.current = next;
       this.plan = null;
