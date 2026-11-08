@@ -143,6 +143,8 @@ const returning = new Set<number>();
 let toastTimer = 0;
 let hintTimer = 0;
 let restartTimer = 0; // Restart's second-tap window (F6); declared before boot uses it
+let armedBooster: BoosterId | null = null; // a coin purchase waiting for its second tap (UX-board-7)
+let boosterTimer = 0;
 const audio = new GameAudio(save.settings);
 const shuffleRng = createRng(Date.now() >>> 0);
 /** Background generation of upcoming levels (sprint 8 P4, D46); declared before boot uses it. */
@@ -911,6 +913,7 @@ function onSessionEvent(e: SessionEvent): void {
     clearHint(); // a hint describes the old board, so it must not linger onto the new one
     hideStuckBanner(); // the board changed
     disarmRestart();
+    disarmBooster();
     // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
     if (session.status !== 'won' && session.lostReason) showStuckBanner(t.cantWin);
   }
@@ -932,6 +935,7 @@ function requestRestart(): void {
     session.restart();
     return;
   }
+  disarmBooster();
   btn.classList.add('armed');
   btn.setAttribute('aria-label', t.restartArmedLabel);
   showToast(t.restartConfirm);
@@ -1245,7 +1249,8 @@ function updateHud(): void {
     const usable =
       !over && mode !== 'tutorial' && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
     btn.disabled = !usable;
-    btn.setAttribute('aria-label', free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price));
+    const label = armedBooster === id ? t.boosterArmedLabel(BOOSTER_NAMES[id], price) : free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price);
+    btn.setAttribute('aria-label', label);
   }
   ($('btn-restart') as HTMLButtonElement).disabled = mode === 'tutorial';
 }
@@ -1487,12 +1492,35 @@ function showToast(text: string): void {
 
 // ---- Boosters -----------------------------------------------------------
 
+/** Cancels a booster purchase waiting for its second tap (time out, a board change, another action). */
+function disarmBooster(): void {
+  window.clearTimeout(boosterTimer);
+  if (armedBooster === null) return;
+  toolButtons.find((b) => b.dataset.booster === armedBooster)?.classList.remove('armed');
+  armedBooster = null;
+  updateHud(); // puts the button's normal label back
+}
+
 /** Spends a charge (or coins) and applies the booster; refunds if it couldn't apply. */
 function useBooster(id: BoosterId): void {
   audio.unlock();
   if (busy || returning.size || mode === 'tutorial' || session.status === 'won') return;
   if (id === 'undo' && !session.canUndo) return showToast(t.noUndo);
   if (id === 'extraJar' && session.extraJarsLeft <= 0) return showToast(t.noJars);
+  // With no charges left, the first tap only names the price and a second tap within the
+  // window buys, like Restart's arm (UX-board-7). Too few coins skips this: the spend is refused anyway.
+  const price = config.boosters[id].price;
+  if (save.wallet.boosters[id] === 0 && !isFreeBooster(id, config) && save.wallet.coins >= price && armedBooster !== id) {
+    disarmBooster();
+    disarmRestart();
+    armedBooster = id;
+    toolButtons.find((b) => b.dataset.booster === id)?.classList.add('armed');
+    updateHud();
+    showToast(t.boosterConfirm(price));
+    boosterTimer = window.setTimeout(disarmBooster, RESTART_CONFIRM_MS);
+    return;
+  }
+  disarmBooster();
   const before = save.wallet;
   const r = spendBooster(save.wallet, id, config);
   if (!r.ok) {

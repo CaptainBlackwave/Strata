@@ -150,6 +150,9 @@ const en = {
   noShuffle: 'Couldn’t find a better shuffle.',
   notEnoughCoins: (price: number) => `Needs ${price} coins. Clear levels to earn more.`,
   boughtWith: (price: number) => `Used ${price} coins`,
+  /** First tap on a booster with no charges: nothing is spent yet (UX-board-7). */
+  boosterConfirm: (price: number) => `Tap again to buy for ${price} coins`,
+  boosterArmedLabel: (name: string, price: number) => `${name}: tap again to buy for ${price} coins`,
   jarLabel: (i: number, contents: string) => `Jar ${i + 1}: ${contents}`,
   jarEmpty: 'empty',
   buried: 'buried',

@@ -2421,3 +2421,9 @@ body[data-theme='harvestmoon']::before {
   pointer-events: none;
   background: radial-gradient(circle, rgba(246, 194, 106, 0.32) 0 30%, transparent 70%);
 }
+
+/* UX-board-7: a booster waiting for its buy tap is filled like the armed Restart (F6). */
+.tool.armed {
+  color: var(--card);
+  background: var(--coral-text);
+}
