@@ -98,6 +98,12 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 - **Harvest Moon Lanterns:** dusk palette, a large warm moon, and paper lanterns rising slowly from the sea.
 - **New Year Fireworks:** night palette with a faint ambient sparkle. A small burst on each seal, and a fuller display on the win card, in the board's sand colours.
 
+**Win-card exception (owner decision D40, 2026-11-08):** on the win card only, New Year's display plays for about 3.5 s on its own canvas *inside* the win overlay: in front of the dim backdrop, behind the card, never over its text. Everywhere else the layer stays behind all UI.
+
+**Names (D41):** the picker shows sentence-case names to match "Moonlit tide": Sea fog, Winter snow, Harvest moon (rung 7's full name, Harvest Moon Lanterns, is too long for the two-column picker), New Year fireworks.
+
+**Southern hemisphere (D42, later):** season windows stay northern for now. A later sprint adds a Settings switch that shifts the *season* windows by six months; holidays keep their dates.
+
 **Build order:** rungs ship out of order (D39 picked one scene per tier first). The picker lists scenes by price, so the rungs that aren't built yet are simply absent until later sprints, and the prices of the built ones never change when the rest arrive.
 
 ### 2.2 State and Data

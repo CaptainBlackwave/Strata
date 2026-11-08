@@ -2139,6 +2139,20 @@ input[type='text'] {
   z-index: -1;
   pointer-events: none;
 }
+/* New Year win display: inside the win overlay, so it draws over the dimmed backdrop but
+   under the card (the card is raised above it), and never takes a tap. */
+.scene-fx-win {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.win > .win-card {
+  position: relative;
+  z-index: 1;
+}
 
 /* Picker: "In season" badge and the "Animated" tier hint */
 .scene-badges {

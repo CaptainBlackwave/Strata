@@ -94,6 +94,9 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D37 | Scene ladder prices (B3) | **Approved**: `round50(2500 × 1.15^(n−1))` for 12 rungs (re-fitted after D38); the original three keep 300 / 500 / 800 | scenes, economy | built in sprint 7 |
 | D38 | The endless 50-coin bonus after all 40 shells? | **Removed** (`coinsWhenComplete: 0`): it was about 24% of a regular player's late income | shell-collection, economy | built in sprint 7 |
 | D39 | Which 4 ladder scenes first? | **One per tier**: Sea Fog (1), Winter Snow and Harvest Moon Lanterns (2), New Year Fireworks (3) | scenes | built in sprint 7 |
+| D40 | New Year win-card fireworks were faint behind the backdrop | **A short display in front of the backdrop, behind the card, on the win card only** (about 3.5 s, own canvas) | scenes | built in sprint 7 |
+| D41 | Scene names in the picker | **Keep as built**: sentence case; "Harvest moon" for rung 7 | scenes | recorded |
+| D42 | Southern-hemisphere seasons | **Later**: a Settings switch that shifts season windows by 6 months (holidays keep their dates) | scenes | follow-up |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

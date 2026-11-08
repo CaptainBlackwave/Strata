@@ -959,6 +959,7 @@ function showWin(): void {
   const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
   celebrate(colors);
   sceneWinDisplay(colors); // New Year: fireworks around the win card
+  hideToast(); // a leftover hint or refusal toast must not sit over the win card
   audio.play('win');
   $('win-shell').hidden = true;
   $('btn-share').hidden = true;
@@ -1404,6 +1405,12 @@ function renderSelectedState(): void {
 
 function wait(ms: number): Promise<void> {
   return new Promise((res) => window.setTimeout(res, ms));
+}
+
+/** Hides the toast at once (e.g. when the win card opens). */
+function hideToast(): void {
+  window.clearTimeout(toastTimer);
+  toastEl.classList.remove('show');
 }
 
 function showToast(text: string): void {

@@ -85,3 +85,15 @@ What the numbers show:
 - Under reduced motion the cost falls back to baseline.
 
 Not yet done: a measurement on a real phone with a GPU.
+
+## Pre-merge fixes (owner interview, 2026-11-08)
+
+| Screenshot | Check | Result |
+|---|---|---|
+| `b5-newyear-win-display-fixed.png` | New Year win display, about 1.7 s and 2.2 s after the last pour (Pixel 7, motion allowed) | Two rounds of five bursts above and below the card, in the board's colours, with a soft halo. They draw on their own canvas inside the win overlay: above the dim backdrop (z 0), under the card (z 1). The card's text is never covered | Pass |
+
+Checks (`winfx.cjs`), with motion allowed and with reduced motion:
+- The win canvas exists only with motion allowed, and removes itself after about 3.5 s.
+- **Continue** still takes the tap.
+- No toast shows over the win card: a leftover hint toast is now hidden when the card opens.
+- No page errors.

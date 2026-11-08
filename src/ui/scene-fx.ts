@@ -93,13 +93,86 @@ export function sceneSealBurst(jar: Element, color: string): void {
   queueBurst(r.left + r.width / 2, r.top - 6, [color, '#fff6d8'], 14, 70);
 }
 
-/** The fuller display when the win card opens: bursts around the card in the board's colours (New Year only). */
+/**
+ * The fuller display when the win card opens (New Year only, owner decision 2026-11-08):
+ * a short burst on its own canvas inside the win overlay, above its dimmed backdrop and
+ * below the card, so the card's text is never covered. It lasts about 3.5 s, then the
+ * canvas removes itself. Same limits as the ambient layer: no more than MAX_PARTICLES,
+ * 30 fps, nothing under reduced motion, stopped while the page is hidden.
+ */
 export function sceneWinDisplay(colors: readonly string[]): void {
-  if (kind !== 'fireworks' || reduced() || !colors.length) return;
-  const spots: readonly (readonly [number, number])[] = [[0.22, 0.16], [0.78, 0.14], [0.5, 0.09], [0.15, 0.84], [0.85, 0.82]];
-  spots.forEach(([fx, fy], k) => {
-    window.setTimeout(() => queueBurst(w * fx, h * fy, [colors[k % colors.length], colors[(k + 1) % colors.length], '#fff6d8'], 16, 110), k * 320);
+  if (kind !== 'fireworks' || reduced() || !colors.length || document.hidden) return;
+  const host = document.getElementById('win');
+  if (!host) return;
+  host.querySelector('canvas.scene-fx-win')?.remove();
+  const c = document.createElement('canvas');
+  c.className = 'scene-fx-win';
+  c.setAttribute('aria-hidden', 'true');
+  host.prepend(c);
+  const g = c.getContext('2d');
+  if (!g) return c.remove();
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  c.width = W;
+  c.height = H;
+  const parts: Particle[] = [];
+  const burst = (x: number, y: number, cols: readonly string[], n: number, speed: number) => {
+    for (let i = 0; i < Math.min(n, MAX_PARTICLES - parts.length); i++) {
+      const a = (i / n) * Math.PI * 2 + rand(-0.2, 0.2);
+      const v = speed * rand(0.55, 1);
+      parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, r: rand(3, 4.6), phase: 0, life: rand(1.1, 1.5), color: cols[i % cols.length] });
+    }
+  };
+  // Five bursts hugging the card (it sits at about 34-66% of the height): three above, two below.
+  const spots: readonly (readonly [number, number])[] = [[0.24, 0.26], [0.76, 0.24], [0.5, 0.17], [0.22, 0.76], [0.78, 0.74]];
+  // Two rounds of the five spots, 280 ms apart: about 3.5 s in all.
+  const SHOTS = spots.length * 2;
+  const timers = Array.from({ length: SHOTS }, (_, k) => {
+    const [fx, fy] = spots[k % spots.length];
+    return window.setTimeout(() => burst(W * fx, H * fy, [colors[k % colors.length], colors[(k + 1) % colors.length], '#fff6d8'], 12, 170), 650 + k * 280);
   });
+  let prev = 0;
+  let id = 0;
+  const started = performance.now();
+  const end = () => {
+    cancelAnimationFrame(id);
+    timers.forEach((t) => window.clearTimeout(t));
+    document.removeEventListener('visibilitychange', end);
+    c.remove();
+  };
+  document.addEventListener('visibilitychange', end); // hidden page: stop and clean up
+  const tick = (now: number) => {
+    id = requestAnimationFrame(tick);
+    if (now - started > 650 + SHOTS * 280 + 1700 || !c.isConnected) return end();
+    if (prev && now - prev < FRAME_MS - 2) return; // hold to 30 fps
+    const dt = prev ? Math.min((now - prev) / 1000, 0.1) : 0;
+    prev = now;
+    g.clearRect(0, 0, W, H);
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const s = parts[i];
+      s.life -= dt;
+      if (s.life <= 0) {
+        parts.splice(i, 1);
+        continue;
+      }
+      s.vx *= 1 - 1.6 * dt;
+      s.vy = s.vy * (1 - 1.6 * dt) + 60 * dt;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      const alpha = Math.min(1, s.life * 1.2);
+      g.fillStyle = s.color;
+      g.globalAlpha = alpha * 0.3; // a soft halo so each spark reads against the dim backdrop
+      g.beginPath();
+      g.arc(s.x, s.y, s.r * 2.4, 0, Math.PI * 2);
+      g.fill();
+      g.globalAlpha = alpha;
+      g.beginPath();
+      g.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+  };
+  id = requestAnimationFrame(tick);
 }
 
 // ---- Internals -------------------------------------------------------------
