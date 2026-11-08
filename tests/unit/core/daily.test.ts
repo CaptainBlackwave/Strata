@@ -47,6 +47,17 @@ describe('weekly rhythm', () => {
 });
 
 describe('generateDaily', () => {
+  it('generates every date of a full year (365 consecutive dates), deterministic per date (F7, GA-DP-1)', () => {
+    const start = dayNumber('2027-01-01');
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(Date.UTC(1970, 0, 1 + start + i)).toISOString().slice(0, 10);
+      const g = generateDaily(d, cfg);
+      expect(generateDaily(d, cfg).board, d).toEqual(g.board);
+      expect(isWon(g.board), d).toBe(false);
+      expect(g.board.jars.some((j) => isSealed(j, g.board.capacity)), d).toBe(false);
+      expect(g.spec.date, d).toBe(d);
+    }
+  });
   it('the same date gives everyone the same board', () => {
     expect(generateDaily('2026-11-08', cfg).board).toEqual(generateDaily('2026-11-08', cfg).board);
   });

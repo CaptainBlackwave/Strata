@@ -4,7 +4,7 @@
  * be saved by a banked "tide pass". Pure functions only.
  * Implements design/competitive-roadmap.md item C6 (sprint 2 decisions S2-1, S2-2).
  */
-import { type GeneratedLevel, generateFromSpec } from './generator';
+import { type GeneratedLevel, generateFromSpec, lastResort } from './generator';
 import type { GameConfig, LevelSpec } from './levels';
 
 /** One weekday's board recipe. */
@@ -96,10 +96,31 @@ export function dailySpec(key: string, config: GameConfig & DailyConfig): DailyS
   };
 }
 
-/** The daily board for a date: identical for every player. */
+/**
+ * The daily board for a date: identical for every player. Never throws (F7, GA-DP-1):
+ * the full recipe, then without its mechanic (capped by `generator.stepNodeBudget`), then
+ * the shared last resort (one more spare, then a board winnable by construction).
+ * `spec` says what was actually built, so a dropped mechanic shows no intro card.
+ */
 export function generateDaily(key: string, config: GameConfig & DailyConfig): GeneratedLevel & { spec: DailySpec } {
   const spec = dailySpec(key, config);
-  return { ...generateFromSpec(spec, hashKey(key, config.daily.seedSalt), config), spec };
+  const seed = hashKey(key, config.daily.seedSalt);
+  try {
+    return { ...generateFromSpec(spec, seed, config), spec };
+  } catch {
+    // fall through to the easier steps
+  }
+  if (spec.mechanics.length) {
+    const plain: DailySpec = { ...spec, mechanics: [] };
+    const cap = config.generator.stepNodeBudget ?? config.generator.solverNodeBudget;
+    const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
+    try {
+      return { ...generateFromSpec(plain, seed, config, config.generator.maxAttempts, cap, perAttempt), spec: plain };
+    } catch {
+      // fall through to the last resort
+    }
+  }
+  return lastResort(spec, seed, config);
 }
 
 /** Coins for solving on day `streak` of a streak. */
