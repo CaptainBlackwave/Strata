@@ -67,7 +67,6 @@ const en = {
   shareFailed: 'Couldn\u2019t share. Try again.',
   shareText: (date: string, difficulty: string, moves: number, streak: number, url: string) =>
     `Strata Daily ${date} (${difficulty})\nSolved in ${moves} pours · ${streak}-day streak\n${url}`,
-  shells: 'Shells',
   shellCount: (n: number, total: number) => `Shells ${n}/${total}`,
   cabinetTitle: 'Shell cabinet',
   newShell: (name: string) => `New shell: ${name}`,
