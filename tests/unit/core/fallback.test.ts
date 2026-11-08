@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { type Board, isSealed, isWon, pour } from '../../../src/core/board';
 import { type DailyConfig, generateDaily } from '../../../src/core/daily';
-import { fallbackBoard, generateLevel } from '../../../src/core/generator';
+import { fallbackBoard, generateLevel, stepBudgets } from '../../../src/core/generator';
 import { type GameConfig, type LevelSpec, levelSpec } from '../../../src/core/levels';
 import { solve } from '../../../src/core/solver';
 
@@ -74,5 +74,17 @@ describe('generateDaily never throws (GA-DP-1)', () => {
       expect(isWon(g.board), date).toBe(false);
       expect(solve(g.board, 100_000).solvable, date).toBe(true);
     }
+  });
+});
+
+describe('stepBudgets (TD-4)', () => {
+  it('reads the step caps from the config', () => {
+    const g = cfg.generator;
+    expect(stepBudgets(cfg)).toEqual({ cap: g.stepNodeBudget ?? g.solverNodeBudget, perAttempt: g.stepAttemptNodeBudget ?? g.solverNodeBudget });
+  });
+
+  it('falls back to the solver budget when the step caps are absent', () => {
+    const bare = { ...cfg, generator: { ...cfg.generator, stepNodeBudget: undefined, stepAttemptNodeBudget: undefined } } as GameConfig & DailyConfig;
+    expect(stepBudgets(bare)).toEqual({ cap: cfg.generator.solverNodeBudget, perAttempt: cfg.generator.solverNodeBudget });
   });
 });

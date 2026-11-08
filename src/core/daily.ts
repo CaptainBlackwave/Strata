@@ -4,7 +4,7 @@
  * be saved by a banked "tide pass". Pure functions only.
  * Implements design/competitive-roadmap.md item C6 (sprint 2 decisions S2-1, S2-2).
  */
-import { type GeneratedLevel, NoDealError, generateFromSpec, lastResort } from './generator';
+import { type GeneratedLevel, generateFromSpec, lastResort, shorterDeal, stepBudgets } from './generator';
 import type { GameConfig, LevelSpec } from './levels';
 
 /** One weekday's board recipe. */
@@ -113,23 +113,18 @@ export function generateDaily(key: string, config: GameConfig & DailyConfig): Ge
   // Length cap (D36): each failed step may carry its shortest over-cap deal; keep the shortest
   // of them for the last resort, as numbered levels do.
   let shortest: GeneratedLevel | undefined;
-  const keep = (e: unknown) => {
-    const found = e instanceof NoDealError ? e.shortest : undefined;
-    if (found && (!shortest || found.solutionLength < shortest.solutionLength)) shortest = found;
-  };
   try {
     return { ...generateFromSpec(spec, seed, config), spec };
   } catch (e) {
-    keep(e); // fall through to the easier steps
+    shortest = shorterDeal(shortest, e); // fall through to the easier steps
   }
   if (spec.mechanics.length) {
     const plain: DailySpec = { ...spec, mechanics: [] };
-    const cap = config.generator.stepNodeBudget ?? config.generator.solverNodeBudget;
-    const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
+    const { cap, perAttempt } = stepBudgets(config);
     try {
       return { ...generateFromSpec(plain, seed, config, config.generator.maxAttempts, cap, perAttempt), spec: plain };
     } catch (e) {
-      keep(e); // fall through to the last resort
+      shortest = shorterDeal(shortest, e); // fall through to the last resort
     }
   }
   return lastResort(spec, seed, config, shortest);

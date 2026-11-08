@@ -47,8 +47,19 @@ export function maxPoursFor(level: number, config: GameConfig): number {
   return band.max;
 }
 
+/**
+ * The solver-work caps for the fallback steps (F7, D36), in one place so levels and the daily
+ * agree: `cap` bounds a whole step (`generator.stepNodeBudget`), `perAttempt` one attempt
+ * (`generator.stepAttemptNodeBudget`). Each falls back to `generator.solverNodeBudget`.
+ * Example: `const { cap, perAttempt } = stepBudgets(config);`.
+ */
+export function stepBudgets(config: GameConfig): { readonly cap: number; readonly perAttempt: number } {
+  const g = config.generator;
+  return { cap: g.stepNodeBudget ?? g.solverNodeBudget, perAttempt: g.stepAttemptNodeBudget ?? g.solverNodeBudget };
+}
+
 /** The shorter of a kept deal and the over-cap deal a caught error carries; the first wins ties. */
-function shorterDeal(kept: GeneratedLevel | undefined, error: unknown): GeneratedLevel | undefined {
+export function shorterDeal(kept: GeneratedLevel | undefined, error: unknown): GeneratedLevel | undefined {
   const found = error instanceof NoDealError ? error.shortest : undefined;
   return found && (!kept || found.solutionLength < kept.solutionLength) ? found : kept;
 }
@@ -83,8 +94,7 @@ export function generateLevel(level: number, config: GameConfig): GeneratedLevel
   // which keeps level starts fast and stays identical on every device.
   // Every step is also capped by length (generator.pourBands, D36). When no step finds a deal
   // within it, the shortest proven deal any step found is kept (see lastResort).
-  const cap = config.generator.stepNodeBudget ?? Infinity;
-  const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
+  const { cap, perAttempt } = stepBudgets(config);
   let shortest: GeneratedLevel | undefined;
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : config.generator.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, config.generator.maxAttempts]);
@@ -109,8 +119,7 @@ export function generateLevel(level: number, config: GameConfig): GeneratedLevel
  * `fallbackBoard`, which is used only when no step proved any board.
  */
 export function lastResort<S extends LevelSpec>(spec: S, seed: number, config: GameConfig, shortest?: GeneratedLevel): GeneratedLevel & { spec: S } {
-  const cap = config.generator.stepNodeBudget ?? config.generator.solverNodeBudget;
-  const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
+  const { cap, perAttempt } = stepBudgets(config);
   const easier: S = { ...spec, spare: Math.max(2, spec.spare) + 1, mechanics: [] };
   try {
     return generateFromSpec(easier, seed, config, config.generator.maxAttempts, cap, perAttempt) as GeneratedLevel & { spec: S };
