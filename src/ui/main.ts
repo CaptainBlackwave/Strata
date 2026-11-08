@@ -7,14 +7,16 @@
 import './style.css';
 import rawConfig from '../config/game-config.json';
 import { type Board, type Jar, canPour, isClosed, isSealed, pourAmount } from '../core/board';
-import { type CollectionConfig, allShells, grantShell, knownShells, milestoneDue, setProgress } from '../core/collection';
-import { type DailyConfig, generateDaily, recordDailySolve, sharePours, streakStatus, utcDateKey, weekday } from '../core/daily';
-import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, isFreeBooster, spendBooster } from '../core/economy';
-import { generateLevel, tutorialBoard } from '../core/generator';
+import { type CollectionConfig, allShells, knownShells, setProgress } from '../core/collection';
+import { type DailyConfig, generateDaily, sharePours, streakStatus, utcDateKey, weekday } from '../core/daily';
+import { type BoosterId, type EconomyConfig, isFreeBooster, spendBooster } from '../core/economy';
+import { tutorialBoard } from '../core/generator';
 import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
+import { type GenPort, type PreparedLevel, Prefetcher } from '../core/prefetch';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent, sessionOptions } from '../core/session';
-import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, inSeason, localDateKey } from '../core/themes';
+import { type ShellAward, type WinCard, type WinNote, applyWin } from '../core/win';
+import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, byIdOr, inSeason, isOwned, localDateKey, themeById } from '../core/themes';
 import {
   type Profile,
   type ProfileConfig,
@@ -27,7 +29,6 @@ import {
   generateName,
   isUnlocked,
   isValidName,
-  newlyUnlocked,
   normaliseName,
   progressOf,
   repairProfile,
@@ -44,7 +45,7 @@ import { type FocusTarget, LayerStack } from './layers';
 import { computeLayout } from './layout';
 import { UI_TOKEN_VARS, type UiThemeTokens } from './theme-tokens';
 import { shellSvg } from './shells';
-import { type SaveData, exportSave, importSave, loadSave, writeSave } from './storage';
+import { type SaveData, exportSave, importSave, loadSave, whatsNewDue, writeSave } from './storage';
 import { t } from './strings';
 
 const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig & ProfileConfig;
@@ -120,8 +121,8 @@ const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
   surface2: '--surface-2', toastBg: '--toast-bg', toastFg: '--toast-fg', sky: '--sky', themeColor: '--theme-color',
 };
 
-/** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour. */
-const PATTERNS = 14;
+/** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour (tests/unit/core/config-schema.test.ts keeps the two counts equal). */
+const PATTERNS = config.palette.length;
 const BOOSTER_NAMES: Record<BoosterId, string> = { undo: t.undo, shuffle: t.shuffle, extraJar: t.jar, hint: t.hint };
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -142,8 +143,13 @@ const returning = new Set<number>();
 let toastTimer = 0;
 let hintTimer = 0;
 let restartTimer = 0; // Restart's second-tap window (F6); declared before boot uses it
+let armedBooster: BoosterId | null = null; // a coin purchase waiting for its second tap (UX-board-7)
+let boosterTimer = 0;
 const audio = new GameAudio(save.settings);
 const shuffleRng = createRng(Date.now() >>> 0);
+/** Background generation of upcoming levels (sprint 8 P4, D46); declared before boot uses it. */
+const prefetcher = new Prefetcher(config, workerPort);
+let startToken = 0; // the latest startLevel call; an older one still waiting gives way
 
 // ---- Boot ---------------------------------------------------------------
 
@@ -163,20 +169,30 @@ if (qaLevel) {
   level = launchLevel(levelParam, save.level); // replay only, never beyond progress (D3)
   startLevel(level);
 } else {
-  startLevel(level);
+  // P4: the home screen covers the board, so the first board is made in the worker while
+  // the player looks at home, then the next one. Without a worker this is synchronous as before.
+  prefetcher.request([level, level + 1]);
+  startLevel(level, true);
   showHome();
+  if (whatsNewDue(save)) openWhatsNew($('btn-play')); // once per version, never on a first install (D52)
 }
 
 // ---- Save code (decision D16) -------------------------------------------
 
 let restoreArmed = false;
 
+/**
+ * Opens the save-code sheet (UX-settings-6): this device's code is read-only with Copy, and
+ * Restore reads only the separate, empty paste box, so it never warns about your own progress.
+ */
 function openTransfer(opener: FocusTarget | null = null): void {
   $<HTMLTextAreaElement>('transfer-code').value = exportSave(save);
-  $('transfer-status').textContent = t.saveCodeHelp;
+  $<HTMLTextAreaElement>('transfer-paste').value = '';
+  $('copy-status').textContent = t.saveCodeHelp;
+  $('transfer-status').textContent = t.restoreHelp;
   restoreArmed = false;
   $('btn-restore-code').textContent = t.restoreCode;
-  openLayer($('transfer'), $('transfer-code'), opener);
+  openLayer($('transfer'), $('btn-copy-code'), opener);
 }
 
 async function copySaveCode(): Promise<void> {
@@ -184,20 +200,21 @@ async function copySaveCode(): Promise<void> {
   box.value = exportSave(save);
   try {
     await navigator.clipboard.writeText(box.value);
-    $('transfer-status').textContent = t.codeCopied;
+    $('copy-status').textContent = t.codeCopied;
   } catch {
     box.select(); // clipboard blocked: leave it selected for a manual copy
-    $('transfer-status').textContent = t.codeSelectManually;
+    $('copy-status').textContent = t.codeSelectManually;
   }
 }
 
 /** Restores from the pasted code. The first tap asks for confirmation; the second replaces progress. */
 function restoreSaveCode(): void {
-  const imported = importSave($<HTMLTextAreaElement>('transfer-code').value, config);
+  const pasted = $<HTMLTextAreaElement>('transfer-paste').value;
+  const imported = pasted.trim() ? importSave(pasted, config) : null;
   if (!imported) {
     restoreArmed = false;
     $('btn-restore-code').textContent = t.restoreCode;
-    $('transfer-status').textContent = t.codeInvalid;
+    $('transfer-status').textContent = pasted.trim() ? t.codeInvalid : t.codeEmpty;
     audio.play('nope');
     return;
   }
@@ -214,6 +231,7 @@ function restoreSaveCode(): void {
   audio.configure(save.settings);
   applyTheme(currentTheme());
   closeLayer($('transfer'), false);
+  closeLayer(settingsEl, false); // the sheet was opened over Settings
   showToast(t.restored);
   startLevel(save.level);
   showHome();
@@ -224,12 +242,12 @@ function restoreSaveCode(): void {
 
 function currentTheme(): string {
   const now = new Date();
-  return activeTheme(save.themes, now.getHours(), config, localDateKey(now)); // holiday scenes follow the local date (B5)
+  return activeTheme(save.themes, now.getHours(), config, localDateKey(now), { southern: save.settings.southern }); // holiday scenes follow the local date (B5)
 }
 
 /** Applies a scene's colour tokens. Sand colours are never touched (decision S4-4). */
 function applyTheme(id: string): void {
-  const theme = config.themes.list.find((x) => x.id === id) ?? config.themes.list[0];
+  const theme = themeById(config, id);
   const root = document.documentElement.style;
   for (const [key, cssVar] of Object.entries(TOKEN_VARS)) root.setProperty(cssVar, theme.tokens[key as keyof ThemeTokens]);
   const extra = theme.tokens as ThemeTokens & UiThemeTokens;
@@ -259,7 +277,7 @@ function renderScenes(): void {
   const today = localDateKey(new Date());
   grid.replaceChildren(
     ...[...config.themes.list].sort((a, b) => a.price - b.price).map((theme) => {
-      const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+      const owned = isOwned(theme, save.themes.owned);
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'scene-card';
@@ -269,7 +287,7 @@ function renderScenes(): void {
       card.innerHTML = `<span class="scene-swatch" style="--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})"><i></i><i></i><i></i></span><span class="scene-name"></span><span class="scene-status"></span>`;
       card.querySelector('.scene-swatch')!.setAttribute('data-scene', theme.id);
       card.querySelector('.scene-name')!.textContent = theme.name;
-      const badges = [inSeason(theme, today) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
+      const badges = [inSeason(theme, today, { southern: save.settings.southern }) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
       if (badges.length) {
         const row = document.createElement('span');
         row.className = 'scene-badges';
@@ -285,6 +303,12 @@ function renderScenes(): void {
       const inUse = owned && currentTheme() === theme.id;
       status.textContent = inUse ? t.sceneInUse : owned ? t.sceneOwned : String(theme.price);
       status.classList.toggle('price', !owned);
+      if (!owned) {
+        const unit = document.createElement('span'); // "300 coins", not a bare number (UX-scenes-3)
+        unit.className = 'sr-only';
+        unit.textContent = ` ${t.coins}`;
+        status.append(unit);
+      }
       card.addEventListener('click', () => {
         previewing = theme.id;
         applyTheme(theme.id);
@@ -295,11 +319,12 @@ function renderScenes(): void {
       return card;
     }),
   );
-  const theme = config.themes.list.find((x) => x.id === previewing)!;
-  const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+  const theme = themeById(config, previewing ?? config.themes.default);
+  const owned = isOwned(theme, save.themes.owned);
   const btn = $<HTMLButtonElement>('btn-scene-buy');
   const inUse = owned && currentTheme() === theme.id;
   btn.hidden = inUse;
+  $('scene-previewing').textContent = previewing !== currentTheme() ? t.scenePreviewing(theme.name) : ''; // UX-scenes-4
   btn.disabled = !owned && save.wallet.coins < theme.price;
   btn.textContent = owned ? t.sceneUse(theme.name) : save.wallet.coins >= theme.price ? t.sceneBuy(theme.name, theme.price) : t.sceneNeed(theme.price, save.wallet.coins);
   $('scenes-auto-note').textContent = t.matchClockNote;
@@ -307,8 +332,8 @@ function renderScenes(): void {
 
 function confirmScene(): void {
   if (!previewing) return;
-  const theme = config.themes.list.find((x) => x.id === previewing)!;
-  const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+  const theme = themeById(config, previewing);
+  const owned = isOwned(theme, save.themes.owned);
   if (!owned) {
     const r = buyTheme(save.wallet, save.themes.owned, theme.id, config);
     if (!r.ok) return;
@@ -351,7 +376,7 @@ function showHome(): void {
   $('btn-daily').hidden = !save.tutorialDone;
   const total = allShells(config).length;
   $('shells-label').textContent = t.shellCount(save.shells.length, total);
-  const last = allShells(config).find((x) => x.id === save.shells.at(-1)) ?? allShells(config)[0];
+  const last = byIdOr(allShells(config), save.shells.at(-1) ?? '');
   $('shell-ico').innerHTML = shellSvg(last, save.shells.length === 0);
   $('btn-shells').hidden = !save.tutorialDone;
   $('btn-scenes').hidden = !save.tutorialDone;
@@ -395,8 +420,8 @@ function introduce(ids: readonly MechanicId[]): void {
   showMechanicCards(fresh, t.newJar);
 }
 
-function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
-  $('intro-kicker').textContent = kicker;
+function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null, footer = ''): void {
+  $('intro-title').textContent = kicker;
   $('intro-list').replaceChildren(
     ...ids.map((id) => {
       const row = document.createElement('div');
@@ -409,31 +434,46 @@ function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: F
       return row;
     }),
   );
+  if (footer) {
+    const note = document.createElement('p');
+    note.className = 'intro-keys';
+    note.textContent = footer;
+    $('intro-list').append(note);
+  }
   openLayer($('intro'), $('btn-intro-ok'), opener);
 }
 
-/** Grants the next shell (or the completion bonus) and fills the win card's shell row. */
-function awardShell(): void {
-  const r = grantShell(save.shells, config);
-  const row = $('win-shell');
-  if (!r.shell) {
-    earn(config.collection.coinsWhenComplete);
+/**
+ * Shows the "What's new" card (D46, D52) and records that this version has been seen.
+ * Focus goes to its button and returns to `opener` on close.
+ */
+function openWhatsNew(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
+  $('whatsnew-list').replaceChildren(
+    ...t.whatsNew.lines.map((line) => {
+      const li = document.createElement('li');
+      li.textContent = line;
+      return li;
+    }),
+  );
+  if (save.seenWhatsNew !== t.whatsNew.version) {
+    save.seenWhatsNew = t.whatsNew.version;
+    writeSave(save);
+  }
+  openLayer($('whatsnew'), $('btn-whatsnew-ok'), opener);
+}
+
+/** Fills the win card's shell row from the award `applyWin` made. */
+function renderShell(award: ShellAward): void {
+  if (award.kind === 'complete') {
     $('win-shell-art').innerHTML = '';
-    $('win-shell-text').textContent = t.allShellsBonus(config.collection.coinsWhenComplete);
-    row.hidden = false;
-    return;
+    $('win-shell-text').textContent = t.allShellsBonus(award.coins);
+  } else {
+    $('win-shell-art').innerHTML = shellSvg(award.shell);
+    let text = t.newShell(award.shell.name);
+    if (award.completedSet) text += `\n${t.setComplete(award.completedSet.name, award.setCoins)}`;
+    $('win-shell-text').textContent = text;
   }
-  save.shells = r.owned;
-  $('win-shell-art').innerHTML = shellSvg(r.shell);
-  let text = t.newShell(r.shell.name);
-  if (r.completedSet) {
-    const bonus = config.collection.setReward;
-    earn(bonus.coins);
-    save.wallet = addBoosters(save.wallet, bonus.boosters);
-    text += `\n${t.setComplete(r.completedSet.name, bonus.coins)}`;
-  }
-  $('win-shell-text').textContent = text;
-  row.hidden = false;
+  $('win-shell').hidden = false;
 }
 
 function openCabinet(): void {
@@ -442,7 +482,9 @@ function openCabinet(): void {
   const every = config.collection.everyLevels;
   const remaining = every - (cleared % every);
   $('cabinet-title').textContent = t.cabinetTitle;
-  $('cabinet-next').textContent = save.shells.length < allShells(config).length ? t.nextShell(remaining) : t.allShellsBonus(config.collection.coinsWhenComplete);
+  // Today's unsolved daily also grants a shell, and the complete line is a standing rule, not a payout (UX-cab-3).
+  const dailyOpen = save.tutorialDone && !streakStatus(save.daily, utcDateKey(new Date())).solvedToday;
+  $('cabinet-next').textContent = save.shells.length < allShells(config).length ? t.nextShell(remaining, dailyOpen) : t.collectionDone(config.collection.coinsWhenComplete);
   const sets = $('cabinet-sets');
   sets.replaceChildren(
     ...setProgress(save.shells, config).map((p) => {
@@ -473,7 +515,15 @@ function openCabinet(): void {
         const cell = document.createElement('figure');
         cell.className = has ? 'shell-cell' : 'shell-cell locked';
         cell.innerHTML = `${shellSvg({ ...sh, effect: p.set.effect }, !has)}<figcaption></figcaption>`;
-        cell.querySelector('figcaption')!.textContent = has ? sh.name : t.lockedShell;
+        cell.querySelector('svg')?.setAttribute('aria-hidden', 'true');
+        const caption = cell.querySelector('figcaption')!;
+        if (has) caption.textContent = sh.name;
+        else {
+          // The "?" stays on screen; a screen reader hears "Not found yet" (UX-cab-1, AX-15).
+          caption.innerHTML = '<span aria-hidden="true"></span><span class="sr-only"></span>';
+          caption.children[0].textContent = t.lockedShellMark;
+          caption.children[1].textContent = t.lockedShell;
+        }
         grid.appendChild(cell);
       }
       const note = document.createElement('p');
@@ -488,12 +538,6 @@ function openCabinet(): void {
 }
 
 // ---- Player profile (design/gdd/player-profile.md) ----------------------
-
-/** Credits coins earned by play and counts them for the "Coins earned" stat. */
-function earn(coins: number): void {
-  save.wallet = addCoins(save.wallet, coins);
-  save.stats = bumpStats(save.stats, { coinsEarned: coins });
-}
 
 /** The progress values unlocks are measured against, from the live save. */
 function progressNow(): Progress {
@@ -512,10 +556,10 @@ function repairSaveProfile(): void {
 }
 
 function avatarOf(id: string) {
-  return config.profile.avatars.find((a) => a.id === id) ?? config.profile.avatars[0];
+  return byIdOr(config.profile.avatars, id);
 }
 function plateOf(id: string) {
-  return config.profile.plates.find((p) => p.id === id) ?? config.profile.plates[0];
+  return byIdOr(config.profile.plates, id);
 }
 /** An avatar in its frame, as SVG markup. */
 function portraitOf(p: Pick<Profile, 'avatar' | 'frame'>): string {
@@ -557,7 +601,7 @@ function renderProfile(): void {
   $('profile-plate').replaceChildren(plateEl(save.profile.plate, save.profile.name, 'plate-lg'));
   $('profile-level').textContent = String(save.level);
   const sets = setProgress(save.shells, config);
-  const scenesOwned = config.themes.list.filter((x) => x.price === 0 || save.themes.owned.includes(x.id)).length;
+  const scenesOwned = config.themes.list.filter((x) => isOwned(x, save.themes.owned)).length;
   const s = save.stats;
   const rows: [keyof typeof t.statLabels, string][] = [
     ['levels', String(save.level - 1)],
@@ -592,7 +636,9 @@ let activeSlot: Slot = 'avatar';
 function openEditProfile(): void {
   draft = { ...save.profile };
   activeSlot = 'avatar';
-  $<HTMLInputElement>('name-input').value = draft.name;
+  const input = $<HTMLInputElement>('name-input');
+  input.value = draft.name;
+  input.maxLength = config.profile.name.max; // the rule, not twice it (UX-edit-2)
   $('pick-note').textContent = '';
   renderEdit();
   openLayer($('edit-profile'), $(`tab-${activeSlot}`));
@@ -644,6 +690,8 @@ function renderEdit(focusSlot: Slot | null = null, focusId: string | null = null
   $('name-error').textContent = valid ? '' : t.nameInvalid(config.profile.name.min, config.profile.name.max);
   $<HTMLInputElement>('name-input').setAttribute('aria-invalid', String(!valid));
   $<HTMLButtonElement>('btn-save-profile').disabled = !valid;
+  // On the other tabs the Name panel is hidden, so the reason Save is off shows by Save (UX-edit-1).
+  $('save-error').textContent = !valid && activeSlot !== 'plate' ? t.nameInvalidTab(config.profile.name.min, config.profile.name.max) : '';
   if (focusSlot && focusId) $(`grid-${focusSlot}`).querySelector<HTMLElement>(`[data-id="${focusId}"]`)?.focus();
 }
 
@@ -744,15 +792,24 @@ function showUnlocks(items: SlotItem[]): void {
 async function shareDaily(): Promise<void> {
   const url = location.href.split('?')[0].split('#')[0];
   const text = t.shareText(dailyDate, dailyName, sharePours(save.dailyShare, dailyDate, session.moves), save.daily.streak, url);
-  try {
-    if (navigator.share) {
+  // The outcome shows inside the card, not as a toast under the overlay (UX-win-4).
+  const status = $('share-status');
+  status.textContent = '';
+  if (navigator.share) {
+    try {
       await navigator.share({ text });
+      status.textContent = t.shared;
       return;
+    } catch (e) {
+      if ((e as DOMException).name === 'AbortError') return; // the player closed the share sheet
+      // any other failure: fall back to copying
     }
+  }
+  try {
     await navigator.clipboard.writeText(text);
-    showToast(t.copied);
+    status.textContent = t.copied;
   } catch {
-    /* the share sheet was dismissed, or the clipboard is blocked */
+    status.textContent = t.shareFailed;
   }
 }
 
@@ -771,16 +828,54 @@ function startTutorial(): void {
   coach(0, t.tutorialLift);
 }
 
-function startLevel(n: number): void {
+/**
+ * Starts numbered level `n` (P4): instantly from the prefetch cache when the worker already
+ * made it; by waiting for the worker when it is making it now (a "Preparing" toast only after
+ * 150 ms, `quiet` skips it); otherwise by generating synchronously, as before P4.
+ */
+function startLevel(n: number, quiet = false): void {
   mode = 'level';
   level = n;
-  const gen = generateLevel(n, config);
+  const token = ++startToken;
+  const ready = prefetcher.get(n);
+  if (ready) return showLevel(ready);
+  if (!prefetcher.pending(n)) return showLevel(prefetcher.generateNow(n));
+  busy = true; // the previous board (if any) takes no input until the new one arrives
+  let toasted = false;
+  const spinner = quiet ? 0 : window.setTimeout(() => {
+    toasted = true;
+    showToast(t.preparingLevel);
+  }, 150);
+  void prefetcher.wait(n).then((p) => {
+    window.clearTimeout(spinner);
+    if (toasted) toastEl.classList.remove('show');
+    if (token !== startToken || mode !== 'level' || level !== n) return; // the player moved on
+    showLevel(p ?? prefetcher.generateNow(n)); // worker failed or timed out: synchronous
+  });
+}
+
+/** Puts a prepared level on the board, then prefetches what the player can start next. */
+function showLevel(gen: PreparedLevel): void {
+  const n = gen.level;
   beginSession(gen.board, gen.spec.challenge);
   levelLabel.textContent = t.level(n);
   challengeTag.textContent = t.challenge;
   challengeTag.hidden = !gen.spec.challenge;
   coach(null);
   introduce(gen.spec.mechanics);
+  // Next (n + 1, also after a replay) and Play from home (save.level).
+  prefetcher.request([n + 1, save.level].filter((l) => l !== n));
+}
+
+/** The Web Worker behind the prefetcher, or `null` where workers are unavailable. */
+function workerPort(): GenPort | null {
+  if (typeof Worker === 'undefined') return null;
+  const w = new Worker(new URL('./gen-worker.ts', import.meta.url), { type: 'module' });
+  const port: GenPort = { post: (req) => w.postMessage(req), onMessage: null, onError: null, terminate: () => w.terminate() };
+  w.onmessage = (e: MessageEvent) => port.onMessage?.(e.data);
+  w.onerror = () => port.onError?.();
+  w.onmessageerror = () => port.onError?.();
+  return port;
 }
 
 function beginSession(board: Board, isChallenge: boolean): void {
@@ -823,6 +918,7 @@ function onSessionEvent(e: SessionEvent): void {
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
+      announce(t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) + (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : ''));
       break;
     case 'extraJar':
       buildJars();
@@ -846,6 +942,7 @@ function onSessionEvent(e: SessionEvent): void {
     clearHint(); // a hint describes the old board, so it must not linger onto the new one
     hideStuckBanner(); // the board changed
     disarmRestart();
+    disarmBooster();
     // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
     if (session.status !== 'won' && session.lostReason) showStuckBanner(t.cantWin);
   }
@@ -867,6 +964,7 @@ function requestRestart(): void {
     session.restart();
     return;
   }
+  disarmBooster();
   btn.classList.add('armed');
   btn.setAttribute('aria-label', t.restartArmedLabel);
   showToast(t.restartConfirm);
@@ -948,73 +1046,89 @@ function sealFx(i: number, color: string): void {
   el.classList.add('just-sealed');
   window.setTimeout(() => {
     sparkleAround(el, color);
-    sceneSealBurst(el, color); // New Year: a small firework above the jar
+    sceneSealBurst(el, color); // tier 3 scenes: a firework, a meteor or an aurora ripple
     audio.play('seal');
   }, reducedMotion() ? 0 : 180);
 }
 
-function showWin(): void {
+/** Shared opener: celebration, audio, and the card parts every mode resets. */
+function openWin(): void {
   pendingWin = false;
   coach(null);
   const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
   celebrate(colors);
-  sceneWinDisplay(colors); // New Year: fireworks around the win card
+  sceneWinDisplay(colors); // tier 3 scenes: fireworks, a meteor shower or an aurora wave by the win card
   hideToast(); // a leftover hint or refusal toast must not sit over the win card
   audio.play('win');
   $('win-shell').hidden = true;
   $('btn-share').hidden = true;
   $('win-unlocks').replaceChildren();
+  $('share-status').textContent = '';
+  $('btn-win-home').hidden = mode !== 'level'; // a level card can stop here (UX-win-2); the daily's Continue is already Home
   $('win-avatar').hidden = mode === 'tutorial';
   if (mode !== 'tutorial') $('win-avatar').innerHTML = portraitOf(save.profile);
-  const before = progressNow();
-  if (mode === 'tutorial') {
-    save.tutorialDone = true;
-    writeSave(save);
-    $('win-title').textContent = t.tutorialDoneTitle;
-    $('win-text').textContent = t.tutorialDoneText;
-    $('win-reward').hidden = true;
-    $('win-note').textContent = '';
-    btnNext.textContent = t.tutorialStart;
-  } else if (mode === 'daily') {
-    const r = recordDailySolve(save.daily, dailyDate, config);
-    save.daily = r.state;
-    const counts = !r.alreadySolved && !r.outOfOrder;
-    earn(r.reward);
-    save.stats = bumpStats(save.stats, { pours: session.moves, dailiesSolved: counts ? 1 : 0 });
-    if (counts) {
-      awardShell();
-      save.dailyShare = { date: dailyDate, pours: session.moves }; // Share reports this solve, not a replay (GA-DP-6)
-    }
-    writeSave(save);
-    showUnlocks(newlyUnlocked(config, before, progressNow()));
-    $('win-title').textContent = t.dailyWinTitle;
-    $('win-text').textContent = `${session.moves} ${t.poursLabel(session.moves)} · ${t.streakDays(r.state.streak)}`;
-    $('win-reward').hidden = !counts;
-    $('win-note').textContent = r.outOfOrder ? t.dailyOutOfOrder : r.alreadySolved ? t.dailyReplay : r.usedPass ? t.usedPass : r.earnedPass ? t.earnedPass : '';
-    $('btn-share').hidden = false;
-    btnNext.textContent = t.home;
-    if (counts) countUp($('win-coins'), r.reward);
-  } else {
-    const perfect = session.assists === 0;
-    const firstClear = level >= save.level;
-    // Coins on the first clear only; replays pay nothing (design/gdd/economy.md, M1).
-    const reward = clearReward({ level, nextLevel: save.level, perfect, challenge }, config);
-    const key = String(level);
-    const prevBest = save.best[key];
-    if (prevBest === undefined || session.moves < prevBest) save.best[key] = session.moves;
-    save.level = Math.max(save.level, level + 1);
-    earn(reward);
-    save.stats = bumpStats(save.stats, { pours: session.moves, perfectClears: firstClear && perfect ? 1 : 0 });
-    if (firstClear && milestoneDue(level, config)) awardShell();
-    writeSave(save);
-    showUnlocks(newlyUnlocked(config, before, progressNow()));
-    $('win-title').textContent = perfect ? t.perfectTitle : t.winTitle;
-    $('win-text').textContent = t.winText(session.moves, prevBest);
-    $('win-reward').hidden = !firstClear;
-    $('win-note').textContent = !firstClear ? t.replayNote : perfect ? t.perfectNote : '';
-    btnNext.textContent = t.next;
-    if (firstClear) countUp($('win-coins'), reward);
-  }
+}
+
+/** Applies the win to the save through the pure rules in core/win.ts and persists it. */
+function applyWinToSave(): WinCard {
+  const r = applyWin(save, { mode, level, challenge, dailyDate, moves: session.moves, assists: session.assists }, config);
+  Object.assign(save, r.state);
+  writeSave(save);
+  return r.card;
+}
+
+/** The parts of the card shared by the daily and level wins: shell row, unlocks, reward row. */
+function renderRewards(card: WinCard): void {
+  if (card.shell) renderShell(card.shell);
+  showUnlocks(card.unlocks);
+  $('win-reward').hidden = !card.rewardShown;
+  if (card.rewardShown) countUp($('win-coins'), card.reward);
+  $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;
+}
+
+function winTutorial(): void {
+  applyWinToSave();
+  $('win-title').textContent = t.tutorialDoneTitle;
+  $('win-text').textContent = t.tutorialDoneText;
+  $('win-reward').hidden = true;
+  $('win-note').textContent = '';
+  btnNext.textContent = t.tutorialStart;
+}
+
+function winDaily(): void {
+  const card = applyWinToSave();
+  const notes: Record<WinNote, string> = { none: '', replay: '', perfect: '', outOfOrder: t.dailyOutOfOrder, dailyReplay: t.dailyReplay, usedPass: t.usedPass, earnedPass: t.earnedPass };
+  $('win-title').textContent = t.dailyWinTitle;
+  $('win-text').textContent = `${card.moves} ${t.poursLabel(card.moves)} · ${t.streakDays(card.streak)}`;
+  $('win-note').textContent = notes[card.note];
+  $('btn-share').hidden = false;
+  btnNext.textContent = t.home;
+  renderRewards(card);
+}
+
+function winLevel(): void {
+  const card = applyWinToSave();
+  $('win-title').textContent = card.perfect ? t.perfectTitle : t.winTitle;
+  $('win-text').textContent = t.winText(card.moves, card.prevBest);
+  $('win-note').textContent = card.note === 'replay' ? t.replayNote : card.note === 'perfect' ? t.perfectNote : '';
+  btnNext.textContent = t.next;
+  renderRewards(card);
+}
+
+function showWin(): void {
+  openWin();
+  if (mode === 'tutorial') winTutorial();
+  else if (mode === 'daily') winDaily();
+  else winLevel();
+  // Focus lands on Continue, so the dialog describes the result: only the parts shown this time (UX-win-3).
+  const described = [
+    'win-text',
+    !$('win-reward').hidden && 'win-reward-sr',
+    $('win-note').textContent && 'win-note',
+    !$('win-shell').hidden && 'win-shell-text',
+    $('win-unlocks').childElementCount > 0 && 'win-unlocks',
+  ].filter(Boolean);
+  winEl.querySelector('.win-card')!.setAttribute('aria-describedby', described.join(' '));
   window.setTimeout(() => openLayer(winEl, btnNext, null), reducedMotion() ? 0 : ANIM.winDelay);
 }
 
@@ -1180,7 +1294,8 @@ function updateHud(): void {
     const usable =
       !over && mode !== 'tutorial' && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
     btn.disabled = !usable;
-    btn.setAttribute('aria-label', free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price));
+    const label = armedBooster === id ? t.boosterArmedLabel(BOOSTER_NAMES[id], price) : free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price);
+    btn.setAttribute('aria-label', label);
   }
   ($('btn-restart') as HTMLButtonElement).disabled = mode === 'tutorial';
 }
@@ -1230,7 +1345,8 @@ function onJarTap(i: number): void {
   const from = selected;
   if (canPour(session.board, from, i)) {
     if (mode === 'tutorial') coach(null);
-    void animatePour(from, i);
+    // If the animation throws (a node detached by a rebuild, a cancelled animation), never leave `busy` stuck (TD-15).
+    animatePour(from, i).catch(() => recoverPour(from));
   } else {
     nope(i);
     explainRefusal(i);
@@ -1389,6 +1505,13 @@ async function animatePour(from: number, to: number): Promise<void> {
   if (pendingWin) showWin();
 }
 
+/** Puts a jar and the input lock back to rest after a pour animation failed part-way. */
+function recoverPour(from: number): void {
+  returning.delete(from);
+  jarEls[from]?.classList.remove('pouring', 'returning');
+  finishPour(from);
+}
+
 function finishPour(from: number): void {
   if (selected === from) selected = null;
   renderSelectedState();
@@ -1413,6 +1536,16 @@ function hideToast(): void {
   toastEl.classList.remove('show');
 }
 
+/**
+ * Reads `text` out through the polite live region outside the app root, so no layer makes it
+ * inert (UX-board-5). Clearing it first lets the same sentence be read twice in a row.
+ */
+function announce(text: string): void {
+  const el = $('announce');
+  el.textContent = '';
+  window.setTimeout(() => (el.textContent = text), 50);
+}
+
 function showToast(text: string): void {
   toastEl.textContent = text;
   toastEl.classList.add('show');
@@ -1422,12 +1555,34 @@ function showToast(text: string): void {
 
 // ---- Boosters -----------------------------------------------------------
 
+/** Cancels a booster purchase waiting for its second tap (time out, a board change, another action). */
+function disarmBooster(): void {
+  window.clearTimeout(boosterTimer);
+  if (armedBooster === null) return;
+  toolButtons.find((b) => b.dataset.booster === armedBooster)?.classList.remove('armed');
+  armedBooster = null;
+  updateHud(); // puts the button's normal label back
+}
+
 /** Spends a charge (or coins) and applies the booster; refunds if it couldn't apply. */
 function useBooster(id: BoosterId): void {
   audio.unlock();
   if (busy || returning.size || mode === 'tutorial' || session.status === 'won') return;
   if (id === 'undo' && !session.canUndo) return showToast(t.noUndo);
-  if (id === 'extraJar' && session.extraJarsLeft <= 0) return showToast(t.noJars);
+  // With no charges left, the first tap only names the price and a second tap within the
+  // window buys, like Restart's arm (UX-board-7). Too few coins skips this: the spend is refused anyway.
+  const price = config.boosters[id].price;
+  if (save.wallet.boosters[id] === 0 && !isFreeBooster(id, config) && save.wallet.coins >= price && armedBooster !== id) {
+    disarmBooster();
+    disarmRestart();
+    armedBooster = id;
+    toolButtons.find((b) => b.dataset.booster === id)?.classList.add('armed');
+    updateHud();
+    showToast(t.boosterConfirm(price));
+    boosterTimer = window.setTimeout(disarmBooster, RESTART_CONFIRM_MS);
+    return;
+  }
+  disarmBooster();
   const before = save.wallet;
   const r = spendBooster(save.wallet, id, config);
   if (!r.ok) {
@@ -1501,9 +1656,11 @@ function wireInput(): void {
     if (mode === 'daily') showHome();
     else startLevel(mode === 'tutorial' ? 1 : level + 1);
   });
+  $('btn-win-home').addEventListener('click', showHome); // showHome closes the card
   $('btn-daily').addEventListener('click', startDaily);
   $('btn-scenes').addEventListener('click', () => openScenes());
-  $('btn-scenes-2').addEventListener('click', () => openScenes(closeLayer(settingsEl, false)));
+  // Sub-screens open over Settings, so closing one returns to it with focus on its button (UX-settings-4).
+  $('btn-scenes-2').addEventListener('click', () => openScenes());
   $('btn-scene-buy').addEventListener('click', confirmScene);
   $('btn-close-scenes').addEventListener('click', closeScenes);
   $<HTMLInputElement>('set-auto').addEventListener('change', (e) => {
@@ -1541,31 +1698,35 @@ function wireInput(): void {
   $('btn-home').addEventListener('click', () => leaveBoard(showHome));
   $('btn-keep-playing').addEventListener('click', () => closeLayer($('leave')));
   $('btn-leave').addEventListener('click', confirmLeave);
-  $('btn-savecode').addEventListener('click', () => openTransfer(closeLayer(settingsEl, false)));
+  $('btn-savecode').addEventListener('click', () => openTransfer($('btn-savecode')));
   $('btn-copy-code').addEventListener('click', () => void copySaveCode());
   $('btn-restore-code').addEventListener('click', restoreSaveCode);
   // Editing the code disarms Restore, so a new code always gets its own warning (UX-settings-1).
-  $('transfer-code').addEventListener('input', () => {
+  $('transfer-paste').addEventListener('input', () => {
     if (!restoreArmed) return;
     restoreArmed = false;
     $('btn-restore-code').textContent = t.restoreCode;
-    $('transfer-status').textContent = t.saveCodeHelp;
+    $('transfer-status').textContent = t.restoreHelp;
   });
   $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
-  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, closeLayer(settingsEl, false)));
+  // The Jar guide lists the keys where a keyboard is likely (UX-board-8).
+  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, undefined, matchMedia('(pointer: fine)').matches ? t.keysNote : ''));
   $('btn-intro-ok').addEventListener('click', () => closeLayer($('intro')));
+  $('btn-whatsnew').addEventListener('click', () => openWhatsNew());
+  $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
   $('btn-tutorial').addEventListener('click', () =>
     leaveBoard(() => {
       closeLayer(homeEl, false);
       startTutorial();
     }),
   );
-  for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) {
+  for (const key of ['sound', 'music', 'haptics', 'patterns', 'southern'] as const) {
     $<HTMLInputElement>(`set-${key}`).addEventListener('change', (e) => {
       save.settings[key] = (e.target as HTMLInputElement).checked;
       writeSave(save);
       audio.configure(save.settings);
       if (key === 'patterns') renderAllJars();
+      if (key === 'southern') applyTheme(currentTheme()); // the In season badge and Match my clock follow it (P2)
     });
   }
 
@@ -1595,7 +1756,7 @@ function wireInput(): void {
       if (e.key === 'Escape') closeScenes();
       return;
     }
-    if (top === $('intro')) {
+    if (top === $('intro') || top === $('whatsnew')) {
       // Enter on a focused button activates that button natively.
       if (e.key === 'Escape' || (e.key === 'Enter' && !onButton)) closeLayer(top);
       return;
@@ -1630,80 +1791,63 @@ function wireInput(): void {
     else if (k === 'h') useBooster('hint');
     else if (k === 'r') requestRestart();
     else if (k === 'escape') setSelected(null);
-    else if (/^[0-9]$/.test(k)) {
-      const i = k === '0' ? 9 : Number(k) - 1;
+    else {
+      // 1-9 and 0 pick jars 1-10; with Shift they pick jars 11-20 (UX-board-8). Shift changes
+      // e.key ("!"), so the top-row digit comes from e.code.
+      const digit = /^Digit[0-9]$/.test(e.code) ? e.code.slice(5) : /^[0-9]$/.test(k) ? k : null;
+      if (digit === null) return;
+      const i = (digit === '0' ? 9 : Number(digit) - 1) + (e.shiftKey ? 10 : 0);
       if (i < jarEls.length) onJarTap(i);
     }
   });
 
+  // Re-lay out the jars whenever the board's own size changes, not only on a window resize:
+  // the HUD can wrap to two rows after a level starts (a long "Level 120" plus the Tall jars
+  // tag at large text on a narrow phone), which shrinks the board after the jars were sized,
+  // so the bottom row ran under the toolbar (found in sprint 8, P3). Text-size changes and
+  // rotation are covered too. A pour in progress defers the rebuild until it settles.
   let resizeTimer = 0;
-  window.addEventListener('resize', () => {
+  let laidOut = { w: 0, h: 0 };
+  const relayout = () => {
     window.clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(() => {
-      if (busy || returning.size) return;
+      if (!session) return; // the first board is still being made in the worker (P4); it lays out when it arrives
+      if (busy || returning.size) return relayout();
+      const r = boardEl.getBoundingClientRect();
+      if (Math.abs(r.width - laidOut.w) < 1 && Math.abs(r.height - laidOut.h) < 1) return;
+      laidOut = { w: r.width, h: r.height };
       buildJars();
       if (mode === 'tutorial' && !coachEl.hidden) coach(selected === null ? 0 : selected === 0 ? 1 : 0, coachText.textContent ?? '');
     }, 120);
-  });
+  };
+  window.addEventListener('resize', relayout);
+  if ('ResizeObserver' in window) new ResizeObserver(relayout).observe(boardEl);
 }
 
 function openSettings(): void {
-  for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) $<HTMLInputElement>(`set-${key}`).checked = save.settings[key];
+  for (const key of ['sound', 'music', 'haptics', 'patterns', 'southern'] as const) $<HTMLInputElement>(`set-${key}`).checked = save.settings[key];
   $('btn-home').hidden = layers.has(homeEl); // already Home when opened from Home
   openLayer(settingsEl, $('set-sound'));
 }
 
+/** Reads a string from the table by key, with `a.b` for nested groups. Undefined if absent or not a string. */
+function stringFor(key: string | undefined): string | undefined {
+  const v = (key ?? '').split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], t);
+  return typeof v === 'string' ? v : undefined;
+}
+
+/**
+ * Fills the static labels. index.html names the key on each element: `data-s` sets the text,
+ * `data-s-title` the title, `data-s-label` the aria-label (tests/unit/ui/index-strings.test.ts
+ * checks every key exists). Only what needs code stays here.
+ */
 function applyStrings(): void {
   for (const btn of toolButtons) (btn.querySelector('.tool-name') as HTMLElement).textContent = BOOSTER_NAMES[btn.dataset.booster as BoosterId];
-  $('moves-label').textContent = t.pours;
-  $('btn-restart').title = t.restart;
-  $('btn-stuck-restart').textContent = t.restart;
-  $('btn-settings').title = t.settings;
-  $('btn-home-settings').title = t.settings;
-  $('btn-home-settings').setAttribute('aria-label', t.settings);
-  $('settings-title').textContent = t.settings;
-  for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns'];
-  $('btn-home').textContent = t.home;
-  $('btn-tutorial').textContent = t.replayTutorial;
-  $('btn-guide').textContent = t.jarGuide;
-  $('btn-savecode').textContent = t.saveCode;
-  $('transfer-title').textContent = t.saveCode;
-  $('btn-copy-code').textContent = t.copyCode;
-  $('btn-close-transfer').textContent = t.close;
-  $('scenes-label').textContent = t.scenes;
-  $('btn-scenes-2').textContent = t.scenes;
-  $('scenes-title').textContent = t.scenes;
-  $('scenes-auto-label').textContent = t.matchClock;
-  $('btn-close-scenes').textContent = t.close;
-  $('btn-intro-ok').textContent = t.gotIt;
-  $('btn-close-settings').textContent = t.close;
-  $('home-title').textContent = t.brand;
-  $('home-tagline').textContent = t.tagline;
-  $('btn-share').textContent = t.share;
-  $('btn-close-cabinet').title = t.close;
-  $('profile-title').textContent = t.profileTitle;
-  $('btn-close-profile').title = t.close;
-  $('btn-edit-profile').title = t.editProfile;
-  $('btn-edit-profile').setAttribute('aria-label', t.editProfile);
-  $('profile-level-label').textContent = t.levelBadge;
-  $('stats-title').textContent = t.statsTitle;
-  $('edit-title').textContent = t.editProfileTitle;
-  $('btn-close-edit').title = t.close;
-  for (const slot of SLOTS) $(`tab-${slot}`).textContent = t.tabs[slot];
-  $('name-label').textContent = t.nameLabel;
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = stringFor(el.dataset.s) ?? el.textContent;
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s-title]')) el.title = stringFor(el.dataset.sTitle) ?? el.title;
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s-label]')) el.setAttribute('aria-label', stringFor(el.dataset.sLabel) ?? '');
+  for (const el of document.querySelectorAll<HTMLElement>('.coins-sr')) el.textContent = ` ${t.coins}`; // UX-home-2
   $('btn-reroll').innerHTML = DICE_SVG;
-  $('btn-reroll').title = t.reroll;
-  $('btn-reroll').setAttribute('aria-label', t.reroll);
-  $('plates-label').textContent = t.platesLabel;
-  $('btn-save-profile').textContent = t.saveProfile;
-  $('discard-title').textContent = t.discardTitle;
-  $('leave-title').textContent = t.leaveTitle;
-  $('leave-text').textContent = t.leaveText;
-  $('btn-keep-playing').textContent = t.keepPlaying;
-  $('btn-leave').textContent = t.leave;
-  $('btn-keep-editing').textContent = t.keepEditing;
-  $('btn-discard').textContent = t.discard;
-  boardEl.setAttribute('aria-label', t.boardLabel);
 }
 
 // ---- Offline install (sprint 3, T8) ------------------------------------

@@ -1,7 +1,7 @@
 // Stories: production/epics/strata/story-005-touch-ui.md, story-006-progress-save.md,
 // production/epics/competitive/story-002-economy-boosters.md
 import { describe, expect, it } from 'vitest';
-import { computeLayout } from '../../../src/ui/layout';
+import { HIT_SNAP_MARGIN, MIN_HIT, computeLayout } from '../../../src/ui/layout';
 import config from '../../../src/config/game-config.json';
 import { type EconomyConfig, newWallet } from '../../../src/core/economy';
 import { type KeyValueStore, exportSave, freshSave, importSave, loadSave, writeSave } from '../../../src/ui/storage';
@@ -22,6 +22,24 @@ describe('computeLayout', () => {
     const l = computeLayout({ width: 358, height: 560, jars: 7, capacity: 8 });
     expect(l.rows * l.jarHeight).toBeLessThanOrEqual(560);
   });
+  // D45 / AX-19: the iPhone SE board (288 x 348 at 150% text) with 9 tall jars draws 34 px jars.
+  it('widens the gap so a narrow drawn jar plus its gap reaches the 44 px tap target', () => {
+    const input = { width: 288, height: 348, jars: 9, capacity: 8 };
+    const l = computeLayout(input);
+    expect(l.jarWidth).toBeLessThan(MIN_HIT);
+    expect(l.jarWidth + l.gapX).toBeGreaterThanOrEqual(MIN_HIT + HIT_SNAP_MARGIN);
+    expect(l.cols * l.jarWidth + (l.cols + 1) * l.gapX).toBeLessThanOrEqual(input.width);
+  });
+  it('never shrinks the drawn jar to make room for the wider gap', () => {
+    const before = computeLayout({ width: 288, height: 348, jars: 9, capacity: 8 }).jarWidth;
+    // Same height limit, more width: the jar size is set by height, so it must match.
+    expect(computeLayout({ width: 340, height: 348, jars: 9, capacity: 8 }).jarWidth).toBe(before);
+  });
+  it('keeps the normal gap when the jars are already wide enough', () => {
+    const l = computeLayout({ width: 390, height: 600, jars: 5, capacity: 4 });
+    expect(l.jarWidth).toBeGreaterThanOrEqual(MIN_HIT);
+    expect(l.gapX).toBe(Math.max(6, Math.min(18, 390 * 0.025)));
+  });
 });
 
 function memoryStore(): KeyValueStore & { data: Map<string, string> } {
@@ -36,7 +54,7 @@ describe('save storage', () => {
     const s = memoryStore();
     const save = { ...freshSave(econ), level: 7, best: { '6': 21 }, tutorialDone: true };
     save.wallet = { coins: 345, boosters: { undo: 1, shuffle: 0, extraJar: 2, hint: 4 } };
-    save.settings = { sound: false, music: true, haptics: false, patterns: true };
+    save.settings = { sound: false, music: true, haptics: false, patterns: true, southern: true };
     save.daily = { last: '2026-11-08', streak: 3, best: 9, passes: 1 };
     save.shells = ['periwinkle', 'limpet'];
     save.seenMechanics = ['narrow'];

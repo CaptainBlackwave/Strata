@@ -3,6 +3,13 @@
  * hardcoded UI text). Only English ships for now. Add a locale by adding a table.
  */
 
+/**
+ * The release the "What's new" card describes (D46, D52). Bump it together with
+ * `whatsNew.lines`; a save whose `seenWhatsNew` differs sees the card once on Home.
+ * A constant here rather than package.json, whose version is not kept up to date.
+ */
+export const WHATS_NEW_VERSION = '0.8.0';
+
 const en = {
   brand: 'Strata',
   tagline: 'Sort the sand. Seal the jars.',
@@ -10,6 +17,8 @@ const en = {
   playTutorial: 'Play',
   level: (n: number) => `Level ${n}`,
   challenge: 'Tall jars',
+  /** Shown only when a level start waits over 150 ms for background generation (P4). */
+  preparingLevel: 'Getting the jars ready…',
   pours: 'pours',
   poursLabel: (n: number) => (n === 1 ? 'pour' : 'pours'),
   coins: 'coins',
@@ -25,6 +34,7 @@ const en = {
   haptics: 'Vibration',
   patterns: 'Colour patterns',
   patternsTitle: 'Show a texture on each colour (colour-blind aid)',
+  southern: 'Southern hemisphere seasons',
   replayTutorial: 'Replay tutorial',
   home: 'Home',
   winTitle: 'Level cleared',
@@ -53,18 +63,24 @@ const en = {
   earnedPass: 'You earned a tide pass',
   share: 'Share',
   copied: 'Result copied',
+  shared: 'Shared',
+  shareFailed: 'Couldn\u2019t share. Try again.',
   shareText: (date: string, difficulty: string, moves: number, streak: number, url: string) =>
     `Strata Daily ${date} (${difficulty})\nSolved in ${moves} pours · ${streak}-day streak\n${url}`,
-  shells: 'Shells',
   shellCount: (n: number, total: number) => `Shells ${n}/${total}`,
   cabinetTitle: 'Shell cabinet',
   newShell: (name: string) => `New shell: ${name}`,
   setComplete: (name: string, coins: number) => `${name} set complete! +${coins} coins and 1 Shuffle, Jar and Hint`,
   /** After all 40 shells. The coin bonus was removed (D38), so 0 shows the plain message. */
   allShellsBonus: (coins: number) => (coins > 0 ? `Collection complete: +${coins} coins` : 'Collection complete ✓'),
-  nextShell: (n: number) => (n === 1 ? 'Next shell: clear 1 more level' : `Next shell: clear ${n} more levels`),
+  nextShell: (n: number, daily: boolean) =>
+    `${n === 1 ? 'Next shell: clear 1 more level' : `Next shell: clear ${n} more levels`}${daily ? ', or solve today\u2019s daily' : ''}`,
+  /** The cabinet's line once all shells are found: a standing rule, not a payout just made (UX-cab-3). */
+  collectionDone: (coins: number) => (coins > 0 ? `Collection complete: each milestone now pays ${coins} coins` : 'Collection complete ✓'),
   setRewardNote: (coins: number) => `Complete the set: ${coins} coins + 1 Shuffle, Jar and Hint`,
-  lockedShell: '?',
+  /** A shell not found yet: the mark is drawn, the label is what a screen reader says (AX-15). */
+  lockedShellMark: '?',
+  lockedShell: 'Not found yet',
   setDone: 'Set complete ✓',
   mechanics: {
     narrow: { name: 'Narrow jar', rule: 'Holds only 2 layers and never seals. Use it as extra space, and empty it before the end.', tap: 'Narrow jar: holds 2 layers, never seals.' },
@@ -75,6 +91,20 @@ const en = {
   newJar: 'New jar!',
   gotIt: 'Got it',
   jarGuide: 'Jar guide',
+  keysNote: 'Keys: 1–9 and 0 pick jars 1–10; hold Shift for jars 11–20. Z Undo · S Shuffle · J Jar · H Hint · R Restart.',
+  /** The "What's new" card: 3-5 short plain lines, shown once per version (D52). */
+  whatsNew: {
+    version: WHATS_NEW_VERSION,
+    title: "What's new",
+    button: "What's new",
+    lines: [
+      'Undo is free now.',
+      'Twelve new scenes to buy, from sea fog to aurora night.',
+      "A banner tells you when you're stuck, and hints are clearer.",
+      'Jars are easier to tap, and you can pinch to zoom.',
+      'Sealed jars now show their sand.',
+    ],
+  },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
   thawed: 'Thawed!',
   unlocked: 'Unlocked!',
@@ -88,12 +118,17 @@ const en = {
   scenePreviewing: (name: string) => `Previewing ${name}`,
   sceneBought: (name: string) => `${name} unlocked!`,
   matchClock: 'Match my clock',
+  matchClockOff: 'Choosing a scene with Use or Buy turns this off.',
   matchClockNote: 'Dawn 5–9 · Midday 9–17 · Sunset 17–20 · Moonlit 20–5, using the scenes you own. Holiday scenes you own take over on their dates.',
   sceneInSeason: 'In season',
   sceneAnimated: 'Animated',
   dailyOutOfOrder: 'Your device date is earlier than your last solve, so this one doesn\u2019t count toward your streak.',
   saveCode: 'Save code',
-  saveCodeHelp: 'Copy this code to move your progress to another device, or paste a code here to restore it.',
+  saveCodeHelp: 'Copy this code to move your progress to another device.',
+  yourCode: 'Your code',
+  pasteCode: 'Paste a code to restore',
+  restoreHelp: 'Paste a code from your other device, then tap Restore.',
+  codeEmpty: 'Paste a save code in the box first.',
   copyCode: 'Copy code',
   codeCopied: 'Copied! Paste it into Strata on your other device.',
   codeSelectManually: 'Copying is blocked here; the code is selected so you can copy it yourself.',
@@ -122,12 +157,17 @@ const en = {
   hintToast: (from: number, to: number) => `Hint: pour jar ${from} into jar ${to}`,
   hintFrom: 'From',
   hintTo: 'To',
-  noJars: 'Only one extra jar per level.',
   noUndo: 'Nothing to undo yet.',
   noShuffle: 'Couldn’t find a better shuffle.',
   notEnoughCoins: (price: number) => `Needs ${price} coins. Clear levels to earn more.`,
   boughtWith: (price: number) => `Used ${price} coins`,
+  /** First tap on a booster with no charges: nothing is spent yet (UX-board-7). */
+  boosterConfirm: (price: number) => `Tap again to buy for ${price} coins`,
+  boosterArmedLabel: (name: string, price: number) => `${name}: tap again to buy for ${price} coins`,
   jarLabel: (i: number, contents: string) => `Jar ${i + 1}: ${contents}`,
+  /** Screen-reader summary of a pour (UX-board-5). `jar` is 1-based. */
+  pourAnnounce: (n: number, colour: string, jar: number) => `Poured ${n} ${colour} into jar ${jar}.`,
+  sealAnnounce: (jar: number) => `Jar ${jar} sealed.`,
   jarEmpty: 'empty',
   buried: 'buried',
   sealed: 'sealed',
@@ -140,7 +180,7 @@ const en = {
   profileLabel: (name: string) => `Profile: ${name}`,
   editProfile: 'Edit profile',
   editProfileTitle: 'Edit profile',
-  levelBadge: 'Level',
+  levelBadge: 'On level', // "On level 12" beside "Levels cleared 11" (UX-profile-1)
   statsTitle: 'Stats',
   statLabels: {
     levels: 'Levels cleared',
@@ -160,6 +200,8 @@ const en = {
   nameLabel: 'Your name',
   reroll: 'New random name',
   nameInvalid: (min: number, max: number) => `Use ${min}–${max} letters or numbers`,
+  /** Beside Save when the name is invalid and the Name tab is not open (UX-edit-1). */
+  nameInvalidTab: (min: number, max: number) => `Name tab: use ${min}–${max} letters or numbers to save`,
   platesLabel: 'Name plate',
   saveProfile: 'Save',
   discardTitle: 'Discard changes?',

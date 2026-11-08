@@ -22,6 +22,7 @@ const HAPTICS: Partial<Record<SoundEvent, number | number[]>> = {
 /** Pentatonic scale (C major pentatonic, 2 octaves) used by chimes and music. */
 const SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
 
+/** The player's audio and haptics toggles, as passed to the audio engine (from the saved settings). */
 export interface AudioOptions {
   sound: boolean;
   music: boolean;

@@ -1,6 +1,7 @@
 /**
- * Animated scene layers (design/gdd/scenes.md 2.1a, sprint 7 B5): falling snow, rising
- * lanterns and New Year fireworks, drawn on one canvas behind all UI.
+ * Animated scene layers (design/gdd/scenes.md 2.1a, sprint 7 B5 and sprint 8 P1): falling snow,
+ * rising lanterns, New Year fireworks, soft rain, winter lights, meteors and aurora bands, drawn
+ * on one canvas behind all UI.
  *
  * Rules every layer follows (scenes.md "Rules for every animated layer"):
  * - The canvas sits at `z-index: -1` inside the home screen while it is shown, and behind
@@ -16,10 +17,38 @@
 export const MAX_PARTICLES = 60;
 const FRAME_MS = 1000 / 30;
 
-type LayerKind = 'snow' | 'lanterns' | 'fireworks';
+type LayerKind = 'snow' | 'lanterns' | 'fireworks' | 'rain' | 'lights' | 'meteors' | 'aurora';
 
 /** The scenes that have an animated layer, by scene id. */
-const LAYERS: Readonly<Record<string, LayerKind>> = { wintersnow: 'snow', harvestmoon: 'lanterns', newyear: 'fireworks' };
+const LAYERS: Readonly<Record<string, LayerKind>> = {
+  wintersnow: 'snow',
+  harvestmoon: 'lanterns',
+  newyear: 'fireworks',
+  softrain: 'rain',
+  winterlights: 'lights',
+  meteorshower: 'meteors',
+  auroranight: 'aurora',
+};
+
+/** Meteors travel down and to the left (a unit vector). */
+const METEOR_DIR = { x: -0.86, y: 0.51 } as const;
+/** Ambient meteors are this colour; seal meteors take the jar's sand colour. */
+const STARLIGHT = '#eef1ff';
+/** Aurora night: three bands (height as a share of the screen, thickness px, sway px, colour as `r, g, b`). */
+const BANDS = [
+  { at: 0.1, thick: 110, sway: 16, rgb: '95, 214, 168' },
+  { at: 0.18, thick: 90, sway: 22, rgb: '120, 200, 220' },
+  { at: 0.26, thick: 70, sway: 14, rgb: '160, 130, 230' },
+] as const;
+/** Aurora night: slices per band (3 x 16 = 48 of the 60-particle budget; ripples use the rest). */
+const AURORA_COLS = 16;
+const MAX_RIPPLES = 4;
+
+/** Winter lights: the bulb colours, cycled along the string. */
+const BULBS = ['#ffd27a', '#ff9a85', '#a6e3c4', '#9cc4ff'] as const;
+/** Winter lights: how many swags the string hangs in, and how many bulbs in all. */
+const SWAGS = 3;
+const BULB_COUNT = 18;
 
 interface Particle {
   x: number;
@@ -46,6 +75,9 @@ let clock = 0;
 let w = 0;
 let h = 0;
 let lantern: HTMLCanvasElement | null = null;
+const bulbSprites = new Map<string, HTMLCanvasElement>();
+const auroraSprites = new Map<string, HTMLCanvasElement>();
+let nextMeteor = 0;
 let wired = false;
 
 /**
@@ -86,11 +118,20 @@ export function sceneFxKind(): string | null {
   return kind;
 }
 
-/** A small burst above a sealed jar, in the jar's sand colour (New Year only). */
+/**
+ * The tier 3 reaction when a jar seals, queued for the next frame: New Year, a small burst
+ * above the jar in its sand colour; Meteor shower, one meteor streaking over the jar in that
+ * colour; Aurora night, a ripple of brightness spreading along the bands from the jar.
+ * Nothing for other scenes or under reduced motion.
+ */
 export function sceneSealBurst(jar: Element, color: string): void {
-  if (kind !== 'fireworks' || reduced()) return;
+  if (reduced() || (kind !== 'fireworks' && kind !== 'meteors' && kind !== 'aurora')) return;
   const r = jar.getBoundingClientRect();
-  queueBurst(r.left + r.width / 2, r.top - 6, [color, '#fff6d8'], 14, 70);
+  const cx = r.left + r.width / 2;
+  if (kind === 'fireworks') queueBurst(cx, r.top - 6, [color, '#fff6d8'], 14, 70);
+  else if (kind === 'meteors') queueMeteor(newMeteor(cx + 70, r.top - 90, color, 260, 70, 0.6));
+  else if (canvas && sparks.length < MAX_RIPPLES && ambient.length + sparks.length < MAX_PARTICLES)
+    sparks.push({ x: cx, y: 0, vx: 0, vy: 0, r: 0, phase: 1.4, life: 1.4, color: '' });
 }
 
 /**
@@ -101,6 +142,7 @@ export function sceneSealBurst(jar: Element, color: string): void {
  * 30 fps, nothing under reduced motion, stopped while the page is hidden.
  */
 export function sceneWinDisplay(colors: readonly string[]): void {
+  if (kind === 'meteors' || kind === 'aurora') return skyWinDisplay(kind, colors);
   if (kind !== 'fireworks' || reduced() || !colors.length || document.hidden) return;
   const host = document.getElementById('win');
   if (!host) return;
@@ -175,6 +217,96 @@ export function sceneWinDisplay(colors: readonly string[]): void {
   id = requestAnimationFrame(tick);
 }
 
+/**
+ * The tier 3 win display for the sky scenes (sprint 8 P1), on the same terms as New Year's
+ * (owner decision D40): its own canvas inside the win overlay, above the dim backdrop and
+ * below the card, about 4 s, then it removes itself. Meteor shower: a short shower of a dozen
+ * meteors in the board's sand colours above and below the card. Aurora night: the bands drawn
+ * above and below the card with a brighter wave sweeping across them. Nothing under reduced
+ * motion; stops while the page is hidden; at most 30 fps and MAX_PARTICLES.
+ */
+function skyWinDisplay(which: 'meteors' | 'aurora', colors: readonly string[]): void {
+  if (reduced() || !colors.length || document.hidden) return;
+  const host = document.getElementById('win');
+  if (!host) return;
+  host.querySelector('canvas.scene-fx-win')?.remove();
+  const c = document.createElement('canvas');
+  c.className = 'scene-fx-win';
+  c.setAttribute('aria-hidden', 'true');
+  host.prepend(c);
+  const g = c.getContext('2d');
+  if (!g) return c.remove();
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  c.width = W;
+  c.height = H;
+  const TOTAL = which === 'meteors' ? 4200 : 3800;
+  const parts: Particle[] = [];
+  // Meteor shower: 12 meteors, 230 ms apart, alternating above (4-26%) and below (72-90%) the card.
+  const timers =
+    which === 'meteors'
+      ? Array.from({ length: 12 }, (_, k) =>
+          window.setTimeout(() => {
+            if (parts.length >= MAX_PARTICLES) return;
+            const y = k % 2 ? rand(0.72, 0.9) * H : rand(0.04, 0.26) * H;
+            parts.push(newMeteor(rand(0.45, 1.1) * W, y, colors[k % colors.length], rand(300, 420), rand(80, 130), rand(0.8, 1.1)));
+          }, 500 + k * 230),
+        )
+      : [];
+  let prev = 0;
+  let id = 0;
+  const started = performance.now();
+  const end = () => {
+    cancelAnimationFrame(id);
+    timers.forEach((t) => window.clearTimeout(t));
+    document.removeEventListener('visibilitychange', end);
+    c.remove();
+  };
+  document.addEventListener('visibilitychange', end); // hidden page: stop and clean up
+  const tick = (now: number) => {
+    id = requestAnimationFrame(tick);
+    const t = now - started;
+    if (t > TOTAL || !c.isConnected) return end();
+    if (prev && now - prev < FRAME_MS - 2) return; // hold to 30 fps
+    const dt = prev ? Math.min((now - prev) / 1000, 0.1) : 0;
+    prev = now;
+    g.clearRect(0, 0, W, H);
+    if (which === 'meteors') {
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const m = parts[i];
+        m.life -= dt;
+        if (m.life <= 0) {
+          parts.splice(i, 1);
+          continue;
+        }
+        m.x += m.vx * dt;
+        m.y += m.vy * dt;
+        drawMeteor(g, m, 2.6);
+      }
+    } else {
+      // Fade in over 0.4 s and out over the last 0.6 s; the bright wave crosses in about 3 s.
+      const env = Math.max(0, Math.min(1, t / 400, (TOTAL - t) / 600));
+      const waveX = (-0.2 + (1.4 * t) / 3000) * W;
+      const colW = (W / AURORA_COLS) * 1.7;
+      const rows = [0.06, 0.15, 0.76] as const;
+      rows.forEach((at, b) => {
+        const band = BANDS[b];
+        const img = auroraSprite(band.rgb);
+        for (let k = 0; k < AURORA_COLS; k++) {
+          const x = ((k + 0.5) / AURORA_COLS) * W;
+          const d = x - waveX;
+          const gain = 1.6 * Math.exp(-(d * d) / (2 * (0.16 * W) ** 2));
+          g.globalAlpha = Math.min(0.85, 0.3 * (1 + gain)) * env;
+          const sway = Math.sin((x / W) * 4.2 + t * 0.0006 + b) * band.sway;
+          g.drawImage(img, x - colW / 2, at * H + sway, colW, band.thick);
+        }
+      });
+      g.globalAlpha = 1;
+    }
+  };
+  id = requestAnimationFrame(tick);
+}
+
 // ---- Internals -------------------------------------------------------------
 
 function wire(): void {
@@ -227,13 +359,70 @@ function seed(): void {
     for (let i = 0; i < 12; i++) ambient.push(newLantern(rand(h * 0.2, h * 1.02)));
   } else if (kind === 'fireworks') {
     for (let i = 0; i < 24; i++) ambient.push({ x: rand(0, w), y: rand(0, h * 0.62), vx: 0, vy: 0, r: rand(0.7, 1.6), phase: rand(0, 6.3), life: Infinity, color: i % 3 ? '#fff6d8' : '#e8c15a' });
+  } else if (kind === 'rain') {
+    // Thin slanted streaks; r is the streak length.
+    for (let i = 0; i < 48; i++) {
+      const vy = rand(380, 520);
+      ambient.push({ x: rand(-0.1 * w, w), y: rand(-h * 0.1, h), vx: vy * 0.16, vy, r: rand(9, 17), phase: 0, life: Infinity, color: '' });
+    }
+  } else if (kind === 'meteors') {
+    for (let i = 0; i < 26; i++) ambient.push({ x: rand(0, w), y: rand(0, h * 0.6), vx: 0, vy: 0, r: rand(0.6, 1.4), phase: rand(0, 6.3), life: Infinity, color: STARLIGHT });
+    nextMeteor = 1.2;
+  } else if (kind === 'aurora') {
+    // Each band is AURORA_COLS overlapping slices; vy holds the band's sway, r its thickness.
+    for (const band of BANDS)
+      for (let k = 0; k < AURORA_COLS; k++)
+        ambient.push({ x: ((k + 0.5) / AURORA_COLS) * w, y: band.at * h, vx: 0, vy: band.sway, r: band.thick, phase: band.at * 20, life: Infinity, color: band.rgb });
+  } else if (kind === 'lights') {
+    // A string of bulbs hanging in swags along the very top; each bulb sits just under the wire.
+    for (let i = 0; i < BULB_COUNT; i++) ambient.push({ x: ((i + 0.5) / BULB_COUNT) * w, y: 0, vx: 0, vy: 0, r: 1, phase: rand(0, 6.3), life: Infinity, color: BULBS[i % BULBS.length] });
   }
+}
+
+/** Winter lights: the wire's height at `x` (three quadratic swags, 14 px at the hooks, 30 px at the dips). */
+function wireY(x: number): number {
+  const span = w / SWAGS;
+  const u = (x % span) / span;
+  return 14 + 64 * u * (1 - u);
 }
 
 /** Lanterns rise along the sides, away from the home screen's centred text. */
 function newLantern(y: number): Particle {
   const side = Math.random() < 0.5 ? rand(0.03, 0.22) : rand(0.78, 0.97);
   return { x: side * w, y, vx: 0, vy: -rand(9, 17), r: rand(0.75, 1.1), phase: rand(0, 6.3), life: Infinity, color: '' };
+}
+
+/** A meteor whose head starts at (x, y): `r` is its tail length and `phase` its full life. */
+function newMeteor(x: number, y: number, color: string, speed: number, tail: number, life: number): Particle {
+  return { x, y, vx: METEOR_DIR.x * speed, vy: METEOR_DIR.y * speed, r: tail, phase: life, life, color };
+}
+
+function queueMeteor(m: Particle): void {
+  if (!canvas || reduced() || ambient.length + sparks.length >= MAX_PARTICLES) return;
+  sparks.push(m);
+}
+
+/** A meteor's streak: a fading tail behind a bright head, eased in and out over its life. */
+function drawMeteor(g: CanvasRenderingContext2D, m: Particle, width: number): void {
+  const a = Math.sin(Math.PI * Math.max(0, Math.min(1, 1 - m.life / m.phase)));
+  const tx = m.x - METEOR_DIR.x * m.r;
+  const ty = m.y - METEOR_DIR.y * m.r;
+  const grad = g.createLinearGradient(m.x, m.y, tx, ty);
+  grad.addColorStop(0, m.color);
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  g.globalAlpha = a;
+  g.strokeStyle = grad;
+  g.lineWidth = width;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.moveTo(m.x, m.y);
+  g.lineTo(tx, ty);
+  g.stroke();
+  g.fillStyle = '#ffffff';
+  g.beginPath();
+  g.arc(m.x, m.y, width * 0.75, 0, Math.PI * 2);
+  g.fill();
+  g.globalAlpha = 1;
 }
 
 function queueBurst(x: number, y: number, colors: readonly string[], count: number, speed: number): void {
@@ -263,7 +452,8 @@ function resume(): void {
 
 /** The reduced-motion frame: the ambient particles where they were seeded, drawn once. */
 function still(): void {
-  sparks = [];
+  // Meteor shower keeps one meteor, frozen mid-streak, so the still frame still reads as the scene.
+  sparks = kind === 'meteors' ? [{ ...newMeteor(w * 0.72, h * 0.16, STARLIGHT, 0, 90, 1), life: 0.5 }] : [];
   draw();
 }
 
@@ -287,6 +477,15 @@ function step(dt: number): void {
         p.x = rand(0, w);
       }
     }
+  } else if (kind === 'rain') {
+    for (const p of ambient) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.y > h + 20) {
+        p.y = -20;
+        p.x = rand(-0.1 * w, w);
+      }
+    }
   } else if (kind === 'lanterns') {
     ambient = ambient.map((p) => (p.y < h * 0.12 ? newLantern(h + 20) : p));
     for (const p of ambient) {
@@ -294,10 +493,20 @@ function step(dt: number): void {
       p.x += Math.sin(clock * 0.5 + p.phase) * 4 * dt;
     }
   }
+  if (kind === 'meteors') {
+    nextMeteor -= dt;
+    if (nextMeteor <= 0 && sparks.filter((s) => s.color === STARLIGHT).length < 2) {
+      queueMeteor(newMeteor(rand(0.3, 1.1) * w, rand(0, 0.3) * h, STARLIGHT, rand(150, 230), rand(60, 100), rand(1.4, 2)));
+      nextMeteor = rand(2.5, 5);
+    }
+  }
+  const ballistic = kind === 'fireworks'; // burst sparks fall; meteors fly straight; aurora ripples only age
   for (const s of sparks) {
     s.life -= dt;
-    s.vx *= 1 - 1.6 * dt;
-    s.vy = s.vy * (1 - 1.6 * dt) + 60 * dt;
+    if (ballistic) {
+      s.vx *= 1 - 1.6 * dt;
+      s.vy = s.vy * (1 - 1.6 * dt) + 60 * dt;
+    }
     s.x += s.vx * dt;
     s.y += s.vy * dt;
   }
@@ -325,6 +534,56 @@ function draw(): void {
       ctx.globalAlpha = Math.max(0, Math.min(1, (p.y - h * 0.12) / (h * 0.2), (h + 20 - p.y) / (h * 0.15))) * 0.8;
       const s = 26 * p.r;
       ctx.drawImage(img, p.x - s / 2, p.y - s / 2, s, s);
+    }
+    ctx.globalAlpha = 1;
+  } else if (kind === 'rain') {
+    ctx.strokeStyle = 'rgba(52, 72, 92, 0.3)';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    for (const p of ambient) {
+      const k = p.r / p.vy;
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x - p.vx * k, p.y - p.r);
+    }
+    ctx.stroke();
+  } else if (kind === 'lights') {
+    const span = w / SWAGS;
+    ctx.strokeStyle = 'rgba(20, 26, 40, 0.7)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    for (let k = 0; k < SWAGS; k++) {
+      ctx.moveTo(k * span, 14);
+      ctx.quadraticCurveTo(k * span + span / 2, 46, (k + 1) * span, 14);
+    }
+    ctx.stroke();
+    for (const p of ambient) {
+      // A slow, soft twinkle: never fully off, never a flash.
+      ctx.globalAlpha = 0.5 + 0.45 * (0.5 + 0.5 * Math.sin(clock * 1.1 + p.phase));
+      ctx.drawImage(bulbSprite(p.color), p.x - 12, wireY(p.x) + 4 - 12, 24, 24);
+    }
+    ctx.globalAlpha = 1;
+  } else if (kind === 'meteors') {
+    ctx.fillStyle = STARLIGHT;
+    for (const p of ambient) {
+      ctx.globalAlpha = 0.3 + 0.35 * (0.5 + 0.5 * Math.sin(clock * 1.3 + p.phase));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (const m of sparks) drawMeteor(ctx, m, 1.8);
+    ctx.globalAlpha = 1;
+  } else if (kind === 'aurora') {
+    const colW = (w / AURORA_COLS) * 1.7;
+    for (const p of ambient) {
+      const sway = Math.sin((p.x / w) * 4.2 + clock * 0.35 + p.phase) * p.vy;
+      let gain = 0;
+      for (const s of sparks) {
+        // A ring of brightness moving out from the sealed jar at 300 px/s, fading over its life.
+        const d = Math.abs(p.x - s.x) - 300 * (s.phase - s.life);
+        gain += 1.1 * Math.exp(-(d * d) / 9800) * (s.life / s.phase);
+      }
+      ctx.globalAlpha = Math.min(0.5, (0.22 + 0.08 * Math.sin(clock * 0.6 + p.x * 0.01 + p.phase)) * (1 + gain));
+      ctx.drawImage(auroraSprite(p.color), p.x - colW / 2, p.y + sway - p.r / 2, colW, p.r);
     }
     ctx.globalAlpha = 1;
   } else if (kind === 'fireworks') {
@@ -368,5 +627,54 @@ function lanternSprite(): HTMLCanvasElement {
   g.fillRect(26, 20, 12, 3);
   g.fillRect(26, 42, 12, 2);
   lantern = c;
+  return c;
+}
+
+/** One glowing bulb per colour, rendered once and reused (Winter lights). */
+function bulbSprite(color: string): HTMLCanvasElement {
+  const cached = bulbSprites.get(color);
+  if (cached) return cached;
+  const c = document.createElement('canvas');
+  c.width = c.height = 24;
+  const g = c.getContext('2d')!;
+  const glow = g.createRadialGradient(12, 12, 1, 12, 12, 12);
+  glow.addColorStop(0, color);
+  glow.addColorStop(0.35, color);
+  glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  g.globalAlpha = 0.45;
+  g.fillStyle = glow;
+  g.fillRect(0, 0, 24, 24);
+  g.globalAlpha = 1;
+  g.fillStyle = color;
+  g.beginPath();
+  g.ellipse(12, 13, 2.6, 3.4, 0, 0, Math.PI * 2);
+  g.fill();
+  bulbSprites.set(color, c);
+  return c;
+}
+
+/** One aurora slice per colour: a curtain brightest near its lower edge, soft at both sides. Rendered once. */
+function auroraSprite(rgb: string): HTMLCanvasElement {
+  const cached = auroraSprites.get(rgb);
+  if (cached) return cached;
+  const c = document.createElement('canvas');
+  c.width = 32;
+  c.height = 128;
+  const g = c.getContext('2d')!;
+  const v = g.createLinearGradient(0, 0, 0, 128);
+  v.addColorStop(0, 'rgba(' + rgb + ', 0)');
+  v.addColorStop(0.55, 'rgba(' + rgb + ', 0.9)');
+  v.addColorStop(0.8, 'rgba(' + rgb + ', 0.35)');
+  v.addColorStop(1, 'rgba(' + rgb + ', 0)');
+  g.fillStyle = v;
+  g.fillRect(0, 0, 32, 128);
+  g.globalCompositeOperation = 'destination-in';
+  const hz = g.createLinearGradient(0, 0, 32, 0);
+  hz.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  hz.addColorStop(0.5, 'rgba(0, 0, 0, 1)');
+  hz.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  g.fillStyle = hz;
+  g.fillRect(0, 0, 32, 128);
+  auroraSprites.set(rgb, c);
   return c;
 }

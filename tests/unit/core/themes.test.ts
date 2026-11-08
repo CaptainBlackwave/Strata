@@ -1,9 +1,10 @@
-// Story: production/epics/sprint-4/EPIC.md (time-of-day scenes); production/sprints/sprint-7.md B5 (scene ladder)
+// Story: production/epics/sprint-4/EPIC.md (time-of-day scenes); production/sprints/sprint-7.md B5 (scene ladder);
+// production/sprints/sprint-8.md P1 (the other 8 rungs) and P2 (southern hemisphere seasons)
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { newWallet } from '../../../src/core/economy';
 import type { EconomyConfig } from '../../../src/core/economy';
-import { type Theme, type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, contrastRatio, inSeason, localDateKey, themeForHour } from '../../../src/core/themes';
+import { type Theme, type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, byIdOr, contrastRatio, inSeason, isOwned, localDateKey, themeById, themeForHour } from '../../../src/core/themes';
 import type { UiThemeTokens } from '../../../src/ui/theme-tokens';
 
 const cfg = config as unknown as ThemeConfig & EconomyConfig;
@@ -26,7 +27,7 @@ describe('catalog', () => {
 describe('the scene ladder (scenes.md 2.1a, sprint 7 B5)', () => {
   const byId = (id: string) => cfg.themes.list.find((t) => t.id === id)!;
   it('appends the first four ladder rungs with their ladder prices, kinds, tiers and windows', () => {
-    expect(ids).toEqual(['midday', 'dawn', 'sunset', 'moonlit', 'seafog', 'wintersnow', 'harvestmoon', 'newyear']);
+    expect(ids.slice(0, 8)).toEqual(['midday', 'dawn', 'sunset', 'moonlit', 'seafog', 'wintersnow', 'harvestmoon', 'newyear']); // append-only (D27)
     const rows = ['seafog', 'wintersnow', 'harvestmoon', 'newyear'].map((id) => {
       const t = byId(id);
       return [id, t.price, t.kind, t.tier, t.window ? `${t.window.from}..${t.window.to}` : null];
@@ -37,6 +38,33 @@ describe('the scene ladder (scenes.md 2.1a, sprint 7 B5)', () => {
       ['harvestmoon', 5800, 'holiday', 2, '09-15..10-15'],
       ['newyear', 8800, 'holiday', 3, '12-28..01-07'],
     ]);
+  });
+  it('appends the other eight rungs after them (sprint 8 P1), with their kinds, tiers and windows', () => {
+    expect(ids.slice(8)).toEqual(['highsummer', 'springblossom', 'autumnshore', 'rainbowafterrain', 'softrain', 'winterlights', 'meteorshower', 'auroranight']);
+    const rows = ids.slice(8).map((id) => {
+      const t = byId(id);
+      return [id, t.name, t.price, t.kind, t.tier, t.window ? `${t.window.from}..${t.window.to}` : null];
+    });
+    expect(rows).toEqual([
+      ['highsummer', 'High summer', 2900, 'season', 1, '06-01..08-31'],
+      ['springblossom', 'Spring blossom', 3300, 'season', 1, '03-01..05-31'],
+      ['autumnshore', 'Autumn shore', 3800, 'season', 1, '09-01..11-30'],
+      ['rainbowafterrain', 'Rainbow after rain', 4350, 'weather', 1, null],
+      ['softrain', 'Soft rain', 6650, 'weather', 2, null],
+      ['winterlights', 'Winter lights', 7650, 'holiday', 2, '12-01..01-06'],
+      ['meteorshower', 'Meteor shower', 10100, 'sky', 3, '08-10..08-14'],
+      ['auroranight', 'Aurora night', 11650, 'sky', 3, null],
+    ]);
+  });
+  it('every rung costs round50(2500 x 1.15^(n - 1)) (scenes.md 2.1a price formula)', () => {
+    const RUNGS = ['seafog', 'highsummer', 'springblossom', 'autumnshore', 'rainbowafterrain', 'wintersnow', 'harvestmoon', 'softrain', 'winterlights', 'newyear', 'meteorshower', 'auroranight'];
+    const round50 = (x: number) => Math.round(x / 50) * 50;
+    expect(RUNGS.map((id) => byId(id).price)).toEqual(RUNGS.map((_, i) => round50(2500 * 1.15 ** i)));
+    expect(RUNGS.reduce((sum, id) => sum + byId(id).price, 0)).toBe(72550);
+  });
+  it('the picker lists all 16 scenes by price with no ties, so the order is stable', () => {
+    const prices = cfg.themes.list.map((t) => t.price);
+    expect(new Set(prices).size).toBe(prices.length);
   });
   it('the original four keep their prices and stay plain time-of-day scenes', () => {
     expect(['midday', 'dawn', 'sunset', 'moonlit'].map((id) => byId(id).price)).toEqual([0, 300, 500, 800]);
@@ -98,6 +126,49 @@ describe('activeTheme with a date (holiday scenes take over Match my clock)', ()
   it('manual mode ignores the date, and leaving the date out keeps the old behaviour', () => {
     expect(activeTheme({ owned: all, selected: 'seafog', auto: false }, 12, cfg, '2027-01-03')).toBe('seafog');
     expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 22, cfg)).toBe('moonlit');
+  });
+});
+
+describe('more ladder scenes and Match my clock (sprint 8 P1)', () => {
+  const all = ids;
+  it('Winter lights takes over in December, and New Year wins where the two overlap', () => {
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 12, cfg, '2026-12-10')).toBe('winterlights');
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 12, cfg, '2026-12-30')).toBe('newyear');
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 12, cfg, '2027-01-07')).toBe('newyear'); // Winter lights ended 01-06
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 12, cfg, '2027-01-08')).toBe('midday');
+  });
+  it('sky scenes get the badge but never take over the clock', () => {
+    const meteor = cfg.themes.list.find((t) => t.id === 'meteorshower')!;
+    expect(inSeason(meteor, '2026-08-12')).toBe(true);
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 12, cfg, '2026-08-12')).toBe('midday');
+  });
+});
+
+describe('southern hemisphere seasons (sprint 8 P2, D42)', () => {
+  const byId = (id: string) => cfg.themes.list.find((t) => t.id === id)!;
+  const south = { southern: true };
+  const days = (id: string, dates: string[], opts?: { southern?: boolean }) => dates.map((d) => inSeason(byId(id), d, opts));
+  it('season windows shift by six months, keeping whole months', () => {
+    expect(days('highsummer', ['2026-11-30', '2026-12-01', '2027-01-15', '2027-02-28', '2027-03-01', '2026-07-01'], south)).toEqual([false, true, true, true, false, false]);
+    expect(days('highsummer', ['2028-02-29'], south)).toEqual([true]); // leap day is still summer
+    expect(days('wintersnow', ['2026-05-31', '2026-06-01', '2026-08-31', '2026-09-01', '2026-12-15'], south)).toEqual([false, true, true, false, false]);
+    expect(days('springblossom', ['2026-08-31', '2026-09-01', '2026-11-30', '2026-12-01', '2026-04-01'], south)).toEqual([false, true, true, false, false]);
+    expect(days('autumnshore', ['2026-02-28', '2026-03-01', '2026-05-31', '2026-06-01', '2026-10-01'], south)).toEqual([false, true, true, false, false]);
+  });
+  it('holiday and sky windows keep their dates', () => {
+    expect(days('newyear', ['2026-12-30', '2026-06-30'], south)).toEqual([true, false]);
+    expect(days('harvestmoon', ['2026-09-20', '2026-03-20'], south)).toEqual([true, false]);
+    expect(days('winterlights', ['2026-12-10', '2026-06-10'], south)).toEqual([true, false]);
+    expect(days('meteorshower', ['2026-08-12', '2026-02-12'], south)).toEqual([true, false]);
+  });
+  it('off by default: leaving the option out, or false, keeps the northern windows', () => {
+    expect(days('highsummer', ['2026-07-01', '2026-12-15'])).toEqual([true, false]);
+    expect(days('highsummer', ['2026-07-01', '2026-12-15'], { southern: false })).toEqual([true, false]);
+  });
+  it('Match my clock follows the switch, and season scenes still never take over', () => {
+    expect(activeTheme({ owned: ids, selected: 'midday', auto: true }, 12, cfg, '2026-12-15', south)).toBe('winterlights'); // holiday, same dates
+    expect(activeTheme({ owned: ['midday', 'highsummer'], selected: 'midday', auto: true }, 12, cfg, '2026-12-15', south)).toBe('midday');
+    expect(activeTheme({ owned: ids, selected: 'midday', auto: true }, 12, cfg, '2026-12-30', south)).toBe('newyear');
   });
 });
 
@@ -204,5 +275,26 @@ describe('readability (WCAG contrast) in every scene', () => {
   it('contrastRatio matches known values', () => {
     expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 0);
     expect(contrastRatio('#777777', '#777777')).toBeCloseTo(1, 5);
+  });
+});
+
+describe('byIdOr, themeById and isOwned (TD-3)', () => {
+  const free = cfg.themes.list.find((t) => t.price === 0)!;
+  const paid = cfg.themes.list.find((t) => t.price > 0)!;
+
+  it('byIdOr finds by id and falls back to the first entry for an unknown id', () => {
+    expect(byIdOr(cfg.themes.list, paid.id)).toBe(paid);
+    expect(byIdOr(cfg.themes.list, 'no-such-scene')).toBe(cfg.themes.list[0]);
+  });
+
+  it('themeById reads the config list', () => {
+    expect(themeById(cfg, paid.id)).toBe(paid);
+    expect(themeById(cfg, 'nope')).toBe(cfg.themes.list[0]);
+  });
+
+  it('a free scene is always owned; a priced one only when listed', () => {
+    expect(isOwned(free, [])).toBe(true);
+    expect(isOwned(paid, [])).toBe(false);
+    expect(isOwned(paid, [paid.id])).toBe(true);
   });
 });

@@ -2,7 +2,8 @@
  * Time-of-day scenes: buying with coins, the "Match my clock" schedule, and the
  * contrast check that keeps every scene readable. Pure functions only.
  * Implements design/competitive-roadmap.md item C10 (sprint 4 decisions S4-1 to S4-4) and the
- * scene ladder's seasons and holidays (design/gdd/scenes.md 2.1a, D33; sprint 7 B5).
+ * scene ladder's seasons and holidays (design/gdd/scenes.md 2.1a, D33; sprint 7 B5), and the
+ * southern-hemisphere season switch (D42; production/sprints/sprint-8.md P2).
  */
 import type { Wallet } from './economy';
 
@@ -63,6 +64,25 @@ export interface ThemeState {
   readonly auto: boolean;
 }
 
+/**
+ * The entry of `list` with this id, or the first entry when the id is unknown (the one place
+ * for the `find(...) ?? list[0]` fallback). `list` must not be empty.
+ * Example: `byIdOr(config.profile.avatars, save.profile.avatar)`.
+ */
+export function byIdOr<T extends { readonly id: string }>(list: readonly T[], id: string): T {
+  return list.find((x) => x.id === id) ?? list[0];
+}
+
+/** The scene with this id, or the first scene in the config when unknown. Example: `themeById(config, 'dusk')`. */
+export function themeById(config: ThemeConfig, id: string): Theme {
+  return byIdOr(config.themes.list, id);
+}
+
+/** Whether the player can use a scene: it is free (price 0) or listed in `owned`. Example: `isOwned(theme, save.themes.owned)`. */
+export function isOwned(theme: Pick<Theme, 'id' | 'price'>, owned: readonly string[]): boolean {
+  return theme.price === 0 || owned.includes(theme.id);
+}
+
 /** The time-of-day scene whose clock range contains `hour` (0-23). Scenes without `hours` are skipped. */
 export function themeForHour(hour: number, config: ThemeConfig): string {
   const hit = config.themes.list.find(({ hours }) => {
@@ -79,34 +99,69 @@ export function localDateKey(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** Options for the date checks. `southern` shifts *season* windows by six months (D42, sprint 8 P2). */
+export interface SeasonOptions {
+  readonly southern?: boolean;
+}
+
+const MONTH_DAYS = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // February counted as 29: windows are leap-safe
+
+/**
+ * Moves one `MM-DD` end of a window by six months. A day past the end of the new month is
+ * clamped to it, and a `to` that is the last day of its month (02-28 or 02-29 for February)
+ * becomes the last day of the new month, so whole-month windows stay whole: `08-31` ends on
+ * `02-29` (Feb 28 in common years), `02-29` ends on `08-31`.
+ */
+function shiftSixMonths(md: string, isEnd: boolean): string {
+  const [m, d] = md.split('-').map(Number);
+  const to = ((m - 1 + 6) % 12) + 1;
+  const lastDay = d >= MONTH_DAYS[m - 1] || (m === 2 && d >= 28);
+  const day = isEnd && lastDay ? MONTH_DAYS[to - 1] : Math.min(d, MONTH_DAYS[to - 1]);
+  return `${String(to).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/**
+ * The window a scene uses: its own, or for a `season` scene with `southern` on, the same
+ * months six months later. Holiday and sky windows keep their dates.
+ * Example: High summer `06-01..08-31` becomes `12-01..02-29` in the south.
+ */
+export function seasonWindow(theme: Theme, opts: SeasonOptions = {}): ThemeWindow | undefined {
+  const w = theme.window;
+  if (!w || !opts.southern || theme.kind !== 'season') return w;
+  return { from: shiftSixMonths(w.from, false), to: shiftSixMonths(w.to, true) };
+}
+
 /**
  * Whether `dateKey` (`YYYY-MM-DD`) falls inside the scene's window, both ends included.
  * A window may wrap the year end. A window ending `02-29` covers Feb 28 in common years.
  * Scenes with no window ("any time") are never "in season", and neither is a malformed date.
- * Example: `inSeason(newYear, '2027-01-03') === true`.
+ * With `{ southern: true }` season windows shift by six months (see {@link seasonWindow}).
+ * Example: `inSeason(newYear, '2027-01-03') === true`; `inSeason(highSummer, '2026-12-15', { southern: true }) === true`.
  */
-export function inSeason(theme: Theme, dateKey: string): boolean {
+export function inSeason(theme: Theme, dateKey: string, opts: SeasonOptions = {}): boolean {
   const md = /^\d{4}-(\d{2}-\d{2})$/.exec(dateKey)?.[1];
-  if (!theme.window || !md) return false;
-  const { from, to } = theme.window;
+  const win = seasonWindow(theme, opts);
+  if (!win || !md) return false;
+  const { from, to } = win;
   return from <= to ? md >= from && md <= to : md >= from || md <= to;
 }
 
 /**
  * The scene to show now. Manual: the selected scene, if owned. Auto: an owned holiday
  * scene in season on `dateKey` (the highest price wins), else the clock's scene if owned,
- * else the selected one. Season and weather scenes never take over the clock. Anything
- * invalid falls back to the default. Leaving out `dateKey` skips the holiday step.
- * Example: `activeTheme(save.themes, now.getHours(), config, localDateKey(now))`.
+ * else the selected one. Season, weather and sky scenes never take over the clock. Anything
+ * invalid falls back to the default. Leaving out `dateKey` skips the holiday step. `opts`
+ * carries the southern-hemisphere switch through to {@link inSeason}.
+ * Example: `activeTheme(save.themes, now.getHours(), config, localDateKey(now), { southern })`.
  */
-export function activeTheme(state: ThemeState, hour: number, config: ThemeConfig, dateKey?: string): string {
-  const owns = (id: string) => id === config.themes.default || state.owned.includes(id);
+export function activeTheme(state: ThemeState, hour: number, config: ThemeConfig, dateKey?: string, opts: SeasonOptions = {}): string {
+  const owns = (id: string) => id === config.themes.default || state.owned.includes(id); // the default is always usable, even if priced
   const known = (id: string) => config.themes.list.some((t) => t.id === id);
   const selected = known(state.selected) && owns(state.selected) ? state.selected : config.themes.default;
   if (!state.auto) return selected;
   if (dateKey) {
     const holiday = config.themes.list
-      .filter((t) => t.kind === 'holiday' && owns(t.id) && inSeason(t, dateKey))
+      .filter((t) => t.kind === 'holiday' && owns(t.id) && inSeason(t, dateKey, opts))
       .reduce<Theme | undefined>((best, t) => (!best || t.price > best.price ? t : best), undefined);
     if (holiday) return holiday.id;
   }
