@@ -58,6 +58,8 @@
           <p id="win-text">All jars sorted.</p>
           <div id="win-reward" class="win-reward"><i class="coin" aria-hidden="true"></i><span id="win-coins">+20</span></div>
           <p id="win-note" class="win-note"></p>
+          <div id="win-shell" class="win-shell" hidden><span id="win-shell-art" class="win-shell-art"></span><span id="win-shell-text"></span></div>
+          <button id="btn-share" class="secondary share" type="button" hidden>Share</button>
           <button id="btn-next" class="primary" type="button">Continue</button>
         </div>
       </div>
@@ -75,6 +77,13 @@
           <button id="btn-close-settings" class="primary" type="button">Close</button>
         </div>
       </div>
+      <div id="cabinet" class="cabinet" hidden>
+        <div class="cabinet-card" role="dialog" aria-modal="true" aria-labelledby="cabinet-title">
+          <div class="cabinet-head"><h2 id="cabinet-title">Shell cabinet</h2><button id="btn-close-cabinet" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <p id="cabinet-next" class="cabinet-next"></p>
+          <div id="cabinet-sets"></div>
+        </div>
+      </div>
       <div id="home" class="home" hidden>
         <div class="home-inner">
           <div class="logo-jars" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -82,6 +91,11 @@
           <p id="home-tagline" class="home-tagline">Sort the sand. Seal the jars.</p>
           <div class="coins home-coins"><i class="coin" aria-hidden="true"></i><span id="home-coins">0</span></div>
           <button id="btn-play" class="primary play" type="button">Play</button>
+          <button id="btn-daily" class="daily-card" type="button">
+            <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
+            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
+          </button>
+          <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
         </div>
       </div>
     </div>

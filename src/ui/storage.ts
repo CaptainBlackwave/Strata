@@ -3,6 +3,7 @@
  * Every access is guarded, so a private window or blocked storage just means no save.
  * Implements design/game-brief.md MVP 6 and design/competitive-roadmap.md C2/C5.
  */
+import type { StreakState } from '../core/daily';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 
 const KEY = 'strata.save.v2';
@@ -26,6 +27,10 @@ export interface SaveData {
   wallet: Wallet;
   tutorialDone: boolean;
   settings: Settings;
+  /** Daily puzzle streak. */
+  daily: StreakState;
+  /** Owned shell ids, in the order they were earned. */
+  shells: string[];
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -36,6 +41,8 @@ export interface KeyValueStore {
 
 const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, patterns: false };
 const BOOSTERS: BoosterId[] = ['undo', 'shuffle', 'extraJar', 'hint'];
+const NO_STREAK: StreakState = { last: null, streak: 0, best: 0, passes: 0 };
+const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
 
 function defaultStore(): KeyValueStore | null {
   try {
@@ -59,7 +66,7 @@ const nonNegInt = (v: unknown, fallback: number) => (Number.isInteger(v) && (v a
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS } };
+  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [] };
 }
 
 /**
@@ -84,6 +91,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const w = isObj(v2.wallet) ? v2.wallet : {};
   const b = isObj(w.boosters) ? w.boosters : {};
   const s = isObj(v2.settings) ? v2.settings : {};
+  const d = isObj(v2.daily) ? v2.daily : {};
   return {
     level,
     best: isObj(v2.best) ? (v2.best as Record<string, number>) : {},
@@ -98,6 +106,13 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       haptics: typeof s.haptics === 'boolean' ? s.haptics : DEFAULT_SETTINGS.haptics,
       patterns: typeof s.patterns === 'boolean' ? s.patterns : DEFAULT_SETTINGS.patterns,
     },
+    daily: {
+      last: typeof d.last === 'string' && DATE_KEY.test(d.last) ? d.last : null,
+      streak: nonNegInt(d.streak, 0),
+      best: nonNegInt(d.best, 0),
+      passes: nonNegInt(d.passes, 0),
+    },
+    shells: Array.isArray(v2.shells) ? [...new Set(v2.shells.filter((x): x is string => typeof x === 'string'))] : [],
   };
 }
 

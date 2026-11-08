@@ -19,6 +19,61 @@
     "maxAttempts": 40,
     "solverNodeBudget": 40000
   },
+  "daily": {
+    "$comment": "Weekly rhythm: index 0 = Sunday ... 6 = Saturday (JS getUTCDay of the date string). Monday is easy, Sunday is the hard tall-jar finale.",
+    "seedSalt": 7351,
+    "week": [
+      { "name": "hard", "colors": 6, "capacity": 8, "spare": 2, "buriedDepth": 0 },
+      { "name": "easy", "colors": 5, "capacity": 4, "spare": 2, "buriedDepth": 0 },
+      { "name": "easy", "colors": 6, "capacity": 4, "spare": 2, "buriedDepth": 0 },
+      { "name": "medium", "colors": 7, "capacity": 4, "spare": 2, "buriedDepth": 1 },
+      { "name": "medium", "colors": 8, "capacity": 4, "spare": 2, "buriedDepth": 1 },
+      { "name": "tricky", "colors": 9, "capacity": 4, "spare": 2, "buriedDepth": 2 },
+      { "name": "tricky", "colors": 10, "capacity": 4, "spare": 2, "buriedDepth": 2 }
+    ],
+    "streak": {
+      "baseCoins": 30,
+      "coinsPerDay": 10,
+      "maxCoins": 100,
+      "passEvery": 7,
+      "maxPasses": 2
+    }
+  },
+  "collection": {
+    "everyLevels": 5,
+    "coinsWhenComplete": 50,
+    "setReward": { "coins": 150, "boosters": { "undo": 1, "shuffle": 1, "extraJar": 1, "hint": 1 } },
+    "sets": [
+      { "id": "tidepool", "name": "Tide Pool", "shells": [
+        { "id": "periwinkle", "name": "Periwinkle", "kind": "spiral", "colors": ["#7a5038", "#c9a27e"] },
+        { "id": "limpet", "name": "Limpet", "kind": "limpet", "colors": ["#a89f91", "#e8dccb"] },
+        { "id": "cockle", "name": "Cockle", "kind": "scallop", "colors": ["#e3b38a", "#fff1e0"] },
+        { "id": "mussel", "name": "Blue Mussel", "kind": "clam", "colors": ["#3d5a98", "#9fb4dd"] },
+        { "id": "sea-star", "name": "Sea Star", "kind": "star", "colors": ["#f28482", "#ffd3c4"] }
+      ]},
+      { "id": "dunes", "name": "Dune Coast", "shells": [
+        { "id": "sand-dollar", "name": "Sand Dollar", "kind": "dollar", "colors": ["#e9d8b8", "#bfa47a"] },
+        { "id": "razor", "name": "Razor Clam", "kind": "razor", "colors": ["#c8b08a", "#f3e6cf"] },
+        { "id": "moon-snail", "name": "Moon Snail", "kind": "moon", "colors": ["#d9c3a5", "#7a6248"] },
+        { "id": "scallop", "name": "Bay Scallop", "kind": "scallop", "colors": ["#c8553d", "#f6c9a8"] },
+        { "id": "whelk", "name": "Lightning Whelk", "kind": "conch", "colors": ["#f2e3c9", "#a0693c"] }
+      ]},
+      { "id": "reef", "name": "Coral Reef", "shells": [
+        { "id": "cowrie", "name": "Tiger Cowrie", "kind": "cowrie", "colors": ["#f4ead8", "#6b4423"] },
+        { "id": "conch", "name": "Pink Conch", "kind": "conch", "colors": ["#f6b9b1", "#c2417a"] },
+        { "id": "auger", "name": "Auger", "kind": "auger", "colors": ["#e2cfa8", "#8a6136"] },
+        { "id": "top-shell", "name": "Top Shell", "kind": "spiral", "colors": ["#9ee6cf", "#2a9d8f"] },
+        { "id": "clam", "name": "Giant Clam", "kind": "clam", "colors": ["#7b4b94", "#d6b6e6"] }
+      ]},
+      { "id": "deep", "name": "Deep Blue", "shells": [
+        { "id": "nautilus", "name": "Nautilus", "kind": "nautilus", "colors": ["#fff1e0", "#c8553d"] },
+        { "id": "abalone", "name": "Abalone", "kind": "abalone", "colors": ["#5b6770", "#9ee6cf"] },
+        { "id": "murex", "name": "Murex", "kind": "auger", "colors": ["#d8cbb8", "#5a3d2b"] },
+        { "id": "olive", "name": "Olive Shell", "kind": "cowrie", "colors": ["#f2a541", "#7a5038"] },
+        { "id": "pearl", "name": "Pearl Oyster", "kind": "oyster", "colors": ["#cfd8dc", "#ffffff"] }
+      ]}
+    ]
+  },
   "tutorial": {
     "$comment": "First-launch lesson: one pour seals a jar.",
     "capacity": 4,

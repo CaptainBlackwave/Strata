@@ -1,7 +1,7 @@
 // Story: production/epics/competitive/story-002-economy-boosters.md
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { type BoosterId, type EconomyConfig, buyBooster, levelReward, newWallet, spendBooster } from '../../../src/core/economy';
+import { type BoosterId, type EconomyConfig, addBoosters, buyBooster, levelReward, newWallet, spendBooster } from '../../../src/core/economy';
 
 const econ = config as unknown as EconomyConfig;
 
@@ -68,5 +68,16 @@ describe('levelReward', () => {
       expect(econ.boosters[id].price / perLevel).toBeGreaterThanOrEqual(2);
       expect(econ.boosters[id].price / perLevel).toBeLessThanOrEqual(8);
     }
+  });
+});
+
+describe('addBoosters', () => {
+  it('adds a bundle of charges without touching coins', () => {
+    const w = newWallet(econ);
+    const r = addBoosters(w, { undo: 1, hint: 2 });
+    expect(r.boosters.undo).toBe(w.boosters.undo + 1);
+    expect(r.boosters.hint).toBe(w.boosters.hint + 2);
+    expect(r.boosters.shuffle).toBe(w.boosters.shuffle);
+    expect(r.coins).toBe(w.coins);
   });
 });

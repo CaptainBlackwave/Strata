@@ -10,7 +10,7 @@ for a full-screen app icon. Every push to `main` re-runs the tests and redeploys
 ```bash
 npm install
 npm run dev      # play at http://localhost:5173  (add ?level=N to jump to a level)
-npm test         # 69 unit tests: rules, solver, generator, curve, session, economy, layout, save
+npm test         # 94 unit tests: rules, solver, generator, curve, session, economy, daily, collection, layout, save
 npm run build    # static site in dist/
 ```
 
@@ -18,7 +18,10 @@ npm run build    # static site in dist/
 can pour onto an empty jar or onto the same colour, as far as there's room. Seal every
 jar to clear the level and earn coins (a bonus for a **Perfect** clear with no boosters).
 Boosters (**Undo**, **Shuffle**, an extra **Jar**, **Hint**) have charges, and once those
-are used they cost coins. No lives, no ads, no purchases. Keyboard: `1`–`9`/`0` pick jars,
+are used they cost coins. No lives, no ads, no purchases.
+Come back daily for the **Daily puzzle**: the same board for everyone, easy on Monday and
+tall jars on Sunday. Build a streak, where a banked *tide pass* saves a missed day, and
+collect 20 hand-drawn **shells** (one every 5 levels and one per daily) to fill the cabinet. Keyboard: `1`–`9`/`0` pick jars,
 `Z` undo, `S` shuffle, `J` jar, `H` hint, `R` restart.
 
 ## What's in the box

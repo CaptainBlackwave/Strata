@@ -37,6 +37,8 @@ describe('save storage', () => {
     const save = { ...freshSave(econ), level: 7, best: { '6': 21 }, tutorialDone: true };
     save.wallet = { coins: 345, boosters: { undo: 1, shuffle: 0, extraJar: 2, hint: 4 } };
     save.settings = { sound: false, music: true, haptics: false, patterns: true };
+    save.daily = { last: '2026-11-08', streak: 3, best: 9, passes: 1 };
+    save.shells = ['periwinkle', 'limpet'];
     writeSave(save, s);
     expect(loadSave(econ, s)).toEqual(save);
   });
@@ -62,6 +64,21 @@ describe('save storage', () => {
     expect(save.wallet.boosters.undo).toBe(2);
     expect(save.wallet.boosters.hint).toBe(econ.boosters.hint.start);
     expect(save.settings.sound).toBe(true);
+  });
+  it('repairs a bad streak date and de-duplicates shells', () => {
+    const s = memoryStore();
+    s.setItem('strata.save.v2', JSON.stringify({ level: 2, daily: { last: 'yesterday', streak: 4 }, shells: ['a', 'a', 3, 'b'] }));
+    const save = loadSave(econ, s);
+    expect(save.daily).toEqual({ last: null, streak: 4, best: 0, passes: 0 });
+    expect(save.shells).toEqual(['a', 'b']);
+  });
+  it('a sprint-1 save without daily or shells loads with empty ones', () => {
+    const s = memoryStore();
+    s.setItem('strata.save.v2', JSON.stringify({ level: 9, tutorialDone: true }));
+    const save = loadSave(econ, s);
+    expect(save.daily.streak).toBe(0);
+    expect(save.shells).toEqual([]);
+    expect(save.level).toBe(9);
   });
   it('falls back on corrupt JSON', () => {
     const s = memoryStore();

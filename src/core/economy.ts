@@ -75,3 +75,10 @@ export function levelReward(result: { readonly perfect: boolean; readonly challe
 export function addCoins(wallet: Wallet, amount: number): Wallet {
   return { ...wallet, coins: wallet.coins + Math.max(0, Math.floor(amount)) };
 }
+
+/** Adds booster charges, for example a set-completion bundle. */
+export function addBoosters(wallet: Wallet, bundle: Readonly<Partial<Record<BoosterId, number>>>): Wallet {
+  const boosters = { ...wallet.boosters };
+  for (const id of Object.keys(bundle) as BoosterId[]) boosters[id] += Math.max(0, Math.floor(bundle[id] ?? 0));
+  return { ...wallet, boosters };
+}

@@ -7,7 +7,9 @@
 import './style.css';
 import rawConfig from '../config/game-config.json';
 import { type Board, canPour, isSealed, pourAmount } from '../core/board';
-import { type BoosterId, type EconomyConfig, addCoins, levelReward, spendBooster } from '../core/economy';
+import { type CollectionConfig, allShells, grantShell, milestoneDue, setProgress } from '../core/collection';
+import { type DailyConfig, generateDaily, localDateKey, recordDailySolve, streakStatus, weekday } from '../core/daily';
+import { type BoosterId, type EconomyConfig, addBoosters, addCoins, levelReward, spendBooster } from '../core/economy';
 import { generateLevel, tutorialBoard } from '../core/generator';
 import type { GameConfig } from '../core/levels';
 import { createRng } from '../core/rng';
@@ -15,10 +17,11 @@ import { GameSession, type SessionEvent } from '../core/session';
 import { GameAudio } from './audio';
 import { burst, celebrate, sparkleAround } from './fx';
 import { computeLayout } from './layout';
+import { shellSvg } from './shells';
 import { type SaveData, loadSave, writeSave } from './storage';
 import { t } from './strings';
 
-const config = rawConfig as unknown as GameConfig & EconomyConfig;
+const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig;
 /** Presentation-only timings (ms) and tilt angle: animation feel, not gameplay. */
 const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
 
@@ -42,7 +45,10 @@ const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 
 let save: SaveData = loadSave(config);
 let level = save.level;
-let inTutorial = false;
+/** What is being played: a numbered level, today's daily puzzle, or the tutorial. */
+let mode: 'level' | 'daily' | 'tutorial' = 'level';
+let dailyDate = '';
+let dailyName = '';
 let session!: GameSession;
 let challenge = false;
 let selected: number | null = null;
@@ -74,9 +80,115 @@ if (qaLevel) {
 // ---- Screens ------------------------------------------------------------
 
 function showHome(): void {
+  winEl.hidden = true;
   $('home-coins').textContent = String(save.wallet.coins);
   $('btn-play').textContent = save.tutorialDone ? t.play(save.level) : t.playTutorial;
+  const today = localDateKey(new Date());
+  const day = config.daily.week[weekday(today)];
+  const status = streakStatus(save.daily, today);
+  const [y, m, d] = today.split('-').map(Number);
+  $('daily-dow').textContent = new Date(y, m - 1, d).toLocaleDateString('en', { weekday: 'short' });
+  $('daily-dom').textContent = String(d);
+  $('daily-title').textContent = t.daily;
+  $('daily-sub').textContent = status.solvedToday ? t.dailySolved : t.dailyNew(day.name);
+  $('daily-streak').textContent = status.passAtRisk ? t.passAtRisk : status.current > 0 ? `${t.streakDays(status.current)}${save.daily.passes ? ` · ${t.passes(save.daily.passes)}` : ''}` : t.noStreak;
+  $('btn-daily').classList.toggle('solved', status.solvedToday);
+  $('btn-daily').hidden = !save.tutorialDone;
+  const total = allShells(config).length;
+  $('shells-label').textContent = t.shellCount(save.shells.length, total);
+  const last = allShells(config).find((x) => x.id === save.shells.at(-1)) ?? allShells(config)[0];
+  $('shell-ico').innerHTML = shellSvg(last, save.shells.length === 0);
+  $('btn-shells').hidden = !save.tutorialDone;
   homeEl.hidden = false;
+}
+
+function startDaily(): void {
+  audio.unlock();
+  homeEl.hidden = true;
+  mode = 'daily';
+  dailyDate = localDateKey(new Date());
+  const gen = generateDaily(dailyDate, config);
+  dailyName = gen.spec.name;
+  beginSession(gen.board, gen.spec.challenge);
+  levelLabel.textContent = t.dailyLabel(dailyDate);
+  challengeTag.textContent = t.dailyTag(dailyName);
+  challengeTag.hidden = false;
+  coach(null);
+}
+
+/** Grants the next shell (or the completion bonus) and fills the win card's shell row. */
+function awardShell(): void {
+  const r = grantShell(save.shells, config);
+  const row = $('win-shell');
+  if (!r.shell) {
+    save.wallet = addCoins(save.wallet, config.collection.coinsWhenComplete);
+    $('win-shell-art').innerHTML = '';
+    $('win-shell-text').textContent = t.allShellsBonus(config.collection.coinsWhenComplete);
+    row.hidden = false;
+    return;
+  }
+  save.shells = r.owned;
+  $('win-shell-art').innerHTML = shellSvg(r.shell);
+  let text = t.newShell(r.shell.name);
+  if (r.completedSet) {
+    const bonus = config.collection.setReward;
+    save.wallet = addBoosters(addCoins(save.wallet, bonus.coins), bonus.boosters);
+    text += `\n${t.setComplete(r.completedSet.name, bonus.coins)}`;
+  }
+  $('win-shell-text').textContent = text;
+  row.hidden = false;
+}
+
+function openCabinet(): void {
+  const owned = new Set(save.shells);
+  const cleared = save.level - 1;
+  const every = config.collection.everyLevels;
+  const remaining = every - (cleared % every);
+  $('cabinet-title').textContent = t.cabinetTitle;
+  $('cabinet-next').textContent = save.shells.length < allShells(config).length ? t.nextShell(remaining) : t.allShellsBonus(config.collection.coinsWhenComplete);
+  const sets = $('cabinet-sets');
+  sets.replaceChildren(
+    ...setProgress(save.shells, config).map((p) => {
+      const sec = document.createElement('section');
+      sec.className = `shell-set${p.complete ? ' complete' : ''}`;
+      const head = document.createElement('div');
+      head.className = 'shell-set-head';
+      head.innerHTML = `<h3></h3><span>${p.owned}/${p.total}</span>`;
+      head.querySelector('h3')!.textContent = p.set.name;
+      const grid = document.createElement('div');
+      grid.className = 'shell-grid';
+      for (const sh of p.set.shells) {
+        const has = owned.has(sh.id);
+        const cell = document.createElement('figure');
+        cell.className = has ? 'shell-cell' : 'shell-cell locked';
+        cell.innerHTML = `${shellSvg(sh, !has)}<figcaption></figcaption>`;
+        cell.querySelector('figcaption')!.textContent = has ? sh.name : t.lockedShell;
+        grid.appendChild(cell);
+      }
+      const note = document.createElement('p');
+      note.className = 'shell-set-note';
+      note.textContent = p.complete ? t.setDone : t.setRewardNote(config.collection.setReward.coins);
+      sec.append(head, grid, note);
+      return sec;
+    }),
+  );
+  $('cabinet').hidden = false;
+  $('btn-close-cabinet').focus();
+}
+
+async function shareDaily(): Promise<void> {
+  const url = location.href.split('?')[0].split('#')[0];
+  const text = t.shareText(dailyDate, dailyName, session.moves, save.daily.streak, url);
+  try {
+    if (navigator.share) {
+      await navigator.share({ text });
+      return;
+    }
+    await navigator.clipboard.writeText(text);
+    showToast(t.copied);
+  } catch {
+    /* the share sheet was dismissed, or the clipboard is blocked */
+  }
 }
 
 function play(): void {
@@ -87,7 +199,7 @@ function play(): void {
 }
 
 function startTutorial(): void {
-  inTutorial = true;
+  mode = 'tutorial';
   beginSession(tutorialBoard(config), false);
   levelLabel.textContent = t.level(1);
   challengeTag.hidden = true;
@@ -95,7 +207,7 @@ function startTutorial(): void {
 }
 
 function startLevel(n: number): void {
-  inTutorial = false;
+  mode = 'level';
   level = n;
   const gen = generateLevel(n, config);
   beginSession(gen.board, gen.spec.challenge);
@@ -184,7 +296,9 @@ function showWin(): void {
   const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
   celebrate(colors);
   audio.play('win');
-  if (inTutorial) {
+  $('win-shell').hidden = true;
+  $('btn-share').hidden = true;
+  if (mode === 'tutorial') {
     save.tutorialDone = true;
     writeSave(save);
     $('win-title').textContent = t.tutorialDoneTitle;
@@ -192,14 +306,29 @@ function showWin(): void {
     $('win-reward').hidden = true;
     $('win-note').textContent = '';
     btnNext.textContent = t.tutorialStart;
+  } else if (mode === 'daily') {
+    const r = recordDailySolve(save.daily, dailyDate, config);
+    save.daily = r.state;
+    save.wallet = addCoins(save.wallet, r.reward);
+    if (!r.alreadySolved) awardShell();
+    writeSave(save);
+    $('win-title').textContent = t.dailyWinTitle;
+    $('win-text').textContent = `${session.moves} ${t.poursLabel(session.moves)} · ${t.streakDays(r.state.streak)}`;
+    $('win-reward').hidden = r.alreadySolved;
+    $('win-note').textContent = r.alreadySolved ? t.dailyReplay : r.usedPass ? t.usedPass : r.earnedPass ? t.earnedPass : '';
+    $('btn-share').hidden = false;
+    btnNext.textContent = t.home;
+    if (!r.alreadySolved) countUp($('win-coins'), r.reward);
   } else {
     const perfect = session.assists === 0;
     const reward = levelReward({ perfect, challenge }, config);
     const key = String(level);
     const prevBest = save.best[key];
+    const firstClear = level >= save.level;
     if (prevBest === undefined || session.moves < prevBest) save.best[key] = session.moves;
     save.level = Math.max(save.level, level + 1);
     save.wallet = addCoins(save.wallet, reward);
+    if (firstClear && milestoneDue(level, config)) awardShell();
     writeSave(save);
     $('win-title').textContent = perfect ? t.perfectTitle : t.winTitle;
     $('win-text').textContent = t.winText(session.moves, prevBest);
@@ -327,11 +456,11 @@ function updateHud(): void {
     badge.textContent = charges > 0 ? String(charges) : String(price);
     badge.classList.toggle('price', charges === 0);
     const usable =
-      !over && !inTutorial && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
+      !over && mode !== 'tutorial' && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
     btn.disabled = !usable;
     btn.setAttribute('aria-label', t.boosterLabel(BOOSTER_NAMES[id], charges, price));
   }
-  ($('btn-restart') as HTMLButtonElement).disabled = inTutorial;
+  ($('btn-restart') as HTMLButtonElement).disabled = mode === 'tutorial';
 }
 
 function setSelected(i: number | null): void {
@@ -355,7 +484,7 @@ function onJarTap(i: number): void {
     if (isLiftable(i)) {
       setSelected(i);
       audio.play('select', { pitch: i });
-      if (inTutorial) coach(i === 0 ? 1 : 0, t.tutorialPour);
+      if (mode === 'tutorial') coach(i === 0 ? 1 : 0, t.tutorialPour);
     } else {
       nope(i);
     }
@@ -364,12 +493,12 @@ function onJarTap(i: number): void {
   if (selected === i) {
     setSelected(null);
     audio.play('deselect');
-    if (inTutorial) coach(0, t.tutorialLift);
+    if (mode === 'tutorial') coach(0, t.tutorialLift);
     return;
   }
   const from = selected;
   if (canPour(session.board, from, i)) {
-    if (inTutorial) coach(null);
+    if (mode === 'tutorial') coach(null);
     void animatePour(from, i);
   } else {
     nope(i);
@@ -546,7 +675,7 @@ function showToast(text: string): void {
 /** Spends a charge (or coins) and applies the booster; refunds if it couldn't apply. */
 function useBooster(id: BoosterId): void {
   audio.unlock();
-  if (busy || returning.size || inTutorial || session.status === 'won') return;
+  if (busy || returning.size || mode === 'tutorial' || session.status === 'won') return;
   if (id === 'undo' && !session.canUndo) return showToast(t.noUndo);
   if (id === 'extraJar' && session.extraJarsLeft <= 0) return showToast(t.noJars);
   const before = save.wallet;
@@ -604,14 +733,19 @@ function clearHint(): void {
 function wireInput(): void {
   for (const btn of toolButtons) btn.addEventListener('click', () => useBooster(btn.dataset.booster as BoosterId));
   $('btn-restart').addEventListener('click', () => {
-    if (busy || returning.size || inTutorial) return;
+    if (busy || returning.size || mode === 'tutorial') return;
     session.restart();
   });
   $('btn-play').addEventListener('click', play);
   btnNext.addEventListener('click', () => {
     winEl.hidden = true;
-    startLevel(inTutorial ? 1 : level + 1);
+    if (mode === 'daily') showHome();
+    else startLevel(mode === 'tutorial' ? 1 : level + 1);
   });
+  $('btn-daily').addEventListener('click', startDaily);
+  $('btn-shells').addEventListener('click', openCabinet);
+  $('btn-close-cabinet').addEventListener('click', () => ($('cabinet').hidden = true));
+  $('btn-share').addEventListener('click', () => void shareDaily());
   $('btn-settings').addEventListener('click', openSettings);
   $('btn-close-settings').addEventListener('click', () => (settingsEl.hidden = true));
   $('btn-home').addEventListener('click', () => {
@@ -633,6 +767,10 @@ function wireInput(): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!$('cabinet').hidden) {
+      if (e.key === 'Escape') $('cabinet').hidden = true;
+      return;
+    }
     if (!homeEl.hidden) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -670,7 +808,7 @@ function wireInput(): void {
     resizeTimer = window.setTimeout(() => {
       if (busy || returning.size) return;
       buildJars();
-      if (inTutorial && !coachEl.hidden) coach(selected === null ? 0 : selected === 0 ? 1 : 0, coachText.textContent ?? '');
+      if (mode === 'tutorial' && !coachEl.hidden) coach(selected === null ? 0 : selected === 0 ? 1 : 0, coachText.textContent ?? '');
     }, 120);
   });
 }
@@ -693,5 +831,7 @@ function applyStrings(): void {
   $('btn-close-settings').textContent = t.close;
   $('home-title').textContent = t.brand;
   $('home-tagline').textContent = t.tagline;
+  $('btn-share').textContent = t.share;
+  $('btn-close-cabinet').title = t.close;
   boardEl.setAttribute('aria-label', t.boardLabel);
 }

@@ -38,10 +38,17 @@ export function dealBoard(spec: LevelSpec, seed: number): Board {
  * Throws if no solvable board is found within `generator.maxAttempts`.
  */
 export function generateLevel(level: number, config: GameConfig): GeneratedLevel {
-  const spec = levelSpec(level, config);
+  return generateFromSpec(levelSpec(level, config), mixSeed(config.baseSeed, level), config);
+}
+
+/**
+ * Deals boards for `spec` from `baseSeed` until one is solver-proven winnable.
+ * Shared by numbered levels and the daily puzzle.
+ */
+export function generateFromSpec(spec: LevelSpec, baseSeed: number, config: GameConfig): GeneratedLevel {
   const { maxAttempts, solverNodeBudget, maxSealedAtStart } = config.generator;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const seed = mixSeed(mixSeed(config.baseSeed, level), attempt);
+    const seed = mixSeed(baseSeed, attempt);
     const board = dealBoard(spec, seed);
     const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length;
     if (sealed > maxSealedAtStart) continue;
@@ -50,7 +57,7 @@ export function generateLevel(level: number, config: GameConfig): GeneratedLevel
       return { spec, board, seed, solutionLength: result.path.length, attempts: attempt + 1 };
     }
   }
-  throw new Error(`No solvable board for level ${level} after ${maxAttempts} attempts`);
+  throw new Error(`No solvable board for ${spec.level > 0 ? `level ${spec.level}` : 'this spec'} after ${maxAttempts} attempts`);
 }
 
 /** The first-launch tutorial board from config: one pour seals a jar. */
