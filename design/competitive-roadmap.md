@@ -52,9 +52,12 @@ Plus offline install. Next sprint: time-of-day theme scenes. Backend social: def
 | C8 | Four jar mechanics with intro cards and a jar guide | `production/qa/evidence/sprint-3/` |
 | C9 | Offline install (service worker, network-first page) | `production/qa/evidence/sprint-3/offline-play.png` |
 
+## Sprint 4: done
+
+Time-of-day scenes (C10), decisions S4-1 to S4-4: `production/epics/sprint-4/EPIC.md`.
+
 ## Next sprints (proposed)
 
 | ID | Item | Why |
 |---|---|---|
-| C10 | Time-of-day theme scenes (Dawn, Midday, Sunset, Moonlit tide), ~300–800 coins each (S3-6) | A coin sink once boosters are plentiful |
 | C11 | Leaderboard / friends (needs a backend): **deferred** (S3-6) | Social pull. Revisit once people play regularly; the daily Share carries social for now |

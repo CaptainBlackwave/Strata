@@ -6,3 +6,4 @@
 | [Competitive sprint 1](competitive/EPIC.md) | Feel, economy, shuffle, tutorial, home | 4 stories | Complete |
 | [Sprint 2](sprint-2/EPIC.md) | Daily puzzle + shell collection | 2 stories | Complete |
 | [Sprint 3](sprint-3/EPIC.md) | Jar mechanics + offline install | 8 stories | Complete |
+| [Sprint 4](sprint-4/EPIC.md) | Time-of-day scenes | 4 stories | Complete |

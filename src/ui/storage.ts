@@ -4,6 +4,7 @@
  * Implements design/game-brief.md MVP 6 and design/competitive-roadmap.md C2/C5.
  */
 import type { StreakState } from '../core/daily';
+import type { ThemeState } from '../core/themes';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 
 const KEY = 'strata.save.v2';
@@ -33,6 +34,8 @@ export interface SaveData {
   shells: string[];
   /** Jar mechanics whose intro card has been shown. */
   seenMechanics: string[];
+  /** Owned and selected time-of-day scenes. */
+  themes: ThemeState;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -71,7 +74,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [] };
+  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false } };
 }
 
 /**
@@ -119,6 +122,11 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     },
     shells: strings(v2.shells),
     seenMechanics: strings(v2.seenMechanics),
+    themes: {
+      owned: [...new Set(['midday', ...strings(isObj(v2.themes) ? v2.themes.owned : [])])],
+      selected: isObj(v2.themes) && typeof v2.themes.selected === 'string' ? v2.themes.selected : 'midday',
+      auto: isObj(v2.themes) && v2.themes.auto === true,
+    },
   };
 }
 

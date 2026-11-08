@@ -10,6 +10,11 @@
   --accent: #2a9d8f;
   --accent-ink: #ffffff;
   --card: #fffaf1;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-2: #f1e6d3;
+  --toast-bg: #4a3b2c;
+  --toast-fg: #ffffff;
+  --sky: #fff6d8;
   --buried: #b9a88d;
   --focus: #2a6fdb;
   color-scheme: light;
@@ -31,7 +36,7 @@ body {
   color: var(--ink);
   background:
     radial-gradient(120% 50% at 50% 108%, var(--sea) 0 38%, transparent 38.5%),
-    radial-gradient(90% 60% at 85% -10%, #fff6d8 0 40%, transparent 60%),
+    radial-gradient(90% 60% at 85% -10%, var(--sky) 0 40%, transparent 60%),
     linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -94,7 +99,7 @@ body {
   white-space: nowrap;
   font-size: 14px;
   color: var(--ink-soft);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--surface);
   padding: 6px 10px;
   border-radius: 999px;
 }
@@ -107,7 +112,7 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: var(--ink-soft);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--surface);
   border: 1.5px solid transparent;
   padding: 6px 10px;
   border-radius: 999px;
@@ -116,7 +121,7 @@ body {
 .chip[aria-pressed='true'] {
   color: var(--accent);
   border-color: var(--accent);
-  background: #fff;
+  background: var(--card);
 }
 
 @media (max-width: 360px) {
@@ -446,8 +451,8 @@ body {
   max-width: calc(100% - 32px);
   padding: 10px 16px;
   border-radius: 14px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--toast-bg);
+  color: var(--toast-fg);
   font-size: 14px;
   font-weight: 600;
   text-align: center;
@@ -553,7 +558,7 @@ body {
   gap: 6px;
   padding: 5px 11px 5px 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--surface);
   font-weight: 800;
   font-size: 15px;
   white-space: nowrap;
@@ -582,7 +587,7 @@ body {
   padding: 0;
   border: 0;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--surface);
   color: var(--ink);
   cursor: pointer;
 }
@@ -724,8 +729,8 @@ body {
   white-space: nowrap;
   padding: 9px 14px;
   border-radius: 14px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--toast-bg);
+  color: var(--toast-fg);
   font-weight: 800;
   font-size: 16px;
 }
@@ -839,7 +844,7 @@ body {
   font: inherit;
   font-weight: 800;
   color: var(--ink);
-  background: #f1e6d3;
+  background: var(--surface-2);
   border: 0;
   border-radius: 12px;
   cursor: pointer;
@@ -855,7 +860,7 @@ body {
   padding: 24px 16px;
   background:
     radial-gradient(130% 45% at 50% 108%, var(--sea) 0 40%, transparent 40.5%),
-    radial-gradient(90% 60% at 80% -10%, #fff6d8 0 40%, transparent 60%),
+    radial-gradient(90% 60% at 80% -10%, var(--sky) 0 40%, transparent 60%),
     linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
 }
 .home[hidden] {
@@ -944,7 +949,8 @@ body {
   border-radius: 10px;
   overflow: hidden;
   text-align: center;
-  background: #fff;
+  background: var(--card);
+  color: var(--ink);
   box-shadow: inset 0 0 0 2px rgba(90, 70, 50, 0.15);
 }
 .daily-cal b {
@@ -953,7 +959,7 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #fff;
+  color: var(--accent-ink);
   background: var(--accent);
 }
 .daily-cal i {
@@ -1008,7 +1014,7 @@ body {
   margin: 0 0 14px;
   padding: 8px 12px;
   border-radius: 14px;
-  background: #eef7f4;
+  background: var(--surface-2);
   text-align: left;
   font-size: 14px;
   font-weight: 700;
@@ -1077,7 +1083,7 @@ body {
   margin-bottom: 12px;
   padding: 10px 10px 4px;
   border-radius: 16px;
-  background: linear-gradient(180deg, #f6ead6, #efdcbf);
+  background: var(--surface-2);
   box-shadow: inset 0 -3px 0 rgba(90, 70, 50, 0.12);
 }
 .shell-set.complete {
@@ -1303,4 +1309,151 @@ body {
   height: 50px;
   left: 18%;
   right: 18%;
+}
+
+/* ==== Sprint 4: time-of-day scenes ==== */
+/* Sky decorations sit behind the game, never on top of it */
+#app {
+  position: relative;
+  z-index: 1;
+}
+.scene-ico {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+}
+.home-row {
+  display: flex;
+  gap: 10px;
+}
+.home-row .shells-btn {
+  flex: 1;
+}
+body[data-theme='moonlit'] {
+  color-scheme: dark;
+}
+/* Stars and a moon for the night scene */
+body[data-theme='moonlit']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1.4px 1.4px at 12% 14%, #fff 99%, transparent),
+    radial-gradient(1.2px 1.2px at 28% 6%, #fff 99%, transparent),
+    radial-gradient(1.6px 1.6px at 44% 18%, #fff 99%, transparent),
+    radial-gradient(1.1px 1.1px at 61% 8%, #fff 99%, transparent),
+    radial-gradient(1.3px 1.3px at 70% 24%, #fff 99%, transparent),
+    radial-gradient(1.2px 1.2px at 92% 30%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 20% 30%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 8% 40%, #fff 99%, transparent);
+  opacity: 0.85;
+}
+/* A low sun for dawn and sunset */
+body:is([data-theme='dawn'], [data-theme='sunset'])::before {
+  content: '';
+  position: fixed;
+  left: 50%;
+  bottom: 24%;
+  width: 180px;
+  height: 180px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, var(--sky) 0 45%, transparent 70%);
+  opacity: 0.55;
+}
+body[data-theme='moonlit'] .glass::before {
+  background: rgba(255, 255, 255, 0.15);
+}
+body[data-theme='moonlit'] .tool,
+body[data-theme='moonlit'] .daily-card {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.scene-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0 12px;
+}
+.scene-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 2.5px solid transparent;
+  border-radius: 16px;
+  cursor: pointer;
+}
+.scene-card[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+.scene-card:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.scene-swatch {
+  position: relative;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.scene-swatch i {
+  position: absolute;
+  bottom: 8px;
+  width: 12px;
+  height: 26px;
+  border: 2px solid var(--sw-edge);
+  border-top-width: 0;
+  border-radius: 2px 2px 6px 6px;
+  background: linear-gradient(0deg, #c8553d 0 33%, #f2a541 33% 66%, #2a9d8f 66% 100%);
+}
+.scene-swatch i:nth-child(1) { left: 30%; }
+.scene-swatch i:nth-child(2) { left: 46%; }
+.scene-swatch i:nth-child(3) { left: 62%; }
+.scene-name {
+  font-weight: 800;
+  font-size: 15px;
+}
+.scene-status {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.scene-status.price::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: #f6c453;
+  vertical-align: -1px;
+}
+.scene-buy {
+  margin-top: 0;
+}
+.scene-buy[hidden] {
+  display: none;
+}
+
+/* The moon appears on the home screen only, where the top of the sky is empty */
+body[data-theme='moonlit'] .home::before {
+  content: '';
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, #fbf8ee, #e9e3d2 60%, #d8d0bb);
+  box-shadow: 0 0 0 14px rgba(244, 241, 230, 0.08), 0 0 40px rgba(244, 241, 230, 0.35);
+  pointer-events: none;
 }

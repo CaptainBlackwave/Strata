@@ -40,6 +40,7 @@ describe('save storage', () => {
     save.daily = { last: '2026-11-08', streak: 3, best: 9, passes: 1 };
     save.shells = ['periwinkle', 'limpet'];
     save.seenMechanics = ['narrow'];
+    save.themes = { owned: ['midday', 'dawn'], selected: 'dawn', auto: true };
     writeSave(save, s);
     expect(loadSave(econ, s)).toEqual(save);
   });
@@ -80,6 +81,7 @@ describe('save storage', () => {
     expect(save.daily.streak).toBe(0);
     expect(save.shells).toEqual([]);
     expect(save.seenMechanics).toEqual([]);
+    expect(save.themes).toEqual({ owned: ['midday'], selected: 'midday', auto: false });
     expect(save.level).toBe(9);
   });
   it('falls back on corrupt JSON', () => {

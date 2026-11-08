@@ -87,6 +87,120 @@
       ]}
     ]
   },
+  "themes": {
+    "$comment": "Time-of-day scenes (sprint 4). Sand colours never change; only sky, sea, glass and UI. Contrast is unit-tested. `hours` is [from, to) on the local clock for 'Match my clock'.",
+    "default": "midday",
+    "list": [
+      {
+        "id": "midday",
+        "name": "Midday",
+        "price": 0,
+        "hours": [
+          9,
+          17
+        ],
+        "tokens": {
+          "bgTop": "#fbf3e4",
+          "bgBottom": "#f1dfc1",
+          "sea": "#b9e0d6",
+          "ink": "#4a3b2c",
+          "inkSoft": "#7d6a55",
+          "glass": "rgba(255, 255, 255, 0.38)",
+          "glassEdge": "rgba(90, 70, 50, 0.55)",
+          "card": "#fffaf1",
+          "accent": "#2a9d8f",
+          "accentInk": "#ffffff",
+          "surface": "rgba(255, 255, 255, 0.7)",
+          "surface2": "#f1e6d3",
+          "toastBg": "#4a3b2c",
+          "toastFg": "#ffffff",
+          "sky": "#fff6d8",
+          "themeColor": "#f6ecd9"
+        }
+      },
+      {
+        "id": "dawn",
+        "name": "Dawn",
+        "price": 300,
+        "hours": [
+          5,
+          9
+        ],
+        "tokens": {
+          "bgTop": "#fde8e6",
+          "bgBottom": "#f3cfc0",
+          "sea": "#a9cfe0",
+          "ink": "#4a3340",
+          "inkSoft": "#85646f",
+          "glass": "rgba(255, 255, 255, 0.42)",
+          "glassEdge": "rgba(110, 70, 80, 0.5)",
+          "card": "#fff6f4",
+          "accent": "#2f8a99",
+          "accentInk": "#ffffff",
+          "surface": "rgba(255, 255, 255, 0.72)",
+          "surface2": "#f6e0da",
+          "toastBg": "#4a3340",
+          "toastFg": "#ffffff",
+          "sky": "#ffd6d0",
+          "themeColor": "#fbe3df"
+        }
+      },
+      {
+        "id": "sunset",
+        "name": "Sunset",
+        "price": 500,
+        "hours": [
+          17,
+          20
+        ],
+        "tokens": {
+          "bgTop": "#ffd9a8",
+          "bgBottom": "#f2a07b",
+          "sea": "#8a76b0",
+          "ink": "#3e2a2a",
+          "inkSoft": "#6e4c46",
+          "glass": "rgba(255, 255, 255, 0.36)",
+          "glassEdge": "rgba(90, 50, 40, 0.55)",
+          "card": "#fff4e8",
+          "accent": "#b8475a",
+          "accentInk": "#ffffff",
+          "surface": "rgba(255, 245, 235, 0.72)",
+          "surface2": "#fbe2cf",
+          "toastBg": "#3e2a2a",
+          "toastFg": "#ffffff",
+          "sky": "#ffb36b",
+          "themeColor": "#ffd3a3"
+        }
+      },
+      {
+        "id": "moonlit",
+        "name": "Moonlit tide",
+        "price": 800,
+        "hours": [
+          20,
+          5
+        ],
+        "tokens": {
+          "bgTop": "#0e1a30",
+          "bgBottom": "#1d3150",
+          "sea": "#18465a",
+          "ink": "#f1ead9",
+          "inkSoft": "#b6c2d1",
+          "glass": "rgba(255, 255, 255, 0.1)",
+          "glassEdge": "rgba(214, 226, 242, 0.6)",
+          "card": "#1b2a44",
+          "accent": "#4fc3b0",
+          "accentInk": "#0e1a30",
+          "surface": "rgba(255, 255, 255, 0.1)",
+          "surface2": "#24365a",
+          "toastBg": "#f1ead9",
+          "toastFg": "#1b2a44",
+          "sky": "#2b4570",
+          "themeColor": "#0e1a30"
+        }
+      }
+    ]
+  },
   "tutorial": {
     "$comment": "First-launch lesson: one pour seals a jar.",
     "capacity": 4,

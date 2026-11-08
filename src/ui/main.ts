@@ -14,6 +14,7 @@ import { generateLevel, tutorialBoard } from '../core/generator';
 import type { GameConfig, MechanicId } from '../core/levels';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent } from '../core/session';
+import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme } from '../core/themes';
 import { GameAudio } from './audio';
 import { burst, celebrate, sparkleAround } from './fx';
 import { computeLayout } from './layout';
@@ -21,7 +22,7 @@ import { shellSvg } from './shells';
 import { type SaveData, loadSave, writeSave } from './storage';
 import { t } from './strings';
 
-const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig;
+const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig;
 /** Presentation-only timings (ms) and tilt angle: animation feel, not gameplay. */
 const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
 
@@ -39,6 +40,12 @@ const coachEl = $('coach');
 const coachText = $('coach-text');
 const btnNext = $<HTMLButtonElement>('btn-next');
 const toolButtons = [...document.querySelectorAll<HTMLButtonElement>('.tool[data-booster]')];
+
+const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
+  bgTop: '--bg-top', bgBottom: '--bg-bottom', sea: '--sea', ink: '--ink', inkSoft: '--ink-soft', glass: '--glass',
+  glassEdge: '--glass-edge', card: '--card', accent: '--accent', accentInk: '--accent-ink', surface: '--surface',
+  surface2: '--surface-2', toastBg: '--toast-bg', toastFg: '--toast-fg', sky: '--sky', themeColor: '--theme-color',
+};
 
 const BOOSTER_NAMES: Record<BoosterId, string> = { undo: t.undo, shuffle: t.shuffle, extraJar: t.jar, hint: t.hint };
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -68,6 +75,10 @@ const params = new URLSearchParams(location.search);
 const levelParam = Number(params.get('level'));
 const qaLevel = Number.isInteger(levelParam) && levelParam >= 1; // QA launch argument (run-and-observe)
 applyStrings();
+applyTheme(currentTheme());
+window.setInterval(() => {
+  if ($('scenes').hidden) applyTheme(currentTheme()); // follow the clock in auto mode
+}, 60_000);
 wireInput();
 if (qaLevel) {
   level = levelParam;
@@ -75,6 +86,94 @@ if (qaLevel) {
 } else {
   startLevel(level);
   showHome();
+}
+
+// ---- Scenes (sprint 4) --------------------------------------------------
+
+
+function currentTheme(): string {
+  return activeTheme(save.themes, new Date().getHours(), config);
+}
+
+/** Applies a scene's colour tokens. Sand colours are never touched (decision S4-4). */
+function applyTheme(id: string): void {
+  const theme = config.themes.list.find((x) => x.id === id) ?? config.themes.list[0];
+  const root = document.documentElement.style;
+  for (const [key, cssVar] of Object.entries(TOKEN_VARS)) root.setProperty(cssVar, theme.tokens[key as keyof ThemeTokens]);
+  document.body.dataset.theme = theme.id;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.themeColor);
+}
+
+let previewing: string | null = null;
+
+function openScenes(): void {
+  previewing = currentTheme();
+  $<HTMLInputElement>('set-auto').checked = save.themes.auto;
+  renderScenes();
+  $('scenes').hidden = false;
+}
+
+function renderScenes(): void {
+  $('scenes-coins').textContent = String(save.wallet.coins);
+  const grid = $('scene-grid');
+  grid.replaceChildren(
+    ...config.themes.list.map((theme) => {
+      const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'scene-card';
+      card.setAttribute('aria-pressed', String(previewing === theme.id));
+      const k = theme.tokens;
+      card.innerHTML = `<span class="scene-swatch" style="--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})"><i></i><i></i><i></i></span><span class="scene-name"></span><span class="scene-status"></span>`;
+      card.querySelector('.scene-name')!.textContent = theme.name;
+      const status = card.querySelector('.scene-status') as HTMLElement;
+      const inUse = owned && currentTheme() === theme.id;
+      status.textContent = inUse ? t.sceneInUse : owned ? t.sceneOwned : String(theme.price);
+      status.classList.toggle('price', !owned);
+      card.addEventListener('click', () => {
+        previewing = theme.id;
+        applyTheme(theme.id);
+        audio.play('select');
+        renderScenes();
+      });
+      return card;
+    }),
+  );
+  const theme = config.themes.list.find((x) => x.id === previewing)!;
+  const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+  const btn = $<HTMLButtonElement>('btn-scene-buy');
+  const inUse = owned && currentTheme() === theme.id;
+  btn.hidden = inUse;
+  btn.disabled = !owned && save.wallet.coins < theme.price;
+  btn.textContent = owned ? t.sceneUse(theme.name) : save.wallet.coins >= theme.price ? t.sceneBuy(theme.name, theme.price) : t.sceneNeed(theme.price, save.wallet.coins);
+  $('scenes-auto-note').textContent = t.matchClockNote;
+}
+
+function confirmScene(): void {
+  if (!previewing) return;
+  const theme = config.themes.list.find((x) => x.id === previewing)!;
+  const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+  if (!owned) {
+    const r = buyTheme(save.wallet, save.themes.owned, theme.id, config);
+    if (!r.ok) return;
+    save.wallet = r.wallet;
+    save.themes = { ...save.themes, owned: r.owned };
+    audio.play('coin');
+    showToast(t.sceneBought(theme.name));
+  }
+  // Choosing a scene by hand pins it (turns clock-matching off).
+  save.themes = { ...save.themes, selected: theme.id, auto: false };
+  writeSave(save);
+  applyTheme(currentTheme());
+  $('home-coins').textContent = String(save.wallet.coins);
+  updateHud();
+  renderScenes();
+}
+
+function closeScenes(): void {
+  $('scenes').hidden = true;
+  previewing = null;
+  applyTheme(currentTheme()); // drop any unpurchased preview
 }
 
 // ---- Screens ------------------------------------------------------------
@@ -99,6 +198,7 @@ function showHome(): void {
   const last = allShells(config).find((x) => x.id === save.shells.at(-1)) ?? allShells(config)[0];
   $('shell-ico').innerHTML = shellSvg(last, save.shells.length === 0);
   $('btn-shells').hidden = !save.tutorialDone;
+  $('btn-scenes').hidden = !save.tutorialDone;
   homeEl.hidden = false;
 }
 
@@ -838,6 +938,20 @@ function wireInput(): void {
     else startLevel(mode === 'tutorial' ? 1 : level + 1);
   });
   $('btn-daily').addEventListener('click', startDaily);
+  $('btn-scenes').addEventListener('click', openScenes);
+  $('btn-scenes-2').addEventListener('click', () => {
+    settingsEl.hidden = true;
+    openScenes();
+  });
+  $('btn-scene-buy').addEventListener('click', confirmScene);
+  $('btn-close-scenes').addEventListener('click', closeScenes);
+  $<HTMLInputElement>('set-auto').addEventListener('change', (e) => {
+    save.themes = { ...save.themes, auto: (e.target as HTMLInputElement).checked };
+    writeSave(save);
+    previewing = currentTheme();
+    applyTheme(previewing);
+    renderScenes();
+  });
   $('btn-shells').addEventListener('click', openCabinet);
   $('btn-close-cabinet').addEventListener('click', () => ($('cabinet').hidden = true));
   $('btn-share').addEventListener('click', () => void shareDaily());
@@ -867,6 +981,10 @@ function wireInput(): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!$('scenes').hidden) {
+      if (e.key === 'Escape') closeScenes();
+      return;
+    }
     if (!$('intro').hidden) {
       if (e.key === 'Escape' || e.key === 'Enter') $('intro').hidden = true;
       return;
@@ -933,6 +1051,11 @@ function applyStrings(): void {
   $('btn-home').textContent = t.home;
   $('btn-tutorial').textContent = t.replayTutorial;
   $('btn-guide').textContent = t.jarGuide;
+  $('scenes-label').textContent = t.scenes;
+  $('btn-scenes-2').textContent = t.scenes;
+  $('scenes-title').textContent = t.scenes;
+  $('scenes-auto-label').textContent = t.matchClock;
+  $('btn-close-scenes').textContent = t.close;
   $('btn-intro-ok').textContent = t.gotIt;
   $('btn-close-settings').textContent = t.close;
   $('home-title').textContent = t.brand;

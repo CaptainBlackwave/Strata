@@ -75,7 +75,20 @@
             <button id="btn-tutorial" class="secondary" type="button">Replay tutorial</button>
             <button id="btn-guide" class="secondary" type="button">Jar guide</button>
           </div>
+          <div class="sheet-row">
+            <button id="btn-scenes-2" class="secondary" type="button">Scenes</button>
+          </div>
           <button id="btn-close-settings" class="primary" type="button">Close</button>
+        </div>
+      </div>
+      <div id="scenes" class="sheet" hidden>
+        <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="scenes-title">
+          <div class="cabinet-head"><h2 id="scenes-title">Scenes</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="scenes-coins">0</span></div></div>
+          <div id="scene-grid" class="scene-grid"></div>
+          <button id="btn-scene-buy" class="primary scene-buy" type="button" hidden>Buy</button>
+          <label class="toggle"><span id="scenes-auto-label">Match my clock</span><input type="checkbox" id="set-auto" /></label>
+          <p id="scenes-auto-note" class="cabinet-next"></p>
+          <button id="btn-close-scenes" class="secondary" type="button">Close</button>
         </div>
       </div>
       <div id="intro" class="cabinet" hidden>
@@ -103,7 +116,10 @@
             <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
             <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
           </button>
-          <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
+          <div class="home-row">
+            <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
+            <button id="btn-scenes" class="secondary shells-btn" type="button"><span class="scene-ico" aria-hidden="true"></span><span id="scenes-label">Scenes</span></button>
+          </div>
         </div>
       </div>
     </div>
