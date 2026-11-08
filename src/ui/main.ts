@@ -1848,6 +1848,7 @@ function applyStrings(): void {
   $('btn-scenes-2').textContent = t.scenes;
   $('scenes-title').textContent = t.scenes;
   $('scenes-auto-label').textContent = t.matchClock;
+  $('scenes-auto-help').textContent = t.matchClockOff; // UX-scenes-2
   $('btn-close-scenes').textContent = t.close;
   $('btn-intro-ok').textContent = t.gotIt;
   $('btn-close-settings').textContent = t.close;

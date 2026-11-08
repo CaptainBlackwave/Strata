@@ -115,6 +115,7 @@ const en = {
   scenePreviewing: (name: string) => `Previewing ${name}`,
   sceneBought: (name: string) => `${name} unlocked!`,
   matchClock: 'Match my clock',
+  matchClockOff: 'Choosing a scene with Use or Buy turns this off.',
   matchClockNote: 'Dawn 5–9 · Midday 9–17 · Sunset 17–20 · Moonlit 20–5, using the scenes you own. Holiday scenes you own take over on their dates.',
   sceneInSeason: 'In season',
   sceneAnimated: 'Animated',
