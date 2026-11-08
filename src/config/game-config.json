@@ -56,7 +56,7 @@
   },
   "collection": {
     "everyLevels": 5,
-    "coinsWhenComplete": 50,
+    "coinsWhenComplete": 0,
     "setReward": { "coins": 150, "boosters": { "shuffle": 1, "extraJar": 1, "hint": 1 } },
     "sets": [
       { "id": "tidepool", "name": "Tide Pool", "shells": [

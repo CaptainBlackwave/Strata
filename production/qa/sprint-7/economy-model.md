@@ -144,3 +144,28 @@ to 15–19 days past day 50. The search found two near-alternatives, each good i
    earns about 28% less from day 15 onward (9,700 of about 34,000).
 3. All of this assumes a 50% Perfect rate. Every 10 points of Perfect rate moves level income by
    about 1 coin a level (±4%), which is small next to the profile differences.
+
+
+## Re-run after D38 (the 50-coin collection bonus removed), 2026-11-08
+
+The owner removed the endless 50-coin bonus after all 40 shells (D38, `coinsWhenComplete: 0`) and approved the ladder idea with the original three scenes at 300 / 500 / 800 (D37). The same script was re-run on the new config. Its grid search re-fitted the curve to **`round50(2500 × 1.15^(n−1))`**: total 72,550 coins, fit score 28.3. **This curve supersedes the one above.**
+
+| Rung | Tier | Price |
+|---|---|---|
+| 1 | 1 | 2,500 |
+| 2 | 1 | 2,900 |
+| 3 | 1 | 3,300 |
+| 4 | 1 | 3,800 |
+| 5 | 1 | 4,350 |
+| 6 | 2 | 5,050 |
+| 7 | 2 | 5,800 |
+| 8 | 2 | 6,650 |
+| 9 | 2 | 7,650 |
+| 10 | 3 | 8,800 |
+| 11 | 3 | 10,100 |
+| 12 | 3 | 11,650 |
+
+Purchases in order (price@day, buying each scene as soon as it is affordable; no booster spending):
+- **light**: 300@2 500@5 800@11 2500@29 2900@52 3300@82
+- **regular**: 300@1 500@3 800@5 2500@11 2900@19 3300@29 3800@41 4350@54 5050@70 5800@88
+- **heavy**: 300@1 500@1 800@2 2500@5 2900@8 3300@12 3800@17 4350@22 5050@29 5800@36 6650@44 7650@54 8800@65 10100@77

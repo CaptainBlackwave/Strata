@@ -60,7 +60,8 @@ const en = {
   cabinetTitle: 'Shell cabinet',
   newShell: (name: string) => `New shell: ${name}`,
   setComplete: (name: string, coins: number) => `${name} set complete! +${coins} coins and 1 Shuffle, Jar and Hint`,
-  allShellsBonus: (coins: number) => `Collection complete: +${coins} coins`,
+  /** After all 40 shells. The coin bonus was removed (D38), so 0 shows the plain message. */
+  allShellsBonus: (coins: number) => (coins > 0 ? `Collection complete: +${coins} coins` : 'Collection complete ✓'),
   nextShell: (n: number) => (n === 1 ? 'Next shell: clear 1 more level' : `Next shell: clear ${n} more levels`),
   setRewardNote: (coins: number) => `Complete the set: ${coins} coins + 1 Shuffle, Jar and Hint`,
   lockedShell: '?',

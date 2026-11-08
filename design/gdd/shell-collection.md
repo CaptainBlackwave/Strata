@@ -38,7 +38,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Set reward**: the shell that completes a set pays 150 coins plus one Shuffle, one Extra Jar and one Hint charge (D19 drops the Undo charge; until it is built the code still adds one Undo charge), and the card names the set.
 
-**After all 40**: each milestone or first daily solve pays 50 coins instead.
+**After all 40**: milestones and first daily solves pay nothing extra. The endless 50-coin bonus was removed (D38, sprint 7), because the scene ladder is now the long-term coin goal; the cabinet reads "Collection complete ✓".
 
 **Cabinet**: opened from the home screen. One scrolling list. Each set's header is a button showing the name, `owned/total` and a chevron; **completed sets start collapsed** and the header expands or collapses them (`aria-expanded`, keyboard Enter/Space). An open set shows owned shells by name, locked shells as soft silhouettes with "?", "Next shell: clear N more levels", and "Complete the set: 150 coins + 1 of each booster" until a set is done ("Set complete ✓" afterwards).
 
