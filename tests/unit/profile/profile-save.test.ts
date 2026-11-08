@@ -1,0 +1,51 @@
+// Design: design/gdd/player-profile.md §3.8 (save fields and repair), §8 (Logic)
+import { describe, expect, it } from 'vitest';
+import config from '../../../src/config/game-config.json';
+import type { EconomyConfig } from '../../../src/core/economy';
+import { type ProfileConfig, emptyStats, isValidName, progressOf, repairProfile } from '../../../src/core/profile';
+import { type KeyValueStore, exportSave, freshSave, importSave, loadSave, writeSave } from '../../../src/ui/storage';
+
+const econ = config as unknown as EconomyConfig;
+const cfg = config as unknown as ProfileConfig;
+const KEY = 'strata.save.v2';
+
+function memoryStore(init: Record<string, string> = {}): KeyValueStore {
+  const data = { ...init };
+  return { getItem: (k) => data[k] ?? null, setItem: (k, v) => void (data[k] = v) };
+}
+
+/** A save from before the profile update: no `profile`, no `stats`. */
+const OLD_SAVE = { level: 30, best: {}, wallet: { coins: 120, boosters: {} }, tutorialDone: true, daily: { last: null, streak: 0, best: 9, passes: 0 }, shells: ['a'] };
+
+describe('profile in the save', () => {
+  it('an old save loads with an empty profile and every counter at 0', () => {
+    const save = loadSave(econ, memoryStore({ [KEY]: JSON.stringify(OLD_SAVE) }));
+    expect(save.profile).toEqual({ name: '', avatar: '', frame: '', plate: '' });
+    expect(save.stats).toEqual(emptyStats());
+  });
+  it('repairing an old save gives a valid name and the defaults, keeping earned unlocks open', () => {
+    const save = loadSave(econ, memoryStore({ [KEY]: JSON.stringify(OLD_SAVE) }));
+    const progress = progressOf({ level: save.level, bestStreak: save.daily.best, shellsOwned: save.shells.length, setsCompleted: 0, stats: save.stats });
+    const profile = repairProfile(save.profile, cfg, progress, () => 'Sunny Bay 21');
+    expect(isValidName(profile.name, cfg)).toBe(true);
+    expect(profile).toEqual({ name: 'Sunny Bay 21', avatar: 'sand-jar', frame: 'sand', plate: 'cream' });
+    // Level 30 means 29 cleared: the Lighthouse (25) is open to an existing player at once.
+    expect(repairProfile({ ...profile, avatar: 'lighthouse' }, cfg, progress, () => 'x').avatar).toBe('lighthouse');
+  });
+  it('repairs bad counters to 0 and keeps good ones', () => {
+    const raw = { ...OLD_SAVE, stats: { perfectClears: 4, dailiesSolved: -1, pours: 'many', coinsEarned: 2.5, boostersUsed: 7 } };
+    const save = loadSave(econ, memoryStore({ [KEY]: JSON.stringify(raw) }));
+    expect(save.stats).toEqual({ perfectClears: 4, dailiesSolved: 0, pours: 0, coinsEarned: 0, boostersUsed: 7 });
+  });
+  it('ignores non-string profile fields', () => {
+    const raw = { ...OLD_SAVE, profile: { name: 42, avatar: 'beach-hut', frame: null, plate: ['x'] } };
+    expect(loadSave(econ, memoryStore({ [KEY]: JSON.stringify(raw) })).profile).toEqual({ name: '', avatar: 'beach-hut', frame: '', plate: '' });
+  });
+  it('round-trips through writeSave/loadSave and a save code', () => {
+    const save = { ...freshSave(econ), level: 12, profile: { name: 'Zoë', avatar: 'sailboat', frame: 'rope', plate: 'sea-glass' }, stats: { ...emptyStats(), pours: 310, perfectClears: 3 } };
+    const s = memoryStore();
+    writeSave(save, s);
+    expect(loadSave(econ, s)).toEqual(save);
+    expect(importSave(exportSave(save), econ)).toEqual(save);
+  });
+});

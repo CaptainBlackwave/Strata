@@ -62,7 +62,7 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 ### 2.3 Integration Points
 
 - **Depends on**: `economy.md` (coins), `feel-audio-ui.md` (the picker, home entry, CSS tokens).
-- **Depended on by**: `save-data.md`, `feel-audio-ui.md` (every surface uses the tokens).
+- **Depended on by**: `save-data.md`, `feel-audio-ui.md` (every surface uses the tokens), `player-profile.md` (scenes owned stat; name plates carry fixed colours so they read in every scene).
 
 ---
 

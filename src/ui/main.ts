@@ -15,6 +15,28 @@ import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent } from '../core/session';
 import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme } from '../core/themes';
+import {
+  type Profile,
+  type ProfileConfig,
+  type Progress,
+  type Slot,
+  type SlotItem,
+  SLOTS,
+  bumpStats,
+  catalog,
+  generateName,
+  isUnlocked,
+  isValidName,
+  newlyUnlocked,
+  normaliseName,
+  progressOf,
+  repairProfile,
+  sameProfile,
+  selected as pickOf,
+  unlockProgress,
+  withPick,
+} from '../core/profile';
+import { DICE_SVG, LOCK_SVG, STAT_ICONS, portraitSvg } from './avatars';
 import { GameAudio } from './audio';
 import { burst, celebrate, sparkleAround } from './fx';
 import { computeLayout } from './layout';
@@ -22,7 +44,7 @@ import { shellSvg } from './shells';
 import { type SaveData, exportSave, importSave, loadSave, writeSave } from './storage';
 import { t } from './strings';
 
-const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig;
+const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig & ProfileConfig;
 /** Presentation-only timings (ms) and tilt angle: animation feel, not gameplay. */
 const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
 
@@ -77,6 +99,8 @@ const params = new URLSearchParams(location.search);
 const levelParam = Number(params.get('level'));
 const qaLevel = Number.isInteger(levelParam) && levelParam >= 1; // QA launch argument (run-and-observe)
 applyStrings();
+repairSaveProfile();
+writeSave(save);
 applyTheme(currentTheme());
 window.setInterval(() => {
   if ($('scenes').hidden) applyTheme(currentTheme()); // follow the clock in auto mode
@@ -131,6 +155,7 @@ function restoreSaveCode(): void {
     return;
   }
   save = imported;
+  repairSaveProfile();
   writeSave(save);
   audio.configure(save.settings);
   applyTheme(currentTheme());
@@ -251,6 +276,7 @@ function showHome(): void {
   $('shell-ico').innerHTML = shellSvg(last, save.shells.length === 0);
   $('btn-shells').hidden = !save.tutorialDone;
   $('btn-scenes').hidden = !save.tutorialDone;
+  renderProfileChip();
   homeEl.hidden = false;
 }
 
@@ -313,7 +339,7 @@ function awardShell(): void {
   const r = grantShell(save.shells, config);
   const row = $('win-shell');
   if (!r.shell) {
-    save.wallet = addCoins(save.wallet, config.collection.coinsWhenComplete);
+    earn(config.collection.coinsWhenComplete);
     $('win-shell-art').innerHTML = '';
     $('win-shell-text').textContent = t.allShellsBonus(config.collection.coinsWhenComplete);
     row.hidden = false;
@@ -324,7 +350,8 @@ function awardShell(): void {
   let text = t.newShell(r.shell.name);
   if (r.completedSet) {
     const bonus = config.collection.setReward;
-    save.wallet = addBoosters(addCoins(save.wallet, bonus.coins), bonus.boosters);
+    earn(bonus.coins);
+    save.wallet = addBoosters(save.wallet, bonus.boosters);
     text += `\n${t.setComplete(r.completedSet.name, bonus.coins)}`;
   }
   $('win-shell-text').textContent = text;
@@ -381,6 +408,266 @@ function openCabinet(): void {
   );
   $('cabinet').hidden = false;
   $('btn-close-cabinet').focus();
+}
+
+// ---- Player profile (design/gdd/player-profile.md) ----------------------
+
+/** Credits coins earned by play and counts them for the "Coins earned" stat. */
+function earn(coins: number): void {
+  save.wallet = addCoins(save.wallet, coins);
+  save.stats = bumpStats(save.stats, { coinsEarned: coins });
+}
+
+/** The progress values unlocks are measured against, from the live save. */
+function progressNow(): Progress {
+  return progressOf({
+    level: save.level,
+    bestStreak: save.daily.best,
+    shellsOwned: save.shells.length,
+    setsCompleted: setProgress(save.shells, config).filter((p) => p.complete).length,
+    stats: save.stats,
+  });
+}
+
+/** Makes the saved profile safe to show: a valid name, and only known, unlocked picks. */
+function repairSaveProfile(): void {
+  save.profile = repairProfile(save.profile, config, progressNow(), () => generateName(Math.random, t.nameWords));
+}
+
+function avatarOf(id: string) {
+  return config.profile.avatars.find((a) => a.id === id) ?? config.profile.avatars[0];
+}
+function plateOf(id: string) {
+  return config.profile.plates.find((p) => p.id === id) ?? config.profile.plates[0];
+}
+/** An avatar in its frame, as SVG markup. */
+function portraitOf(p: Pick<Profile, 'avatar' | 'frame'>): string {
+  return portraitSvg(avatarOf(p.avatar), p.frame);
+}
+
+/** A name on its plate. The name is set as text, never as markup (it can be typed by the player). */
+function plateEl(plateId: string, name: string, extra = ''): HTMLElement {
+  const plate = plateOf(plateId);
+  const el = document.createElement('span');
+  el.className = `plate${extra ? ` ${extra}` : ''}`;
+  el.dataset.plate = plate.id;
+  el.style.setProperty('--pl-bg', plate.bg);
+  el.style.setProperty('--pl-bg2', plate.bg2 ?? plate.bg);
+  el.style.setProperty('--pl-edge', plate.edge);
+  el.style.setProperty('--pl-ink', plate.ink);
+  const text = document.createElement('span');
+  text.className = 'plate-text';
+  text.textContent = name;
+  el.append(text);
+  return el;
+}
+
+function renderProfileChip(): void {
+  const chip = $('btn-profile');
+  chip.hidden = !save.tutorialDone;
+  chip.setAttribute('aria-label', t.profileLabel(save.profile.name));
+  $('profile-chip-art').innerHTML = portraitOf(save.profile);
+  $('profile-chip-plate').replaceChildren(plateEl(save.profile.plate, save.profile.name, 'plate-sm'));
+}
+
+function openProfile(): void {
+  renderProfile();
+  $('profile').hidden = false;
+  $('btn-close-profile').focus();
+}
+
+function renderProfile(): void {
+  $('profile-art').innerHTML = portraitOf(save.profile);
+  $('profile-plate').replaceChildren(plateEl(save.profile.plate, save.profile.name, 'plate-lg'));
+  $('profile-level').textContent = String(save.level);
+  const sets = setProgress(save.shells, config);
+  const scenesOwned = config.themes.list.filter((x) => x.price === 0 || save.themes.owned.includes(x.id)).length;
+  const s = save.stats;
+  const rows: [keyof typeof t.statLabels, string][] = [
+    ['levels', String(save.level - 1)],
+    ['perfectClears', String(s.perfectClears)],
+    ['streak', String(streakStatus(save.daily, utcDateKey(new Date())).current)],
+    ['bestStreak', String(save.daily.best)],
+    ['dailiesSolved', String(s.dailiesSolved)],
+    ['shells', `${save.shells.length}/${allShells(config).length}`],
+    ['sets', `${sets.filter((p) => p.complete).length}/${sets.length}`],
+    ['scenes', `${scenesOwned}/${config.themes.list.length}`],
+    ['pours', s.pours.toLocaleString('en')],
+    ['coinsEarned', s.coinsEarned.toLocaleString('en')],
+    ['boostersUsed', String(s.boostersUsed)],
+  ];
+  $('stats-grid').replaceChildren(
+    ...rows.map(([key, value]) => {
+      const tile = document.createElement('div');
+      tile.className = 'stat';
+      tile.innerHTML = `<svg class="stat-ico" viewBox="0 0 24 24" aria-hidden="true">${STAT_ICONS[key]}</svg><dt></dt><dd></dd>`;
+      tile.querySelector('dt')!.textContent = t.statLabels[key];
+      tile.querySelector('dd')!.textContent = value;
+      return tile;
+    }),
+  );
+  $('stats-note').textContent = t.statsFootnote;
+}
+
+// The Edit Profile sheet works on a draft; Save commits it (PP-8).
+let draft: Profile;
+let activeSlot: Slot = 'avatar';
+
+function openEditProfile(): void {
+  draft = { ...save.profile };
+  activeSlot = 'avatar';
+  $<HTMLInputElement>('name-input').value = draft.name;
+  $('pick-note').textContent = '';
+  renderEdit();
+  $('edit-profile').hidden = false;
+  $(`tab-${activeSlot}`).focus();
+}
+
+/** The name to draw on plates while editing: the draft if valid, else the saved one. */
+function draftName(): string {
+  return isValidName(draft.name, config) ? normaliseName(draft.name) : save.profile.name;
+}
+
+function renderEdit(focusSlot: Slot | null = null, focusId: string | null = null): void {
+  const progress = progressNow();
+  $('edit-art').innerHTML = portraitOf(draft);
+  $('edit-plate').replaceChildren(plateEl(draft.plate, draftName(), 'plate-lg'));
+  for (const slot of SLOTS) {
+    const tab = $(`tab-${slot}`);
+    const on = slot === activeSlot;
+    tab.setAttribute('aria-selected', String(on));
+    tab.tabIndex = on ? 0 : -1;
+    $(`panel-${slot}`).hidden = !on;
+    const current = pickOf(draft, slot);
+    $(`grid-${slot}`).replaceChildren(
+      ...catalog(config, slot).map((item) => {
+        const open = isUnlocked(item, progress);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `pick${open ? '' : ' locked'}`;
+        btn.dataset.id = item.id;
+        btn.setAttribute('role', 'radio');
+        btn.setAttribute('aria-checked', String(item.id === current));
+        btn.tabIndex = item.id === current ? 0 : -1;
+        const req = item.unlock ? t.unlockReq[item.unlock.kind](item.unlock.count) : '';
+        btn.setAttribute('aria-label', open ? item.name : t.lockedItem(item.name, req));
+        if (slot === 'plate') btn.append(plateEl(item.id, draftName()));
+        else {
+          const art = document.createElement('span');
+          art.className = 'portrait portrait-pick';
+          art.innerHTML = slot === 'avatar' ? portraitOf({ avatar: item.id, frame: draft.frame }) : portraitOf({ avatar: draft.avatar, frame: item.id });
+          btn.append(art);
+        }
+        if (!open) btn.insertAdjacentHTML('beforeend', `<span class="pick-lock">${LOCK_SVG}</span>`);
+        if (item.id === current) btn.insertAdjacentHTML('beforeend', '<span class="pick-check" aria-hidden="true"></span>');
+        btn.addEventListener('click', () => pick(slot, item.id));
+        return btn;
+      }),
+    );
+  }
+  const valid = isValidName(draft.name, config);
+  $('name-error').textContent = valid ? '' : t.nameInvalid(config.profile.name.min, config.profile.name.max);
+  $<HTMLInputElement>('name-input').setAttribute('aria-invalid', String(!valid));
+  $<HTMLButtonElement>('btn-save-profile').disabled = !valid;
+  if (focusSlot && focusId) $(`grid-${focusSlot}`).querySelector<HTMLElement>(`[data-id="${focusId}"]`)?.focus();
+}
+
+/** Selects an item in the draft, or explains how to unlock it. */
+function pick(slot: Slot, id: string): void {
+  const item = catalog(config, slot).find((x) => x.id === id)!;
+  const progress = progressNow();
+  if (!isUnlocked(item, progress)) {
+    const { have, need } = unlockProgress(item, progress);
+    $('pick-note').textContent = t.unlockLine(item.name, t.unlockReq[item.unlock!.kind](item.unlock!.count), have, need);
+    audio.play('nope');
+    renderEdit(slot, id);
+    return;
+  }
+  $('pick-note').textContent = '';
+  draft = withPick(draft, slot, id);
+  audio.play('select');
+  renderEdit(slot, id);
+}
+
+function switchTab(slot: Slot): void {
+  activeSlot = slot;
+  $('pick-note').textContent = '';
+  renderEdit();
+  $(`tab-${slot}`).focus();
+}
+
+function saveEditProfile(): void {
+  if (!isValidName(draft.name, config)) return;
+  save.profile = { ...draft, name: normaliseName(draft.name) };
+  writeSave(save);
+  audio.play('select');
+  $('edit-profile').hidden = true;
+  renderProfile();
+  renderProfileChip();
+  $('btn-edit-profile').focus();
+}
+
+/** Closing asks "Discard changes?" only when the draft differs from the saved profile. */
+function closeEditProfile(): void {
+  if (sameProfile(draft, save.profile)) {
+    $('edit-profile').hidden = true;
+    $('btn-edit-profile').focus();
+    return;
+  }
+  $('discard').hidden = false;
+  $('btn-keep-editing').focus();
+}
+
+function keepEditing(): void {
+  $('discard').hidden = true;
+  $(`tab-${activeSlot}`).focus();
+}
+
+function discardEdits(): void {
+  $('discard').hidden = true;
+  $('edit-profile').hidden = true;
+  $('btn-edit-profile').focus();
+}
+
+/** Arrow keys inside the tab list and the pick grids (roving focus, PP-8 / A-keyboard). */
+function onEditKeys(e: KeyboardEvent): void {
+  const target = e.target as HTMLElement;
+  const dir = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+  if (!dir) return;
+  if (target.getAttribute('role') === 'tab') {
+    e.preventDefault();
+    switchTab(SLOTS[(SLOTS.indexOf(activeSlot) + dir + SLOTS.length) % SLOTS.length]);
+  } else if (target.getAttribute('role') === 'radio') {
+    e.preventDefault();
+    const items = [...target.parentElement!.querySelectorAll<HTMLElement>('[role="radio"]')];
+    const next = items[(items.indexOf(target) + dir + items.length) % items.length];
+    const progress = progressNow();
+    const item = catalog(config, activeSlot).find((x) => x.id === next.dataset.id)!;
+    if (isUnlocked(item, progress)) pick(activeSlot, item.id);
+    else {
+      for (const el of items) el.tabIndex = -1;
+      next.tabIndex = 0;
+      next.focus();
+    }
+  }
+}
+
+/** Win card rows for cosmetics unlocked by this win (§3.7). */
+function showUnlocks(items: SlotItem[]): void {
+  $('win-unlocks').replaceChildren(
+    ...items.map(({ slot, item }) => {
+      const row = document.createElement('div');
+      row.className = 'win-shell win-unlock';
+      const art = document.createElement('span');
+      art.className = 'win-shell-art';
+      if (slot === 'plate') art.append(plateEl(item.id, save.profile.name, 'plate-sm'));
+      else art.innerHTML = slot === 'avatar' ? portraitOf({ avatar: item.id, frame: save.profile.frame }) : portraitOf({ avatar: save.profile.avatar, frame: item.id });
+      const text = document.createElement('span');
+      text.textContent = t.newCosmetic[slot](item.name);
+      row.append(art, text);
+      return row;
+    }),
+  );
 }
 
 async function shareDaily(): Promise<void> {
@@ -508,6 +795,10 @@ function showWin(): void {
   audio.play('win');
   $('win-shell').hidden = true;
   $('btn-share').hidden = true;
+  $('win-unlocks').replaceChildren();
+  $('win-avatar').hidden = mode === 'tutorial';
+  if (mode !== 'tutorial') $('win-avatar').innerHTML = portraitOf(save.profile);
+  const before = progressNow();
   if (mode === 'tutorial') {
     save.tutorialDone = true;
     writeSave(save);
@@ -519,10 +810,12 @@ function showWin(): void {
   } else if (mode === 'daily') {
     const r = recordDailySolve(save.daily, dailyDate, config);
     save.daily = r.state;
-    save.wallet = addCoins(save.wallet, r.reward);
     const counts = !r.alreadySolved && !r.outOfOrder;
+    earn(r.reward);
+    save.stats = bumpStats(save.stats, { pours: session.moves, dailiesSolved: counts ? 1 : 0 });
     if (counts) awardShell();
     writeSave(save);
+    showUnlocks(newlyUnlocked(config, before, progressNow()));
     $('win-title').textContent = t.dailyWinTitle;
     $('win-text').textContent = `${session.moves} ${t.poursLabel(session.moves)} · ${t.streakDays(r.state.streak)}`;
     $('win-reward').hidden = !counts;
@@ -539,9 +832,11 @@ function showWin(): void {
     const prevBest = save.best[key];
     if (prevBest === undefined || session.moves < prevBest) save.best[key] = session.moves;
     save.level = Math.max(save.level, level + 1);
-    save.wallet = addCoins(save.wallet, reward);
+    earn(reward);
+    save.stats = bumpStats(save.stats, { pours: session.moves, perfectClears: firstClear && perfect ? 1 : 0 });
     if (firstClear && milestoneDue(level, config)) awardShell();
     writeSave(save);
+    showUnlocks(newlyUnlocked(config, before, progressNow()));
     $('win-title').textContent = perfect ? t.perfectTitle : t.winTitle;
     $('win-text').textContent = t.winText(session.moves, prevBest);
     $('win-reward').hidden = !firstClear;
@@ -958,6 +1253,7 @@ function useBooster(id: BoosterId): void {
     else audio.play('shuffle');
   } else if (id === 'hint') applied = showHint();
   save.wallet = applied ? r.wallet : before;
+  if (applied) save.stats = bumpStats(save.stats, { boostersUsed: 1 });
   writeSave(save);
   if (applied) {
     if (id !== 'shuffle') audio.play('booster');
@@ -1022,6 +1318,25 @@ function wireInput(): void {
     renderScenes();
   });
   $('btn-shells').addEventListener('click', openCabinet);
+  $('btn-profile').addEventListener('click', openProfile);
+  $('btn-close-profile').addEventListener('click', () => ($('profile').hidden = true));
+  $('btn-edit-profile').addEventListener('click', openEditProfile);
+  $('btn-close-edit').addEventListener('click', closeEditProfile);
+  $('btn-save-profile').addEventListener('click', saveEditProfile);
+  $('btn-keep-editing').addEventListener('click', keepEditing);
+  $('btn-discard').addEventListener('click', discardEdits);
+  for (const slot of SLOTS) $(`tab-${slot}`).addEventListener('click', () => switchTab(slot));
+  $('edit-profile').addEventListener('keydown', onEditKeys);
+  $<HTMLInputElement>('name-input').addEventListener('input', (e) => {
+    draft = { ...draft, name: (e.target as HTMLInputElement).value };
+    renderEdit();
+  });
+  $('btn-reroll').addEventListener('click', () => {
+    draft = { ...draft, name: generateName(Math.random, t.nameWords) };
+    $<HTMLInputElement>('name-input').value = draft.name;
+    audio.play('shuffle');
+    renderEdit();
+  });
   $('btn-close-cabinet').addEventListener('click', () => ($('cabinet').hidden = true));
   $('btn-share').addEventListener('click', () => void shareDaily());
   $('btn-settings').addEventListener('click', openSettings);
@@ -1057,6 +1372,19 @@ function wireInput(): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!$('discard').hidden) {
+      if (e.key === 'Escape') keepEditing();
+      return;
+    }
+    if (!$('edit-profile').hidden) {
+      if (e.key === 'Escape') closeEditProfile();
+      else if (e.key === 'Enter' && e.target === $('name-input')) saveEditProfile();
+      return;
+    }
+    if (!$('profile').hidden) {
+      if (e.key === 'Escape') $('profile').hidden = true;
+      return;
+    }
     if (!$('transfer').hidden) {
       if (e.key === 'Escape') $('transfer').hidden = true;
       return;
@@ -1074,6 +1402,9 @@ function wireInput(): void {
       return;
     }
     if (!homeEl.hidden) {
+      // Enter/Space plays, unless another home button (profile, daily, shells, scenes) has focus.
+      const focused = document.activeElement;
+      if (focused instanceof HTMLButtonElement && focused.id !== 'btn-play') return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         play();
@@ -1146,6 +1477,24 @@ function applyStrings(): void {
   $('home-tagline').textContent = t.tagline;
   $('btn-share').textContent = t.share;
   $('btn-close-cabinet').title = t.close;
+  $('profile-title').textContent = t.profileTitle;
+  $('btn-close-profile').title = t.close;
+  $('btn-edit-profile').title = t.editProfile;
+  $('btn-edit-profile').setAttribute('aria-label', t.editProfile);
+  $('profile-level-label').textContent = t.levelBadge;
+  $('stats-title').textContent = t.statsTitle;
+  $('edit-title').textContent = t.editProfileTitle;
+  $('btn-close-edit').title = t.close;
+  for (const slot of SLOTS) $(`tab-${slot}`).textContent = t.tabs[slot];
+  $('name-label').textContent = t.nameLabel;
+  $('btn-reroll').innerHTML = DICE_SVG;
+  $('btn-reroll').title = t.reroll;
+  $('btn-reroll').setAttribute('aria-label', t.reroll);
+  $('plates-label').textContent = t.platesLabel;
+  $('btn-save-profile').textContent = t.saveProfile;
+  $('discard-title').textContent = t.discardTitle;
+  $('btn-keep-editing').textContent = t.keepEditing;
+  $('btn-discard').textContent = t.discard;
   boardEl.setAttribute('aria-label', t.boardLabel);
 }
 

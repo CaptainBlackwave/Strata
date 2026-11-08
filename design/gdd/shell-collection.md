@@ -80,7 +80,7 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 ### 2.3 Integration Points
 
 - **Depends on**: `economy.md` (coins and boosters as rewards), `daily-puzzle.md` and the level win flow (the triggers).
-- **Depended on by**: `feel-audio-ui.md` (win card, home button, cabinet), `save-data.md`.
+- **Depended on by**: `feel-audio-ui.md` (win card, home button, cabinet), `save-data.md`, `player-profile.md` (shells owned and sets completed feed its stats and unlocks).
 
 ---
 

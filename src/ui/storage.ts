@@ -1,10 +1,11 @@
 /**
- * Save data in localStorage: progress, wallet, tutorial flag and settings.
+ * Save data in localStorage: progress, wallet, tutorial flag, settings, profile and stats.
  * Every access is guarded, so a private window or blocked storage just means no save.
  * Implements design/game-brief.md MVP 6 and design/competitive-roadmap.md C2/C5.
  */
 import type { StreakState } from '../core/daily';
 import type { ThemeState } from '../core/themes';
+import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 
 const KEY = 'strata.save.v2';
@@ -36,6 +37,13 @@ export interface SaveData {
   seenMechanics: string[];
   /** Owned and selected time-of-day scenes. */
   themes: ThemeState;
+  /**
+   * Name, avatar, frame and name plate (design/gdd/player-profile.md). Stored as read:
+   * main.ts runs `repairProfile` after every load, which needs the catalog and progress.
+   */
+  profile: Profile;
+  /** Lifetime counters that start at 0 from the profile update (player-profile.md §3.4). */
+  stats: Stats;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -48,6 +56,8 @@ const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, pa
 const BOOSTERS: BoosterId[] = ['undo', 'shuffle', 'extraJar', 'hint'];
 const NO_STREAK: StreakState = { last: null, streak: 0, best: 0, passes: 0 };
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
+/** An empty profile: repairProfile fills in a generated name and the default picks. */
+const NO_PROFILE: Profile = { name: '', avatar: '', frame: '', plate: '' };
 
 function defaultStore(): KeyValueStore | null {
   try {
@@ -74,7 +84,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false } };
+  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats() };
 }
 
 /**
@@ -100,6 +110,9 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const b = isObj(w.boosters) ? w.boosters : {};
   const s = isObj(v2.settings) ? v2.settings : {};
   const d = isObj(v2.daily) ? v2.daily : {};
+  const pr = isObj(v2.profile) ? v2.profile : {};
+  const st = isObj(v2.stats) ? v2.stats : {};
+  const str = (v: unknown) => (typeof v === 'string' ? v : '');
   return {
     level,
     best: isObj(v2.best) ? (v2.best as Record<string, number>) : {},
@@ -127,6 +140,8 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       selected: isObj(v2.themes) && typeof v2.themes.selected === 'string' ? v2.themes.selected : 'midday',
       auto: isObj(v2.themes) && v2.themes.auto === true,
     },
+    profile: { name: str(pr.name), avatar: str(pr.avatar), frame: str(pr.frame), plate: str(pr.plate) },
+    stats: Object.fromEntries(STAT_KEYS.map((k) => [k, nonNegInt(st[k], 0)])) as unknown as Stats,
   };
 }
 

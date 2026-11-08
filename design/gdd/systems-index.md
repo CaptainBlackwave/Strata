@@ -14,7 +14,7 @@
 
 ## Overview
 
-Strata is a phone-first sort puzzle: the player pours layers of sand between jars until every jar is empty or sealed. Around that loop sit a generator that guarantees winnable levels, four jar mechanics, boosters and an economy of coins earned only by playing, a daily puzzle with a streak, a shell collection and four time-of-day scenes. There are eleven systems: ten implemented, and the player profile designed and awaiting build.
+Strata is a phone-first sort puzzle: the player pours layers of sand between jars until every jar is empty or sealed. Around that loop sit a generator that guarantees winnable levels, four jar mechanics, boosters and an economy of coins earned only by playing, a daily puzzle with a streak, a shell collection and four time-of-day scenes. There are eleven systems, all implemented (the player profile was added on 2026-11-08).
 
 ---
 
@@ -32,7 +32,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 8 | Scenes | Meta | Full Vision | Implemented | [scenes.md](scenes.md) | 5 |
 | 9 | Feel, audio and UI | UI | MVP | Implemented (gamepad waived) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10 |
 | 10 | Save data | Persistence | MVP | Implemented | [save-data.md](save-data.md) | 5 |
-| 11 | Player profile | Meta | Full Vision | Designed (PP-1 to PP-10) | [player-profile.md](player-profile.md) | 4–8, 10 |
+| 11 | Player profile | Meta | Full Vision | Implemented (PP-1 to PP-10) | [player-profile.md](player-profile.md) | 4–8, 10 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules.
 
@@ -91,4 +91,5 @@ Not asked in the interview: whether scenes need anything beyond the four (giftin
 - ~~Build D1, D3, D5, D8, D10, D14 and D16~~ (done in sprint 5: `production/sprints/sprint-5.md`).
 - `/balance-check` the ramp and the economy, then playtest levels 60–150.
 - ~~Plan the fifth shell set (D12)~~ (built as sets 5–8, 2026-11-08; evidence in `production/qa/evidence/shell-sets/`).
+- ~~Build the player profile (PP-1 to PP-10)~~ (done 2026-11-08; evidence in `production/qa/evidence/player-profile/`).
 - `/design-review` each document, then `/review-all-gdds` across the set.
