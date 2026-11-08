@@ -23,14 +23,14 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | # | System | Category | Priority | Status | Design Doc | Depends On |
 |---|--------|----------|----------|--------|------------|------------|
 | 1 | Pour rules | Core | MVP | Implemented | [pour-rules.md](pour-rules.md) | — |
-| 2 | Level generation | Core | MVP | Implemented (ramp needed) | [level-generation.md](level-generation.md) | 1, 3 |
+| 2 | Level generation | Core | MVP | Implemented | [level-generation.md](level-generation.md) | 1, 3 |
 | 3 | Jar mechanics | Gameplay | Alpha | Implemented | [jar-mechanics.md](jar-mechanics.md) | 1 |
 | 4 | Session and boosters | Gameplay | MVP | Implemented | [session-boosters.md](session-boosters.md) | 1, 2, 3, 5 |
 | 5 | Economy | Economy | Vertical Slice | Implemented | [economy.md](economy.md) | 4 |
 | 6 | Daily puzzle | Progression | Alpha | Implemented | [daily-puzzle.md](daily-puzzle.md) | 2, 3, 5, 7 |
 | 7 | Shell collection | Progression | Alpha | Implemented | [shell-collection.md](shell-collection.md) | 5, 6 |
 | 8 | Scenes | Meta | Full Vision | Implemented | [scenes.md](scenes.md) | 5 |
-| 9 | Feel, audio and UI | UI | MVP | Implemented (gaps vs UI standard) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10 |
+| 9 | Feel, audio and UI | UI | MVP | Implemented (gamepad waived) | [feel-audio-ui.md](feel-audio-ui.md) | 1–8, 10 |
 | 10 | Save data | Persistence | MVP | Implemented | [save-data.md](save-data.md) | 5 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules.
@@ -43,17 +43,35 @@ Systems 2 and 3 depend on each other at the edges: generation places mechanics, 
 |---|-----|----------|------------------------------|--------|
 | M1 | Replays of cleared levels paid full coins | economy.md | First clear only | **Fixed** 2026-11-08 |
 | M2 | Undo and an unsuccessful Hint counted against Perfect | session-boosters.md | Undo is free; a failed Hint doesn't count; Restart keeps the mark | **Fixed** 2026-11-08 |
-| M3 | Difficulty is flat from level 45 | level-generation.md | A ramp is needed (shape not yet specified) | Open: needs a decision |
+| M3 | Difficulty was flat from level 45 | level-generation.md | A ramp, with all four levers (D1; spare lever revised) | **Fixed** 2026-11-08 (sprint 5) |
 | M4 | The daily puzzle used the phone's local date | daily-puzzle.md | UTC | **Fixed** 2026-11-08 |
 
-## Open Questions (`INTENT UNKNOWN`)
+## Decisions (owner interview, 2026-11-08)
 
-- Saturday's daily can show a mechanic the player hasn't unlocked (jar-mechanics, daily-puzzle).
-- Narrow jars never seal (jar-mechanics).
-- The Jar booster is limited to one use per level despite stacks of 3 (session-boosters).
-- `?level=N` lets anyone jump ahead and earn real progress (economy, shell-collection, feel-audio-ui).
-- Gamepad support and text scaling vs the studio UI standard (feel-audio-ui).
-- Stuck message ignores swap-only moves (pour-rules); whether tall-jar levels may have mechanics (level-generation).
+Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision needs code.
+
+| # | Question | Decision | Document | Build |
+|---|----------|----------|----------|-------|
+| D1 | How should difficulty rise past level 45 (M3)? | All four levers: fewer spare jars, deeper buried sand, mechanics more often, more colours | level-generation | built (sprint 5) |
+| D2 | Saturday mechanic before the player unlocks it? | Keep: same board for everyone, intro card first | jar-mechanics, daily-puzzle | no |
+| D3 | `?level=N` in the public game? | Replay only: never beyond the player's progress | economy, shell-collection, feel-audio-ui | built (sprint 5) |
+| D4 | Narrow jar sealing | Never seals; must end empty | jar-mechanics | no |
+| D5 | Extra Jar one per level? | No cap | session-boosters | built (sprint 5) |
+| D6 | What Shuffle guarantees | Any winnable shuffle | session-boosters | no |
+| D7 | A shop for booster charges? | No shop for now | economy | no |
+| D8 | Mechanics on tall-jar levels | Yes, from level 100, at the normal chance | level-generation, jar-mechanics | built (sprint 5) |
+| D9 | Stuck message with swap-only pours | Keep as built | pour-rules | no |
+| D10 | Device date goes backwards | Don't punish: ignore that solve for the streak | daily-puzzle | built (sprint 5) |
+| D11 | Shell order | Fixed | shell-collection | no |
+| D12 | After all 20 shells | A fifth set later (future content); 50 coins until then | shell-collection | content later |
+| D13 | Gamepad | Waived for Strata | feel-audio-ui, accessibility-requirements | recorded |
+| D14 | Text size | Follow the phone/browser text-size setting | feel-audio-ui, accessibility-requirements | built (sprint 5) |
+| D15 | Volume control | Keep on/off toggles | feel-audio-ui | no |
+| D16 | Save backup | Export/import save code | save-data | built (sprint 5) |
+| D17 | Scene sound | Shared music | scenes | no |
+| D18 | Share link | The GitHub Pages address | daily-puzzle | no |
+
+Not asked in the interview: whether scenes need anything beyond the four (gifting, re-buying). Recorded in `scenes.md` as "no change" until the owner says otherwise.
 
 ---
 
@@ -69,5 +87,7 @@ Systems 2 and 3 depend on each other at the edges: generation places mechanics, 
 ## Next Steps
 
 - ~~Fix M1, M2 and M4 in code~~ (done 2026-11-08; evidence in `production/qa/evidence/gdd-alignment/`).
-- Decide the ramp for M3, then `/balance-check` the curve.
+- ~~Build D1, D3, D5, D8, D10, D14 and D16~~ (done in sprint 5: `production/sprints/sprint-5.md`).
+- `/balance-check` the ramp and the economy, then playtest levels 60–150.
+- Plan the fifth shell set (D12) as future content.
 - `/design-review` each document, then `/review-all-gdds` across the set.

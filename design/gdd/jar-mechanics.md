@@ -45,8 +45,8 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **Schedule** (`pickMechanics`):
 - A level equal to a mechanic's `unlockAt` always gets exactly that mechanic (its debut).
-- Every 10th level (tall-jar challenge) never gets a mechanic.
-- Any other level with at least one unlocked mechanic gets one with probability 0.34, chosen evenly from the unlocked ones.
+- Every 10th level (tall-jar challenge) gets no mechanic. Decided 2026-11-08: from level 100, tall-jar levels can get a mechanic with the same chance as normal levels (**built in sprint 5**).
+- Any other level with at least one unlocked mechanic gets one with probability 0.34, chosen evenly from the unlocked ones. Decided 2026-11-08 (difficulty ramp, M3): this chance rises toward 0.5 by level 120 (**built in sprint 5**).
 - From level 101, a second, different mechanic is added with probability 0.45.
 - The draw is seeded by `(mechanics.salt, level)`, so a level always has the same mechanics.
 
@@ -103,8 +103,8 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred from implementation, not confirmed`: Saturday's daily can feature a mechanic the player hasn't unlocked (it shows the intro card then). Intended, or should the daily wait until the player has reached that mechanic's level?
-- ❓ `INTENT UNKNOWN`: "narrow jars never seal and must end empty" was chosen when the mechanic was built. Confirm it is the intended rule rather than "seals at 2 units".
+- ✅ Decided 2026-11-08: keep as built. Everyone gets the same Saturday board; a player meeting a mechanic early sees its intro card first.
+- ✅ Decided 2026-11-08: narrow jars never seal and must end the level empty.
 
 ---
 
@@ -130,17 +130,19 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.
-- [ ] The two open questions above answered.
+- [x] Open questions answered (2026-11-08).
+- [x] Tall-jar mechanics from level 100 and the rising mechanic chance built and tested.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. **Saturday daily before unlock**: gate by the player's level, or keep as built.
-2. **Narrow jar sealing rule**: confirm "never seals".
+None open: Saturday stays as built, and narrow jars never seal.
 
 ### Flagged Follow-Up Work
-- [ ] Answer both questions; if the daily is gated, update `daily-puzzle.md` and its tests.
+- [x] Mechanics on tall-jar levels from level 100, with tests (a lock is only placed in a jar missing its key colour; otherwise the deal is re-dealt).
+- [x] Mechanic chance ramps to 0.5 by level 120.
+- Note: from level 60 a narrow jar or funnel can also appear as the *spare-jar swap* (`level-generation.md`).
 
 ---
 

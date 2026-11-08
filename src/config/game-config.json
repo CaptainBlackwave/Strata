@@ -1,7 +1,7 @@
 {
   "$comment": "All gameplay tuning for Strata. Design record: design/game-brief.md (MVP 2-4). Curve rows apply from `fromLevel` until the next row; fields omitted in a row inherit from the previous row.",
   "baseSeed": 20261107,
-  "extraJarsPerLevel": 1,
+  "extraJarsPerLevel": null,
   "economy": {
     "$comment": "Coins are earned only by playing. No purchases, ads or lives (design/competitive-roadmap.md, decisions D1-D3).",
     "startCoins": 100,
@@ -216,19 +216,30 @@
     { "fromLevel": 21, "colors": 9 },
     { "fromLevel": 28, "colors": 10 },
     { "fromLevel": 36, "colors": 11 },
-    { "fromLevel": 45, "colors": 12 }
+    { "fromLevel": 45, "colors": 12 },
+    { "fromLevel": 75, "buriedDepth": 3 },
+    { "fromLevel": 90, "colors": 13 },
+    { "fromLevel": 130, "colors": 14 }
   ],
+  "ramp": {
+    "$comment": "Difficulty past level 45 (decision D1, design/gdd/level-generation.md). spareOne: chance a normal level has 1 spare jar instead of 2, linear from `chanceFrom` at `from` to `chanceTo` at `to`; if no 1-spare deal is proven winnable in `maxAttempts`, the level falls back to 2 spares.",
+    "spareOne": { "from": 60, "to": 150, "chanceFrom": 0.2, "chanceTo": 0.75, "salt": 4411, "maxAttempts": 12 },
+    "mechanicChance": { "from": 45, "to": 120, "max": 0.5 }
+  },
   "challenge": {
     "every": 10,
     "colors": 5,
     "capacity": 8,
     "spare": 2,
-    "buriedDepth": 0
+    "buriedDepth": 0,
+    "mechanicsFrom": 100
   },
   "generator": {
     "maxAttempts": 60,
     "solverNodeBudget": 60000,
-    "maxSealedAtStart": 0
+    "maxSealedAtStart": 0,
+    "stepNodeBudget": 25000,
+    "stepAttemptNodeBudget": 12000
   },
   "hint": {
     "solverNodeBudget": 40000
@@ -245,6 +256,8 @@
     { "id": "cocoa", "hex": "#7a5038" },
     { "id": "mint", "hex": "#9ee6cf" },
     { "id": "rose", "hex": "#c2417a" },
-    { "id": "slate", "hex": "#5b6770" }
+    { "id": "slate", "hex": "#5b6770" },
+    { "id": "lavender", "hex": "#b39ddb" },
+    { "id": "sky", "hex": "#4fa3d9" }
   ]
 }

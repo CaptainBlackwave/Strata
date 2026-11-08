@@ -138,3 +138,37 @@ export function writeSave(save: SaveData, store: KeyValueStore | null = defaultS
     /* storage unavailable: progress simply isn't kept */
   }
 }
+
+const CODE_PREFIX = 'STRATA1:';
+
+/**
+ * A save as a text code the player can copy to another device (decision D16):
+ * `STRATA1:` followed by base64 of the save's JSON. Example: `exportSave(save)`.
+ */
+export function exportSave(save: SaveData): string {
+  const bytes = new TextEncoder().encode(JSON.stringify(save));
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return CODE_PREFIX + btoa(bin);
+}
+
+/**
+ * Reads a save code. Returns null if it isn't a Strata save code; otherwise every
+ * field is checked and repaired exactly like a normal load. Spaces and line breaks
+ * in a pasted code are ignored.
+ */
+export function importSave(code: string, econ: EconomyConfig): SaveData | null {
+  const compact = code.replace(/\s+/g, '');
+  if (!compact.startsWith(CODE_PREFIX)) return null;
+  let json: string;
+  try {
+    const bin = atob(compact.slice(CODE_PREFIX.length));
+    json = new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+    const parsed: unknown = JSON.parse(json);
+    if (!isObj(parsed)) return null;
+  } catch {
+    return null;
+  }
+  const memory: KeyValueStore = { getItem: (k) => (k === KEY ? json : null), setItem: () => undefined };
+  return loadSave(econ, memory);
+}

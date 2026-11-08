@@ -88,7 +88,7 @@ verified-by: pending review
 - None found in the source.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred from implementation, not confirmed`: "stuck" ignores pure-swap pours, so a board can show the stuck message while a legal swap pour still exists. Intended, or should the message wait until no pour at all is legal?
+- ✅ Decided 2026-11-08: keep as built. The stuck message shows as soon as only pointless swap pours remain.
 
 ---
 
@@ -114,16 +114,16 @@ verified-by: pending review
 - ✅ Stuck means not won with no useful move; a swap-only board is stuck.
 - ✅ `boardKey` ignores jar order.
 
-**Definition of Done**: complete, unless the open question above is answered differently.
+**Definition of Done**: complete.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. **Stuck and swaps**: see Edge Cases, Unclear.
+None open.
 
 ### Flagged Follow-Up Work
-- [ ] Decide the stuck-with-swaps question and, if changed, update `isStuck` and its test.
+- [x] Stuck-with-swaps decided: keep as built (2026-11-08).
 
 ---
 

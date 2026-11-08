@@ -10,7 +10,7 @@ for a full-screen app icon. Every push to `main` re-runs the tests and redeploys
 ```bash
 npm install
 npm run dev      # play at http://localhost:5173  (add ?level=N to jump to a level)
-npm test         # 140 unit tests: rules, mechanics, solver, generator, curve, session, economy, daily, collection, scenes, save
+npm test         # 163 unit tests: rules, mechanics, solver, generator, curve, session, economy, daily, collection, scenes, save
 npm run build    # static site in dist/
 ```
 
@@ -25,7 +25,8 @@ collect 20 hand-drawn **shells** (one every 5 levels and one per daily) to fill 
 New jars arrive as you go: **Narrow** (level 21), **Frozen** (41), **Locked lid** (61) and
 **One-way funnel** (81). Settings → *Jar guide* explains them. After one visit the app works offline.
 Spend coins on **Scenes** (Dawn, Sunset, Moonlit tide) from the home screen, and turn on
-*Match my clock* to let the scene follow the time of day. Keyboard: `1`–`9`/`0` pick jars,
+*Match my clock* to let the scene follow the time of day. Settings → *Save code* moves your
+progress to another device. Keyboard: `1`–`9`/`0` pick jars,
 `Z` undo, `S` shuffle, `J` jar, `H` hint, `R` restart.
 
 ## What's in the box

@@ -26,7 +26,7 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 **Design Intent**:
 - Every level shown to the player is winnable (a hard guarantee, `design/game-brief.md` MVP 2).
 - A level number always gives the same board, on every device.
-- **Difficulty keeps rising throughout the game** — `INTENDED — confirmed 2026-11-08`. **CODE MISMATCH**: from level 45 the recipe never changes (see Edge Cases).
+- **Difficulty keeps rising throughout the game** — `INTENDED — confirmed 2026-11-08`. **Implemented in sprint 5** (M3): see Edge Cases and Formulas.
 
 ---
 
@@ -49,11 +49,18 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 | 21 | 9 | |
 | 28 | 10 | |
 | 36 | 11 | |
-| 45 | 12 | final row: nothing changes after this |
+| 45 | 12 | |
+| 75 | 12 | buried depth 3 (only the top layer visible) |
+| 90 | 13 | |
+| 130 | 14 | final row |
+
+From level 60 the spare-jar swap and from level 45 the rising mechanic chance also apply (below).
 
 **Deal** (`dealBoard`): `colours × capacity` units, shuffled, split into `colours` full jars, plus `spare` empty jars. Each filled jar buries `min(depth, length − 1)` units from its bottom.
 
-**Accept** (`generateFromSpec`): for attempt 0 to 59, seed = `mix(mix(baseSeed, level), attempt)`; deal; add mechanics; reject if any jar starts sealed (`maxSealedAtStart: 0`); run the solver with a 60,000-state budget; return the first deal proven winnable. Throws if none is found.
+**Accept** (`generateFromSpec`): for attempt 0 to 59, seed = `mix(mix(baseSeed, level), attempt)`; deal; add mechanics; reject if any jar starts sealed (`maxSealedAtStart: 0`) or a mechanic couldn't be placed; run the solver; return the first deal proven winnable.
+
+**Fallback chain** (`generateLevel`, sprint 5): (1) the full recipe, with at most 12 attempts if it has the spare swap, each attempt capped at 12,000 solver states and the step at 25,000 in total; (2) the same with a second ordinary spare; (3) without mechanics, full budget. Each step is still solver-proven, so a level always loads. The caps count solver states, not time, so every device gets the same board.
 
 **Solver** (`solve`): depth-first search with memory of canonical positions, a state budget, and move ordering that prefers stacking onto a match, moving a whole run, emptying a jar and sealing. Prunes: sealed jars are never poured from, and only the first empty jar of each kind is tried as a target. Returns winnable (with the move list), unwinnable (proven), or unknown (budget ran out, treated as "not accepted").
 
@@ -82,7 +89,9 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 | Jar count | `colours + spare` (+1 for narrow or funnel) | spare = 2 | Level 1: 5 jars |
 | Buried units per jar | `min(depth, length − 1)` | depth 0–2 | Depth 2 on a 4-unit jar buries the bottom 2 |
 | Attempt seed | `mix(mix(baseSeed, level), attempt)` | attempt 0–59 | |
-| Solver cost | states expanded ≤ 60,000 | | Levels 1–500 generate with no failures; worst 196 ms |
+| Spare-swap chance | `0` before 60; `0.2 + 0.55·(level − 60)/90` from 60 to 150; `0.75` after | | Level 105: 47.5% |
+| Mechanic chance | `0.34` to level 45; `0.34 + 0.16·(level − 45)/75` to 120; `0.5` after | | Level 82: 0.42 |
+| Solver cost | per attempt ≤ 60,000 states (≤ 12,000 in capped fallback steps) | about 22 µs per state on a 16-jar board | Levels 1–500: no failures, 1 of 277 swap levels fell back; median 4 ms, 95th percentile 217 ms, worst 577 ms |
 
 ---
 
@@ -96,11 +105,16 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 - ✅ Plain levels keep their exact pre-mechanics boards (fixture-tested for levels 1–80).
 
 **Not Yet Handled** (discovered during analysis):
-- ⚠️ **Difficulty is flat from level 45.** Level 46 and level 5,000 share the same recipe (12 colours, capacity 4, 2 spare jars, buried depth 2), and tall-jar challenges are identical at level 10 and level 500. The owner confirmed (2026-11-08) a ramp is needed. **INTENT UNKNOWN — shape of the ramp**: candidates are fewer spare jars, deeper burying, more colours (needs a larger palette), or more frequent mechanics. Not specified yet.
+- ✅ **Difficulty keeps rising past level 45** (M3, fixed in sprint 5; before this, level 46 and level 5,000 shared one recipe). Decided 2026-11-08: use **all four levers**, **built in sprint 5**:
+  - **Fewer spare jars, revised after testing**: a board with only one *empty* spare is almost never winnable (0 of 30 random deals at 12 colours), so on these levels one of the two spares is replaced by a narrow jar, or from level 81 a narrow jar or a funnel (28–30 of 30 winnable). Chance per level: 20% at level 60 rising linearly to 75% at level 150. Owner approved the revision 2026-11-08.
+  - **Deeper buried sand**: 3 layers from level 75.
+  - **Mechanics more often**: 34% up to level 45, rising linearly to 50% at level 120.
+  - **More colours**: 13 from level 90, 14 from level 130 (new palette colours *lavender* and *sky*, each with its own colour-blind pattern).
+  This replaces the earlier "flat from level 45" behaviour (**built in sprint 5**).
 - ⚠️ The solver proves a deal winnable but not how hard it is: `solutionLength` is recorded but unused for pacing.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN`: whether tall-jar levels should ever get mechanics (currently never).
+- ✅ Decided 2026-11-08: from level 100 tall-jar levels can get a mechanic, at the normal-level chance (**built in sprint 5**).
 
 ---
 
@@ -124,21 +138,23 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 - ✅ Different levels give different boards; the same level gives the same board.
 
 **What's Missing**:
-- ❌ A difficulty ramp past level 45 (confirmed as needed, shape unspecified).
+- ✅ Difficulty keeps rising past level 45 (tested: average difficulty of levels 150–250 is more than 2 points above 46–58).
 
 **Definition of Done**:
-- [ ] Ramp shape decided, implemented, and a test shows difficulty parameters keep changing past level 45.
+- [x] Ramp shape decided (all four levers, 2026-11-08).
+- [x] Ramp implemented, and a test shows difficulty parameters keep changing past level 45.
+- [x] Levels 1–59 keep their exact boards (fixture).
 - [x] Every level 1–500 generates, solver-proven.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. **Ramp shape** (`INTENT UNKNOWN`): how should difficulty rise beyond level 45?
-2. **Mechanics on tall-jar levels**: allow or keep plain?
+None open. Ramp: all four levers. Tall-jar levels: mechanics from level 100.
 
 ### Flagged Follow-Up Work
-- [ ] Decide the ramp and implement it in `game-config.json` / `levelSpec`; run `/balance-check` on it.
+- [x] Implement the ramp (sprint 5).
+- [ ] Run `/balance-check` on the ramp, and playtest levels 60–150.
 - [ ] Use `solutionLength` (or solver node count) to sanity-check that difficulty is actually rising.
 
 ---
@@ -148,3 +164,4 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; ramp-needed confirmed by the owner |
+| 2026-11-08 | Claude | Sprint 5: ramp built (spare-jar lever revised with owner approval), tall-jar mechanics from 100, fallback chain |

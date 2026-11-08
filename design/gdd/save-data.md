@@ -81,7 +81,7 @@ verified-by: pending review
 - ⚠️ The save lives in one browser on one device: it doesn't follow the player, and clearing site data erases it. (Relevant if a leaderboard or accounts are added later.)
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred, not confirmed`: should there be an export/import or backup option, given progress can be lost by clearing browser data?
+- ✅ Decided 2026-11-08: add **export/import**: Settings gets "Copy save code" and "Restore from code", a text code that moves progress to another device with no server (**built in sprint 5**).
 
 ---
 
@@ -107,17 +107,18 @@ verified-by: pending review
 
 **Definition of Done**:
 - [x] Versioned key, migration, repair, tests.
-- [ ] Decide on backup/export.
+- [x] Backup decided: export/import code.
+- [x] Export/import built (`exportSave` / `importSave`, code `STRATA1:` + base64), round-trip and invalid-code tests; Settings → Save code sheet with a two-tap restore.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. Export/import or cloud backup?
+None open.
 
 ### Flagged Follow-Up Work
 - [ ] If a leaderboard or accounts are added, design the account link and conflict handling here first.
-- [ ] Add a visible "your progress is stored on this device" note in Settings.
+- [x] "Copy code" / "Restore from code" in Settings → Save code, with an explanation of what it does.
 
 ---
 

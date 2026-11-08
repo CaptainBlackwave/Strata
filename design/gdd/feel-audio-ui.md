@@ -77,15 +77,15 @@ verified-by: pending review
 - ✅ A `?level=N` launch address skips the home screen (used for screenshots).
 
 **Not Yet Handled** (against the studio's UI standard, `.claude/rules/ui-code.md`):
-- ⚠️ **No gamepad support.** The standard asks for keyboard/mouse *and* gamepad on every interactive element.
-- ⚠️ **No text scaling.** Font sizes are fixed pixels and do not follow a user text-size preference; the standard calls scalable text mandatory.
-- ⚠️ There is no master volume or per-sound volume; sound is on or off.
+- ✅ **Gamepad waived for Strata** (Decided 2026-11-08): touch and keyboard only, recorded in `design/accessibility-requirements.md`. Revisit for a TV or console version.
+- ⚠️ **No text scaling.** Font sizes are fixed pixels. Decided 2026-11-08: text **follows the phone/browser text-size setting**, with layouts that still fit at large sizes (**built in sprint 5**).
+- ✅ Decided 2026-11-08: sound and music stay on/off toggles; no volume sliders.
 - ⚠️ The offline mode does not announce a newer version; it simply serves the latest on the next launch.
 - ⚠️ Some static page text exists in `index.html` before `strings.ts` replaces it at startup.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred, not confirmed`: is gamepad support wanted for a phone-first web game, or should the standard be waived for Strata?
-- ❓ `INTENT UNKNOWN`: should `?level=N` remain in the shipped game (see `economy.md`)?
+- ✅ Decided 2026-11-08: gamepad waived.
+- ✅ Decided 2026-11-08: `?level=N` stays but is replay only, never beyond the player's progress (**built in sprint 5**).
 
 ---
 
@@ -108,21 +108,20 @@ verified-by: pending review
 - ✅ Layout and storage helpers are unit-tested (`tests/unit/core/ui-helpers.test.ts`).
 
 **What's Missing**:
-- ❌ Gamepad support; text scaling; volume control (see Edge Cases).
+- ✅ Text follows the browser/phone text size (all font sizes in `rem`, iOS Dynamic Type passed through); every main screen checked at 150% text on a 320 px phone (`production/qa/evidence/sprint-5/`).
 
 **Definition of Done**:
-- [ ] Decide whether gamepad support and text scaling apply to Strata; implement or record a waiver.
-- [ ] Add per-sound volume if wanted.
+- [x] Gamepad waived; text scaling required (follow the phone); volume stays on/off.
+- [x] Text scales with the phone's setting and every screen fits at 150% (screenshots).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. Gamepad: required or waived?
-2. Text scaling: required or waived?
+None open.
 
 ### Flagged Follow-Up Work
-- [ ] Add a text-size setting that scales the UI, or write a waiver in `design/accessibility-requirements.md`.
+- [x] UI font sizes converted to `rem`; overlays scroll and button rows wrap at large text.
 - [ ] Run `/ux-review` on the screens once `design/ux/` specs exist.
 
 ---

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { isSealed, isWon, pour } from '../../../src/core/board';
 import { dealBoard, generateLevel } from '../../../src/core/generator';
-import { type GameConfig, levelSpec } from '../../../src/core/levels';
+import { type GameConfig, launchLevel, levelSpec } from '../../../src/core/levels';
 import { solve } from '../../../src/core/solver';
 import { makeBoard } from '../../../src/core/board';
 
@@ -107,5 +107,22 @@ describe('tutorial board', () => {
     const r = solve(b, 1000);
     expect(r.solvable).toBe(true);
     expect(r.path).toHaveLength(1);
+  });
+});
+
+describe('launchLevel: ?level=N is replay only (D3)', () => {
+  // design/gdd/economy.md: may open any level up to the player's progress, never beyond.
+  it('opens a level you have reached', () => {
+    expect(launchLevel(3, 7)).toBe(3);
+    expect(launchLevel(7, 7)).toBe(7);
+  });
+  it('never opens a level beyond your progress', () => {
+    expect(launchLevel(100, 5)).toBe(5);
+  });
+  it('rejects nonsense', () => {
+    expect(launchLevel(0, 5)).toBe(5);
+    expect(launchLevel(-2, 5)).toBe(5);
+    expect(launchLevel(2.5, 5)).toBe(5);
+    expect(launchLevel(Number.NaN, 5)).toBe(5);
   });
 });

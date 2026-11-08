@@ -38,7 +38,7 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 | **Pour** | Applies a legal pour, pushes the previous board on the history, counts a move, emits `pour` (with units moved, colour, whether the target sealed), then `won` or `stuck` if the status changed. Refused (returns false) when illegal or the level is already won |
 | **Undo** | Restores the previous board and takes one move off the counter. The session allows unlimited undos; the UI gates it through the wallet (a charge, or coins). Undo never counts against Perfect |
 | **Restart** | Back to the dealt board, with any extra jar already used re-added; clears history and moves; does **not** refund charges or reset the assists counter |
-| **Extra Jar** | Adds one empty normal jar to the current board *and* to every history state (so Undo never removes it). Allowed once per level (`extraJarsPerLevel: 1`) regardless of how many Jar charges the player owns |
+| **Extra Jar** | Adds one empty normal jar to the current board *and* to every history state (so Undo never removes it). No per-level cap (decision D5, **built in sprint 5**; `extraJarsPerLevel: null`); limited only by charges and coins |
 | **Shuffle** | Re-deals the sand of every *free* jar (not sealed, frozen, locked or a funnel), keeping each jar's fill level. Tries up to 40 random deals; accepts the first that differs from the current board, is not already won, and is proven winnable by the solver (40,000-state budget). Undoable. Fails (false) if none is found |
 | **Hint** | Asks the solver (40,000-state budget) for a winning path from the current board and returns its first move, or null if the level is won, unwinnable or the budget ran out. The plan is cached by exact board and served while the player stays on it, so hints never loop (regression-tested) |
 | **Status** | `won` (every jar empty or sealed), `stuck` (not won, no useful move), otherwise `playing` |
@@ -89,8 +89,8 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 - None found in the source.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred, not confirmed`: the Jar booster can be bought in stacks of 3 charges but works only once per level. Is the one-per-level cap intended?
-- ❓ `INTENT UNKNOWN`: Shuffle can make a level easier or harder; is that acceptable, or should it never change the solution length by much?
+- ✅ Decided 2026-11-08: **no cap**. A player may use as many extra Jars on a level as they hold charges (or coins) for (**built in sprint 5**).
+- ✅ Decided 2026-11-08: any winnable shuffle is acceptable (as built).
 
 ---
 
@@ -113,14 +113,14 @@ verified-by: pending review (the Perfect rule confirmed by the owner 2026-11-08)
 
 **Definition of Done**:
 - [x] Both Perfect rules changed in `session.ts` with tests that fail first.
-- [ ] The two open questions answered.
+- [x] Open questions answered (2026-11-08).
+- [x] Extra Jar cap removed; two extra jars on one level tested and verified in the browser.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. Is the Jar booster's one-use-per-level cap intended?
-2. Should Shuffle be limited in how much it changes difficulty?
+None open: no Jar cap; any winnable shuffle.
 
 ### Flagged Follow-Up Work
 - [x] Change `session.ts` so `undo()` does not increment `assistCount`, and `hint()` increments it only when it returns a move.

@@ -173,3 +173,22 @@ describe('GameSession shuffle and assists', () => {
     expect(s.assists).toBe(1);
   });
 });
+
+describe('extra Jar has no per-level cap (D5)', () => {
+  // design/gdd/session-boosters.md: "no cap".
+  it('two extra jars can be added on one level, and both survive undo and restart', () => {
+    const s = new GameSession(makeBoard(2, [[0, 1], [1, 0], []]), { hintNodeBudget: 10_000 });
+    const start = s.board.jars.length;
+    s.pour(0, 2);
+    expect(s.addExtraJar()).toBe(true);
+    expect(s.addExtraJar()).toBe(true);
+    expect(s.board.jars).toHaveLength(start + 2);
+    s.undo();
+    expect(s.board.jars).toHaveLength(start + 2);
+    s.restart();
+    expect(s.board.jars).toHaveLength(start + 2);
+  });
+  it('the shipped config sets no cap', () => {
+    expect((config as { extraJarsPerLevel: number | null }).extraJarsPerLevel).toBeNull();
+  });
+});

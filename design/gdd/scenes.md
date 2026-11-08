@@ -90,10 +90,10 @@ The hours cover all 24 hours exactly once (tested).
 
 **Not Yet Handled**:
 - ⚠️ The clock uses the device's local hour (appropriate for a time-of-day look); changing the phone's clock changes the scene. Harmless, since scenes are only cosmetic.
-- ⚠️ Scenes have no sound of their own (marked incomplete in the plan).
+- ✅ Decided 2026-11-08: scenes keep the shared music; no scene-specific sound.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred, not confirmed`: Midday is the free default and can't be re-bought or removed; no way to "gift" scenes. Confirm nothing else is wanted.
+- ❓ Not asked in the 2026-11-08 interview: Midday is the free default and can't be re-bought or removed, and scenes can't be gifted. Recorded as **no change** until the owner says otherwise.
 
 ---
 
@@ -118,13 +118,13 @@ The hours cover all 24 hours exactly once (tested).
 
 **Definition of Done**:
 - [x] Four scenes, picker, preview, buy, clock mode, contrast checks, save.
-- [ ] Scene sounds (not planned).
+- [x] Scene sound decided: shared music.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. Any scene-specific sound or music wanted?
+None open on sound.
 
 ### Flagged Follow-Up Work
 - [ ] If more scenes are added, add a contrast test row and a home/board screenshot for each.

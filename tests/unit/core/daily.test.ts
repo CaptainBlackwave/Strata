@@ -151,3 +151,19 @@ describe('utcDateKey (M4: the daily follows UTC)', () => {
     }
   });
 });
+
+describe('device date going backwards (D10)', () => {
+  // design/gdd/daily-puzzle.md: a solve dated before the last solve is ignored: no reward, no reset.
+  it('does not reset the streak or pay', () => {
+    const st: StreakState = { last: '2026-11-08', streak: 9, best: 9, passes: 1 };
+    const r = recordDailySolve(st, '2026-11-06', cfg);
+    expect(r.state).toEqual(st);
+    expect(r.reward).toBe(0);
+    expect(r.outOfOrder).toBe(true);
+  });
+  it('the next real day still continues the streak', () => {
+    const st: StreakState = { last: '2026-11-08', streak: 9, best: 9, passes: 1 };
+    const back = recordDailySolve(st, '2026-11-06', cfg).state;
+    expect(recordDailySolve(back, '2026-11-09', cfg).state.streak).toBe(10);
+  });
+});

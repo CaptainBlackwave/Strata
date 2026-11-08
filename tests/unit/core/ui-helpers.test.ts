@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { computeLayout } from '../../../src/ui/layout';
 import config from '../../../src/config/game-config.json';
 import { type EconomyConfig, newWallet } from '../../../src/core/economy';
-import { type KeyValueStore, freshSave, loadSave, writeSave } from '../../../src/ui/storage';
+import { type KeyValueStore, exportSave, freshSave, importSave, loadSave, writeSave } from '../../../src/ui/storage';
 
 describe('computeLayout', () => {
   it('fits a small board in one row', () => {
@@ -101,5 +101,39 @@ describe('save storage', () => {
     expect(loadSave(econ, null).level).toBe(1);
     expect(loadSave(econ, bad).level).toBe(1);
     expect(() => writeSave(freshSave(econ), bad)).not.toThrow();
+  });
+});
+
+describe('save code export/import (D16)', () => {
+  // design/gdd/save-data.md: "Copy save code" / "Restore from code", no server.
+  const sample = () => {
+    const save = { ...freshSave(econ), level: 42, tutorialDone: true, shells: ['periwinkle', 'limpet'] };
+    save.wallet = { coins: 777, boosters: { undo: 2, shuffle: 1, extraJar: 0, hint: 4 } };
+    save.themes = { owned: ['midday', 'sunset'], selected: 'sunset', auto: false };
+    save.daily = { last: '2026-11-08', streak: 5, best: 9, passes: 1 };
+    return save;
+  };
+  it('round-trips a save through a text code', () => {
+    const code = exportSave(sample());
+    expect(code.startsWith('STRATA1:')).toBe(true);
+    expect(importSave(code, econ)).toEqual(sample());
+  });
+  it('tolerates spaces and line breaks around and inside the code', () => {
+    const code = exportSave(sample());
+    const messy = `  ${code.slice(0, 20)}\n${code.slice(20)}  `;
+    expect(importSave(messy, econ)).toEqual(sample());
+  });
+  it('rejects codes that are not Strata save codes', () => {
+    expect(importSave('', econ)).toBeNull();
+    expect(importSave('hello', econ)).toBeNull();
+    expect(importSave('STRATA1:%%%not-base64%%%', econ)).toBeNull();
+    expect(importSave('STRATA1:' + btoa('not json'), econ)).toBeNull();
+    expect(importSave('STRATA9:' + exportSave(sample()).slice(8), econ)).toBeNull();
+  });
+  it('repairs bad values inside a code like a normal load does', () => {
+    const code = 'STRATA1:' + btoa(JSON.stringify({ level: -4, wallet: { coins: -50 } }));
+    const save = importSave(code, econ)!;
+    expect(save.level).toBe(1);
+    expect(save.wallet.coins).toBe(econ.economy.startCoins);
   });
 });

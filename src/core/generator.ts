@@ -38,15 +38,42 @@ export function dealBoard(spec: LevelSpec, seed: number): Board {
  * Throws if no solvable board is found within `generator.maxAttempts`.
  */
 export function generateLevel(level: number, config: GameConfig): GeneratedLevel {
-  return generateFromSpec(levelSpec(level, config), mixSeed(config.baseSeed, level), config);
+  const spec = levelSpec(level, config);
+  const seed = mixSeed(config.baseSeed, level);
+  // Fallback chain, so no level can ever fail to load: the full recipe, then with a
+  // second ordinary spare, then without mechanics. Each step is still solver-proven.
+  // Every step but the last is capped by total solver work (generator.stepNodeBudget),
+  // which keeps level starts fast and stays identical on every device.
+  const cap = config.generator.stepNodeBudget ?? Infinity;
+  const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
+  const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : config.generator.maxAttempts]];
+  if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, config.generator.maxAttempts]);
+  if (spec.mechanics.length) tries.push([{ ...spec, spare: 2, mechanics: [] }, config.generator.maxAttempts]);
+  for (let i = 0; i < tries.length; i++) {
+    try {
+      const last = i === tries.length - 1;
+      return generateFromSpec(tries[i][0], seed, config, tries[i][1], last ? Infinity : cap, last ? config.generator.solverNodeBudget : perAttempt);
+    } catch (e) {
+      if (i === tries.length - 1) throw e;
+    }
+  }
+  throw new Error(`No solvable board for level ${level}`);
 }
 
 /**
  * Deals boards for `spec` from `baseSeed` until one is solver-proven winnable.
  * Shared by numbered levels and the daily puzzle.
  */
-export function generateFromSpec(spec: LevelSpec, baseSeed: number, config: GameConfig): GeneratedLevel {
-  const { maxAttempts, solverNodeBudget, maxSealedAtStart } = config.generator;
+export function generateFromSpec(
+  spec: LevelSpec,
+  baseSeed: number,
+  config: GameConfig,
+  maxAttempts = config.generator.maxAttempts,
+  totalNodeBudget = Infinity,
+  attemptNodeBudget = config.generator.solverNodeBudget,
+): GeneratedLevel {
+  const { maxSealedAtStart } = config.generator;
+  let spent = 0; // solver states across attempts: a deterministic cap on generation time
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const seed = mixSeed(baseSeed, attempt);
     const dealt = dealBoard(spec, seed);
@@ -54,10 +81,13 @@ export function generateFromSpec(spec: LevelSpec, baseSeed: number, config: Game
     const board = spec.mechanics.length ? applyMechanics(dealt, spec, createRng(mixSeed(seed, 0xa11ce)), config) : dealt;
     const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length;
     if (sealed > maxSealedAtStart) continue;
-    const result = solve(board, solverNodeBudget);
+    if (!hasMechanics(board, spec)) continue; // a mechanic couldn't be placed on this deal
+    const result = solve(board, Math.min(attemptNodeBudget, totalNodeBudget - spent));
+    spent += result.nodes;
     if (result.solvable === true) {
       return { spec, board, seed, solutionLength: result.path.length, attempts: attempt + 1 };
     }
+    if (spent >= totalNodeBudget) break;
   }
   throw new Error(`No solvable board for ${spec.level > 0 ? `level ${spec.level}` : 'this spec'} after ${maxAttempts} attempts`);
 }
@@ -81,13 +111,25 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
         if (i !== undefined) jars[i] = { ...jars[i], frozen: true };
       }
     } else if (id === 'locked') {
-      const i = pick(filled());
-      if (i === undefined) continue;
-      const absent = Array.from({ length: spec.colors }, (_, c) => c).filter((c) => !jars[i].units.includes(c));
-      if (absent.length) jars[i] = { ...jars[i], lock: pick(absent) };
+      // A lock needs a jar missing at least one colour (its key). On tall jars that hold
+      // every colour this can fail; the deal is then rejected and re-dealt.
+      const absentIn = (i: number) => Array.from({ length: spec.colors }, (_, c) => c).filter((c) => !jars[i].units.includes(c));
+      const candidates = filled().filter((i) => absentIn(i).length > 0);
+      const i = pick(candidates);
+      if (i !== undefined) jars[i] = { ...jars[i], lock: pick(absentIn(i)) };
     }
   }
   return { capacity: board.capacity, jars };
+}
+
+/** True when every mechanic the spec asks for is on the board. */
+export function hasMechanics(board: Board, spec: LevelSpec): boolean {
+  return spec.mechanics.every((id) =>
+    id === 'narrow' ? board.jars.some((j) => j.cap !== undefined)
+    : id === 'frozen' ? board.jars.some((j) => j.frozen)
+    : id === 'locked' ? board.jars.some((j) => j.lock !== undefined)
+    : board.jars.some((j) => j.funnel),
+  );
 }
 
 /** The first-launch tutorial board from config: one pour seals a jar. */

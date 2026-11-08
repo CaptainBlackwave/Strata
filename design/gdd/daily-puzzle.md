@@ -102,12 +102,12 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 - ✅ **UTC, not local date** (M4, fixed 2026-11-08): the home screen and `startDaily` use `utcDateKey`. Verified in the browser: a phone in UTC+14 whose local date was Monday 9 November got Sunday 8 November's board. Moving the phone's clock still changes the date, since there is no server time.
 
 **Not Yet Handled**:
-- ⚠️ **Clock moved backwards**: if today's key is *earlier* than the last solve, `recordDailySolve` treats it as a break and resets the streak to 1 while `streakStatus` reports "solved today". Switching to UTC lowers the chance but does not remove it.
-- ⚠️ The Saturday mechanic can appear before the player has unlocked it (see Unclear).
+- ⚠️ **Clock moved backwards**: if today's key is *earlier* than the last solve, `recordDailySolve` treats it as a break and resets the streak to 1 while `streakStatus` reports "solved today". Decided 2026-11-08: **don't punish it**: a solve dated before the last solve is ignored for the streak (no reward, no reset) (**built in sprint 5**).
+- ✅ Decided 2026-11-08: the Saturday mechanic stays the same for everyone, even before the player has unlocked it (intro card shown).
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred, not confirmed`: should Saturday's mechanic wait until the player has reached that mechanic's level? Today a new player can meet a funnel on day one.
-- ❓ `INTENT UNKNOWN`: the Share text uses the game's current address; confirm that is the address to promote.
+- ✅ Decided 2026-11-08: Saturday is not gated by progress.
+- ✅ Decided 2026-11-08: the Share link is the GitHub Pages address.
 
 ---
 
@@ -135,19 +135,19 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 
 **Definition of Done**:
 - [x] A UTC date key is used by `showHome`, `startDaily` and the streak, with a test across time zones.
-- [ ] The backwards-clock edge case decided and tested.
-- [ ] The Saturday-unlock question answered.
+- [x] Backwards-clock rule decided (ignore, don't reset).
+- [x] Backwards-clock rule built and tested (the win card explains it).
+- [x] Saturday-unlock question answered (as built).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. Gate Saturday's mechanic by the player's progress, or keep as built?
-2. What should happen if the date key goes backwards?
+None open.
 
 ### Flagged Follow-Up Work
 - [x] Replace `localDateKey(new Date())` call sites with `utcDateKey`.
-- [ ] Add a regression test for the clock-moved-back case.
+- [x] `recordDailySolve` ignores a date earlier than `last` (`outOfOrder`), test written first.
 
 ---
 

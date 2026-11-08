@@ -77,8 +77,21 @@
           </div>
           <div class="sheet-row">
             <button id="btn-scenes-2" class="secondary" type="button">Scenes</button>
+            <button id="btn-savecode" class="secondary" type="button">Save code</button>
           </div>
           <button id="btn-close-settings" class="primary" type="button">Close</button>
+        </div>
+      </div>
+      <div id="transfer" class="sheet" hidden>
+        <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
+          <h2 id="transfer-title">Save code</h2>
+          <p id="transfer-status" class="transfer-status" aria-live="polite"></p>
+          <textarea id="transfer-code" class="transfer-code" rows="4" spellcheck="false" autocomplete="off" aria-labelledby="transfer-title"></textarea>
+          <div class="sheet-row">
+            <button id="btn-copy-code" class="secondary" type="button">Copy code</button>
+            <button id="btn-restore-code" class="secondary" type="button">Restore from code</button>
+          </div>
+          <button id="btn-close-transfer" class="primary" type="button">Close</button>
         </div>
       </div>
       <div id="scenes" class="sheet" hidden>

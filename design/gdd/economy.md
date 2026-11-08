@@ -79,11 +79,11 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 - ✅ **Replays pay nothing** (M1, fixed 2026-11-08): `clearReward` pays only when `level >= nextLevel`. Verified in the browser: replaying level 3 with progress at level 5 left coins at 100.
 
 **Not Yet Handled**:
-- ⚠️ `?level=N` can still jump ahead: clearing a level beyond the player's progress moves their level forward and pays out.
+- ✅ `?level=N` is **replay only** (**built in sprint 5**): `launchLevel` opens at most the player's current level. Verified: `?level=100` with progress at level 5 opens level 5.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN`: whether `buyBooster` (buy a charge without using it) should be exposed, for instance on a shop screen. Today the only way to turn coins into charges is to use the booster at zero charges.
-- ❓ `INTENT UNKNOWN`: the long-run balance (coins per hour against scene and booster prices) has not been measured; the numbers are first estimates.
+- ✅ Decided 2026-11-08: no shop for now. `buyBooster` stays unexposed.
+- ⚠️ The long-run balance (coins per hour against scene and booster prices) has not been measured; the numbers are first estimates (balance pass pending).
 
 ---
 
@@ -115,12 +115,11 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 
 ## Open Questions and Follow-Up Work
 
-1. Should coins be spendable on stored charges (a shop)?
-2. What is the target time to earn each scene?
+1. What is the target time to earn each scene? (balance pass)
 
 ### Flagged Follow-Up Work
 - [x] In `main.ts` `showWin`, pay only on a first clear (`clearReward`).
-- [ ] Decide whether `?level=N` should still change real progress in the shipped game.
+- [x] Clamp `?level=N` to the player's progress (`launchLevel`, tested and verified in the browser).
 - [ ] Run `/balance-check` on the economy.
 
 ---

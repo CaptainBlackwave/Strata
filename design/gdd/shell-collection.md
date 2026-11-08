@@ -80,12 +80,12 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 - ✅ Locked shells show a silhouette; the cabinet and win card work at 320 px.
 
 **Not Yet Handled**:
-- ⚠️ "First clear" is defined as `level >= furthest level reached`, so jumping ahead with `?level=N` to a milestone level (for example `?level=100`) grants a shell without clearing the levels before it.
+- ⚠️ "First clear" is defined as `level >= furthest level reached`, so jumping ahead with `?level=N` to a milestone level (for example `?level=100`) grants a shell without clearing the levels before it. Closed in sprint 5: `?level=N` can no longer go beyond the player's progress.
 - ⚠️ Replaying levels pays coins today (`economy.md`, confirmed mismatch), but shells already require a first clear.
 
 **Unclear**:
-- ❓ `INTENT UNKNOWN — inferred, not confirmed`: shells are given in fixed order, so the order *is* the content; a player always gets the Periwinkle first. Is a fixed order the intent, or should it be shuffled per player?
-- ❓ `INTENT UNKNOWN`: nothing is done with a completed collection other than 50 coins per milestone.
+- ✅ Decided 2026-11-08: fixed order (as built).
+- ✅ Decided 2026-11-08: plan a **fifth set** (for example "Night Shore") as future content; keep the 50-coin milestones until then.
 
 ---
 
@@ -111,17 +111,17 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 
 **Definition of Done**:
 - [x] 20 shells, milestones, set rewards, cabinet, artwork.
-- [ ] The two open questions answered, and the skip-ahead gap closed alongside the economy fix.
+- [x] Open questions answered (2026-11-08).
+- [x] Skip-ahead gap closed alongside the `?level=N` fix.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. Fixed order or per-player order?
-2. What does a finished collection offer beyond 50 coins per shell milestone?
+None open: fixed order; a fifth set later.
 
 ### Flagged Follow-Up Work
-- [ ] When `?level=N` is restricted (see `economy.md`), re-check that shells can only be earned by genuinely clearing levels.
+- [x] `?level=N` restricted; shells now need a genuine first clear.
 - [ ] Consider a fifth set or seasonal shells when the collection is completed in testing.
 
 ---

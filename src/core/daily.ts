@@ -115,11 +115,17 @@ export interface DailySolveResult {
   readonly alreadySolved: boolean;
   readonly usedPass: boolean;
   readonly earnedPass: boolean;
+  /** The device date is earlier than the last solve: ignored for the streak (decision D10). */
+  readonly outOfOrder?: boolean;
 }
 
 /** Records solving the daily puzzle on `today`. Pays only the first solve of a day. */
 export function recordDailySolve(state: StreakState, today: string, config: DailyConfig): DailySolveResult {
   if (state.last === today) return { state, reward: 0, alreadySolved: true, usedPass: false, earnedPass: false };
+  // A date before the last solve (clock moved back) changes nothing: no reward, no reset.
+  if (state.last !== null && dayNumber(today) < dayNumber(state.last)) {
+    return { state, reward: 0, alreadySolved: false, usedPass: false, earnedPass: false, outOfOrder: true };
+  }
   const s = config.daily.streak;
   const gap = state.last === null ? Infinity : dayNumber(today) - dayNumber(state.last);
   let streak = 1;

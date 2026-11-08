@@ -22,7 +22,8 @@ export type SessionEvent =
 
 /** Tuning a session needs. It comes from game-config.json. */
 export interface SessionOptions {
-  readonly extraJarsPerLevel: number;
+  /** Extra jars allowed per level. Omitted or null means no cap (decision D5). */
+  readonly extraJarsPerLevel?: number | null;
   readonly hintNodeBudget: number;
   /** Shuffle tries this many re-deals before giving up. Default 40. */
   readonly shuffleAttempts?: number;
@@ -44,6 +45,7 @@ export class GameSession {
   private current: Board;
   private extraLeft: number;
   private moveCount = 0;
+  private extrasAdded = 0;
   private assistCount = 0;
   private readonly listeners = new Set<(e: SessionEvent) => void>();
   /** The last solver plan: `steps[i]` is the move to make from the board whose exact key is `keys[i]`. */
@@ -52,7 +54,7 @@ export class GameSession {
   constructor(board: Board, private readonly options: SessionOptions) {
     this.initial = board;
     this.current = board;
-    this.extraLeft = options.extraJarsPerLevel;
+    this.extraLeft = options.extraJarsPerLevel ?? Infinity;
   }
 
   /** The board as it stands now. */
@@ -126,8 +128,7 @@ export class GameSession {
   /** Goes back to the dealt board. An extra jar already used stays in place and isn't refunded. */
   restart(): void {
     let board = this.initial;
-    const extrasUsed = this.options.extraJarsPerLevel - this.extraLeft;
-    for (let i = 0; i < extrasUsed; i++) board = addEmptyJar(board);
+    for (let i = 0; i < this.extrasAdded; i++) board = addEmptyJar(board);
     this.current = board;
     this.history = [];
     this.moveCount = 0;
@@ -141,6 +142,7 @@ export class GameSession {
   addExtraJar(): boolean {
     if (this.extraLeft <= 0 || this.status === 'won') return false;
     this.extraLeft--;
+    this.extrasAdded++;
     this.assistCount++;
     this.plan = null;
     this.current = addEmptyJar(this.current);

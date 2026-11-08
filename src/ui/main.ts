@@ -11,7 +11,7 @@ import { type CollectionConfig, allShells, grantShell, milestoneDue, setProgress
 import { type DailyConfig, generateDaily, recordDailySolve, streakStatus, utcDateKey, weekday } from '../core/daily';
 import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, spendBooster } from '../core/economy';
 import { generateLevel, tutorialBoard } from '../core/generator';
-import type { GameConfig, MechanicId } from '../core/levels';
+import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent } from '../core/session';
 import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme } from '../core/themes';
@@ -19,7 +19,7 @@ import { GameAudio } from './audio';
 import { burst, celebrate, sparkleAround } from './fx';
 import { computeLayout } from './layout';
 import { shellSvg } from './shells';
-import { type SaveData, loadSave, writeSave } from './storage';
+import { type SaveData, exportSave, importSave, loadSave, writeSave } from './storage';
 import { t } from './strings';
 
 const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig;
@@ -47,6 +47,8 @@ const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
   surface2: '--surface-2', toastBg: '--toast-bg', toastFg: '--toast-fg', sky: '--sky', themeColor: '--theme-color',
 };
 
+/** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour. */
+const PATTERNS = 14;
 const BOOSTER_NAMES: Record<BoosterId, string> = { undo: t.undo, shuffle: t.shuffle, extraJar: t.jar, hint: t.hint };
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -81,10 +83,60 @@ window.setInterval(() => {
 }, 60_000);
 wireInput();
 if (qaLevel) {
-  level = levelParam;
+  level = launchLevel(levelParam, save.level); // replay only, never beyond progress (D3)
   startLevel(level);
 } else {
   startLevel(level);
+  showHome();
+}
+
+// ---- Save code (decision D16) -------------------------------------------
+
+let restoreArmed = false;
+
+function openTransfer(): void {
+  $<HTMLTextAreaElement>('transfer-code').value = exportSave(save);
+  $('transfer-status').textContent = t.saveCodeHelp;
+  restoreArmed = false;
+  $('btn-restore-code').textContent = t.restoreCode;
+  $('transfer').hidden = false;
+}
+
+async function copySaveCode(): Promise<void> {
+  const box = $<HTMLTextAreaElement>('transfer-code');
+  box.value = exportSave(save);
+  try {
+    await navigator.clipboard.writeText(box.value);
+    $('transfer-status').textContent = t.codeCopied;
+  } catch {
+    box.select(); // clipboard blocked: leave it selected for a manual copy
+    $('transfer-status').textContent = t.codeSelectManually;
+  }
+}
+
+/** Restores from the pasted code. The first tap asks for confirmation; the second replaces progress. */
+function restoreSaveCode(): void {
+  const imported = importSave($<HTMLTextAreaElement>('transfer-code').value, config);
+  if (!imported) {
+    restoreArmed = false;
+    $('btn-restore-code').textContent = t.restoreCode;
+    $('transfer-status').textContent = t.codeInvalid;
+    audio.play('nope');
+    return;
+  }
+  if (!restoreArmed) {
+    restoreArmed = true;
+    $('btn-restore-code').textContent = t.restoreConfirm;
+    $('transfer-status').textContent = t.restoreWarning(imported.level, imported.wallet.coins);
+    return;
+  }
+  save = imported;
+  writeSave(save);
+  audio.configure(save.settings);
+  applyTheme(currentTheme());
+  $('transfer').hidden = true;
+  showToast(t.restored);
+  startLevel(save.level);
   showHome();
 }
 
@@ -453,15 +505,16 @@ function showWin(): void {
     const r = recordDailySolve(save.daily, dailyDate, config);
     save.daily = r.state;
     save.wallet = addCoins(save.wallet, r.reward);
-    if (!r.alreadySolved) awardShell();
+    const counts = !r.alreadySolved && !r.outOfOrder;
+    if (counts) awardShell();
     writeSave(save);
     $('win-title').textContent = t.dailyWinTitle;
     $('win-text').textContent = `${session.moves} ${t.poursLabel(session.moves)} · ${t.streakDays(r.state.streak)}`;
-    $('win-reward').hidden = r.alreadySolved;
-    $('win-note').textContent = r.alreadySolved ? t.dailyReplay : r.usedPass ? t.usedPass : r.earnedPass ? t.earnedPass : '';
+    $('win-reward').hidden = !counts;
+    $('win-note').textContent = r.outOfOrder ? t.dailyOutOfOrder : r.alreadySolved ? t.dailyReplay : r.usedPass ? t.usedPass : r.earnedPass ? t.earnedPass : '';
     $('btn-share').hidden = false;
     btnNext.textContent = t.home;
-    if (!r.alreadySolved) countUp($('win-coins'), r.reward);
+    if (counts) countUp($('win-coins'), r.reward);
   } else {
     const perfect = session.assists === 0;
     const firstClear = level >= save.level;
@@ -571,7 +624,7 @@ function updateJar(i: number, growFrom = Infinity): void {
         u.classList.add('buried');
       } else {
         u.style.setProperty('--c', config.palette[color].hex);
-        if (save.settings.patterns) u.classList.add(`pat-${color % 12}`);
+        if (save.settings.patterns) u.classList.add(`pat-${color % PATTERNS}`);
       }
       if (k >= growFrom) {
         u.classList.add('grow');
@@ -611,7 +664,7 @@ function renderMechanics(el: HTMLElement, jar: Jar): void {
   const padlock = el.querySelector('.padlock') as HTMLElement;
   if (jar.lock !== undefined) {
     padlock.style.setProperty('--lock', config.palette[jar.lock].hex);
-    padlock.className = `padlock${save.settings.patterns ? ` pat-${jar.lock % 12}` : ''}`;
+    padlock.className = `padlock${save.settings.patterns ? ` pat-${jar.lock % PATTERNS}` : ''}`;
   }
   if (wasFrozen && !jar.frozen) mechanicFx(el, 'thawing', t.thawed);
   if (wasLocked && jar.lock === undefined) mechanicFx(el, 'unlocking', t.unlocked);
@@ -962,6 +1015,13 @@ function wireInput(): void {
     settingsEl.hidden = true;
     showHome();
   });
+  $('btn-savecode').addEventListener('click', () => {
+    settingsEl.hidden = true;
+    openTransfer();
+  });
+  $('btn-copy-code').addEventListener('click', () => void copySaveCode());
+  $('btn-restore-code').addEventListener('click', restoreSaveCode);
+  $('btn-close-transfer').addEventListener('click', () => ($('transfer').hidden = true));
   $('btn-guide').addEventListener('click', () => {
     settingsEl.hidden = true;
     showMechanicCards(MECHANICS, t.jarGuide);
@@ -982,6 +1042,10 @@ function wireInput(): void {
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!$('transfer').hidden) {
+      if (e.key === 'Escape') $('transfer').hidden = true;
+      return;
+    }
     if (!$('scenes').hidden) {
       if (e.key === 'Escape') closeScenes();
       return;
@@ -1052,6 +1116,10 @@ function applyStrings(): void {
   $('btn-home').textContent = t.home;
   $('btn-tutorial').textContent = t.replayTutorial;
   $('btn-guide').textContent = t.jarGuide;
+  $('btn-savecode').textContent = t.saveCode;
+  $('transfer-title').textContent = t.saveCode;
+  $('btn-copy-code').textContent = t.copyCode;
+  $('btn-close-transfer').textContent = t.close;
   $('scenes-label').textContent = t.scenes;
   $('btn-scenes-2').textContent = t.scenes;
   $('scenes-title').textContent = t.scenes;
