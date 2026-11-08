@@ -1148,13 +1148,16 @@ function updateHud(): void {
     const id = btn.dataset.booster as BoosterId;
     const charges = save.wallet.boosters[id];
     const price = config.boosters[id].price;
+    // A free booster (owner decision D-a: Undo) shows no charge or price badge.
+    const free = (config.boosters[id] as { free?: boolean }).free === true;
     const badge = btn.querySelector('.badge') as HTMLElement;
+    badge.hidden = free;
     badge.textContent = charges > 0 ? String(charges) : String(price);
     badge.classList.toggle('price', charges === 0);
     const usable =
       !over && mode !== 'tutorial' && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
     btn.disabled = !usable;
-    btn.setAttribute('aria-label', t.boosterLabel(BOOSTER_NAMES[id], charges, price));
+    btn.setAttribute('aria-label', free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price));
   }
   ($('btn-restart') as HTMLButtonElement).disabled = mode === 'tutorial';
 }

@@ -130,6 +130,7 @@ const en = {
   boardLabel: 'Sand jars',
   boosterLabel: (name: string, charges: number, price: number) =>
     charges > 0 ? `${name}, ${charges} left` : `${name}, costs ${price} coins`,
+  boosterFree: (name: string) => `${name}, free`,
   // Player profile (design/gdd/player-profile.md)
   profileTitle: 'Profile',
   profileLabel: (name: string) => `Profile: ${name}`,
