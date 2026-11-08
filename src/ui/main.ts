@@ -41,6 +41,7 @@ import { GameAudio } from './audio';
 import { burst, celebrate, sparkleAround } from './fx';
 import { type FocusTarget, LayerStack } from './layers';
 import { computeLayout } from './layout';
+import { UI_TOKEN_VARS, type UiThemeTokens } from './theme-tokens';
 import { shellSvg } from './shells';
 import { type SaveData, exportSave, importSave, loadSave, writeSave } from './storage';
 import { t } from './strings';
@@ -224,6 +225,12 @@ function applyTheme(id: string): void {
   const theme = config.themes.list.find((x) => x.id === id) ?? config.themes.list[0];
   const root = document.documentElement.style;
   for (const [key, cssVar] of Object.entries(TOKEN_VARS)) root.setProperty(cssVar, theme.tokens[key as keyof ThemeTokens]);
+  const extra = theme.tokens as ThemeTokens & UiThemeTokens;
+  for (const [key, cssVar] of Object.entries(UI_TOKEN_VARS)) {
+    const value = extra[key as keyof UiThemeTokens];
+    if (value) root.setProperty(cssVar, value);
+    else root.removeProperty(cssVar); // fall back to the style.css default
+  }
   document.body.dataset.theme = theme.id;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.themeColor);
 }
