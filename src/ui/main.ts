@@ -492,7 +492,9 @@ function openCabinet(): void {
   const every = config.collection.everyLevels;
   const remaining = every - (cleared % every);
   $('cabinet-title').textContent = t.cabinetTitle;
-  $('cabinet-next').textContent = save.shells.length < allShells(config).length ? t.nextShell(remaining) : t.allShellsBonus(config.collection.coinsWhenComplete);
+  // Today's unsolved daily also grants a shell, and the complete line is a standing rule, not a payout (UX-cab-3).
+  const dailyOpen = save.tutorialDone && !streakStatus(save.daily, utcDateKey(new Date())).solvedToday;
+  $('cabinet-next').textContent = save.shells.length < allShells(config).length ? t.nextShell(remaining, dailyOpen) : t.collectionDone(config.collection.coinsWhenComplete);
   const sets = $('cabinet-sets');
   sets.replaceChildren(
     ...setProgress(save.shells, config).map((p) => {
