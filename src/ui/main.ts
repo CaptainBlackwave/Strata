@@ -899,7 +899,8 @@ function buildJars(): void {
     jar.dataset.index = String(i);
     jar.innerHTML =
       '<span class="cork" aria-hidden="true"></span><span class="padlock" aria-hidden="true"></span><span class="funnel-mark" aria-hidden="true"></span>' +
-      '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>';
+      '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
+      '<span class="hint-badge" aria-hidden="true"></span>';
     jar.addEventListener('click', () => onJarTap(i));
     rows.appendChild(jar);
     return jar;
@@ -1270,14 +1271,16 @@ function showHint(): boolean {
     return false;
   }
   clearHint();
-  for (const [i, cls] of [
-    [m.from, 'hint-from'],
-    [m.to, 'hint-to'],
+  for (const [i, cls, label] of [
+    [m.from, 'hint-from', t.hintFrom],
+    [m.to, 'hint-to', t.hintTo],
   ] as const) {
     const el = jarEls[i];
+    (el.querySelector('.hint-badge') as HTMLElement).textContent = label;
     void el.offsetWidth; // restart the CSS animation
     el.classList.add(cls);
   }
+  showToast(t.hintToast(m.from + 1, m.to + 1)); // announced politely (AX-4)
   hintTimer = window.setTimeout(clearHint, 2400);
   return true;
 }

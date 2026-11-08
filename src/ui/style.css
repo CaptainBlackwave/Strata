@@ -357,15 +357,48 @@ body {
   }
 }
 
+/* Hint (AX-1, AX-13): a static ring that also shows under reduced motion. "From" is lifted
+   with a solid ring, "to" has a dashed ring, and each carries a text badge, so direction
+   never depends on colour alone. The pulse is extra motion only. */
 .jar.hint-from .glass,
 .jar.hint-to .glass {
-  animation: hint 600ms ease-in-out 3;
+  outline: 4px solid var(--hint);
+  outline-offset: 2px;
 }
 .jar.hint-from .glass {
   --hint: #2a9d8f;
 }
 .jar.hint-to .glass {
   --hint: #f2a541;
+  outline-style: dashed;
+}
+.jar.hint-from:not(.selected) {
+  transform: translateY(calc(var(--lift) * -0.5));
+}
+.hint-badge {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -100%);
+  z-index: 2;
+  padding: 0.1em 0.45em;
+  border-radius: 999px;
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.jar:not(.hint-from):not(.hint-to) .hint-badge {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jar.hint-from .glass,
+  .jar.hint-to .glass {
+    animation: hint 600ms ease-in-out 3;
+  }
 }
 @keyframes hint {
   0%,
