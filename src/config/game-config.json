@@ -1,0 +1,46 @@
+{
+  "$comment": "All gameplay tuning for Strata. Design record: design/game-brief.md (MVP 2-4). Curve rows apply from `fromLevel` until the next row; fields omitted in a row inherit from the previous row.",
+  "baseSeed": 20261107,
+  "extraJarsPerLevel": 1,
+  "curve": [
+    { "fromLevel": 1, "colors": 3, "capacity": 4, "spare": 2, "buriedDepth": 0 },
+    { "fromLevel": 3, "colors": 4 },
+    { "fromLevel": 5, "colors": 5 },
+    { "fromLevel": 8, "colors": 6, "buriedDepth": 1 },
+    { "fromLevel": 12, "colors": 7, "buriedDepth": 2 },
+    { "fromLevel": 16, "colors": 8 },
+    { "fromLevel": 21, "colors": 9 },
+    { "fromLevel": 28, "colors": 10 },
+    { "fromLevel": 36, "colors": 11 },
+    { "fromLevel": 45, "colors": 12 }
+  ],
+  "challenge": {
+    "every": 10,
+    "colors": 5,
+    "capacity": 8,
+    "spare": 2,
+    "buriedDepth": 0
+  },
+  "generator": {
+    "maxAttempts": 60,
+    "solverNodeBudget": 60000,
+    "maxSealedAtStart": 0
+  },
+  "hint": {
+    "solverNodeBudget": 40000
+  },
+  "palette": [
+    { "id": "terracotta", "hex": "#c8553d" },
+    { "id": "saffron", "hex": "#f2a541" },
+    { "id": "sage", "hex": "#8fae6b" },
+    { "id": "lagoon", "hex": "#2a9d8f" },
+    { "id": "coral", "hex": "#f28482" },
+    { "id": "plum", "hex": "#7b4b94" },
+    { "id": "denim", "hex": "#3d5a98" },
+    { "id": "lemon", "hex": "#f4e04d" },
+    { "id": "cocoa", "hex": "#7a5038" },
+    { "id": "mint", "hex": "#9ee6cf" },
+    { "id": "rose", "hex": "#c2417a" },
+    { "id": "slate", "hex": "#5b6770" }
+  ]
+}
