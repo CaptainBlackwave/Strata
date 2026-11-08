@@ -10,14 +10,16 @@
     "challengeBonus": 30
   },
   "boosters": {
-    "undo": { "start": 5, "price": 40 },
+    "undo": { "start": 0, "price": 0, "free": true },
     "shuffle": { "start": 3, "price": 80 },
     "extraJar": { "start": 3, "price": 120 },
     "hint": { "start": 3, "price": 60 }
   },
   "shuffle": {
+    "$comment": "totalNodeBudget caps solver states across all re-deal attempts of one shuffle, so a stuck late board can never freeze the main thread (F7, GA-SB-4). About 25 us per state on a desktop; the costliest successful shuffle measured on levels 140-200 used 18.6k states.",
     "maxAttempts": 40,
-    "solverNodeBudget": 40000
+    "solverNodeBudget": 40000,
+    "totalNodeBudget": 50000
   },
   "mechanics": {
     "$comment": "Sprint 3 (S3-1..S3-3): unlock every 20 levels, easiest first; each debuts on its unlock level, then appears in about `chance` of levels; two can combine from `comboFrom`. Narrow and funnel add an extra jar; frozen and locked change existing filled jars.",
@@ -55,7 +57,7 @@
   "collection": {
     "everyLevels": 5,
     "coinsWhenComplete": 50,
-    "setReward": { "coins": 150, "boosters": { "undo": 1, "shuffle": 1, "extraJar": 1, "hint": 1 } },
+    "setReward": { "coins": 150, "boosters": { "shuffle": 1, "extraJar": 1, "hint": 1 } },
     "sets": [
       { "id": "tidepool", "name": "Tide Pool", "shells": [
         { "id": "periwinkle", "name": "Periwinkle", "kind": "spiral", "colors": ["#7a5038", "#c9a27e"] },

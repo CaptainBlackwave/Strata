@@ -41,7 +41,8 @@ export interface GameConfig {
   readonly challenge: ChallengeConfig;
   readonly generator: { readonly maxAttempts: number; readonly solverNodeBudget: number; readonly maxSealedAtStart: number; readonly stepNodeBudget?: number; readonly stepAttemptNodeBudget?: number };
   readonly hint: { readonly solverNodeBudget: number };
-  readonly shuffle: { readonly maxAttempts: number; readonly solverNodeBudget: number };
+  /** `totalNodeBudget` caps solver states across all attempts of one shuffle (F7, GA-SB-4). */
+  readonly shuffle: { readonly maxAttempts: number; readonly solverNodeBudget: number; readonly totalNodeBudget?: number };
   readonly tutorial: { readonly capacity: number; readonly jars: readonly (readonly number[])[] };
   readonly palette: readonly { readonly id: string; readonly hex: string }[];
   readonly mechanics: {

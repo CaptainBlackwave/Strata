@@ -35,7 +35,8 @@ export function dealBoard(spec: LevelSpec, seed: number): Board {
 
 /**
  * Generates the level for `level`. The same level number always gives the same board.
- * Throws if no solvable board is found within `generator.maxAttempts`.
+ * Never throws for a valid level number: when every solver-proven step fails it ends
+ * with `fallbackBoard` (F7, GA-LG-3).
  */
 export function generateLevel(level: number, config: GameConfig): GeneratedLevel {
   const spec = levelSpec(level, config);
@@ -53,11 +54,51 @@ export function generateLevel(level: number, config: GameConfig): GeneratedLevel
     try {
       const last = i === tries.length - 1;
       return generateFromSpec(tries[i][0], seed, config, tries[i][1], last ? Infinity : cap, last ? config.generator.solverNodeBudget : perAttempt);
-    } catch (e) {
-      if (i === tries.length - 1) throw e;
+    } catch {
+      // fall through to the next, easier step
     }
   }
-  throw new Error(`No solvable board for level ${level}`);
+  return lastResort(spec, seed, config);
+}
+
+/**
+ * The end of every fallback chain (F7, GA-LG-3, GA-DP-1): a plain deal with one more spare
+ * jar, capped like the middle steps, then `fallbackBoard`, which can't fail. Shared by
+ * numbered levels and the daily. The returned spec says what was actually built.
+ */
+export function lastResort<S extends LevelSpec>(spec: S, seed: number, config: GameConfig): GeneratedLevel & { spec: S } {
+  const cap = config.generator.stepNodeBudget ?? config.generator.solverNodeBudget;
+  const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
+  const easier: S = { ...spec, spare: Math.max(2, spec.spare) + 1, mechanics: [] };
+  try {
+    return generateFromSpec(easier, seed, config, config.generator.maxAttempts, cap, perAttempt) as GeneratedLevel & { spec: S };
+  } catch {
+    const plain: S = { ...spec, spare: 2, mechanics: [] };
+    const board = fallbackBoard(plain, seed);
+    return { spec: plain, board, seed, solutionLength: board.jars.filter((j) => j.units.length).length + 1, attempts: 0 };
+  }
+}
+
+/**
+ * A board that is winnable by construction, so it needs no solver proof (F7, GA-LG-3).
+ * Full jar `i` holds `capacity - 1` units of colour `i` under one unit of colour `i + 1`
+ * (wrapping), plus 2 empty jars. It is won in `colors + 1` pours: move jar 0's top to a
+ * spare, then pour each jar's top onto the jar of its colour, from the last jar down,
+ * and finally pour the spare back onto jar 1. Nothing is sealed at the start. Colour
+ * labels and jar order are shuffled from `seed`; `buriedDepth` is applied as usual.
+ * Uses `max(2, spec.colors)` colours and assumes `spec.capacity >= 2`. Mechanics are dropped.
+ * Example: `fallbackBoard(levelSpec(152, config), seed).jars.length // colours + 2`
+ */
+export function fallbackBoard(spec: LevelSpec, seed: number): Board {
+  const rng = createRng(mixSeed(seed, 0xfa11));
+  const colors = Math.max(2, spec.colors);
+  const label = shuffle(Array.from({ length: colors }, (_, c) => c), rng);
+  const jars: Color[][] = [];
+  for (let i = 0; i < colors; i++) jars.push([...new Array<Color>(spec.capacity - 1).fill(label[i]), label[(i + 1) % colors]]);
+  jars.push([], []);
+  shuffle(jars, rng);
+  const hidden = jars.map((j) => (j.length ? Math.min(spec.buriedDepth, j.length - 1) : 0));
+  return makeBoard(spec.capacity, jars, hidden);
 }
 
 /**

@@ -1,7 +1,7 @@
 // Story: production/epics/competitive/story-002-economy-boosters.md
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { type BoosterId, type EconomyConfig, addBoosters, buyBooster, clearReward, levelReward, newWallet, spendBooster } from '../../../src/core/economy';
+import { type BoosterId, type EconomyConfig, addBoosters, buyBooster, clearReward, isFreeBooster, levelReward, newWallet, spendBooster } from '../../../src/core/economy';
 
 const econ = config as unknown as EconomyConfig;
 
@@ -14,9 +14,9 @@ describe('wallet', () => {
 
   it('spending a booster with charges uses a charge and no coins', () => {
     const w = newWallet(econ);
-    const r = spendBooster(w, 'undo', econ);
+    const r = spendBooster(w, 'hint', econ);
     expect(r.ok).toBe(true);
-    expect(r.wallet.boosters.undo).toBe(w.boosters.undo - 1);
+    expect(r.wallet.boosters.hint).toBe(w.boosters.hint - 1);
     expect(r.wallet.coins).toBe(w.coins);
     expect(r.paidCoins).toBe(0);
   });
@@ -48,9 +48,50 @@ describe('wallet', () => {
   it('never mutates the input wallet', () => {
     const w = newWallet(econ);
     const snapshot = JSON.stringify(w);
-    spendBooster(w, 'undo', econ);
-    buyBooster({ ...w, coins: 9999 }, 'undo', econ);
+    spendBooster(w, 'hint', econ);
+    buyBooster({ ...w, coins: 9999 }, 'hint', econ);
     expect(JSON.stringify(w)).toBe(snapshot);
+  });
+});
+
+describe('Undo is free and unlimited (D-a, production/qa/sprint-6-findings.md)', () => {
+  it('the shipped config marks undo free, with no price and no starting charges', () => {
+    expect(econ.boosters.undo).toEqual({ start: 0, price: 0, free: true });
+    expect(isFreeBooster('undo', econ)).toBe(true);
+    expect(isFreeBooster('hint', econ)).toBe(false);
+  });
+  it('spending undo with no charges and no coins succeeds and changes nothing', () => {
+    const w = { coins: 0, boosters: { undo: 0, shuffle: 0, extraJar: 0, hint: 0 } };
+    const r = spendBooster(w, 'undo', econ);
+    expect(r).toEqual({ ok: true, wallet: w, paidCoins: 0 });
+    expect(r.wallet).toBe(w);
+  });
+  it('an old save with stored undo charges keeps them: spending undo never uses one', () => {
+    const w = { coins: 500, boosters: { undo: 5, shuffle: 1, extraJar: 1, hint: 1 } };
+    const r = spendBooster(w, 'undo', econ);
+    expect(r.ok).toBe(true);
+    expect(r.wallet).toBe(w);
+    expect(r.paidCoins).toBe(0);
+  });
+  it('undo can be spent any number of times in a row', () => {
+    let w = newWallet(econ);
+    for (let i = 0; i < 50; i++) {
+      const r = spendBooster(w, 'undo', econ);
+      expect(r.ok).toBe(true);
+      w = r.wallet;
+    }
+    expect(w).toEqual(newWallet(econ));
+  });
+  it('buying a free booster is a no-op success', () => {
+    const w = { ...newWallet(econ), coins: 300 };
+    const r = buyBooster(w, 'undo', econ);
+    expect(r).toEqual({ ok: true, wallet: w, paidCoins: 0 });
+    expect(r.wallet).toBe(w);
+  });
+  it('nothing in the config grants undo charges any more', () => {
+    const c = config as unknown as { collection: { setReward: { boosters: Record<string, number> } } };
+    expect(c.collection.setReward.boosters).not.toHaveProperty('undo');
+    expect(newWallet(econ).boosters.undo).toBe(0);
   });
 });
 
@@ -64,7 +105,7 @@ describe('levelReward', () => {
   });
   it('a booster costs a few levels of play, so coins stay meaningful', () => {
     const perLevel = econ.economy.coinsPerLevel;
-    for (const id of Object.keys(econ.boosters) as BoosterId[]) {
+    for (const id of (Object.keys(econ.boosters) as BoosterId[]).filter((x) => !isFreeBooster(x, econ))) {
       expect(econ.boosters[id].price / perLevel).toBeGreaterThanOrEqual(2);
       expect(econ.boosters[id].price / perLevel).toBeLessThanOrEqual(8);
     }
