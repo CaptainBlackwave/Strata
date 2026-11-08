@@ -95,3 +95,16 @@ describe('solver and keys with jar states', () => {
     expect(solve(b, 20_000).solvable).toBe(false);
   });
 });
+
+describe('sealed jars are done (D-b, production/qa/sprint-6-findings.md GA-PR-1)', () => {
+  it('a sealed jar cannot be poured from, even into an empty narrow jar or funnel', () => {
+    const b = withJars(2, [[0, 0], [], []], { 1: { cap: 1 }, 2: { funnel: true } });
+    expect(canPour(b, 0, 1)).toBe(false);
+    expect(canPour(b, 0, 2)).toBe(false);
+  });
+  it('a sealed jar + an empty narrow jar + everything else blocked is stuck', () => {
+    // Before D-b, sealed -> narrow counted as a useful move, so the stuck message never showed.
+    const b = withJars(2, [[0, 0], [1, 2], [2, 1], []], { 1: { lock: 3 }, 2: { lock: 3 }, 3: { cap: 1 } });
+    expect(isStuck(b)).toBe(true);
+  });
+});

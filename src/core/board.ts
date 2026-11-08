@@ -91,14 +91,16 @@ export function isMonochrome(jar: Jar): boolean {
 
 /**
  * Teardown rule R5: a pour is legal when the source is non-empty, the target has
- * room, and the target is empty or its top colour matches.
+ * room, and the target is empty or its top colour matches. A sealed jar is done and
+ * can't be poured from (decision D-b, production/qa/sprint-6-findings.md GA-PR-1), which
+ * matches the UI and the solver, so `usefulMoves` and `isStuck` follow too.
  */
 export function canPour(board: Board, from: number, to: number): boolean {
   if (from === to) return false;
   const src = board.jars[from];
   const dst = board.jars[to];
   if (!src || !dst) return false;
-  if (isClosed(src) || isClosed(dst) || src.funnel) return false;
+  if (isClosed(src) || isClosed(dst) || src.funnel || isSealed(src, board.capacity)) return false;
   const run = topRun(src);
   if (!run) return false;
   if (dst.units.length >= (dst.cap ?? board.capacity)) return false;
