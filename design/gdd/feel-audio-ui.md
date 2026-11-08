@@ -13,7 +13,7 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
 >
-> **Sprint 6 (2026-11-08):** items marked *decided 2026-11-08, building in sprint 6* come from the
+> **Sprint 6 (2026-11-08):** items marked *decided 2026-11-08, built in sprint 6* come from the
 > approved fix bundles F1–F6 and F8 (`production/qa/sprint-6-findings.md`) and are not in the code yet.
 > Mark each "built in sprint 6" once it lands. Per-screen detail is in `design/ux/`.
 
@@ -40,12 +40,12 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 ### 2.1 Core Mechanics
 
 **Screens**:
-- **Home**: the profile chip (top-left, own row above the logo, after the tutorial; `player-profile.md` §3.1), logo, coins, Play, Daily card, Shells, Scenes. A **Settings button** on Home, in the top row opposite the profile chip (F8, *decided 2026-11-08, building in sprint 6*).
+- **Home**: the profile chip (top-left, own row above the logo, after the tutorial; `player-profile.md` §3.1), logo, coins, Play, Daily card, Shells, Scenes. A **Settings button** on Home, in the top row opposite the profile chip (F8, *decided 2026-11-08, built in sprint 6*).
 - **Board**: HUD, jars, boosters, restart.
 - **Win card**: result, coins, the small avatar in its frame (not in the tutorial), the shell row, set line and profile unlock rows (`player-profile.md` §3.7).
 - **Sheets and dialogs**: Settings, Scenes, Shell cabinet, Jar guide / intro card, Profile, Edit Profile (Avatar / Frame / Name tabs with radio grids), "Discard changes?", Save code (`save-data.md` §2.1), Tutorial.
 
-**Input (touch)**: tap a jar to lift it, tap another to pour; tap the same jar to put it down. A refused pour shakes the jar, plays the "nope" sound and vibration, and shows a short toast with the reason (for example "Top colours don't match"), so it is not told by motion and sound only (F2, *decided 2026-11-08, building in sprint 6*). Special jars (frozen, locked, funnel) already show a one-line reason (`jar-mechanics.md`).
+**Input (touch)**: tap a jar to lift it, tap another to pour; tap the same jar to put it down. A refused pour shakes the jar, plays the "nope" sound and vibration, and shows a short toast with the reason (for example "Top colours don't match"), so it is not told by motion and sound only (F2, *decided 2026-11-08, built in sprint 6*). Special jars (frozen, locked, funnel) already show a one-line reason (`jar-mechanics.md`).
 
 **Input (keyboard)**: the topmost open layer takes the key; the layers are checked in this order:
 
@@ -59,23 +59,23 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 | Intro card | `Esc` or `Enter` closes |
 | Shell cabinet | `Esc` closes; `Enter`/`Space` on a set header expands or collapses it |
 | Home | `Enter`/`Space` plays, unless another home button (profile chip, daily card, Shells, Scenes) has focus, which then activates that button |
-| Win card | `Enter`/`Space` = Continue. Enter on a focused Share button shares instead (F3, *decided 2026-11-08, building in sprint 6*) |
+| Win card | `Enter`/`Space` = Continue. Enter on a focused Share button shares instead (F3, *decided 2026-11-08, built in sprint 6*) |
 | Settings | `Esc` closes |
 | Board | `1`–`9` and `0` pick jars 1–10; `Z` undo, `S` shuffle, `J` jar, `H` hint, `R` restart; `Esc` deselects |
 
 **Jars 11 and up** (late boards have 16 or more): every jar is a `<button>`, so `Tab` reaches each jar in board order and `Enter`/`Space` lifts or pours, the same as a tap. The number keys cover only the first 10.
 
-**Dialogs hold keyboard focus** (F3, *decided 2026-11-08, building in sprint 6*): one shared open/close helper makes everything behind the top layer inert, moves focus into the dialog when it opens, and returns focus to the button that opened it when it closes. Home sets a first focus.
+**Dialogs hold keyboard focus** (F3, *decided 2026-11-08, built in sprint 6*): one shared open/close helper makes everything behind the top layer inert, moves focus into the dialog when it opens, and returns focus to the button that opened it when it closes. Home sets a first focus.
 
 **Pour animation** (`ANIM`, milliseconds): lift 210, stream in 90, flow 230, stream out 90, return 220, tilt 100°, win card delay 650. The player can act again while the source jar is still returning. A "tilted fill" keeps the sand surface level while the jar rotates. Landing makes a small splash; sealing drops a cork and throws sparkles; winning throws sand grains in the board's colours.
 
-**Hint mark** (F1, *decided 2026-11-08, building in sprint 6*): the "from" and "to" jars get a static ring that shows under reduced motion (the pulse is an extra on top). "From" and "to" differ by more than colour, through a lift and a badge. A toast reads the hint for screen readers, for example "Hint: pour jar 2 into jar 5". Shown for 2.4 s.
+**Hint mark** (F1, *decided 2026-11-08, built in sprint 6*): the "from" and "to" jars get a static ring that shows under reduced motion (the pulse is an extra on top). "From" and "to" differ by more than colour, through a lift and a badge. A toast reads the hint for screen readers, for example "Hint: pour jar 2 into jar 5". Shown for 2.4 s.
 
-**Stuck banner** (F2 and D21, *decided 2026-11-08, building in sprint 6*): when the board is stuck or a known dead end (`pour-rules.md` §2.1), a **persistent** banner (not a timed toast) offers Undo, Shuffle, Extra Jar and Restart, and stays until the board changes. Its text names Restart; when no booster is affordable it says Restart is free. A known dead end says "This board can't be won now: Undo or Restart". Today a toast says "No pours left. Undo, shuffle or add a jar." and leaves Restart out (GX-1). Toasts draw above every overlay.
+**Stuck banner** (F2 and D21, *decided 2026-11-08, built in sprint 6*): when the board is stuck or a known dead end (`pour-rules.md` §2.1), a **persistent** banner (not a timed toast) offers Undo, Shuffle, Extra Jar and Restart, and stays until the board changes. Its text names Restart; when no booster is affordable it says Restart is free. A known dead end says "This board can't be won now: Undo or Restart". Today a toast says "No pours left. Undo, shuffle or add a jar." and leaves Restart out (GX-1). Toasts draw above every overlay.
 
-**Leaving a level part-way** (F6, *decided 2026-11-08, building in sprint 6*): Home or Replay tutorial part-way through a level asks first, or offers "Continue" (exact flow in `design/ux/`). Restart becomes undoable.
+**Leaving a level part-way** (F6, *decided 2026-11-08, built in sprint 6*): Home or Replay tutorial part-way through a level asks first, or offers "Continue" (exact flow in `design/ux/`). Restart becomes undoable.
 
-**Touch targets** (F5, *decided 2026-11-08, building in sprint 6*): every control is at least 44 × 44 px, including icon buttons, Edit tabs, secondary buttons and cabinet set headers. Restart sits further from Settings.
+**Touch targets** (F5, *decided 2026-11-08, built in sprint 6*): every control is at least 44 × 44 px, including icon buttons, Edit tabs, secondary buttons and cabinet set headers. Restart sits further from Settings.
 
 **Sound** (`GameAudio`, all synthesised): select, deselect, nope, pour, land, seal, win, coin, booster, shuffle; ambient music (a slow pentatonic loop over an ocean-noise swell). Audio starts only after the first tap (browsers require it).
 
@@ -119,7 +119,7 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 - ✅ **Gamepad waived for Strata** (D13): touch and keyboard only, recorded in `design/accessibility-requirements.md`. Revisit for a TV or console version.
 - ✅ Sound and music stay on/off toggles; no volume sliders (D15).
 
-**Decided 2026-11-08, building in sprint 6**:
+**Decided 2026-11-08, built in sprint 6**:
 - Stuck with no booster affordable: the banner names the free Restart (GX-1).
 - A refused pour shows a toast, not just motion and sound.
 - The hint is visible under reduced motion and announced.
@@ -168,7 +168,7 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 ### Flagged Follow-Up Work
 - [x] UI font sizes converted to `rem`; overlays scroll and button rows wrap at large text.
 - [x] `/ux-review` on the screens (sprint 6, `production/qa/sprint-6/ux-review.md`).
-- [ ] Build F1–F6 and F8 (sprint 6), then mark them built here.
+- [x] Build F1–F6 and F8 (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 
 ---
 

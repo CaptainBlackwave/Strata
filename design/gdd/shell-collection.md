@@ -26,7 +26,7 @@ verified-by: pending review (the collectible, milestones and set rewards were ch
 **Design Intent** (owner decisions S2-3, S2-4):
 - The collectibles are original seashells in themed sets of 5: Tide Pool, Dune Coast, Coral Reef, Deep Blue (sprint 2), then the four **expedition sets** Night Shore, Cold North, Volcanic Sands and Ancient Cliffs (2026-11-08).
 - Shells are guaranteed milestones, never random and never duplicated.
-- Completing a set pays coins and a booster bundle. Since D19 (Undo is free, *decided 2026-11-08, building in sprint 6*) the bundle is one Shuffle, one Extra Jar and one Hint charge, with no Undo charge.
+- Completing a set pays coins and a booster bundle. Since D19 (Undo is free, *decided 2026-11-08, built in sprint 6*) the bundle is one Shuffle, one Extra Jar and one Hint charge, with no Undo charge.
 
 ---
 

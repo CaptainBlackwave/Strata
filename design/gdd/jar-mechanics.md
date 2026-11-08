@@ -13,7 +13,7 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
 >
-> **Sprint 6 (2026-11-08):** the dead-end check (D21) is *decided 2026-11-08, building in sprint 6*.
+> **Sprint 6 (2026-11-08):** the dead-end check (D21) is *decided 2026-11-08, built in sprint 6*.
 > D22 documents behaviour that is already built.
 
 ---
@@ -66,7 +66,7 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **Placement** (`applyMechanics`): runs after the normal deal, with its own random stream (`mixSeed(seed, 0xa11ce)`), so a level that gets no mechanic keeps exactly the board it had before mechanics existed (fixture `tests/fixtures/plain-boards.json`). Narrow and funnel append an extra jar. Frozen and locked pick a random filled jar that is not already frozen or locked.
 
-**Dead ends** (D21, *decided 2026-11-08, building in sprint 6*): these states can never be won, so the game reports them (`pour-rules.md` §2.1 "Dead end") even while pours remain. Only these certain cases are reported:
+**Dead ends** (D21, *decided 2026-11-08, built in sprint 6*): these states can never be won, so the game reports them (`pour-rules.md` §2.1 "Dead end") even while pours remain. Only these certain cases are reported:
 1. **Mixed funnel**: a funnel holds two or more colours. It can't be poured from and can't seal, so the level can't end.
 2. **Lock that can't open**: a locked jar whose key colour can no longer be sealed. The certain case is when units of the key colour sit in a mixed funnel (case 1), so a full jar of that colour can never be made.
 The stuck banner then says "This board can't be won now: Undo or Restart" (`feel-audio-ui.md`). Undo and Restart are free (D19).
@@ -119,7 +119,7 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - ✅ Shuffle never moves the sand of sealed, frozen, locked or funnel jars; the solver prunes duplicate empty jars per kind.
 - ✅ Up to 3 mechanics on one level from 101 (D22): allowed by design and covered by the solver proof.
 
-**Decided 2026-11-08, building in sprint 6**:
+**Decided 2026-11-08, built in sprint 6**:
 - **A funnel filled with mixed colours** makes the level unwinnable for good. Before D21 the stuck message appeared only once no useful move was left, so a player could keep pouring on a lost board with no signal. With D21 the stuck banner shows "This board can't be won now: Undo or Restart" as soon as the funnel holds two colours. The same applies to a lock whose key colour is trapped in a mixed funnel.
 
 **Not Yet Handled**:
@@ -169,7 +169,7 @@ None open: Saturday stays as built (D2), narrow jars never seal (D4), dead ends 
 ### Flagged Follow-Up Work
 - [x] Mechanics on tall-jar levels from level 100, with tests (a lock is only placed in a jar missing its key colour; otherwise the deal is re-dealt).
 - [x] Mechanic chance ramps to 0.5 by level 120.
-- [ ] Build the D21 dead-end check (sprint 6), then mark it built here.
+- [x] Build the D21 dead-end check (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 - Note: from level 60 a narrow jar or funnel can also appear as the *spare-jar swap* (`level-generation.md`).
 
 ---

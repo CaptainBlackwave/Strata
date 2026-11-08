@@ -14,7 +14,7 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 > disagree, do not assume the document is the requirement.
 >
 > **Sprint 6 (2026-11-08):** never-failing daily generation (F7) and the GA-DP-5 and GA-DP-6 defaults are
-> *decided 2026-11-08, building in sprint 6*. Mark them "built in sprint 6" once they land.
+> *decided 2026-11-08, built in sprint 6*.
 
 ---
 
@@ -53,7 +53,7 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 
 All have 2 spare jars. The board is seeded from the date key and a salt (Formulas), then goes through the same solver-proven generation as numbered levels (`generateFromSpec`, 60 attempts).
 
-**Never fails to load** (F7, *decided 2026-11-08, building in sprint 6*): the daily gets the numbered levels' fallback chain (drop the mechanic, then add a spare) and its failures are caught, so any date the device clock can reach loads a board.
+**Never fails to load** (F7, *decided 2026-11-08, built in sprint 6*): the daily gets the numbered levels' fallback chain (drop the mechanic, then add a spare) and its failures are caught, so any date the device clock can reach loads a board.
 
 **Streak** (`recordDailySolve`), where `gap` is days since the last solve:
 - `gap == 1`: streak + 1.
@@ -66,11 +66,11 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 
 **What a daily pays**: only the streak coins and a shell (or the 50-coin bonus once all 40 shells are owned, `shell-collection.md`). No level reward, no Perfect bonus, no tall-jar bonus (even on the tall-jar Sunday) and no "Perfect" title (`economy.md` §2.1). Boosters work as in a level, at the same prices.
 
-**Home card** (`streakStatus`): shows today's difficulty, "Solved today ✓", the live streak, held passes, and "A tide pass will save your streak" when `gap == 2` and a pass is held. The card and the Shells button appear only after the tutorial is done. **After the clock moves back** (GA-DP-5, owner default 2026-11-08, *building in sprint 6*): the card shows today's real state, so "Solved today ✓" appears only if this date was actually solved (today `gap ≤ 0` always shows it).
+**Home card** (`streakStatus`): shows today's difficulty, "Solved today ✓", the live streak, held passes, and "A tide pass will save your streak" when `gap == 2` and a pass is held. The card and the Shells button appear only after the tutorial is done. **After the clock moves back** (GA-DP-5, owner default 2026-11-08, *built in sprint 6*): the card shows today's real state, so "Solved today ✓" appears only if this date was actually solved (today `gap ≤ 0` always shows it).
 
 **Win card**: "Daily solved!", pours and streak, the reward, a note if a pass was used or earned, the new shell, a Share button, and a Home button.
 
-**Share**: native share sheet, else the clipboard: `Strata Daily <date> (<difficulty>)`, `Solved in N pours · S-day streak`, then the game's address. Contains no board spoilers. **N is the pour count of the first counted solve of that date** (GA-DP-6, owner default 2026-11-08, *building in sprint 6*; the count is stored with the solve). A replay can't share a better count than the solve that counted.
+**Share**: native share sheet, else the clipboard: `Strata Daily <date> (<difficulty>)`, `Solved in N pours · S-day streak`, then the game's address. Contains no board spoilers. **N is the pour count of the first counted solve of that date** (GA-DP-6, owner default 2026-11-08, *built in sprint 6*; the count is stored with the solve). A replay can't share a better count than the solve that counted.
 
 ### 2.2 State and Data
 
@@ -112,7 +112,7 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 - ✅ **Clock moved backwards** (D10, **built in sprint 5**): a solve dated before the last solve is ignored for the streak (no reward, no reset); see 2.1 Streak.
 - ✅ A daily started before 00:00 UTC and won after it counts for the date it was started.
 
-**Decided 2026-11-08, building in sprint 6**:
+**Decided 2026-11-08, built in sprint 6**:
 - **A date's daily fails to generate** (F7): caught, with the level fallback chain. A sweep of at least 2 years of dates is retained as a test (today only 8 weeks are tested; Saturday is the riskiest day).
 - **Home after the clock moves back** (GA-DP-5): shows today's real state.
 - **Share after a replay** (GA-DP-6): shares the first counted solve's pours.
@@ -166,7 +166,7 @@ None open: GA-DP-5 and GA-DP-6 take the owner's defaults (2026-11-08).
 ### Flagged Follow-Up Work
 - [x] Replace `localDateKey(new Date())` call sites with `utcDateKey`.
 - [x] `recordDailySolve` ignores a date earlier than `last` (`outOfOrder`), test written first.
-- [ ] Build F7, GA-DP-5 and GA-DP-6 (sprint 6), then mark them built here.
+- [x] Build F7, GA-DP-5 and GA-DP-6 (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 
 ---
 

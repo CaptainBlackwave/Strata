@@ -1,6 +1,6 @@
 # Sprint 6: quality pass
 
-> **Status: in progress (2026-11-08).** Chosen in the owner interview of 2026-11-08: a quality pass before more content. The art and name review runs alongside it on the owner's review page.
+> **Status: complete except Q8 (2026-11-08).** Q1–Q7 done; Q8 waits on the owner's art review page. Chosen in the owner interview of 2026-11-08: a quality pass before more content. The art and name review runs alongside it on the owner's review page.
 
 ## Sprint Goal
 Find every gap between the design documents, the screens and the accessibility requirements, and give the owner one findings report to choose fixes from. No player-facing change unless the owner picks a fix.

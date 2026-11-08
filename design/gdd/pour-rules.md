@@ -13,7 +13,7 @@ verified-by: pending review (sealed-jar rule D20 and dead-end message D21 decide
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
 >
-> **Sprint 6 (2026-11-08):** D20 and D21 are *decided 2026-11-08, building in sprint 6*. Mark them
+> **Sprint 6 (2026-11-08):** D20 and D21 are *decided 2026-11-08, built in sprint 6*. Mark them
 > "built in sprint 6" once the code and tests land.
 
 ---
@@ -41,7 +41,7 @@ verified-by: pending review (sealed-jar rule D20 and dead-end message D21 decide
 
 **Pour**
 - **Description**: Moves the top run of one colour from jar `from` into jar `to`.
-- **Legal when** (all must hold): `from ≠ to`; both jars exist; neither jar is closed (frozen or locked); the source is not a funnel; **the source is not sealed** (D20, *decided 2026-11-08, building in sprint 6*; the screen already refuses to lift a sealed jar and the solver already prunes it); the source is not empty; the target has free space (below its own capacity); and the target is empty or its top colour equals the run's colour.
+- **Legal when** (all must hold): `from ≠ to`; both jars exist; neither jar is closed (frozen or locked); the source is not a funnel; **the source is not sealed** (D20, *decided 2026-11-08, built in sprint 6*; the screen already refuses to lift a sealed jar and the solver already prunes it); the source is not empty; the target has free space (below its own capacity); and the target is empty or its top colour equals the run's colour.
 - **Amount**: as many units as fit. See Formulas.
 - **Reveal**: after a pour, the source's buried count is clamped to `length − 1`, so the new top unit is always visible. The target keeps its buried count.
 
@@ -51,7 +51,7 @@ verified-by: pending review (sealed-jar rule D20 and dead-end message D21 decide
 
 **Stuck**: the level is not won and there is no *useful* move. A move is useful unless it moves a whole one-colour jar into an empty jar **of the same kind**, which only swaps two jars (the player can still make such a pour by hand). Two jars are the same kind when they have the same capacity (`jarCapacity`) **and** the target is not a funnel. So a pour into an empty narrow jar (capacity 2) or an empty funnel is always useful, because it changes what the board can do. With D20, a sealed jar is no longer a source, so it can't make a board look unstuck.
 
-**Dead end** (D21, *decided 2026-11-08, building in sprint 6*): the level is not won and the board is in a state that can never be won. Only cases that are certain are reported; the cases are defined in `jar-mechanics.md` §2.1 (a funnel holding two or more colours; a lock whose key colour can no longer be sealed). A dead end is shown in the stuck banner with "This board can't be won now: Undo or Restart" (`feel-audio-ui.md`), even if pours are still possible. A board that is unwinnable for any other reason is not reported: the player keeps playing, and stuck still fires if no useful move is left.
+**Dead end** (D21, *decided 2026-11-08, built in sprint 6*): the level is not won and the board is in a state that can never be won. Only cases that are certain are reported; the cases are defined in `jar-mechanics.md` §2.1 (a funnel holding two or more colours; a lock whose key colour can no longer be sealed). A dead end is shown in the stuck banner with "This board can't be won now: Undo or Restart" (`feel-audio-ui.md`), even if pours are still possible. A board that is unwinnable for any other reason is not reported: the player keeps playing, and stuck still fires if no useful move is left.
 
 **Extra jar**: `addEmptyJar` appends one empty normal jar.
 
@@ -92,7 +92,7 @@ verified-by: pending review (sealed-jar rule D20 and dead-end message D21 decide
 - ✅ A whole one-colour jar poured into an empty jar of the same kind is not counted as progress for stuck detection.
 - ✅ A partly filled one-colour jar is not sealed.
 
-**Decided 2026-11-08, building in sprint 6**:
+**Decided 2026-11-08, built in sprint 6**:
 - **Pour from a sealed jar** (D20): refused, like any illegal pour. Before this, `canPour` allowed it, so a sealed jar poured into an empty narrow jar or funnel counted as a useful move the player could not make, and the stuck message never appeared (GA-PR-1).
 - **Known dead end with pours left** (D21): the stuck banner shows the dead-end message. Undo and Restart recover the board.
 
@@ -138,7 +138,7 @@ None open: sealed jars (D20) and dead ends (D21) decided 2026-11-08.
 
 ### Flagged Follow-Up Work
 - [x] Stuck-with-swaps decided: keep as built (2026-11-08).
-- [ ] Build D20 and D21 (sprint 6), then mark them built here.
+- [x] Build D20 and D21 (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 
 ---
 

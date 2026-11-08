@@ -13,7 +13,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
 >
-> **Sprint 6 (2026-11-08):** the restore reset (F6) is *decided 2026-11-08, building in sprint 6*.
+> **Sprint 6 (2026-11-08):** the restore reset (F6) is *decided 2026-11-08, built in sprint 6*.
 > Mark it "built in sprint 6" once it lands.
 
 ---
@@ -69,7 +69,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 - **Copy** writes the current save's code to the clipboard. If the clipboard is blocked, the code is left selected for a manual copy.
 - **Invalid code** (wrong prefix, bad base64 or JSON, not an object): the sheet says the code is invalid, plays the "nope" sound, disarms any pending restore and changes nothing.
 - **Two-tap restore**: the first tap on a valid code shows that code's level and coins and arms the button ("Tap again to replace my progress"). The second tap replaces the **whole** save (progress, wallet, settings, tutorial flag, daily, shells, scenes, profile, stats), runs the profile repair, writes, applies sound settings and the scene, closes the sheet, shows "Restored", starts the save's level and shows Home.
-- **Editing the code disarms the restore** (F6, *decided 2026-11-08, building in sprint 6*): any change to the text box after the first tap resets the button, so the second tap always restores the code whose summary the player saw. Today the confirmation stays armed when the text changes (GX-14).
+- **Editing the code disarms the restore** (F6, *decided 2026-11-08, built in sprint 6*): any change to the text box after the first tap resets the button, so the second tap always restores the code whose summary the player saw. Today the confirmation stays armed when the text changes (GX-14).
 - Opening the sheet always starts disarmed.
 
 ### 2.2 State and Data
@@ -96,7 +96,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 - ✅ Duplicate shell ids are removed.
 - ✅ An invalid save code changes nothing.
 
-**Decided 2026-11-08, building in sprint 6**:
+**Decided 2026-11-08, built in sprint 6**:
 - **Code edited between the two restore taps** (F6, GB-SD-3): the restore disarms, so a player can't confirm code A's summary and restore code B.
 
 **Not Yet Handled**:
@@ -149,7 +149,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 ### Flagged Follow-Up Work
 - [ ] If a leaderboard or accounts are added, design the account link and conflict handling here first.
 - [x] "Copy code" / "Restore from code" in Settings → Save code, with an explanation of what it does.
-- [ ] Build F6 (sprint 6), then mark it built here.
+- [x] Build F6 (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 
 ---
 

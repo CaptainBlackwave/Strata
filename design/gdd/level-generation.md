@@ -14,7 +14,7 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 > disagree, do not assume the document is the requirement.
 >
 > **Sprint 6 (2026-11-08):** never-failing generation (F7) and the GA-LG-6 intro-card rule are
-> *decided 2026-11-08, building in sprint 6*. Mark them "built in sprint 6" once they land.
+> *decided 2026-11-08, built in sprint 6*.
 
 ---
 
@@ -30,7 +30,7 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 - Every level shown to the player is winnable (a hard guarantee, `design/game-brief.md` MVP 2).
 - A level number always gives the same board, on every device.
 - **Difficulty keeps rising throughout the game** — `INTENDED — confirmed 2026-11-08`. **Implemented in sprint 5** (M3, D1): see Edge Cases and Formulas.
-- **A level always loads** (F7): generation never leaves the player on a broken screen. *Decided 2026-11-08, building in sprint 6.*
+- **A level always loads** (F7): generation never leaves the player on a broken screen. *Decided 2026-11-08, built in sprint 6.*
 - **No difficulty target yet** (D23): per-band targets (for example median solution length) are deferred to a later balance sprint. GX-13 stays open, owner-acknowledged.
 
 ---
@@ -68,8 +68,8 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 **Accept** (`generateFromSpec`): for attempt 0 to 59, seed = `mix(mix(baseSeed, level), attempt)`; deal; add mechanics; reject if any jar starts sealed (`maxSealedAtStart: 0`) or a mechanic couldn't be placed; run the solver; return the first deal proven winnable.
 
 **Fallback chain** (`generateLevel`, sprint 5): (1) the full recipe, with at most 12 attempts if it has the spare swap, each attempt capped at 12,000 solver states (`stepAttemptNodeBudget`) and the step at 25,000 in total (`stepNodeBudget`); (2) the same with a second ordinary spare added back (so 2 spares **plus** the swap's narrow or funnel: easier than an unswapped level); (3) without mechanics, full budget. Each step is solver-proven. The caps count solver states, not time, so every device gets the same board.
-- **Total failure** (F7, *decided 2026-11-08, building in sprint 6*): today step 3 can still throw and `startLevel` doesn't catch it. The fix catches every generation failure and falls back to a board that can't fail, so a level always loads.
-- **Lost debut** (GA-LG-6, owner default 2026-11-08, *building in sprint 6*): step 3 drops every mechanic, including a debut mechanic on its debut level. When that happens no "New jar!" card is shown, and the card waits for the next level that has the mechanic.
+- **Total failure** (F7, *decided 2026-11-08, built in sprint 6*): after step 3, `lastResort` tries a plain deal with one more spare, then `fallbackBoard`, a board winnable by construction (no solver needed), so `generateLevel` and `generateDaily` never throw and a level always loads (`tests/unit/core/fallback.test.ts`).
+- **Lost debut** (GA-LG-6, owner default 2026-11-08, *built in sprint 6*): step 3 drops every mechanic, including a debut mechanic on its debut level. When that happens no "New jar!" card is shown, and the card waits for the next level that has the mechanic.
 
 **Solver** (`solve`): depth-first search with memory of canonical positions, a state budget, and move ordering that prefers stacking onto a match, moving a whole run, emptying a jar and sealing. Prunes: sealed jars are never poured from (now also a pour rule, D20), and only the first empty jar of each kind is tried as a target. Returns winnable (with the move list), unwinnable (proven), or unknown (budget ran out, treated as "not accepted").
 
@@ -121,7 +121,7 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 - ✅ From level 100 tall-jar levels can get a mechanic, at the normal-level chance (D8, **built in sprint 5**).
 - ✅ Up to 3 mechanics on one level from 101 (D22, as built).
 
-**Decided 2026-11-08, building in sprint 6**:
+**Decided 2026-11-08, built in sprint 6**:
 - **Generation fails completely** (F7): caught, with a board that can't fail, so a level always loads.
 - **Fallback drops a debut mechanic** (GA-LG-6): the intro card waits for the next level that has it.
 
@@ -167,7 +167,7 @@ None open. Ramp: all four levers (D1). Tall-jar levels: mechanics from level 100
 
 ### Flagged Follow-Up Work
 - [x] Implement the ramp (sprint 5).
-- [ ] Build F7 and the GA-LG-6 intro-card rule (sprint 6), then mark them built here.
+- [x] Build F7 and the GA-LG-6 intro-card rule (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 - [ ] Keep the 1–500 sweep as a retained test or report.
 - [ ] Set a per-band difficulty target, run `/balance-check` on the ramp, and playtest levels 60–150 (deferred, D23).
 - [ ] Use `solutionLength` (or solver node count) to sanity-check that difficulty is actually rising.

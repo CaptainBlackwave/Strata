@@ -73,11 +73,13 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D16 | Save backup | Export/import save code | save-data | built (sprint 5) |
 | D17 | Scene sound | Shared music | scenes | no |
 | D18 | Share link | The GitHub Pages address | daily-puzzle | no |
-| D19 | Should Undo cost anything? (D-a, sprint 6) | **Undo is free and unlimited**: no charges, no coins, never counts against Perfect. Shuffle, Extra Jar and Hint stay limited. Set rewards no longer grant Undo charges. Amends roadmap R3 | session-boosters, economy, game-brief | building in sprint 6 |
-| D20 | Can a sealed jar be poured from? (D-b) | **No.** The rules match the screen and the solver, and stuck detection follows | pour-rules | building in sprint 6 |
-| D21 | Say when a board can no longer be won? (D-c) | **Yes, for certain cases only**: a funnel holding mixed colours, or a lock whose key colour can no longer be sealed. The stuck banner says "This board can't be won now: Undo or Restart" | jar-mechanics, pour-rules | building in sprint 6 |
+| D19 | Should Undo cost anything? (D-a, sprint 6) | **Undo is free and unlimited**: no charges, no coins, never counts against Perfect. Shuffle, Extra Jar and Hint stay limited. Set rewards no longer grant Undo charges. Amends roadmap R3 | session-boosters, economy, game-brief | built in sprint 6 |
+| D20 | Can a sealed jar be poured from? (D-b) | **No.** The rules match the screen and the solver, and stuck detection follows | pour-rules | built in sprint 6 |
+| D21 | Say when a board can no longer be won? (D-c) | **Yes, for certain cases only**: a funnel holding mixed colours, or a lock whose key colour can no longer be sealed. The stuck banner says "This board can't be won now: Undo or Restart" | jar-mechanics, pour-rules | built in sprint 6 |
 | D22 | How many mechanics per level? (D-d) | **Up to 3 from level 101** (the spare-jar swap can add a narrow or funnel to a level that rolled two); part of the D1 ramp | jar-mechanics, level-generation | no (documents the built behaviour) |
 | D23 | Economy and difficulty targets (D-e, D-f) | **Deferred** to a later balance sprint. GA-ECON-1, GX-11 and GX-13 stay open, owner-acknowledged | economy, level-generation | no |
+| D24 | When does the game say "This board can't be won now"? (follow-up to D21, sprint 6) | The structural check of D21 almost never fires in play (pours can't mix a funnel, generation never traps a lock's key colour), so the message also shows **when Hint proves the board lost** (the solver, `hintResult()` = `unwinnable`); the hint is then refunded. When the hint's search budget runs out it says "Couldn't find a hint this time" instead. No background solver after each pour | session-boosters, jar-mechanics, pour-rules | built in sprint 6 |
+| D25 | Does free Undo count toward the profile's "Boosters used"? | **No**: free Undo is a pour taken back, not a booster. "Boosters used" counts Shuffle, Extra Jar and Hint | player-profile | built in sprint 6 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
@@ -102,7 +104,7 @@ Not asked in the interview: whether scenes need anything beyond the four (giftin
 - ~~Fix M1, M2 and M4 in code~~ (done 2026-11-08; evidence in `production/qa/evidence/gdd-alignment/`).
 - ~~Build D1, D3, D5, D8, D10, D14 and D16~~ (done in sprint 5: `production/sprints/sprint-5.md`).
 - `/balance-check` the ramp and the economy, then playtest levels 60–150. **Deferred by D23** to a later balance sprint (targets first).
-- Sprint 6 builds D19–D21 and the fix bundles F1–F8 (`production/qa/sprint-6-findings.md`); each owning GDD marks them "decided 2026-11-08, building in sprint 6" until built.
+- Sprint 6 builds D19–D21 and the fix bundles F1–F8 (`production/qa/sprint-6-findings.md`); each owning GDD marks them "decided 2026-11-08, built in sprint 6" until built.
 - ~~Plan the fifth shell set (D12)~~ (built as sets 5–8, 2026-11-08; evidence in `production/qa/evidence/shell-sets/`).
 - ~~Build the player profile (PP-1 to PP-10)~~ (done 2026-11-08; evidence in `production/qa/evidence/player-profile/`).
 - `/design-review` each document, then `/review-all-gdds` across the set.

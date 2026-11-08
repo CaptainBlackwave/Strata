@@ -1,6 +1,6 @@
 # Sprint 6 findings report (Q6)
 
-> **Status: for the owner to pick from (2026-11-08).** This merges the five sprint 6 reviews into fix bundles, sorted by severity. Each bundle lists the findings it closes, so nothing is lost. Pick bundles and answer the decisions in section 3; the rest go to the backlog.
+> **Status: picked by the owner and built (2026-11-08).** See "Owner picks" below. This merges the five sprint 6 reviews into fix bundles, sorted by severity. Each bundle lists the findings it closes, so nothing is lost. Pick bundles and answer the decisions in section 3; the rest go to the backlog.
 
 ## Sources
 
@@ -61,3 +61,21 @@ Smaller calls with a default I'll use unless you say otherwise:
 - Real-device checks the audit couldn't do: VoiceOver and TalkBack, iOS Dynamic Type, system reduce motion, pinch zoom (AX-17: `user-scalable=no`), Safari's Tab setting, sound and vibration on hardware.
 - A shared interaction-pattern library (`design/ux/interaction-patterns.md`), noted as "not assessed" in every UX review.
 - Registering entities in `design/registry/` (it's an empty stub, so values were checked against the code).
+
+## Owner picks (2026-11-08)
+
+The owner picked **all ten bundles (F1–F10)** and asked for subagents to be used where possible. Decisions:
+
+| # | Answer | Recorded as |
+|---|---|---|
+| D-a | Make Undo free | D19 |
+| D-b | No, sealed is done | D20 |
+| D-c | Detect and tell; then, on learning that the structural check almost never fires, "on hint + when stuck" | D21, D24 |
+| D-d | Allow up to 3 | D22 |
+| D-e, D-f | Later, in their own balance sprint | D23 |
+| (follow-up) | Free Undo doesn't count toward "Boosters used" | D25 |
+| Defaults | GA-LG-6, GA-DP-5, GA-DP-6 accepted | built |
+
+Built on branch `ccr-85fc6fb4-lk2gcb`: core rules (D19–D22, F7), UI (F1–F6, F8, free Undo display), documents (F9, F10), then the lead's wiring (`hintResult`, `lostReason`, `sessionOptions`, D25, GA-DP-5, GA-DP-6) and a HUD wrap fix for 150% text at 320 px. Evidence: `production/qa/evidence/sprint-6-fixes/README.md`. Tests: 286/286.
+
+Still open: the backlog in section 4, plus the docs pass's owner questions (GX-15/GB-SC-2 unknown shell ids, GB-SC-6 catalog changes, GB-PP-4 name normalisation, GA-LG-7 debut-level mechanic alone, GB-FA-8 timings in config, GX-7 formal pillars, GX-12 Extra Jar vs the spare lever), and the audit items not in a bundle (AX-14 intro dialog name, AX-17 pinch zoom, AX-19 43 px jars at level 120 on 320 px).

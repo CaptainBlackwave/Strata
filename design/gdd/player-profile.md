@@ -89,7 +89,7 @@ verified-by: owner interview 2026-11-08
 | Scenes | `owned / total`, total from `themes.list` in config (4 today) | existing | no |
 | Total pours | the sum of `moves` of every solved level or daily, replays included | `stats.pours` | **yes** |
 | Coins earned | all coins credited by play: level rewards, daily rewards, set bonuses, the all-shells bonus | `stats.coinsEarned` | **yes** |
-| Boosters used | boosters that were applied (from a charge or bought with coins). Refunded attempts do not count | `stats.boostersUsed` | **yes** |
+| Boosters used | Shuffle, Extra Jar and Hint applied (from a charge or bought with coins). Free Undo doesn't count (D25), and refunded attempts don't either | `stats.boostersUsed` | **yes** |
 
 - New counters start at **0** for every save, including existing players, because the past was never recorded. This is stated once in a footnote under the grid: "Some totals count from this update onwards."
 - The tutorial adds nothing to any counter.

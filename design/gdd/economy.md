@@ -13,7 +13,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
 >
-> **Sprint 6 (2026-11-08):** D19 (free Undo) is *decided 2026-11-08, building in sprint 6*. Until it lands,
+> **Sprint 6 (2026-11-08):** D19 (free Undo) is *decided 2026-11-08, built in sprint 6*. Until it lands,
 > the code still gives 5 Undo charges, prices Undo at 40 coins and puts 1 Undo charge in each set reward.
 
 ---
@@ -29,7 +29,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 **Design Intent** (`design/competitive-roadmap.md` roadmap R1–R3; D19):
 - Coins are earned **only by playing**: no purchases, ads, lives or energy (roadmap R1, R2).
 - Shuffle, Extra Jar and Hint are limited but earnable: stored charges first, then coins (roadmap R3).
-- **Undo is free and unlimited** (D19): it has no charges, no price and is not in any reward. *Decided 2026-11-08, building in sprint 6.*
+- **Undo is free and unlimited** (D19): it has no charges, no price and is not in any reward. *Decided 2026-11-08, built in sprint 6.*
 - **A level pays coins on its first clear only; replays pay nothing** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (`clearReward`, M1).
 - **Targets deferred** (D23): no reward or price is tied to a target yet. Every value below is a first estimate until a later balance sprint sets targets (GA-ECON-1, GX-11 stay open, owner-acknowledged).
 
@@ -97,7 +97,7 @@ A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It
 - ✅ **Replays pay nothing** (M1, fixed 2026-11-08): `clearReward` pays only when `level >= nextLevel`. Verified in the browser: replaying level 3 with progress at level 5 left coins at 100.
 - ✅ `?level=N` is **replay only** (D3, **built in sprint 5**): `launchLevel` opens at most the player's current level. Verified: `?level=100` with progress at level 5 opens level 5.
 
-**Decided 2026-11-08, building in sprint 6**:
+**Decided 2026-11-08, built in sprint 6**:
 - **Undo costs nothing** (D19), so a player with 0 coins and 0 charges can always undo. Restart was the free substitute for a paid Undo; that workaround is gone.
 
 **Not Yet Handled**:
@@ -142,7 +142,7 @@ A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It
 ### Flagged Follow-Up Work
 - [x] In `main.ts` `showWin`, pay only on a first clear (`clearReward`).
 - [x] Clamp `?level=N` to the player's progress (`launchLevel`, tested and verified in the browser).
-- [ ] Build D19 (sprint 6), then mark it built here.
+- [x] Build D19 (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
 - [ ] Run `/balance-check` on the economy after targets are set (D23).
 
 ---
