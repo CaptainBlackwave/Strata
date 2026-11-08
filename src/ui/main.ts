@@ -44,7 +44,7 @@ import { type FocusTarget, LayerStack } from './layers';
 import { computeLayout } from './layout';
 import { UI_TOKEN_VARS, type UiThemeTokens } from './theme-tokens';
 import { shellSvg } from './shells';
-import { type SaveData, exportSave, importSave, loadSave, writeSave } from './storage';
+import { type SaveData, exportSave, importSave, loadSave, whatsNewDue, writeSave } from './storage';
 import { t } from './strings';
 
 const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig & ProfileConfig;
@@ -165,6 +165,7 @@ if (qaLevel) {
 } else {
   startLevel(level);
   showHome();
+  if (whatsNewDue(save)) openWhatsNew($('btn-play')); // once per version, never on a first install (D52)
 }
 
 // ---- Save code (decision D16) -------------------------------------------
@@ -410,6 +411,25 @@ function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: F
     }),
   );
   openLayer($('intro'), $('btn-intro-ok'), opener);
+}
+
+/**
+ * Shows the "What's new" card (D46, D52) and records that this version has been seen.
+ * Focus goes to its button and returns to `opener` on close.
+ */
+function openWhatsNew(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
+  $('whatsnew-list').replaceChildren(
+    ...t.whatsNew.lines.map((line) => {
+      const li = document.createElement('li');
+      li.textContent = line;
+      return li;
+    }),
+  );
+  if (save.seenWhatsNew !== t.whatsNew.version) {
+    save.seenWhatsNew = t.whatsNew.version;
+    writeSave(save);
+  }
+  openLayer($('whatsnew'), $('btn-whatsnew-ok'), opener);
 }
 
 /** Grants the next shell (or the completion bonus) and fills the win card's shell row. */
@@ -1554,6 +1574,8 @@ function wireInput(): void {
   $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
   $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, closeLayer(settingsEl, false)));
   $('btn-intro-ok').addEventListener('click', () => closeLayer($('intro')));
+  $('btn-whatsnew').addEventListener('click', () => openWhatsNew(closeLayer(settingsEl, false)));
+  $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
   $('btn-tutorial').addEventListener('click', () =>
     leaveBoard(() => {
       closeLayer(homeEl, false);
@@ -1595,7 +1617,7 @@ function wireInput(): void {
       if (e.key === 'Escape') closeScenes();
       return;
     }
-    if (top === $('intro')) {
+    if (top === $('intro') || top === $('whatsnew')) {
       // Enter on a focused button activates that button natively.
       if (e.key === 'Escape' || (e.key === 'Enter' && !onButton)) closeLayer(top);
       return;
@@ -1677,6 +1699,9 @@ function applyStrings(): void {
   $('btn-home').textContent = t.home;
   $('btn-tutorial').textContent = t.replayTutorial;
   $('btn-guide').textContent = t.jarGuide;
+  $('btn-whatsnew').textContent = t.whatsNew.button;
+  $('whatsnew-title').textContent = t.whatsNew.title;
+  $('btn-whatsnew-ok').textContent = t.gotIt;
   $('btn-savecode').textContent = t.saveCode;
   $('transfer-title').textContent = t.saveCode;
   $('btn-copy-code').textContent = t.copyCode;

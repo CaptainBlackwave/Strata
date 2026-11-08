@@ -7,6 +7,7 @@ import type { DailyShareRecord, StreakState } from '../core/daily';
 import type { ThemeState } from '../core/themes';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
+import { WHATS_NEW_VERSION } from './strings';
 
 const KEY = 'strata.save.v2';
 const LEGACY_PROGRESS = 'strata.progress.v1';
@@ -46,6 +47,12 @@ export interface SaveData {
   stats: Stats;
   /** Pours of the latest date's first counted daily solve, for Share (GA-DP-6). */
   dailyShare: DailyShareRecord | null;
+  /**
+   * The "What's new" version this player has seen (D46, D52). A fresh save stores the
+   * current version, so a first install never sees the card; an older save has none
+   * (`''`), so the card shows once.
+   */
+  seenWhatsNew: string;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -86,7 +93,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null };
+  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION };
 }
 
 /**
@@ -103,6 +110,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       base.level = Number.isInteger(v1.level) && (v1.level as number) >= 1 ? (v1.level as number) : 1;
       if (isObj(v1.best)) base.best = v1.best as Record<string, number>;
       base.tutorialDone = base.level > 1; // returning players skip the tutorial
+      base.seenWhatsNew = ''; // a returning player is updating, so the card shows once
     }
     if (isObj(prefs) && prefs.patterns === true) base.settings.patterns = true;
     return base;
@@ -148,7 +156,13 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       isObj(v2.dailyShare) && typeof v2.dailyShare.date === 'string' && DATE_KEY.test(v2.dailyShare.date) && nonNegInt(v2.dailyShare.pours, -1) >= 0
         ? { date: v2.dailyShare.date, pours: v2.dailyShare.pours as number }
         : null,
+    seenWhatsNew: typeof v2.seenWhatsNew === 'string' ? v2.seenWhatsNew : '',
   };
+}
+
+/** Whether the "What's new" card is due: the save has not seen `version` yet. */
+export function whatsNewDue(save: Pick<SaveData, 'seenWhatsNew'>, version: string = WHATS_NEW_VERSION): boolean {
+  return save.seenWhatsNew !== version;
 }
 
 /** Saves. Failures are ignored. */

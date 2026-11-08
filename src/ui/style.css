@@ -212,10 +212,11 @@ button {
 /*
  * D45 (AX-19): a jar drawn narrower than 44 px gets an invisible hit area that
  * reaches into the gap, at most half the gap per side so it never covers a
- * neighbour. computeLayout widens the gap so jar + gap reaches 44 px.
+ * neighbour. computeLayout widens the gap so jar + gap reaches 45 px: 44 plus 1 px
+ * for pixel snapping at fractional jar positions (layout.ts HIT_SNAP_MARGIN).
  */
 .jar::before {
-  --hit-pad: clamp(0px, (44px - var(--jar-w)) / 2, var(--gap-x) / 2);
+  --hit-pad: clamp(0px, (45px - var(--jar-w)) / 2, var(--gap-x) / 2);
   content: '';
   position: absolute;
   top: 0;
@@ -1424,6 +1425,20 @@ button {
 .intro-row:last-child {
   border-bottom: 0;
   margin-bottom: 8px;
+}
+/* "What's new" card (D46, D52) */
+.whatsnew-title {
+  margin: 2px 0 10px;
+  font-size: 1.25rem;
+}
+.whatsnew-list {
+  margin: 0 0 14px;
+  padding-left: 1.2em;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+.whatsnew-list li + li {
+  margin-top: 6px;
 }
 .intro-row h2 {
   margin: 0 0 2px;

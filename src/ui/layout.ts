@@ -32,6 +32,11 @@ const MAX_ROWS = 4;
  * width until jar + gap reaches this. It never shrinks the drawn jar.
  */
 export const MIN_HIT = 44;
+/**
+ * Extra gap, in px, kept on top of MIN_HIT: jars sit at fractional x positions and
+ * hit-testing snaps edges to the pixel grid, which measured up to ~1 px short.
+ */
+export const HIT_SNAP_MARGIN = 1;
 
 /**
  * Example: `computeLayout({ width: 390, height: 600, jars: 14, capacity: 4 })`
@@ -55,7 +60,7 @@ export function computeLayout(input: LayoutInput): Layout {
     const unitHeight = Math.floor(jarWidth * unitRatio);
     // D45: a height-limited jar leaves spare row width; spend it on the gap (hit area).
     const spareGap = (width - cols * jarWidth) / (cols + 1);
-    const hitGap = Math.max(gapX, Math.min(spareGap, MIN_HIT - jarWidth));
+    const hitGap = Math.max(gapX, Math.min(spareGap, MIN_HIT + HIT_SNAP_MARGIN - jarWidth));
     const candidate: Layout = {
       rows,
       cols,
