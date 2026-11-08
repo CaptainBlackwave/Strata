@@ -231,6 +231,7 @@ function restoreSaveCode(): void {
   audio.configure(save.settings);
   applyTheme(currentTheme());
   closeLayer($('transfer'), false);
+  closeLayer(settingsEl, false); // the sheet was opened over Settings
   showToast(t.restored);
   startLevel(save.level);
   showHome();
@@ -1626,7 +1627,8 @@ function wireInput(): void {
   $('btn-win-home').addEventListener('click', showHome); // showHome closes the card
   $('btn-daily').addEventListener('click', startDaily);
   $('btn-scenes').addEventListener('click', () => openScenes());
-  $('btn-scenes-2').addEventListener('click', () => openScenes(closeLayer(settingsEl, false)));
+  // Sub-screens open over Settings, so closing one returns to it with focus on its button (UX-settings-4).
+  $('btn-scenes-2').addEventListener('click', () => openScenes());
   $('btn-scene-buy').addEventListener('click', confirmScene);
   $('btn-close-scenes').addEventListener('click', closeScenes);
   $<HTMLInputElement>('set-auto').addEventListener('change', (e) => {
@@ -1664,7 +1666,7 @@ function wireInput(): void {
   $('btn-home').addEventListener('click', () => leaveBoard(showHome));
   $('btn-keep-playing').addEventListener('click', () => closeLayer($('leave')));
   $('btn-leave').addEventListener('click', confirmLeave);
-  $('btn-savecode').addEventListener('click', () => openTransfer(closeLayer(settingsEl, false)));
+  $('btn-savecode').addEventListener('click', () => openTransfer($('btn-savecode')));
   $('btn-copy-code').addEventListener('click', () => void copySaveCode());
   $('btn-restore-code').addEventListener('click', restoreSaveCode);
   // Editing the code disarms Restore, so a new code always gets its own warning (UX-settings-1).
@@ -1675,9 +1677,9 @@ function wireInput(): void {
     $('transfer-status').textContent = t.restoreHelp;
   });
   $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
-  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, closeLayer(settingsEl, false)));
+  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide));
   $('btn-intro-ok').addEventListener('click', () => closeLayer($('intro')));
-  $('btn-whatsnew').addEventListener('click', () => openWhatsNew(closeLayer(settingsEl, false)));
+  $('btn-whatsnew').addEventListener('click', () => openWhatsNew());
   $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
   $('btn-tutorial').addEventListener('click', () =>
     leaveBoard(() => {
