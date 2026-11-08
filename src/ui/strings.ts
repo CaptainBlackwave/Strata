@@ -89,6 +89,7 @@ const en = {
   newJar: 'New jar!',
   gotIt: 'Got it',
   jarGuide: 'Jar guide',
+  keysNote: 'Keys: 1–9 and 0 pick jars 1–10; hold Shift for jars 11–20. Z Undo · S Shuffle · J Jar · H Hint · R Restart.',
   /** The "What's new" card: 3-5 short plain lines, shown once per version (D52). */
   whatsNew: {
     version: WHATS_NEW_VERSION,

@@ -420,7 +420,7 @@ function introduce(ids: readonly MechanicId[]): void {
   showMechanicCards(fresh, t.newJar);
 }
 
-function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
+function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: FocusTarget | null = document.activeElement as HTMLElement | null, footer = ''): void {
   $('intro-title').textContent = kicker;
   $('intro-list').replaceChildren(
     ...ids.map((id) => {
@@ -434,6 +434,12 @@ function showMechanicCards(ids: readonly MechanicId[], kicker: string, opener: F
       return row;
     }),
   );
+  if (footer) {
+    const note = document.createElement('p');
+    note.className = 'intro-keys';
+    note.textContent = footer;
+    $('intro-list').append(note);
+  }
   openLayer($('intro'), $('btn-intro-ok'), opener);
 }
 
@@ -1706,7 +1712,8 @@ function wireInput(): void {
     $('transfer-status').textContent = t.restoreHelp;
   });
   $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
-  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide));
+  // The Jar guide lists the keys where a keyboard is likely (UX-board-8).
+  $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, undefined, matchMedia('(pointer: fine)').matches ? t.keysNote : ''));
   $('btn-intro-ok').addEventListener('click', () => closeLayer($('intro')));
   $('btn-whatsnew').addEventListener('click', () => openWhatsNew());
   $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
@@ -1787,8 +1794,12 @@ function wireInput(): void {
     else if (k === 'h') useBooster('hint');
     else if (k === 'r') requestRestart();
     else if (k === 'escape') setSelected(null);
-    else if (/^[0-9]$/.test(k)) {
-      const i = k === '0' ? 9 : Number(k) - 1;
+    else {
+      // 1-9 and 0 pick jars 1-10; with Shift they pick jars 11-20 (UX-board-8). Shift changes
+      // e.key ("!"), so the top-row digit comes from e.code.
+      const digit = /^Digit[0-9]$/.test(e.code) ? e.code.slice(5) : /^[0-9]$/.test(k) ? k : null;
+      if (digit === null) return;
+      const i = (digit === '0' ? 9 : Number(digit) - 1) + (e.shiftKey ? 10 : 0);
       if (i < jarEls.length) onJarTap(i);
     }
   });

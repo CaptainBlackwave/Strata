@@ -2509,3 +2509,11 @@ body[data-theme='harvestmoon']::before {
   min-height: 0;
   margin: 0;
 }
+
+/* UX-board-8: the keyboard line at the foot of the Jar guide. */
+.intro-keys {
+  margin: 4px 0 14px;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  text-align: left;
+}
