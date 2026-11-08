@@ -12,6 +12,9 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** never-failing daily generation (F7) and the GA-DP-5 and GA-DP-6 defaults are
+> *decided 2026-11-08, building in sprint 6*. Mark them "built in sprint 6" once they land.
 
 ---
 
@@ -34,7 +37,7 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 
 ### 2.1 Core Mechanics
 
-**Today** is the UTC calendar date (`utcDateKey`), so the daily switches at 00:00 UTC everywhere.
+**Today** is the UTC calendar date (`utcDateKey`), so the daily switches at 00:00 UTC everywhere. In the Americas that is an afternoon or evening switch, and the card shows the UTC date (UX note for `design/ux/home.md`). A daily started before 00:00 UTC and won after it counts for the date it was started (`startDaily` fixes the date). Scenes follow the local hour instead (`scenes.md`).
 
 **Weekly rhythm** (`daily.week`, index 0 = Sunday … 6 = Saturday; the weekday is computed from the date key itself, not the device):
 
@@ -48,21 +51,26 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 | Fri | tricky | 9 | 4 | 2 | none |
 | Sat | tricky | 10 | 4 | 2 | one, rotating weekly through narrow, frozen, locked, funnel |
 
-All have 2 spare jars. The board is seeded by a hash of the date key and a salt, then goes through the same solver-proven generation as numbered levels.
+All have 2 spare jars. The board is seeded from the date key and a salt (Formulas), then goes through the same solver-proven generation as numbered levels (`generateFromSpec`, 60 attempts).
+
+**Never fails to load** (F7, *decided 2026-11-08, building in sprint 6*): the daily gets the numbered levels' fallback chain (drop the mechanic, then add a spare) and its failures are caught, so any date the device clock can reach loads a board.
 
 **Streak** (`recordDailySolve`), where `gap` is days since the last solve:
 - `gap == 1`: streak + 1.
 - `gap == 2` and a pass is held: streak + 1, one pass spent (`usedPass`).
+- `gap < 0` (the device clock was moved back, D10, **built in sprint 5**): the solve is **out of order**. No reward, no shell, no streak change and no reset (`outOfOrder`); the win card explains it.
 - Anything else (including the first solve): streak = 1.
 - If the new streak is a multiple of 7 and fewer than 2 passes are held: one pass is earned.
 - Best streak is tracked.
 - Only the **first** solve of a date pays; later solves on the same date change nothing.
 
-**Home card** (`streakStatus`): shows today's difficulty, "Solved today ✓", the live streak, held passes, and "A tide pass will save your streak" when `gap == 2` and a pass is held. The card and the Shells button appear only after the tutorial is done.
+**What a daily pays**: only the streak coins and a shell (or the 50-coin bonus once all 40 shells are owned, `shell-collection.md`). No level reward, no Perfect bonus, no tall-jar bonus (even on the tall-jar Sunday) and no "Perfect" title (`economy.md` §2.1). Boosters work as in a level, at the same prices.
+
+**Home card** (`streakStatus`): shows today's difficulty, "Solved today ✓", the live streak, held passes, and "A tide pass will save your streak" when `gap == 2` and a pass is held. The card and the Shells button appear only after the tutorial is done. **After the clock moves back** (GA-DP-5, owner default 2026-11-08, *building in sprint 6*): the card shows today's real state, so "Solved today ✓" appears only if this date was actually solved (today `gap ≤ 0` always shows it).
 
 **Win card**: "Daily solved!", pours and streak, the reward, a note if a pass was used or earned, the new shell, a Share button, and a Home button.
 
-**Share**: native share sheet, else the clipboard: `Strata Daily <date> (<difficulty>)`, `Solved in N pours · S-day streak`, then the game's address. Contains no board spoilers.
+**Share**: native share sheet, else the clipboard: `Strata Daily <date> (<difficulty>)`, `Solved in N pours · S-day streak`, then the game's address. Contains no board spoilers. **N is the pour count of the first counted solve of that date** (GA-DP-6, owner default 2026-11-08, *building in sprint 6*; the count is stored with the solve). A replay can't share a better count than the solve that counted.
 
 ### 2.2 State and Data
 
@@ -86,7 +94,7 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 | Weekday | `(dayNumber + 4) mod 7`, 0 = Sunday | `dayNumber` = whole days since 1970-01-01 | 2026-11-08 → Sunday |
 | Saturday mechanic | `list[floor(dayNumber / 7) mod 4]` | | Advances one mechanic per week |
 | Pass earned | `streak mod 7 == 0 and passes < 2` | | Streak 7 and 14 each bank one pass |
-| Daily seed | `FNV-1a(dateKey) XOR salt`, then attempt mixing | | |
+| Daily seed | `FNV-1a(dateKey)` computed with the offset basis `2166136261 XOR seedSalt` (the salt goes into the basis *before* hashing), then attempt mixing | `seedSalt` 7351 | Boards must stay identical, so the code (`daily.ts`) is the requirement |
 
 ---
 
@@ -101,13 +109,20 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 
 - ✅ **UTC, not local date** (M4, fixed 2026-11-08): the home screen and `startDaily` use `utcDateKey`. Verified in the browser: a phone in UTC+14 whose local date was Monday 9 November got Sunday 8 November's board. Moving the phone's clock still changes the date, since there is no server time.
 
+- ✅ **Clock moved backwards** (D10, **built in sprint 5**): a solve dated before the last solve is ignored for the streak (no reward, no reset); see 2.1 Streak.
+- ✅ A daily started before 00:00 UTC and won after it counts for the date it was started.
+
+**Decided 2026-11-08, building in sprint 6**:
+- **A date's daily fails to generate** (F7): caught, with the level fallback chain. A sweep of at least 2 years of dates is retained as a test (today only 8 weeks are tested; Saturday is the riskiest day).
+- **Home after the clock moves back** (GA-DP-5): shows today's real state.
+- **Share after a replay** (GA-DP-6): shares the first counted solve's pours.
+
 **Not Yet Handled**:
-- ⚠️ **Clock moved backwards**: if today's key is *earlier* than the last solve, `recordDailySolve` treats it as a break and resets the streak to 1 while `streakStatus` reports "solved today". Decided 2026-11-08: **don't punish it**: a solve dated before the last solve is ignored for the streak (no reward, no reset) (**built in sprint 5**).
-- ✅ Decided 2026-11-08: the Saturday mechanic stays the same for everyone, even before the player has unlocked it (intro card shown).
+- None.
 
 **Unclear**:
-- ✅ Decided 2026-11-08: Saturday is not gated by progress.
-- ✅ Decided 2026-11-08: the Share link is the GitHub Pages address.
+- ✅ Decided 2026-11-08 (D2): the Saturday mechanic stays the same for everyone, even before the player has unlocked it (intro card shown); Saturday is not gated by progress.
+- ✅ Decided 2026-11-08 (D18): the Share link is the GitHub Pages address.
 
 ---
 
@@ -115,7 +130,7 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 
 **Technical Dependencies**: `generator.ts` (`generateFromSpec`), `levels.ts`, `rng.ts`.
 
-**Design Dependencies**: `level-generation.md`, `jar-mechanics.md`, `session-boosters.md` (the daily is played in a normal session, so boosters and Perfect-style rules apply), `economy.md`, `shell-collection.md`, `feel-audio-ui.md`, `save-data.md`.
+**Design Dependencies**: `level-generation.md`, `jar-mechanics.md`, `session-boosters.md` (the daily is played in a normal session, so boosters work as in a level; Perfect does not apply and pays nothing), `economy.md`, `shell-collection.md`, `feel-audio-ui.md`, `save-data.md`, `player-profile.md`.
 
 **Content Dependencies**: `daily` in `game-config.json` (`seedSalt`, `week`, `streak`).
 
@@ -138,16 +153,20 @@ All have 2 spare jars. The board is seeded by a hash of the date key and a salt,
 - [x] Backwards-clock rule decided (ignore, don't reset).
 - [x] Backwards-clock rule built and tested (the win card explains it).
 - [x] Saturday-unlock question answered (as built).
+- [ ] F7: a forced generation failure still loads a daily; at least 2 years of dates generate (retained test).
+- [ ] GA-DP-5: with the clock moved back, the home card does not say "Solved today" for an unsolved date (test or screenshot).
+- [ ] GA-DP-6: Share after a replay uses the first counted solve's pours (test).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-None open.
+None open: GA-DP-5 and GA-DP-6 take the owner's defaults (2026-11-08).
 
 ### Flagged Follow-Up Work
 - [x] Replace `localDateKey(new Date())` call sites with `utcDateKey`.
 - [x] `recordDailySolve` ignores a date earlier than `last` (`outOfOrder`), test written first.
+- [ ] Build F7, GA-DP-5 and GA-DP-6 (sprint 6), then mark them built here.
 
 ---
 
@@ -157,3 +176,4 @@ None open.
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; UTC date confirmed by the owner |
 | 2026-11-08 | Claude | M4 fixed: the daily follows the UTC date |
+| 2026-11-08 | Claude (sprint 6, F9) | Never-failing daily (F7, GA-DP-1) and the GA-DP-5 / GA-DP-6 defaults recorded as building; seed formula corrected (GA-DP-2); backwards-clock rule moved into 2.1 and marked handled (GA-DP-3); what a daily pays stated (GA-DP-4); UTC switch and midnight crossing noted (GA-DP-7, GX-18); player-profile added to dependencies |

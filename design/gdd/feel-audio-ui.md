@@ -2,7 +2,7 @@
 status: reverse-documented
 source: src/ui/main.ts, src/ui/audio.ts, src/ui/fx.ts, src/ui/layout.ts, src/ui/shells.ts, src/ui/strings.ts, src/ui/style.css, public/sw.js
 date: 2026-11-08
-verified-by: pending review
+verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 2026-11-08)
 ---
 
 # Feel, Audio and UI: Design Document
@@ -12,6 +12,10 @@ verified-by: pending review
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** items marked *decided 2026-11-08, building in sprint 6* come from the
+> approved fix bundles F1–F6 and F8 (`production/qa/sprint-6-findings.md`) and are not in the code yet.
+> Mark each "built in sprint 6" once it lands. Per-screen detail is in `design/ux/`.
 
 ---
 
@@ -19,14 +23,15 @@ verified-by: pending review
 
 **Purpose**: Everything the player sees, hears and touches: the board, the pour animation, effects, sound, vibration, screens and accessibility.
 
-**Scope**: The phone-first interface. The rules it displays are in the other documents; this one covers presentation and input.
+**Scope**: The phone-first interface. The rules it displays are in the other documents; this one covers presentation and input, including the screens of the player profile (`player-profile.md`) and the save code (`save-data.md`).
 
 **Current Implementation**: A DOM and CSS renderer (no framework), the Web Animations API for pours, WebAudio for synthesised sound and music, particles from DOM nodes, a strings table for all text, and a service worker for offline play.
 
 **Design Intent** (from `design/competitive-roadmap.md` C1, C4, C5, `design/reverse-engineering/magic-sort-teardown.md` V2):
 - A pour should feel satisfying: the jar tips past horizontal, the sand surface stays level, the stream splashes, the cork drops in.
 - No copied assets: all art is CSS/SVG, all sound is generated.
-- Calm and respectful: sound, music and vibration are individually switchable; reduced motion is honoured.
+- Calm and respectful: sound, music and vibration are individually switchable; reduced motion is honoured; nothing is told by motion or sound alone.
+- The player is never left without a way forward: the stuck banner always names a free way out (Undo or Restart).
 
 ---
 
@@ -34,11 +39,43 @@ verified-by: pending review
 
 ### 2.1 Core Mechanics
 
-**Screens**: Home (logo, coins, Play, Daily card, Shells, Scenes), Board (HUD, jars, boosters), Win card, Settings sheet, Scenes sheet, Shell cabinet, Jar guide/intro card, Tutorial.
+**Screens**:
+- **Home**: the profile chip (top-left, own row above the logo, after the tutorial; `player-profile.md` §3.1), logo, coins, Play, Daily card, Shells, Scenes. A **Settings button** on Home, in the top row opposite the profile chip (F8, *decided 2026-11-08, building in sprint 6*).
+- **Board**: HUD, jars, boosters, restart.
+- **Win card**: result, coins, the small avatar in its frame (not in the tutorial), the shell row, set line and profile unlock rows (`player-profile.md` §3.7).
+- **Sheets and dialogs**: Settings, Scenes, Shell cabinet, Jar guide / intro card, Profile, Edit Profile (Avatar / Frame / Name tabs with radio grids), "Discard changes?", Save code (`save-data.md` §2.1), Tutorial.
 
-**Input**: tap a jar to lift it, tap another to pour; tap the same jar to put it down; an illegal target shakes the jar. Keyboard: `1`–`9` and `0` pick jars, `Z` undo, `S` shuffle, `J` jar, `H` hint, `R` restart, `Esc` deselects or closes a sheet, `Enter`/`Space` confirm Play and Continue.
+**Input (touch)**: tap a jar to lift it, tap another to pour; tap the same jar to put it down. A refused pour shakes the jar, plays the "nope" sound and vibration, and shows a short toast with the reason (for example "Top colours don't match"), so it is not told by motion and sound only (F2, *decided 2026-11-08, building in sprint 6*). Special jars (frozen, locked, funnel) already show a one-line reason (`jar-mechanics.md`).
+
+**Input (keyboard)**: the topmost open layer takes the key; the layers are checked in this order:
+
+| Layer open | Keys |
+|---|---|
+| "Discard changes?" | `Esc` = Keep editing |
+| Edit Profile | `Esc` closes (asks "Discard changes?" if the draft changed); `Enter` in the name field saves; arrows move between tabs and through a radio grid |
+| Profile | `Esc` closes |
+| Save code | `Esc` closes |
+| Scenes | `Esc` closes (restores the preview) |
+| Intro card | `Esc` or `Enter` closes |
+| Shell cabinet | `Esc` closes; `Enter`/`Space` on a set header expands or collapses it |
+| Home | `Enter`/`Space` plays, unless another home button (profile chip, daily card, Shells, Scenes) has focus, which then activates that button |
+| Win card | `Enter`/`Space` = Continue. Enter on a focused Share button shares instead (F3, *decided 2026-11-08, building in sprint 6*) |
+| Settings | `Esc` closes |
+| Board | `1`–`9` and `0` pick jars 1–10; `Z` undo, `S` shuffle, `J` jar, `H` hint, `R` restart; `Esc` deselects |
+
+**Jars 11 and up** (late boards have 16 or more): every jar is a `<button>`, so `Tab` reaches each jar in board order and `Enter`/`Space` lifts or pours, the same as a tap. The number keys cover only the first 10.
+
+**Dialogs hold keyboard focus** (F3, *decided 2026-11-08, building in sprint 6*): one shared open/close helper makes everything behind the top layer inert, moves focus into the dialog when it opens, and returns focus to the button that opened it when it closes. Home sets a first focus.
 
 **Pour animation** (`ANIM`, milliseconds): lift 210, stream in 90, flow 230, stream out 90, return 220, tilt 100°, win card delay 650. The player can act again while the source jar is still returning. A "tilted fill" keeps the sand surface level while the jar rotates. Landing makes a small splash; sealing drops a cork and throws sparkles; winning throws sand grains in the board's colours.
+
+**Hint mark** (F1, *decided 2026-11-08, building in sprint 6*): the "from" and "to" jars get a static ring that shows under reduced motion (the pulse is an extra on top). "From" and "to" differ by more than colour, through a lift and a badge. A toast reads the hint for screen readers, for example "Hint: pour jar 2 into jar 5". Shown for 2.4 s.
+
+**Stuck banner** (F2 and D21, *decided 2026-11-08, building in sprint 6*): when the board is stuck or a known dead end (`pour-rules.md` §2.1), a **persistent** banner (not a timed toast) offers Undo, Shuffle, Extra Jar and Restart, and stays until the board changes. Its text names Restart; when no booster is affordable it says Restart is free. A known dead end says "This board can't be won now: Undo or Restart". Today a toast says "No pours left. Undo, shuffle or add a jar." and leaves Restart out (GX-1). Toasts draw above every overlay.
+
+**Leaving a level part-way** (F6, *decided 2026-11-08, building in sprint 6*): Home or Replay tutorial part-way through a level asks first, or offers "Continue" (exact flow in `design/ux/`). Restart becomes undoable.
+
+**Touch targets** (F5, *decided 2026-11-08, building in sprint 6*): every control is at least 44 × 44 px, including icon buttons, Edit tabs, secondary buttons and cabinet set headers. Restart sits further from Settings.
 
 **Sound** (`GameAudio`, all synthesised): select, deselect, nope, pour, land, seal, win, coin, booster, shuffle; ambient music (a slow pentatonic loop over an ocean-noise swell). Audio starts only after the first tap (browsers require it).
 
@@ -48,21 +85,24 @@ verified-by: pending review
 
 **Tutorial**: first launch plays a one-pour board with a pulsing ring and two captions ("Tap a jar to lift it", "Now tap the other jar to pour"), then "Nice pour!" and "Start level 1". Replayable from Settings.
 
-**Settings**: sound effects, music, vibration, colour patterns; buttons for Home, Replay tutorial, Jar guide, Scenes.
+**Settings**: sound effects, music, vibration, colour patterns; buttons for Home, Replay tutorial, Jar guide, Scenes, Save code.
 
-**Accessibility as built**: colour patterns (12 textures, one per colour); reduced motion (animation skipped, effects off); keyboard play; each jar has a text label including contents and state; the toast and coach are announced politely; focus rings on all controls; all text comes from `strings.ts`.
+**Accessibility as built**:
+- Colour patterns: one texture per palette colour (14 today, `.pat-0` … `.pat-13`); the pattern count follows the palette size, so a new colour needs a new pattern.
+- Reduced motion: the pour animation is skipped and particles are off; the win-card delay drops from 650 to 0 ms and the seal-effect delay from 180 to 0 ms; the coin count-up is skipped; the Night Shore halo stays but its pulse stops (SC-6); the hint ring stays visible (F1, building).
+- Keyboard play (table above); each jar has a text label including contents and state; the toast and coach are announced politely; focus rings on all controls; all text comes from `strings.ts`.
 
 **Offline**: a service worker caches the app on the first visit; the page is network-first (latest deploy when online, cached copy offline) and built files are cache-first.
 
 ### 2.2 State and Data
 
-- UI-only state: selected jar, busy flag, returning jars, current mode (`level`, `daily`, `tutorial`), preview scene.
+- UI-only state: selected jar, busy flag, returning jars, current mode (`level`, `daily`, `tutorial`), preview scene, restore armed (Save code).
 - Saved settings: `sound`, `music`, `haptics`, `patterns` (`save-data.md`).
 
 ### 2.3 Integration Points
 
-- **Depends on**: every rules document (`pour-rules.md`, `jar-mechanics.md`, `session-boosters.md`, `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `level-generation.md`) and `save-data.md`.
-- **Depended on by**: `player-profile.md`, whose home chip, Profile screen, Edit sheet and win-card rows are presented through this layer.
+- **Depends on**: every rules document (`pour-rules.md`, `jar-mechanics.md`, `session-boosters.md`, `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `level-generation.md`), `save-data.md` and `player-profile.md` (its home chip, Profile screen, Edit sheet and win-card rows are presented through this layer).
+- **Depended on by**: none. This is the top of the stack.
 
 ---
 
@@ -70,32 +110,36 @@ verified-by: pending review
 
 **Handled in Code**:
 - ✅ Taps during a pour animation are ignored; keyboard boosters too.
-- ✅ Reduced motion skips the pour animation and particles.
+- ✅ Reduced motion skips the pour animation and particles (full list in 2.1).
 - ✅ Resize is debounced and does not rebuild mid-pour.
 - ✅ Storage, audio or vibration being unavailable never throws; the game stays playable.
 - ✅ 320 px phones show no horizontal scroll in any scene (screenshots in `production/qa/evidence/`).
-- ✅ A `?level=N` launch address skips the home screen (used for screenshots).
+- ✅ A `?level=N` launch address skips the home screen (used for screenshots); it is replay only, never beyond the player's progress (D3, **built in sprint 5**).
+- ✅ **Text scaling** (D14, **built in sprint 5**): font sizes are in `rem` and follow the phone/browser text size, iOS Dynamic Type is passed through, and every main screen fits at 150% text on a 320 px phone (`production/qa/evidence/sprint-5/`).
+- ✅ **Gamepad waived for Strata** (D13): touch and keyboard only, recorded in `design/accessibility-requirements.md`. Revisit for a TV or console version.
+- ✅ Sound and music stay on/off toggles; no volume sliders (D15).
+
+**Decided 2026-11-08, building in sprint 6**:
+- Stuck with no booster affordable: the banner names the free Restart (GX-1).
+- A refused pour shows a toast, not just motion and sound.
+- The hint is visible under reduced motion and announced.
+- Keyboard focus can't escape an open dialog.
+- Leaving a level part-way asks first.
+- No touch target is smaller than 44 × 44 px.
 
 **Not Yet Handled** (against the studio's UI standard, `.claude/rules/ui-code.md`):
-- ✅ **Gamepad waived for Strata** (Decided 2026-11-08): touch and keyboard only, recorded in `design/accessibility-requirements.md`. Revisit for a TV or console version.
-- ⚠️ **No text scaling.** Font sizes are fixed pixels. Decided 2026-11-08: text **follows the phone/browser text-size setting**, with layouts that still fit at large sizes (**built in sprint 5**).
-- ✅ Decided 2026-11-08: sound and music stay on/off toggles; no volume sliders.
 - ⚠️ The offline mode does not announce a newer version; it simply serves the latest on the next launch.
 - ⚠️ Some static page text exists in `index.html` before `strings.ts` replaces it at startup.
-
-**Unclear**:
-- ✅ Decided 2026-11-08: gamepad waived.
-- ✅ Decided 2026-11-08: `?level=N` stays but is replay only, never beyond the player's progress (**built in sprint 5**).
 
 ---
 
 ## 4. Dependencies
 
-**Technical Dependencies**: DOM, CSS custom properties, Web Animations API, WebAudio, `navigator.vibrate`, `localStorage`, service workers.
+**Technical Dependencies**: DOM, CSS custom properties, Web Animations API, WebAudio, `navigator.vibrate`, `localStorage`, the clipboard API, service workers.
 
-**Design Dependencies**: all the other GDDs in this folder.
+**Design Dependencies**: all the other GDDs in this folder (listed in 2.3), and `design/accessibility-requirements.md`.
 
-**Content Dependencies**: `strings.ts` (all text), `palette` (12 colours), shell artwork in `shells.ts`.
+**Content Dependencies**: `strings.ts` (all text), `palette` (14 colours, one pattern each), shell artwork in `shells.ts`, avatar and frame artwork in `avatars.ts`.
 
 ---
 
@@ -103,26 +147,28 @@ verified-by: pending review
 
 **What Exists** (verified by screenshots in `production/qa/evidence/`, not unit tests, since this is visual):
 - ✅ The tilted pour with a level sand surface (`competitive-sprint-1/04b-tilt-100deg.png`).
-- ✅ The tutorial, home, win card, settings, scenes, cabinet and jar guide on a phone.
 - ✅ 320 px fit for the board with 14 jars.
 - ✅ Layout and storage helpers are unit-tested (`tests/unit/core/ui-helpers.test.ts`).
+- ✅ Text follows the browser/phone text size; every main screen checked at 150% text on a 320 px phone (`production/qa/evidence/sprint-5/`).
+- ✅ Profile screens (`production/qa/evidence/player-profile/`).
 
-**What's Missing**:
-- ✅ Text follows the browser/phone text size (all font sizes in `rem`, iOS Dynamic Type passed through); every main screen checked at 150% text on a 320 px phone (`production/qa/evidence/sprint-5/`).
+**Screen check** (pass condition): each screen (tutorial, home, board, win card, settings, scenes, cabinet, jar guide, profile, edit profile, save code) screenshotted at 320 and 412 px, at 100% and 150% text, in all 4 scenes: no horizontal overflow, no overlapping controls, no text outside `strings.ts`. Done for the sprint-5 screens; re-run after sprint 6.
 
 **Definition of Done**:
 - [x] Gamepad waived; text scaling required (follow the phone); volume stays on/off.
 - [x] Text scales with the phone's setting and every screen fits at 150% (screenshots).
+- [ ] Sprint 6 (F1–F6, F8): hint under reduced motion, stuck banner with Restart, refused-pour toast, focus held by dialogs, 44 px targets, Settings on Home, leave-level confirmation, each with a retained screenshot.
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-None open.
+- Whether the hard-coded presentation values (ANIM timings, vibration, layout limits, 2.4 s hint, 2.6 s toast) move to config or are recorded as exempt: owner choice (GB-FA-8).
 
 ### Flagged Follow-Up Work
 - [x] UI font sizes converted to `rem`; overlays scroll and button rows wrap at large text.
-- [ ] Run `/ux-review` on the screens once `design/ux/` specs exist.
+- [x] `/ux-review` on the screens (sprint 6, `production/qa/sprint-6/ux-review.md`).
+- [ ] Build F1–F6 and F8 (sprint 6), then mark them built here.
 
 ---
 
@@ -131,3 +177,4 @@ None open.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
+| 2026-11-08 | Claude (sprint 6, F9) | Profile, Edit Profile, Discard and Save code screens, win-card avatar and unlock rows, Save code in Settings, per-layer keyboard table (GB-FA-1); 14 colours and patterns (GB-FA-2, GX-9); text scaling moved to Handled (GB-FA-3); jars 11+ by Tab (GB-FA-4); full reduced-motion list (GB-FA-5); screen check with a pass condition (GB-FA-6); depends on player-profile (GX-10); decided sprint 6 items recorded: stuck banner naming Restart (GX-1), refused-pour toast, visible and announced hint, dialogs holding focus, 44 px targets, Settings on Home, leave-level confirmation |

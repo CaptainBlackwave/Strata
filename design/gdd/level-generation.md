@@ -2,7 +2,7 @@
 status: reverse-documented
 source: src/core/generator.ts, src/core/solver.ts, src/core/levels.ts, src/core/rng.ts, src/config/game-config.json
 date: 2026-11-08
-verified-by: pending review (intent for the difficulty ramp confirmed by the owner 2026-11-08)
+verified-by: pending review (intent for the difficulty ramp confirmed by the owner 2026-11-08; D22, D23 and the GA-LG-6 default decided 2026-11-08)
 ---
 
 # Level Generation: Design Document
@@ -12,6 +12,9 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** never-failing generation (F7) and the GA-LG-6 intro-card rule are
+> *decided 2026-11-08, building in sprint 6*. Mark them "built in sprint 6" once they land.
 
 ---
 
@@ -19,14 +22,16 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 
 **Purpose**: Produce an endless supply of levels that are always winnable, always the same for a given level number, and that get harder as the player progresses.
 
-**Scope**: The difficulty curve, the deal, the solver that proves a level winnable, seeded randomness, tall-jar and buried-sand levels. Where mechanics are placed is in `jar-mechanics.md`; the daily puzzle's recipes are in `daily-puzzle.md`.
+**Scope**: The difficulty curve, the deal, the solver that proves a level winnable, seeded randomness, tall-jar and buried-sand levels, the fallback chain. Where mechanics are placed is in `jar-mechanics.md`; the daily puzzle's recipes are in `daily-puzzle.md`.
 
 **Current Implementation**: `levelSpec(level)` turns a level number into a recipe from config; `generateLevel` deals sand from a seeded shuffle, adds mechanics, and keeps only a deal that the depth-first solver proves winnable.
 
 **Design Intent**:
 - Every level shown to the player is winnable (a hard guarantee, `design/game-brief.md` MVP 2).
 - A level number always gives the same board, on every device.
-- **Difficulty keeps rising throughout the game** — `INTENDED — confirmed 2026-11-08`. **Implemented in sprint 5** (M3): see Edge Cases and Formulas.
+- **Difficulty keeps rising throughout the game** — `INTENDED — confirmed 2026-11-08`. **Implemented in sprint 5** (M3, D1): see Edge Cases and Formulas.
+- **A level always loads** (F7): generation never leaves the player on a broken screen. *Decided 2026-11-08, building in sprint 6.*
+- **No difficulty target yet** (D23): per-band targets (for example median solution length) are deferred to a later balance sprint. GX-13 stays open, owner-acknowledged.
 
 ---
 
@@ -35,8 +40,8 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 ### 2.1 Core Mechanics
 
 **Recipe** (`levelSpec`): colours, capacity, spare empty jars, buried depth, challenge flag, mechanics.
-- Every 10th level is a *tall-jar challenge*: 5 colours, capacity 8, 2 spare jars, no burying, no mechanics.
-- Other levels read the config curve; a row's omitted fields inherit from the previous row. Colours are clamped to the 12-colour palette.
+- Every 10th level is a *tall-jar challenge*: 5 colours, capacity 8, 2 spare jars, no burying. No mechanics before level 100; from level 100 it gets mechanics at the normal chance (D8, `challenge.mechanicsFrom: 100`, **built in sprint 5**).
+- Other levels read the config curve; a row's omitted fields inherit from the previous row. Colours are clamped to the palette size (14 colours today, `palette` in config).
 
 | From level | Colours | Notes |
 |---|---|---|
@@ -56,13 +61,17 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 
 From level 60 the spare-jar swap and from level 45 the rising mechanic chance also apply (below).
 
+**Spare-jar swap** (D1, `ramp.spareOne`): from level 60, with the chance in Formulas, one of the two spares is replaced by a narrow jar (or, from level 81, a narrow jar or a funnel). It runs after `pickMechanics`, so a level can carry up to 3 mechanics from level 101 (D22, `jar-mechanics.md` §2.1).
+
 **Deal** (`dealBoard`): `colours × capacity` units, shuffled, split into `colours` full jars, plus `spare` empty jars. Each filled jar buries `min(depth, length − 1)` units from its bottom.
 
 **Accept** (`generateFromSpec`): for attempt 0 to 59, seed = `mix(mix(baseSeed, level), attempt)`; deal; add mechanics; reject if any jar starts sealed (`maxSealedAtStart: 0`) or a mechanic couldn't be placed; run the solver; return the first deal proven winnable.
 
-**Fallback chain** (`generateLevel`, sprint 5): (1) the full recipe, with at most 12 attempts if it has the spare swap, each attempt capped at 12,000 solver states and the step at 25,000 in total; (2) the same with a second ordinary spare; (3) without mechanics, full budget. Each step is still solver-proven, so a level always loads. The caps count solver states, not time, so every device gets the same board.
+**Fallback chain** (`generateLevel`, sprint 5): (1) the full recipe, with at most 12 attempts if it has the spare swap, each attempt capped at 12,000 solver states (`stepAttemptNodeBudget`) and the step at 25,000 in total (`stepNodeBudget`); (2) the same with a second ordinary spare added back (so 2 spares **plus** the swap's narrow or funnel: easier than an unswapped level); (3) without mechanics, full budget. Each step is solver-proven. The caps count solver states, not time, so every device gets the same board.
+- **Total failure** (F7, *decided 2026-11-08, building in sprint 6*): today step 3 can still throw and `startLevel` doesn't catch it. The fix catches every generation failure and falls back to a board that can't fail, so a level always loads.
+- **Lost debut** (GA-LG-6, owner default 2026-11-08, *building in sprint 6*): step 3 drops every mechanic, including a debut mechanic on its debut level. When that happens no "New jar!" card is shown, and the card waits for the next level that has the mechanic.
 
-**Solver** (`solve`): depth-first search with memory of canonical positions, a state budget, and move ordering that prefers stacking onto a match, moving a whole run, emptying a jar and sealing. Prunes: sealed jars are never poured from, and only the first empty jar of each kind is tried as a target. Returns winnable (with the move list), unwinnable (proven), or unknown (budget ran out, treated as "not accepted").
+**Solver** (`solve`): depth-first search with memory of canonical positions, a state budget, and move ordering that prefers stacking onto a match, moving a whole run, emptying a jar and sealing. Prunes: sealed jars are never poured from (now also a pour rule, D20), and only the first empty jar of each kind is tried as a target. Returns winnable (with the move list), unwinnable (proven), or unknown (budget ran out, treated as "not accepted").
 
 **Random numbers** (`rng.ts`): mulberry32 seeded generator, a seed mixer and a Fisher–Yates shuffle, all deterministic.
 
@@ -70,14 +79,14 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 
 - `LevelSpec`: `{ level, colors, capacity, spare, buriedDepth, challenge, mechanics }`.
 - `GeneratedLevel`: `{ spec, board, seed, solutionLength, attempts }`.
-- Config: `baseSeed`, `curve`, `challenge`, `generator`, `palette`.
+- Config: `baseSeed`, `curve`, `challenge`, `ramp`, `generator`, `palette`.
 
 **Persistence**: none. Levels are regenerated from the level number every time.
 
 ### 2.3 Integration Points
 
 - **Depends on**: `pour-rules.md` (rules and keys), `jar-mechanics.md` (placement).
-- **Depended on by**: `session-boosters.md` (hint and shuffle use the solver), `daily-puzzle.md` (`generateFromSpec`), `economy.md` (the tall-jar flag), `feel-audio-ui.md` (level labels).
+- **Depended on by**: `jar-mechanics.md` (the spare swap adds jars), `session-boosters.md` (hint and shuffle use the solver), `daily-puzzle.md` (`generateFromSpec`), `economy.md` (the tall-jar flag), `feel-audio-ui.md` (level labels), `save-data.md` (`level`), `shell-collection.md` (every 5th level number is a milestone).
 
 ---
 
@@ -85,13 +94,14 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
-| Units dealt | `colours × capacity` | colours 3–12, capacity 4 (8 on tall-jar levels) | Level 45: 12 × 4 = 48 units in 12 full jars + 2 spare |
-| Jar count | `colours + spare` (+1 for narrow or funnel) | spare = 2 | Level 1: 5 jars |
-| Buried units per jar | `min(depth, length − 1)` | depth 0–2 | Depth 2 on a 4-unit jar buries the bottom 2 |
+| Units dealt | `colours × capacity` | colours 3–14, capacity 4 (8 on tall-jar levels) | Level 45: 12 × 4 = 48 units in 12 full jars + 2 spare |
+| Jar count | `colours + spares + specials (+ extra jars)` | `spares` = 2, or 1 on a swap level; `specials` = 1 for the swap's narrow/funnel, +1 for each rolled narrow or funnel (up to +3 from 101); fallback step 2 = 2 spares + the swap's jar; extra jars come from the booster | Level 1: 3 + 2 = 5 jars. A level-130 swap level with a rolled funnel: 14 + 1 + 2 = 17 |
+| Buried units per jar | `min(depth, length − 1)` | depth 0–3 | Depth 2 on a 4-unit jar buries the bottom 2; depth 3 leaves only the top visible |
 | Attempt seed | `mix(mix(baseSeed, level), attempt)` | attempt 0–59 | |
-| Spare-swap chance | `0` before 60; `0.2 + 0.55·(level − 60)/90` from 60 to 150; `0.75` after | | Level 105: 47.5% |
-| Mechanic chance | `0.34` to level 45; `0.34 + 0.16·(level − 45)/75` to 120; `0.5` after | | Level 82: 0.42 |
-| Solver cost | per attempt ≤ 60,000 states (≤ 12,000 in capped fallback steps) | about 22 µs per state on a 16-jar board | Levels 1–500: no failures, 1 of 277 swap levels fell back; median 4 ms, 95th percentile 217 ms, worst 577 ms |
+| Spare-swap chance | `0` before 60; `0.2 + 0.55·(level − 60)/90` from 60 to 150; `0.75` after | `ramp.spareOne` | Level 105: 47.5% |
+| Mechanic chance | `0.34` to level 45; `0.34 + 0.16·(level − 45)/75` to 120; `0.5` after | `mechanics.chance`, `ramp.mechanicChance` | Level 82: 0.42 |
+| Difficulty score (test only) | `colours + buriedDepth + 3·(2 − spare) + mechanics.length` | weights as set in `placement.test.ts` (a missing spare weighs 3; no rationale was recorded, so treat the weights as a test convention) | A level with 12 colours, depth 3, 1 spare, 1 mechanic: 12 + 3 + 3 + 1 = 19. Not a design target (D23) |
+| Solver cost | per attempt ≤ 60,000 states (≤ 12,000 in capped fallback steps) | about 22 µs per state on a 16-jar board | One-off sweep of levels 1–500 (sprint 5, not retained as a test): no failures, 1 of 277 swap levels fell back; median 4 ms, 95th percentile 217 ms, worst 577 ms. This is the single timing figure for generation |
 
 ---
 
@@ -102,19 +112,23 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 - ✅ A deal the solver can't prove winnable within budget is rejected (unknown is not accepted).
 - ✅ Level numbers below 1 or non-integers throw `RangeError`.
 - ✅ Colours beyond the palette size are clamped.
-- ✅ Plain levels keep their exact pre-mechanics boards (fixture-tested for levels 1–80).
-
-**Not Yet Handled** (discovered during analysis):
-- ✅ **Difficulty keeps rising past level 45** (M3, fixed in sprint 5; before this, level 46 and level 5,000 shared one recipe). Decided 2026-11-08: use **all four levers**, **built in sprint 5**:
+- ✅ Plain levels keep their exact pre-mechanics boards (fixture-tested for plain levels 1–59).
+- ✅ **Difficulty keeps rising past level 45** (M3, fixed in sprint 5; before this, level 46 and level 5,000 shared one recipe). Decided 2026-11-08 (D1): use **all four levers**, **built in sprint 5**:
   - **Fewer spare jars, revised after testing**: a board with only one *empty* spare is almost never winnable (0 of 30 random deals at 12 colours), so on these levels one of the two spares is replaced by a narrow jar, or from level 81 a narrow jar or a funnel (28–30 of 30 winnable). Chance per level: 20% at level 60 rising linearly to 75% at level 150. Owner approved the revision 2026-11-08.
   - **Deeper buried sand**: 3 layers from level 75.
   - **Mechanics more often**: 34% up to level 45, rising linearly to 50% at level 120.
   - **More colours**: 13 from level 90, 14 from level 130 (new palette colours *lavender* and *sky*, each with its own colour-blind pattern).
-  This replaces the earlier "flat from level 45" behaviour (**built in sprint 5**).
-- ⚠️ The solver proves a deal winnable but not how hard it is: `solutionLength` is recorded but unused for pacing.
+- ✅ From level 100 tall-jar levels can get a mechanic, at the normal-level chance (D8, **built in sprint 5**).
+- ✅ Up to 3 mechanics on one level from 101 (D22, as built).
 
-**Unclear**:
-- ✅ Decided 2026-11-08: from level 100 tall-jar levels can get a mechanic, at the normal-level chance (**built in sprint 5**).
+**Decided 2026-11-08, building in sprint 6**:
+- **Generation fails completely** (F7): caught, with a board that can't fail, so a level always loads.
+- **Fallback drops a debut mechanic** (GA-LG-6): the intro card waits for the next level that has it.
+
+**Not Yet Handled**:
+- ⚠️ The solver proves a deal winnable but not how hard it is: `solutionLength` is recorded but unused for pacing. No per-band difficulty target exists (D23, deferred).
+- ⚠️ A debut level from 60 up can also get the swap's narrow jar, so a new mechanic is not always alone (GA-LG-7; no rule yet).
+- ⚠️ Levels are endless, but generation is only tested to level 200 plus 460 and 470 (below).
 
 ---
 
@@ -122,9 +136,9 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 
 **Technical Dependencies**: `board.ts`, `rng.ts`, `game-config.json`.
 
-**Design Dependencies**: `pour-rules.md`, `jar-mechanics.md`, `daily-puzzle.md`, `session-boosters.md`, `economy.md` (reads the tall-jar flag for the bonus), `feel-audio-ui.md`.
+**Design Dependencies**: `pour-rules.md`, `jar-mechanics.md`, `daily-puzzle.md`, `session-boosters.md`, `economy.md` (reads the tall-jar flag for the bonus), `feel-audio-ui.md`, `save-data.md`, `shell-collection.md`.
 
-**Content Dependencies**: `curve`, `challenge`, `generator` (`maxAttempts` 60, `solverNodeBudget` 60,000, `maxSealedAtStart` 0), `baseSeed` 20261107, `palette` (12 colours).
+**Content Dependencies**: `curve`, `challenge` (`every` 10, `colors` 5, `capacity` 8, `spare` 2, `buriedDepth` 0, `mechanicsFrom` 100), `ramp.spareOne` (`from` 60, `to` 150, `chanceFrom` 0.2, `chanceTo` 0.75, `maxAttempts` 12), `ramp.mechanicChance` (`from` 45, `to` 120, `max` 0.5), `generator` (`maxAttempts` 60, `solverNodeBudget` 60,000, `maxSealedAtStart` 0, `stepNodeBudget` 25,000, `stepAttemptNodeBudget` 12,000), `baseSeed` 20261107, `palette` (14 colours).
 
 ---
 
@@ -134,27 +148,28 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 - ✅ Level 1 is 3 colours, capacity 4, 2 spare jars; omitted curve fields inherit; buried sand starts at level 8; every 10th level is capacity 8.
 - ✅ Colour count never decreases across normal levels and is clamped to the palette.
 - ✅ A dealt board has exactly `capacity` units of each colour plus the spare jars, and the same seed gives the same board.
-- ✅ Levels 1–40 (and 1–200 with mechanics) replay to a win from the solver's own path.
+- ✅ Levels 1–40 replay to a win from the solver's own path. For levels 1–200 with mechanics, every 4th mechanic level replays to a win by following hints at a 60,000-state budget; levels 460 and 470 are also generated.
 - ✅ Different levels give different boards; the same level gives the same board.
-
-**What's Missing**:
-- ✅ Difficulty keeps rising past level 45 (tested: average difficulty of levels 150–250 is more than 2 points above 46–58).
+- ✅ Difficulty keeps rising past level 45: the average difficulty score (Formulas) of levels 150–250 is more than 2 points above levels 46–58.
 
 **Definition of Done**:
 - [x] Ramp shape decided (all four levers, 2026-11-08).
 - [x] Ramp implemented, and a test shows difficulty parameters keep changing past level 45.
-- [x] Levels 1–59 keep their exact boards (fixture).
-- [x] Every level 1–500 generates, solver-proven.
+- [x] Plain levels 1–59 keep their exact boards (fixture).
+- [x] Every level 1–500 generated, solver-proven, in a one-off sprint-5 sweep (not retained; see Formulas).
+- [ ] F7: a generation failure is caught and a board still loads (test with a forced failure); the intro card is held back when a debut level falls back (test).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-None open. Ramp: all four levers. Tall-jar levels: mechanics from level 100.
+None open. Ramp: all four levers (D1). Tall-jar levels: mechanics from level 100 (D8). Up to 3 mechanics (D22). Difficulty targets: deferred (D23).
 
 ### Flagged Follow-Up Work
 - [x] Implement the ramp (sprint 5).
-- [ ] Run `/balance-check` on the ramp, and playtest levels 60–150.
+- [ ] Build F7 and the GA-LG-6 intro-card rule (sprint 6), then mark them built here.
+- [ ] Keep the 1–500 sweep as a retained test or report.
+- [ ] Set a per-band difficulty target, run `/balance-check` on the ramp, and playtest levels 60–150 (deferred, D23).
 - [ ] Use `solutionLength` (or solver node count) to sanity-check that difficulty is actually rising.
 
 ---
@@ -165,3 +180,4 @@ None open. Ramp: all four levers. Tall-jar levels: mechanics from level 100.
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; ramp-needed confirmed by the owner |
 | 2026-11-08 | Claude | Sprint 5: ramp built (spare-jar lever revised with owner approval), tall-jar mechanics from 100, fallback chain |
+| 2026-11-08 | Claude (sprint 6, F9) | Tall-jar bullet follows D8 (GA-LG-1); ranges, jar-count formula and config keys updated to 14 colours, depth 0–3 and the ramp (GA-LG-2, GX-9); difficulty score defined (GA-LG-4); fixture and replay ranges match the tests (GA-LG-5); fallback effects stated with the GA-LG-6 default; F7 never-failing generation recorded; D22, D23 recorded; "a level always loads" no longer overclaimed (GA-LG-3, building) |

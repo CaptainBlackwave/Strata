@@ -1,8 +1,8 @@
 ---
 status: reverse-documented
-source: src/ui/storage.ts
+source: src/ui/storage.ts, src/ui/main.ts
 date: 2026-11-08
-verified-by: pending review
+verified-by: pending review (export/import D16 decided 2026-11-08; restore reset on edit decided 2026-11-08, sprint 6 F6)
 ---
 
 # Save Data: Design Document
@@ -12,18 +12,21 @@ verified-by: pending review
 > This records what the code **does**; intent marked `INTENT UNKNOWN` below was
 > inferred, not confirmed by the author. Where this document and the code
 > disagree, do not assume the document is the requirement.
+>
+> **Sprint 6 (2026-11-08):** the restore reset (F6) is *decided 2026-11-08, building in sprint 6*.
+> Mark it "built in sprint 6" once it lands.
 
 ---
 
 ## 1. Overview
 
-**Purpose**: Remember the player's progress between visits, without a server.
+**Purpose**: Remember the player's progress between visits, without a server, and let the player move it to another device.
 
-**Scope**: What is saved, the save format, upgrading from older saves, and repairing bad data.
+**Scope**: What is saved, the save format, upgrading from older saves, repairing bad data, and the save code (export and import).
 
-**Current Implementation**: One JSON object in the browser's `localStorage` under `strata.save.v2`, read and written by `loadSave` and `writeSave`. Every access is guarded, so blocked storage means "no save", not a crash.
+**Current Implementation**: One JSON object in the browser's `localStorage` under `strata.save.v2`, read and written by `loadSave` and `writeSave`. Every access is guarded, so blocked storage means "no save", not a crash. `exportSave` / `importSave` turn the save into a text code and back (D16).
 
-**Design Intent** (`design/game-brief.md` MVP 6): the player's progress persists; an older save must never lose the player's level; bad data must never crash the game.
+**Design Intent** (`design/game-brief.md` MVP 6): the player's progress persists; an older save must never lose the player's level; bad data must never crash the game; a restore never replaces progress the player didn't confirm.
 
 ---
 
@@ -44,26 +47,42 @@ verified-by: pending review
 | `shells` | Owned shell ids in earn order | `shell-collection.md` |
 | `seenMechanics` | Intro cards already shown | `jar-mechanics.md` |
 | `themes` | `owned`, `selected`, `auto` | `scenes.md` |
+| `profile` | `name`, `avatar`, `frame`, `plate` | `player-profile.md` §3.8 |
+| `stats` | `perfectClears`, `dailiesSolved`, `pours`, `coinsEarned`, `boostersUsed` | `player-profile.md` §3.8 |
 
 **Not saved**: the board in play, move history, the hint plan, the current scene preview. Reloading mid-level restarts that level.
 
-**Writes**: after every win, purchase, setting change, tutorial completion and intro card.
+**Writes**: after every state change: at boot (after the profile repair), after every win and daily solve, purchase, setting change (including the "Match my clock" toggle), tutorial completion, intro card, profile save, and restore.
 
 **Migration**: with no `strata.save.v2`, the older `strata.progress.v1` (level, best) and `strata.prefs.v1` (colour patterns) are read; a v1 player past level 1 is marked tutorial-done.
 
-**Repair**: each field is checked on its own. A bad or missing value falls back to its default without discarding the rest: level must be a whole number ≥ 1; coins and charges must be whole numbers ≥ 0; settings must be booleans; the streak date must look like `YYYY-MM-DD`; shell and intro lists are de-duplicated and non-strings dropped; Midday is always owned; corrupt JSON gives a fresh save.
+**Repair** (on every load and every import). A bad or missing value falls back to its default without discarding the rest:
+- `level` must be a whole number ≥ 1; coins and charges must be whole numbers ≥ 0; settings must be booleans; the streak date must look like `YYYY-MM-DD`.
+- `best` is accepted as any object; its values are not checked.
+- Shell, intro and theme lists are de-duplicated and non-strings dropped. Unknown ids are **kept** (they are not checked against the catalog here). `themes.selected` is not checked against the catalog either; `activeTheme` falls back later (`scenes.md`). Midday is always owned.
+- `profile` strings are stored as read. `stats` counters that are missing or not non-negative integers become 0.
+- After every load and every restore, `main.ts` runs `repairProfile` (`player-profile.md` §3.8), which needs the catalog and progress: a missing or invalid name is regenerated and an unknown or locked avatar, frame or plate falls back to its default.
+- Corrupt JSON gives a fresh save.
+
+**Export / import (save code, D16, built in sprint 5)**: Settings → Save code opens a sheet with the code, Copy and Restore.
+- **Code format**: `STRATA1:` followed by base64 of the save's UTF-8 JSON. Spaces and line breaks in a pasted code are ignored. `STRATA1` is the code's version.
+- **Copy** writes the current save's code to the clipboard. If the clipboard is blocked, the code is left selected for a manual copy.
+- **Invalid code** (wrong prefix, bad base64 or JSON, not an object): the sheet says the code is invalid, plays the "nope" sound, disarms any pending restore and changes nothing.
+- **Two-tap restore**: the first tap on a valid code shows that code's level and coins and arms the button ("Tap again to replace my progress"). The second tap replaces the **whole** save (progress, wallet, settings, tutorial flag, daily, shells, scenes, profile, stats), runs the profile repair, writes, applies sound settings and the scene, closes the sheet, shows "Restored", starts the save's level and shows Home.
+- **Editing the code disarms the restore** (F6, *decided 2026-11-08, building in sprint 6*): any change to the text box after the first tap resets the button, so the second tap always restores the code whose summary the player saw. Today the confirmation stays armed when the text changes (GX-14).
+- Opening the sheet always starts disarmed.
 
 ### 2.2 State and Data
 
 - Key `strata.save.v2`; legacy keys read once, never deleted.
-- A `KeyValueStore` interface lets tests pass an in-memory store.
+- A `KeyValueStore` interface lets tests pass an in-memory store; `importSave` reuses `loadSave` through one.
 
 **Persistence**: this document *is* the persistence layer.
 
 ### 2.3 Integration Points
 
-- **Depends on**: `economy.md` (the starting wallet).
-- **Depended on by**: `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md`, `player-profile.md` (adds the `profile` and `stats` fields, repaired field by field).
+- **Depends on**: `economy.md` (the starting wallet), `player-profile.md` (the profile repair after load and restore needs its catalog and progress rules).
+- **Depended on by**: `level-generation.md` (`level`), `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md` (settings, tutorial flag, Save code sheet), `player-profile.md` (adds the `profile` and `stats` fields).
 
 ---
 
@@ -73,52 +92,64 @@ verified-by: pending review
 - ✅ Storage blocked, absent or throwing (private windows, blocked site data): the game loads fresh and plays; saving silently does nothing.
 - ✅ Corrupt JSON, an invalid level, wrong types: repaired field by field.
 - ✅ A sprint-1 save (no daily, shells, themes) loads with empty versions of those.
+- ✅ A pre-profile save (no `profile`, no `stats`) loads with all counters at 0 and a generated name.
 - ✅ Duplicate shell ids are removed.
+- ✅ An invalid save code changes nothing.
+
+**Decided 2026-11-08, building in sprint 6**:
+- **Code edited between the two restore taps** (F6, GB-SD-3): the restore disarms, so a player can't confirm code A's summary and restore code B.
 
 **Not Yet Handled**:
-- ⚠️ There is no schema version number inside the save: the key name (`v2`) is the version, so a future format needs a new key and a new migration.
-- ⚠️ A save can be edited by hand in the browser's developer tools (coins, level). There is no server to check it, so this is accepted for a single-player game.
-- ⚠️ The save lives in one browser on one device: it doesn't follow the player, and clearing site data erases it. (Relevant if a leaderboard or accounts are added later.)
+- ⚠️ There is no schema version number inside the save: the key name (`v2`) is the version, so a future format needs a new key and a new migration. Save codes carry their own version (`STRATA1:`), so a future v3 save must still import `STRATA1` codes.
+- ⚠️ A save can be edited by hand in the browser's developer tools (coins, level). Save codes are plain base64 JSON, so they are as easy to edit. There is no server to check either, so this is accepted for a single-player game.
+- ⚠️ Unknown shell, mechanic and theme ids survive load (see Repair). How they should count is an open owner decision (GX-15, `shell-collection.md`).
+- ⚠️ The save lives in one browser on one device: it doesn't follow the player unless they use a save code, and clearing site data erases it. (Relevant if a leaderboard or accounts are added later.)
 
 **Unclear**:
-- ✅ Decided 2026-11-08: add **export/import**: Settings gets "Copy save code" and "Restore from code", a text code that moves progress to another device with no server (**built in sprint 5**).
+- ✅ Decided 2026-11-08 (D16): export/import as a save code (**built in sprint 5**).
 
 ---
 
 ## 4. Dependencies
 
-**Technical Dependencies**: `localStorage`, the economy and daily types.
+**Technical Dependencies**: `localStorage`, `TextEncoder` / `TextDecoder`, `btoa` / `atob`, the clipboard API (optional), the economy and daily types.
 
-**Design Dependencies**: all the system documents above, since each owns part of the save.
+**Design Dependencies**: `economy.md`, `player-profile.md` (both depended on); `level-generation.md`, `session-boosters.md`, `jar-mechanics.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `feel-audio-ui.md` (each owns part of the save, see 2.1).
 
-**Content Dependencies**: the starting wallet (`economy.startCoins`, `boosters[*].start`).
+**Content Dependencies**: the starting wallet (`economy.startCoins`, `boosters[*].start`), the theme default (`themes.default`).
 
 ---
 
 ## 5. Acceptance Criteria
 
-**What Exists** (covered in `tests/unit/core/ui-helpers.test.ts`):
-- ✅ A save round-trips every field, including daily, shells, intro cards and themes.
-- ✅ A new player gets the starting wallet and the tutorial.
-- ✅ v1 progress and prefs migrate; a returning player skips the tutorial.
-- ✅ Invalid fields are repaired individually; corrupt JSON gives a fresh save.
-- ✅ Missing or throwing storage never throws.
-- ✅ An older save without daily or shells loads with empty ones.
+**What Exists**:
+- `tests/unit/core/ui-helpers.test.ts`:
+  - ✅ A save round-trips every field, including daily, shells, intro cards and themes.
+  - ✅ A new player gets the starting wallet and the tutorial.
+  - ✅ v1 progress and prefs migrate; a returning player skips the tutorial.
+  - ✅ Invalid fields are repaired individually; corrupt JSON gives a fresh save.
+  - ✅ Missing or throwing storage never throws.
+  - ✅ An older save without daily or shells loads with empty ones.
+  - ✅ Export/import: a save round-trips through `exportSave` / `importSave`; an invalid code returns null.
+- `tests/unit/profile/profile-save.test.ts`:
+  - ✅ An old save (no `profile`, no `stats`) loads with all counters at 0; `repairProfile` then gives a valid name and the defaults; profile and stats round-trip through a save code.
 
 **Definition of Done**:
 - [x] Versioned key, migration, repair, tests.
 - [x] Backup decided: export/import code.
 - [x] Export/import built (`exportSave` / `importSave`, code `STRATA1:` + base64), round-trip and invalid-code tests; Settings → Save code sheet with a two-tap restore.
+- [ ] F6: edit the code after the first tap, tap again: nothing is restored and the button is back to "Restore" (test or scripted play-through, plus a screenshot).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-None open.
+- How unknown ids in a save should count (drop at load, or count only catalog ids): owner decision, GX-15 / GB-SD-4.
 
 ### Flagged Follow-Up Work
 - [ ] If a leaderboard or accounts are added, design the account link and conflict handling here first.
 - [x] "Copy code" / "Restore from code" in Settings → Save code, with an explanation of what it does.
+- [ ] Build F6 (sprint 6), then mark it built here.
 
 ---
 
@@ -127,3 +158,4 @@ None open.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
+| 2026-11-08 | Claude (sprint 6, F9) | `profile` and `stats` fields and their repair added (GB-SD-1); export/import rules written down (GB-SD-2); restore reset on edit recorded as building (GB-SD-3, GX-14); repair describes what the code really checks (GB-SD-4); full write list (GB-SD-5); dependencies listed explicitly, incl. player-profile (GB-SD-6); AC cites the profile and export tests (GB-SD-7); versioning note covers save codes (GB-SD-8) |

@@ -72,7 +72,7 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 |---|---|---|---|
 | Scene for an hour | the scene whose `[from, to)` contains `hour`, wrapping past midnight | `hour` 0–23 | 4 → Moonlit, 5 → Dawn, 9 → Midday, 17 → Sunset, 20 → Moonlit |
 | Contrast ratio | WCAG 2: `(L1 + 0.05) / (L2 + 0.05)` | `L` = relative luminance of each colour | Black on white = 21; same colour = 1 |
-| Cost in clears | `price / 20` | | Dawn 15, Sunset 25, Moonlit 40 plain clears |
+| Cost in clears | owned by `economy.md` §3 ("Scene cost in levels") | | See there: Dawn 15, Sunset 25, Moonlit 40 plain clears (level income only) |
 
 The hours cover all 24 hours exactly once (tested).
 
@@ -87,13 +87,13 @@ The hours cover all 24 hours exactly once (tested).
 - ✅ With clock matching on, a scene you don't own is skipped and the selected scene stays.
 - ✅ Sand colours, patterns and unit sizes are not part of the tokens.
 - ✅ The picker, home and board fit 320 px in every scene (screenshots in `production/qa/evidence/sprint-4/`).
+- ✅ Decided 2026-11-08 (D17): scenes keep the shared music; no scene-specific sound.
 
 **Not Yet Handled**:
-- ⚠️ The clock uses the device's local hour (appropriate for a time-of-day look); changing the phone's clock changes the scene. Harmless, since scenes are only cosmetic.
-- ✅ Decided 2026-11-08: scenes keep the shared music; no scene-specific sound.
+- ⚠️ The clock uses the device's local hour (appropriate for a time-of-day look); changing the phone's clock changes the scene. Harmless, since scenes are only cosmetic. The daily puzzle follows the UTC date instead (`daily-puzzle.md`), so the two can disagree about "today" near midnight.
 
 **Unclear**:
-- ❓ Not asked in the 2026-11-08 interview: Midday is the free default and can't be re-bought or removed, and scenes can't be gifted. Recorded as **no change** until the owner says otherwise.
+- None (the un-asked question is under Open Questions).
 
 ---
 
@@ -101,7 +101,7 @@ The hours cover all 24 hours exactly once (tested).
 
 **Technical Dependencies**: `economy.ts` (`Wallet`) and CSS custom properties.
 
-**Design Dependencies**: `economy.md`, `feel-audio-ui.md`, `save-data.md`.
+**Design Dependencies**: `economy.md`, `feel-audio-ui.md`, `save-data.md`, `player-profile.md` (matches 2.3).
 
 **Content Dependencies**: `themes.list` (4 entries with tokens, prices, hours), `themes.default`.
 
@@ -124,7 +124,9 @@ The hours cover all 24 hours exactly once (tested).
 
 ## Open Questions and Follow-Up Work
 
-None open on sound.
+None open on sound (D17).
+
+1. **Open, pending the owner** (never asked in the 2026-11-08 interview): can Midday be removed or re-bought, and can scenes be gifted? Built as: Midday is the free default and can't be re-bought or removed, and scenes can't be gifted. Recorded as no change until the owner answers.
 
 ### Flagged Follow-Up Work
 - [ ] If more scenes are added, add a contrast test row and a home/board screenshot for each.
@@ -136,3 +138,4 @@ None open on sound.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
+| 2026-11-08 | Claude (sprint 6, F9) | Scene cost now links to `economy.md` (GX-16, GB-SN-3); scene sound moved to Handled and the un-asked question listed as open (GB-SN-1); §5 matches §2.3 (GB-SN-5); local hour vs UTC daily noted (GX-18) |
