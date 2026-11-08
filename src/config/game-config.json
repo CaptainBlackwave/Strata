@@ -10,7 +10,7 @@
     "challengeBonus": 30
   },
   "boosters": {
-    "undo": { "start": 5, "price": 40 },
+    "undo": { "start": 0, "price": 0, "free": true },
     "shuffle": { "start": 3, "price": 80 },
     "extraJar": { "start": 3, "price": 120 },
     "hint": { "start": 3, "price": 60 }
@@ -55,7 +55,7 @@
   "collection": {
     "everyLevels": 5,
     "coinsWhenComplete": 50,
-    "setReward": { "coins": 150, "boosters": { "undo": 1, "shuffle": 1, "extraJar": 1, "hint": 1 } },
+    "setReward": { "coins": 150, "boosters": { "shuffle": 1, "extraJar": 1, "hint": 1 } },
     "sets": [
       { "id": "tidepool", "name": "Tide Pool", "shells": [
         { "id": "periwinkle", "name": "Periwinkle", "kind": "spiral", "colors": ["#7a5038", "#c9a27e"] },

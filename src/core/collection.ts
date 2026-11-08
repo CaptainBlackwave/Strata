@@ -30,7 +30,8 @@ export interface CollectionConfig {
   readonly collection: {
     readonly everyLevels: number;
     readonly coinsWhenComplete: number;
-    readonly setReward: { readonly coins: number; readonly boosters: Readonly<Record<BoosterId, number>> };
+    /** Booster charges paid on completing a set. Free boosters (undo, D-a) are left out. */
+    readonly setReward: { readonly coins: number; readonly boosters: Readonly<Partial<Record<BoosterId, number>>> };
     readonly sets: readonly ShellSet[];
   };
 }

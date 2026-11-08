@@ -113,8 +113,8 @@ export class GameSession {
   }
 
   /**
-   * Takes back the last pour. Unlimited here (the UI charges a booster for it), and
-   * it never counts against Perfect (design/gdd/session-boosters.md, M2).
+   * Takes back the last pour. Free and unlimited (decision D-a), and it never counts
+   * against Perfect (design/gdd/session-boosters.md, M2).
    */
   undo(): boolean {
     const prev = this.history.pop();
