@@ -79,7 +79,7 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 
 **Catalog changes are append-only** (D27, 2026-11-08): new shells and sets are only ever added at the end. Existing ids, their order and their names never change once shipped, so saves and the "next shell" order stay stable. A rename needs a new id and a migration note, and is avoided.
 
-**Unknown ids are dropped on load** (D26, 2026-11-08): only ids in the catalog are kept, in earned order, so an edited or very old save code can't count towards sets or the Gold frame. Building in sprint 7 (B1).
+**Unknown ids are dropped on load** (D26, 2026-11-08): only ids in the catalog are kept, in earned order, so an edited or very old save code can't count towards sets or the Gold frame. Built in sprint 7 (B1): `knownShells()` in `collection.ts`, applied after every load and save-code restore.
 
 ### 2.3 Integration Points
 
