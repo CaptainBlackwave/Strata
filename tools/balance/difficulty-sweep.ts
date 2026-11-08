@@ -7,30 +7,34 @@
  *
  * Run from the repo root:  npx vite-node tools/balance/difficulty-sweep.ts
  * Options (env): SWEEP_TO=200  SWEEP_RUNS=3 (timing runs; the median is reported)
- * Writes production/qa/sprint-7/difficulty-sweep.csv and prints a JSON band summary.
+ *   SWEEP_CSV=path (default production/qa/sprint-7/difficulty-sweep.csv; use a scratch path
+ *   for long runs so the committed 1-200 CSV is not overwritten)
+ * Writes the CSV and prints a JSON band summary, then the D36 length bands (B7) against
+ * `generator.pourBands`.
  *
  * Read-only: it imports src/core and never changes behaviour. Solver states are read
  * by re-solving the returned board with `solve()`, which is deterministic and
  * already returns `nodes`, so no hook in src/core was needed.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import rawConfig from '../../src/config/game-config.json';
-import { generateLevel } from '../../src/core/generator';
+import { generateLevel, maxPoursFor } from '../../src/core/generator';
 import { type GameConfig, levelSpec, pickMechanics, spareOneChance } from '../../src/core/levels';
 import { solve } from '../../src/core/solver';
 
 const config = rawConfig as unknown as GameConfig;
 const TO = Number(process.env.SWEEP_TO ?? 200);
 const RUNS = Math.max(1, Number(process.env.SWEEP_RUNS ?? 3));
-const OUT_DIR = 'production/qa/sprint-7';
+const CSV = process.env.SWEEP_CSV ?? 'production/qa/sprint-7/difficulty-sweep.csv';
 
 /** One CSV row. */
 interface Row {
   level: number; colors: number; capacity: number; spare: number; buriedDepth: number;
   challenge: boolean; mechanics: string; mechanicCount: number; spareSwap: boolean; swapJar: string;
   spareOneChance: number; fallback: string; builtSpare: number; builtMechanics: string;
-  attempts: number; genMs: number; pours: number; poursLowerBound: number; solverStates: number;
+  attempts: number; genMs: number; pours: number; poursCap: number; poursLowerBound: number; solverStates: number;
 }
 
 /** Which step of the fallback chain in `generateLevel` produced the board, from the returned spec. */
@@ -81,16 +85,16 @@ for (let level = 1; level <= TO; level++) {
     challenge: spec.challenge, mechanics: spec.mechanics.join('+'), mechanicCount: spec.mechanics.length,
     spareSwap: spec.spare === 1, swapJar, spareOneChance: Number(spareOneChance(level, config).toFixed(3)),
     fallback: fallbackStep(spec, built), builtSpare: built.spec.spare, builtMechanics: built.spec.mechanics.join('+'),
-    attempts: built.attempts, genMs: Number(median(times).toFixed(2)), pours: built.solutionLength, poursLowerBound: poursLowerBound(built.board),
+    attempts: built.attempts, genMs: Number(median(times).toFixed(2)), pours: built.solutionLength, poursCap: maxPoursFor(level, config), poursLowerBound: poursLowerBound(built.board),
     solverStates: re.solvable === true ? re.nodes : -1,
   });
 }
 
-mkdirSync(OUT_DIR, { recursive: true });
+mkdirSync(dirname(CSV), { recursive: true });
 const cols = Object.keys(rows[0]) as (keyof Row)[];
-writeFileSync(`${OUT_DIR}/difficulty-sweep.csv`, [cols.join(','), ...rows.map((r) => cols.map((c) => String(r[c])).join(','))].join('\n') + '\n');
+writeFileSync(CSV, [cols.join(','), ...rows.map((r) => cols.map((c) => String(r[c])).join(','))].join('\n') + '\n');
 
-const bands: [number, number][] = [[1, 20], [21, 40], [41, 60], [61, 80], [81, 100], [101, 120], [121, 150], [151, 200]];
+const bands: [number, number][] = [[1, 20], [21, 40], [41, 60], [61, 80], [81, 100], [101, 120], [121, 150], [151, 200], [201, 300], [301, 400], [401, 500]];
 const summary = bands.filter(([a]) => a <= TO).map(([a, b]) => {
   const rs = rows.filter((r) => r.level >= a && r.level <= b);
   const p = rs.map((r) => r.pours);
@@ -116,3 +120,12 @@ console.log(JSON.stringify(summary, null, 1));
 const top = [...rows].sort((a, b) => b.pours - a.pours).slice(0, 15).map((r) => `${r.level}:${r.pours}p/${r.solverStates}s/${r.fallback}`);
 console.log('top pours', top.join(' '));
 console.log('fallback levels', rows.filter((r) => r.fallback !== 'none').map((r) => `${r.level}:${r.fallback}`).join(' '));
+
+// D36 length bands (B7): median and max pours per `generator.pourBands` band, within 1..TO.
+const pb = [...(config.generator.pourBands ?? [])].sort((a, b) => a.from - b.from);
+const d36 = pb.filter((b) => b.from <= TO).map((b, i) => {
+  const to = Math.min(TO, (pb[i + 1]?.from ?? Infinity) - 1);
+  const p = rows.filter((r) => r.level >= b.from && r.level <= to).map((r) => r.pours);
+  return { band: `${b.from}-${to}`, n: p.length, median: median(p), p90: pct(p, 0.9), max: Math.max(...p), targetMedian: b.median, targetMax: b.max, overMax: rows.filter((r) => r.level >= b.from && r.level <= to && r.pours > b.max).map((r) => r.level) };
+});
+console.log('D36 bands', JSON.stringify(d36));
