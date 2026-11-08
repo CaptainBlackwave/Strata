@@ -3,7 +3,8 @@
  * hints and status. The UI listens through `onChange`, so nothing here knows about the DOM.
  * Implements design/game-brief.md MVP 1 and MVP 4.
  */
-import { type Board, type Move, addEmptyJar, canPour, isSealed, isStuck, isWon, pour } from './board';
+import { type Board, type Jar, type Move, addEmptyJar, canPour, isSealed, isStuck, isWon, pour } from './board';
+import { type Rng, shuffle as shuffleInPlace } from './rng';
 import { solve } from './solver';
 
 /** Where the level stands. */
@@ -15,6 +16,7 @@ export type SessionEvent =
   | { readonly type: 'undo' }
   | { readonly type: 'restart' }
   | { readonly type: 'extraJar' }
+  | { readonly type: 'shuffle' }
   | { readonly type: 'won' }
   | { readonly type: 'stuck' };
 
@@ -22,6 +24,10 @@ export type SessionEvent =
 export interface SessionOptions {
   readonly extraJarsPerLevel: number;
   readonly hintNodeBudget: number;
+  /** Shuffle tries this many re-deals before giving up. Default 40. */
+  readonly shuffleAttempts?: number;
+  /** Solver budget used to prove a shuffled board is winnable. Defaults to `hintNodeBudget`. */
+  readonly shuffleNodeBudget?: number;
 }
 
 /**
@@ -38,6 +44,7 @@ export class GameSession {
   private current: Board;
   private extraLeft: number;
   private moveCount = 0;
+  private assistCount = 0;
   private readonly listeners = new Set<(e: SessionEvent) => void>();
   /** The last solver plan: `steps[i]` is the move to make from the board whose exact key is `keys[i]`. */
   private plan: { keys: string[]; steps: Move[] } | null = null;
@@ -61,6 +68,11 @@ export class GameSession {
   /** Extra jars still available this level. */
   get extraJarsLeft(): number {
     return this.extraLeft;
+  }
+
+  /** Boosters used this level (undo, hint, extra jar, shuffle). Zero means a "perfect" clear. */
+  get assists(): number {
+    return this.assistCount;
   }
 
   /** Whether there is anything to undo. */
@@ -98,6 +110,7 @@ export class GameSession {
   undo(): boolean {
     const prev = this.history.pop();
     if (!prev) return false;
+    this.assistCount++;
     this.current = prev;
     this.moveCount = Math.max(0, this.moveCount - 1);
     this.emit({ type: 'undo' });
@@ -122,6 +135,7 @@ export class GameSession {
   addExtraJar(): boolean {
     if (this.extraLeft <= 0 || this.status === 'won') return false;
     this.extraLeft--;
+    this.assistCount++;
     this.plan = null;
     this.current = addEmptyJar(this.current);
     this.history = this.history.map(addEmptyJar);
@@ -131,11 +145,48 @@ export class GameSession {
   }
 
   /**
+   * Re-deals the sand in every unsealed jar, keeping each jar's fill level, and only
+   * accepts a deal the solver proves winnable. Undoable. Returns false if no such
+   * deal was found or the level is already won.
+   */
+  shuffle(rng: Rng): boolean {
+    if (this.status === 'won') return false;
+    const board = this.current;
+    const open = board.jars.map((j, i) => (isSealed(j, board.capacity) ? -1 : i)).filter((i) => i >= 0);
+    const pool = open.flatMap((i) => board.jars[i].units);
+    const before = exactKey(board);
+    const attempts = this.options.shuffleAttempts ?? 40;
+    const budget = this.options.shuffleNodeBudget ?? this.options.hintNodeBudget;
+    for (let a = 0; a < attempts; a++) {
+      shuffleInPlace(pool, rng);
+      let k = 0;
+      const jars: Jar[] = board.jars.map((j, i) => {
+        if (!open.includes(i)) return j;
+        const units = pool.slice(k, k + j.units.length);
+        k += j.units.length;
+        return { units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)) };
+      });
+      const next: Board = { capacity: board.capacity, jars };
+      if (exactKey(next) === before || isWon(next)) continue;
+      if (solve(next, budget).solvable !== true) continue;
+      this.history.push(board);
+      this.current = next;
+      this.plan = null;
+      this.assistCount++;
+      this.emit({ type: 'shuffle' });
+      this.emitStatus();
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Suggests the next move from the current board, using the solver.
    * Returns `null` if the board can't be won from here, or the solver ran out of budget.
    */
   hint(): Move | null {
     if (this.status === 'won') return null;
+    this.assistCount++;
     // Keep following one plan while the player stays on it. Re-solving from every state
     // can suggest moves that undo each other, so the hints would loop forever.
     const key = exactKey(this.current);

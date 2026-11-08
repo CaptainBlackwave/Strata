@@ -1,7 +1,10 @@
-// Stories: production/epics/strata/story-005-touch-ui.md, story-006-progress-save.md
+// Stories: production/epics/strata/story-005-touch-ui.md, story-006-progress-save.md,
+// production/epics/competitive/story-002-economy-boosters.md
 import { describe, expect, it } from 'vitest';
 import { computeLayout } from '../../../src/ui/layout';
-import { type KeyValueStore, loadProgress, saveProgress } from '../../../src/ui/storage';
+import config from '../../../src/config/game-config.json';
+import { type EconomyConfig, newWallet } from '../../../src/core/economy';
+import { type KeyValueStore, freshSave, loadSave, writeSave } from '../../../src/ui/storage';
 
 describe('computeLayout', () => {
   it('fits a small board in one row', () => {
@@ -26,27 +29,46 @@ function memoryStore(): KeyValueStore & { data: Map<string, string> } {
   return { data, getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v) };
 }
 
-describe('progress storage', () => {
-  it('round-trips progress', () => {
+const econ = config as unknown as EconomyConfig;
+
+describe('save storage', () => {
+  it('round-trips a save', () => {
     const s = memoryStore();
-    saveProgress({ level: 7, best: { '6': 21 } }, s);
-    expect(loadProgress(s)).toEqual({ level: 7, best: { '6': 21 } });
+    const save = { ...freshSave(econ), level: 7, best: { '6': 21 }, tutorialDone: true };
+    save.wallet = { coins: 345, boosters: { undo: 1, shuffle: 0, extraJar: 2, hint: 4 } };
+    save.settings = { sound: false, music: true, haptics: false, patterns: true };
+    writeSave(save, s);
+    expect(loadSave(econ, s)).toEqual(save);
   });
-  it('falls back to level 1 on corrupt data', () => {
+  it('a new player gets the starting wallet and the tutorial', () => {
+    const save = loadSave(econ, memoryStore());
+    expect(save.level).toBe(1);
+    expect(save.tutorialDone).toBe(false);
+    expect(save.wallet).toEqual(newWallet(econ));
+  });
+  it('migrates v1 progress and prefs, skipping the tutorial for returning players', () => {
     const s = memoryStore();
-    s.setItem('strata.progress.v1', '{not json');
-    expect(loadProgress(s).level).toBe(1);
+    s.setItem('strata.progress.v1', JSON.stringify({ level: 15, best: { '14': 20 } }));
+    s.setItem('strata.prefs.v1', JSON.stringify({ patterns: true }));
+    const save = loadSave(econ, s);
+    expect(save).toMatchObject({ level: 15, best: { '14': 20 }, tutorialDone: true, settings: { patterns: true } });
   });
-  it('falls back on an invalid level', () => {
+  it('repairs invalid fields individually', () => {
     const s = memoryStore();
-    s.setItem('strata.progress.v1', JSON.stringify({ level: -3 }));
-    expect(loadProgress(s).level).toBe(1);
+    s.setItem('strata.save.v2', JSON.stringify({ level: -3, wallet: { coins: 'lots', boosters: { undo: 2, hint: -1 } }, settings: { sound: 'yes' } }));
+    const save = loadSave(econ, s);
+    expect(save.level).toBe(1);
+    expect(save.wallet.coins).toBe(econ.economy.startCoins);
+    expect(save.wallet.boosters.undo).toBe(2);
+    expect(save.wallet.boosters.hint).toBe(econ.boosters.hint.start);
+    expect(save.settings.sound).toBe(true);
   });
-  it('tolerates missing storage', () => {
-    expect(loadProgress(null).level).toBe(1);
-    expect(() => saveProgress({ level: 2, best: {} }, null)).not.toThrow();
+  it('falls back on corrupt JSON', () => {
+    const s = memoryStore();
+    s.setItem('strata.save.v2', '{not json');
+    expect(loadSave(econ, s).level).toBe(1);
   });
-  it('tolerates a store that throws', () => {
+  it('tolerates missing or throwing storage', () => {
     const bad: KeyValueStore = {
       getItem: () => {
         throw new Error('blocked');
@@ -55,7 +77,8 @@ describe('progress storage', () => {
         throw new Error('blocked');
       },
     };
-    expect(loadProgress(bad).level).toBe(1);
-    expect(() => saveProgress({ level: 2, best: {} }, bad)).not.toThrow();
+    expect(loadSave(econ, null).level).toBe(1);
+    expect(loadSave(econ, bad).level).toBe(1);
+    expect(() => writeSave(freshSave(econ), bad)).not.toThrow();
   });
 });

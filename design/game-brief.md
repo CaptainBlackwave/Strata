@@ -20,7 +20,7 @@
 6. **Progress save.** The current level persists in `localStorage`.
 
 ## Out of scope — not building this
-- No ads, IAP, currencies, lives or energy timers.
+- No ads, IAP, lives or energy timers. Coins exist but are earned only by play (see `design/competitive-roadmap.md` D1–D3).
 - No mascot, story or collection meta. Theme comes only from the art direction below.
 - No hand-authored level packs and no online features or accounts.
 - No audio in the MVP.
@@ -37,5 +37,7 @@
 **Who it's for / what they feel:** casual puzzle players on a phone who want a calm, tidy-up feeling in 1–3 minute bites.
 
 **Art & audio direction:** warm daylight: a cream and sea-glass background, chunky rounded glass jars, and matte sand colours in terracotta, saffron, sage, lagoon, coral and plum. No night sky, no magic.
+
+**Roadmap:** `design/competitive-roadmap.md` (sprint 1 added game feel, the economy, shuffle, the tutorial and the home screen).
 
 **Reference game:** the liquid-sort genre as teardown-documented in `design/reverse-engineering/magic-sort-teardown.md`. The MVP keeps the top-run pour rule, spare vessels, undo and extra-vessel booster, and hidden units. It drops the monetisation, mascot and meta layer.

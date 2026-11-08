@@ -2,6 +2,28 @@
   "$comment": "All gameplay tuning for Strata. Design record: design/game-brief.md (MVP 2-4). Curve rows apply from `fromLevel` until the next row; fields omitted in a row inherit from the previous row.",
   "baseSeed": 20261107,
   "extraJarsPerLevel": 1,
+  "economy": {
+    "$comment": "Coins are earned only by playing. No purchases, ads or lives (design/competitive-roadmap.md, decisions D1-D3).",
+    "startCoins": 100,
+    "coinsPerLevel": 20,
+    "perfectBonus": 10,
+    "challengeBonus": 30
+  },
+  "boosters": {
+    "undo": { "start": 5, "price": 40 },
+    "shuffle": { "start": 3, "price": 80 },
+    "extraJar": { "start": 3, "price": 120 },
+    "hint": { "start": 3, "price": 60 }
+  },
+  "shuffle": {
+    "maxAttempts": 40,
+    "solverNodeBudget": 40000
+  },
+  "tutorial": {
+    "$comment": "First-launch lesson: one pour seals a jar.",
+    "capacity": 4,
+    "jars": [[3, 3], [3, 3]]
+  },
   "curve": [
     { "fromLevel": 1, "colors": 3, "capacity": 4, "spare": 2, "buriedDepth": 0 },
     { "fromLevel": 3, "colors": 4 },

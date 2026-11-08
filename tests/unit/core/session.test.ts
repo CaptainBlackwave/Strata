@@ -96,3 +96,54 @@ function firstLegal(s: GameSession): [number, number] {
   for (let f = 0; f < b.jars.length; f++) for (let t = 0; t < b.jars.length; t++) if (s.board.jars[t].units.length === 0 && b.jars[f].units.length) return [f, t];
   throw new Error('no move');
 }
+
+describe('GameSession shuffle and assists', () => {
+  // Story: production/epics/competitive/story-002-economy-boosters.md
+  const shuffleOpts = { extraJarsPerLevel: 1, hintNodeBudget: 20_000 };
+
+  it('shuffle keeps every unit and jar fill level, changes the board, and stays solvable', () => {
+    const g = generateLevel(12, config as unknown as GameConfig);
+    const s = new GameSession(g.board, shuffleOpts);
+    const before = s.board;
+    expect(s.shuffle(() => 0.37)).toBe(true);
+    const after = s.board;
+    expect(after).not.toEqual(before);
+    expect(after.jars.map((j) => j.units.length)).toEqual(before.jars.map((j) => j.units.length));
+    const count = (b: typeof before) => b.jars.flatMap((j) => j.units).sort().join(',');
+    expect(count(after)).toBe(count(before));
+    expect(s.hint()).not.toBeNull();
+  });
+
+  it('shuffle leaves sealed jars alone', () => {
+    const s = new GameSession(makeBoard(2, [[0, 0], [1, 2], [2, 1], []]), shuffleOpts);
+    let seed = 0.1;
+    expect(s.shuffle(() => (seed = (seed * 9301 + 0.49297) % 1))).toBe(true);
+    expect(s.board.jars[0].units).toEqual([0, 0]);
+  });
+
+  it('shuffle can be undone', () => {
+    const g = generateLevel(6, config as unknown as GameConfig);
+    const s = new GameSession(g.board, shuffleOpts);
+    const before = s.board;
+    s.shuffle(() => 0.5);
+    s.undo();
+    expect(s.board).toEqual(before);
+  });
+
+  it('counts assists: undo, hint, extra jar and shuffle each count, pours do not', () => {
+    const s = fresh();
+    s.pour(0, 2);
+    expect(s.assists).toBe(0);
+    s.undo();
+    s.hint();
+    s.addExtraJar();
+    expect(s.assists).toBe(3);
+  });
+
+  it('restart clears assists only for the history, not the count', () => {
+    const s = fresh();
+    s.hint();
+    s.restart();
+    expect(s.assists).toBe(1);
+  });
+});

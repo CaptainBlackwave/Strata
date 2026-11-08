@@ -29,6 +29,8 @@ export interface GameConfig {
   readonly challenge: ChallengeConfig;
   readonly generator: { readonly maxAttempts: number; readonly solverNodeBudget: number; readonly maxSealedAtStart: number };
   readonly hint: { readonly solverNodeBudget: number };
+  readonly shuffle: { readonly maxAttempts: number; readonly solverNodeBudget: number };
+  readonly tutorial: { readonly capacity: number; readonly jars: readonly (readonly number[])[] };
   readonly palette: readonly { readonly id: string; readonly hex: string }[];
 }
 

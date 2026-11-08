@@ -1,91 +1,156 @@
 /**
- * Strata's browser front end: renders the board, turns taps into session commands,
- * and plays the pour animation. It owns no game rules; GameSession does.
- * Implements design/game-brief.md MVP 5 and MVP 6.
+ * Strata's browser front end: home screen, tutorial, board rendering, boosters,
+ * rewards and the pour animation. It owns no game rules: GameSession (rules) and
+ * economy.ts (coins and boosters) decide, and this file displays and asks.
+ * Implements design/game-brief.md MVP 5-6 and design/competitive-roadmap.md C1-C5.
  */
 import './style.css';
 import rawConfig from '../config/game-config.json';
-import { type Board, canPour, isSealed } from '../core/board';
-import { generateLevel } from '../core/generator';
+import { type Board, canPour, isSealed, pourAmount } from '../core/board';
+import { type BoosterId, type EconomyConfig, addCoins, levelReward, spendBooster } from '../core/economy';
+import { generateLevel, tutorialBoard } from '../core/generator';
 import type { GameConfig } from '../core/levels';
+import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent } from '../core/session';
+import { GameAudio } from './audio';
+import { burst, celebrate, sparkleAround } from './fx';
 import { computeLayout } from './layout';
-import { loadProgress, saveProgress } from './storage';
+import { type SaveData, loadSave, writeSave } from './storage';
 import { t } from './strings';
 
-const config = rawConfig as unknown as GameConfig;
-const PREFS_KEY = 'strata.prefs.v1';
-const TILT_DEG = 72;
+const config = rawConfig as unknown as GameConfig & EconomyConfig;
+/** Presentation-only timings (ms) and tilt angle: animation feel, not gameplay. */
+const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-const boardEl = $<HTMLElement>('board');
-const levelLabel = $<HTMLElement>('level-label');
-const challengeTag = $<HTMLElement>('challenge-tag');
-const movesEl = $<HTMLElement>('moves');
-const toastEl = $<HTMLElement>('toast');
-const winEl = $<HTMLElement>('win');
-const winText = $<HTMLElement>('win-text');
-const btnUndo = $<HTMLButtonElement>('btn-undo');
-const btnRestart = $<HTMLButtonElement>('btn-restart');
-const btnJar = $<HTMLButtonElement>('btn-jar');
-const btnHint = $<HTMLButtonElement>('btn-hint');
+const boardEl = $('board');
+const levelLabel = $('level-label');
+const challengeTag = $('challenge-tag');
+const movesEl = $('moves');
+const coinsEl = $('coins');
+const toastEl = $('toast');
+const winEl = $('win');
+const homeEl = $('home');
+const settingsEl = $('settings');
+const coachEl = $('coach');
+const coachText = $('coach-text');
 const btnNext = $<HTMLButtonElement>('btn-next');
-const jarCount = $<HTMLElement>('jar-count');
-const btnPatterns = document.createElement('button');
+const toolButtons = [...document.querySelectorAll<HTMLButtonElement>('.tool[data-booster]')];
 
+const BOOSTER_NAMES: Record<BoosterId, string> = { undo: t.undo, shuffle: t.shuffle, extraJar: t.jar, hint: t.hint };
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let progress = loadProgress();
-let level = progress.level;
+let save: SaveData = loadSave(config);
+let level = save.level;
+let inTutorial = false;
 let session!: GameSession;
+let challenge = false;
 let selected: number | null = null;
 let busy = false;
 let pendingWin = false;
 let jarEls: HTMLButtonElement[] = [];
 let unitHeight = 0;
-let patterns = readPatternsPref();
+const returning = new Set<number>();
+let toastTimer = 0;
+let hintTimer = 0;
+const audio = new GameAudio(save.settings);
+const shuffleRng = createRng(Date.now() >>> 0);
 
 // ---- Boot ---------------------------------------------------------------
 
 const params = new URLSearchParams(location.search);
 const levelParam = Number(params.get('level'));
-if (Number.isInteger(levelParam) && levelParam >= 1) level = levelParam; // QA launch argument (run-and-observe)
-
+const qaLevel = Number.isInteger(levelParam) && levelParam >= 1; // QA launch argument (run-and-observe)
 applyStrings();
-startLevel(level);
 wireInput();
+if (qaLevel) {
+  level = levelParam;
+  startLevel(level);
+} else {
+  startLevel(level);
+  showHome();
+}
 
-// ---- Level lifecycle ----------------------------------------------------
+// ---- Screens ------------------------------------------------------------
+
+function showHome(): void {
+  $('home-coins').textContent = String(save.wallet.coins);
+  $('btn-play').textContent = save.tutorialDone ? t.play(save.level) : t.playTutorial;
+  homeEl.hidden = false;
+}
+
+function play(): void {
+  audio.unlock();
+  homeEl.hidden = true;
+  if (!save.tutorialDone) startTutorial();
+  else startLevel(save.level);
+}
+
+function startTutorial(): void {
+  inTutorial = true;
+  beginSession(tutorialBoard(config), false);
+  levelLabel.textContent = t.level(1);
+  challengeTag.hidden = true;
+  coach(0, t.tutorialLift);
+}
 
 function startLevel(n: number): void {
+  inTutorial = false;
   level = n;
   const gen = generateLevel(n, config);
-  session = new GameSession(gen.board, {
-    extraJarsPerLevel: config.extraJarsPerLevel,
-    hintNodeBudget: config.hint.solverNodeBudget,
-  });
-  session.onChange(onSessionEvent);
-  selected = null;
-  busy = false;
-  pendingWin = false;
-  winEl.hidden = true;
+  beginSession(gen.board, gen.spec.challenge);
   levelLabel.textContent = t.level(n);
   challengeTag.textContent = t.challenge;
   challengeTag.hidden = !gen.spec.challenge;
-  document.body.dataset.challenge = String(gen.spec.challenge);
+  coach(null);
+}
+
+function beginSession(board: Board, isChallenge: boolean): void {
+  session = new GameSession(board, {
+    extraJarsPerLevel: config.extraJarsPerLevel,
+    hintNodeBudget: config.hint.solverNodeBudget,
+    shuffleAttempts: config.shuffle.maxAttempts,
+    shuffleNodeBudget: config.shuffle.solverNodeBudget,
+  });
+  session.onChange(onSessionEvent);
+  challenge = isChallenge;
+  selected = null;
+  busy = false;
+  pendingWin = false;
+  returning.clear();
+  winEl.hidden = true;
+  document.body.dataset.challenge = String(isChallenge);
   buildJars();
   updateHud();
 }
+
+/** Shows the tutorial pointer on jar `i` with a caption, or hides it with `null`. */
+function coach(i: number | null, text = ''): void {
+  if (i === null || !jarEls[i]) {
+    coachEl.hidden = true;
+    return;
+  }
+  const r = jarEls[i].getBoundingClientRect();
+  coachEl.style.left = `${r.left + r.width / 2}px`;
+  coachEl.style.top = `${r.top + r.height * 0.55}px`;
+  coachText.textContent = text;
+  coachEl.hidden = false;
+}
+
+// ---- Session events -----------------------------------------------------
 
 function onSessionEvent(e: SessionEvent): void {
   switch (e.type) {
     case 'pour':
       updateJar(e.move.from);
       updateJar(e.move.to, session.board.jars[e.move.to].units.length - e.moved);
-      if (e.sealed) jarEls[e.move.to].classList.add('just-sealed');
+      if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
       break;
     case 'extraJar':
       buildJars();
+      break;
+    case 'shuffle':
+      renderAllJars(true);
       break;
     case 'undo':
     case 'restart':
@@ -94,7 +159,6 @@ function onSessionEvent(e: SessionEvent): void {
       break;
     case 'won':
       pendingWin = true;
-      recordWin();
       break;
     case 'stuck':
       showToast(t.stuck);
@@ -103,19 +167,75 @@ function onSessionEvent(e: SessionEvent): void {
   updateHud();
 }
 
-function recordWin(): void {
-  const key = String(level);
-  const prevBest = progress.best[key];
-  if (prevBest === undefined || session.moves < prevBest) progress.best[key] = session.moves;
-  progress.level = Math.max(progress.level, level + 1);
-  saveProgress(progress);
-  winText.textContent = t.winText(session.moves, prevBest);
+function sealFx(i: number, color: string): void {
+  const el = jarEls[i];
+  el.classList.remove('just-sealed');
+  void el.offsetWidth;
+  el.classList.add('just-sealed');
+  window.setTimeout(() => {
+    sparkleAround(el, color);
+    audio.play('seal');
+  }, reducedMotion() ? 0 : 180);
 }
 
 function showWin(): void {
   pendingWin = false;
-  winEl.hidden = false;
-  btnNext.focus();
+  coach(null);
+  const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
+  celebrate(colors);
+  audio.play('win');
+  if (inTutorial) {
+    save.tutorialDone = true;
+    writeSave(save);
+    $('win-title').textContent = t.tutorialDoneTitle;
+    $('win-text').textContent = t.tutorialDoneText;
+    $('win-reward').hidden = true;
+    $('win-note').textContent = '';
+    btnNext.textContent = t.tutorialStart;
+  } else {
+    const perfect = session.assists === 0;
+    const reward = levelReward({ perfect, challenge }, config);
+    const key = String(level);
+    const prevBest = save.best[key];
+    if (prevBest === undefined || session.moves < prevBest) save.best[key] = session.moves;
+    save.level = Math.max(save.level, level + 1);
+    save.wallet = addCoins(save.wallet, reward);
+    writeSave(save);
+    $('win-title').textContent = perfect ? t.perfectTitle : t.winTitle;
+    $('win-text').textContent = t.winText(session.moves, prevBest);
+    $('win-reward').hidden = false;
+    $('win-note').textContent = perfect ? t.perfectNote : '';
+    btnNext.textContent = t.next;
+    countUp($('win-coins'), reward);
+  }
+  window.setTimeout(() => {
+    winEl.hidden = false;
+    btnNext.focus();
+  }, reducedMotion() ? 0 : ANIM.winDelay);
+}
+
+function countUp(el: HTMLElement, total: number): void {
+  if (reducedMotion()) {
+    el.textContent = t.reward(total);
+    updateHud();
+    return;
+  }
+  let shown = 0;
+  el.textContent = t.reward(0);
+  const step = Math.max(1, Math.ceil(total / 12));
+  const timer = window.setInterval(() => {
+    shown = Math.min(total, shown + step);
+    el.textContent = t.reward(shown);
+    if (shown % (step * 3) === 0 || shown === total) audio.play('coin');
+    if (shown >= total) {
+      window.clearInterval(timer);
+      updateHud();
+      const chip = $('coins-chip');
+      chip.classList.remove('bump');
+      void chip.offsetWidth;
+      chip.classList.add('bump');
+    }
+  }, 55);
 }
 
 // ---- Rendering ----------------------------------------------------------
@@ -123,12 +243,7 @@ function showWin(): void {
 function buildJars(): void {
   const board = session.board;
   const rect = boardEl.getBoundingClientRect();
-  const layout = computeLayout({
-    width: rect.width,
-    height: rect.height,
-    jars: board.jars.length,
-    capacity: board.capacity,
-  });
+  const layout = computeLayout({ width: rect.width, height: rect.height, jars: board.jars.length, capacity: board.capacity });
   unitHeight = layout.unitHeight;
   const s = boardEl.style;
   s.setProperty('--jar-w', `${layout.jarWidth}px`);
@@ -155,8 +270,15 @@ function buildJars(): void {
   renderAllJars();
 }
 
-function renderAllJars(): void {
-  session.board.jars.forEach((_, i) => updateJar(i));
+function renderAllJars(shake = false): void {
+  session.board.jars.forEach((_, i) => {
+    updateJar(i);
+    if (shake && !reducedMotion()) jarEls[i].animate([{ translate: '0 0' }, { translate: '0 -6px' }, { translate: '0 0' }], { duration: 260, delay: i * 25 });
+  });
+}
+
+function unitColor(color: number, buried: boolean): string {
+  return buried ? 'var(--buried)' : config.palette[color].hex;
 }
 
 /** Redraws jar `i`. Units at index `growFrom` and above animate in. */
@@ -174,7 +296,7 @@ function updateJar(i: number, growFrom = Infinity): void {
         u.classList.add('buried');
       } else {
         u.style.setProperty('--c', config.palette[color].hex);
-        if (patterns) u.classList.add(`pat-${color % 12}`);
+        if (save.settings.patterns) u.classList.add(`pat-${color % 12}`);
       }
       if (k >= growFrom) {
         u.classList.add('grow');
@@ -188,18 +310,28 @@ function updateJar(i: number, growFrom = Infinity): void {
   if (!sealed) el.classList.remove('just-sealed');
   el.classList.toggle('selected', selected === i);
   el.setAttribute('aria-pressed', String(selected === i));
-  const contents = jar.units.length
-    ? jar.units.map((c, k) => (k < jar.hidden ? t.buried : config.palette[c].id)).join(', ')
-    : t.jarEmpty;
+  const contents = jar.units.length ? jar.units.map((c, k) => (k < jar.hidden ? t.buried : config.palette[c].id)).join(', ') : t.jarEmpty;
   el.setAttribute('aria-label', t.jarLabel(i, sealed ? `${contents} (${t.sealed})` : contents));
 }
 
 function updateHud(): void {
   movesEl.textContent = String(session.moves);
-  btnUndo.disabled = !session.canUndo;
-  jarCount.textContent = String(session.extraJarsLeft);
-  btnJar.disabled = session.extraJarsLeft <= 0 || session.status === 'won';
-  btnHint.disabled = session.status === 'won';
+  $('moves-label').textContent = t.poursLabel(session.moves);
+  coinsEl.textContent = String(save.wallet.coins);
+  const over = session.status === 'won';
+  for (const btn of toolButtons) {
+    const id = btn.dataset.booster as BoosterId;
+    const charges = save.wallet.boosters[id];
+    const price = config.boosters[id].price;
+    const badge = btn.querySelector('.badge') as HTMLElement;
+    badge.textContent = charges > 0 ? String(charges) : String(price);
+    badge.classList.toggle('price', charges === 0);
+    const usable =
+      !over && !inTutorial && (id !== 'undo' || session.canUndo) && (id !== 'extraJar' || session.extraJarsLeft > 0);
+    btn.disabled = !usable;
+    btn.setAttribute('aria-label', t.boosterLabel(BOOSTER_NAMES[id], charges, price));
+  }
+  ($('btn-restart') as HTMLButtonElement).disabled = inTutorial;
 }
 
 function setSelected(i: number | null): void {
@@ -217,18 +349,27 @@ function isLiftable(i: number): boolean {
 }
 
 function onJarTap(i: number): void {
-  if (busy || session.status === 'won') return;
+  audio.unlock();
+  if (busy || session.status === 'won' || returning.has(i)) return;
   if (selected === null) {
-    if (isLiftable(i)) setSelected(i);
-    else nope(i);
+    if (isLiftable(i)) {
+      setSelected(i);
+      audio.play('select', { pitch: i });
+      if (inTutorial) coach(i === 0 ? 1 : 0, t.tutorialPour);
+    } else {
+      nope(i);
+    }
     return;
   }
   if (selected === i) {
     setSelected(null);
+    audio.play('deselect');
+    if (inTutorial) coach(0, t.tutorialLift);
     return;
   }
   const from = selected;
   if (canPour(session.board, from, i)) {
+    if (inTutorial) coach(null);
     void animatePour(from, i);
   } else {
     nope(i);
@@ -241,18 +382,67 @@ function nope(i: number): void {
   el.classList.remove('nope');
   void el.offsetWidth; // restart the CSS animation
   el.classList.add('nope');
+  audio.play('nope');
+}
+
+/**
+ * The tilted fill: a world-level band of sand inside the tilting glass, so the
+ * surface stays horizontal while the jar rotates (teardown V2-3).
+ * Returns the element plus helpers to animate it in step with the jar.
+ */
+function makeTiltFill(jarEl: HTMLElement, i: number) {
+  const glass = jarEl.querySelector('.glass') as HTMLElement;
+  const jar = session.board.jars[i];
+  const Hg = glass.clientHeight;
+  const W = glass.clientWidth;
+  const fill = document.createElement('span');
+  fill.className = 'tilt';
+  const band = document.createElement('span');
+  band.className = 'tilt-band';
+  band.style.width = `${Hg * 3}px`;
+  band.style.left = `${-Hg * 1.5}px`;
+  const stripes = jar.units.map((c, k) => {
+    const s = document.createElement('span');
+    s.style.background = unitColor(c, k < jar.hidden);
+    s.style.height = `${unitHeight + (k === 0 ? 40 : 0)}px`;
+    return s;
+  });
+  band.append(...stripes);
+  fill.appendChild(band);
+  glass.appendChild(fill);
+  jarEl.classList.add('tilting');
+  /** Transform at tilt angle `phi` (radians): counter-rotate, drop to the low point, squash with the tilt. */
+  const at = (phi: number, sign: number) => {
+    const E = (Hg / 2) * Math.abs(Math.cos(phi)) + (W / 2) * Math.sin(phi);
+    const k = (2 * E) / Hg;
+    return `rotate(${-sign * phi}rad) translateY(${E - 3}px) scaleY(${k.toFixed(4)})`;
+  };
+  const keyframes = (from: number, to: number, sign: number) =>
+    Array.from({ length: 9 }, (_, n) => ({ transform: at(from + ((to - from) * n) / 8, sign) }));
+  return {
+    fill,
+    stripes,
+    keyframes,
+    remove: () => {
+      fill.remove();
+      jarEl.classList.remove('tilting');
+    },
+  };
 }
 
 async function animatePour(from: number, to: number): Promise<void> {
   busy = true;
   const src = jarEls[from];
   const dst = jarEls[to];
-  const color = config.palette[session.board.jars[from].units.at(-1)!].hex;
+  const srcJar = session.board.jars[from];
+  const color = config.palette[srcJar.units.at(-1)!].hex;
   const targetLen = session.board.jars[to].units.length;
 
   if (reducedMotion()) {
+    const n = pourAmount(session.board, from, to);
     session.pour(from, to);
-    finishPour();
+    audio.play('pour', { units: n });
+    finishPour(from);
     return;
   }
 
@@ -260,18 +450,21 @@ async function animatePour(from: number, to: number): Promise<void> {
   const d = dst.getBoundingClientRect();
   const side = d.left + d.width / 2 >= s.left + s.width / 2 ? 1 : -1;
   const r = s.height / 2;
-  const rad = (TILT_DEG * Math.PI) / 180;
+  const rad = (ANIM.tilt * Math.PI) / 180;
   const mouthX = d.left + d.width / 2 - side * 3;
   const mouthY = d.top - 10;
   const dx = mouthX - side * r * Math.sin(rad) - (s.left + s.width / 2);
   const dy = mouthY + r * Math.cos(rad) - (s.top + s.height / 2);
   const lifted = getComputedStyle(src).transform;
   src.classList.add('pouring');
+  const tilt = makeTiltFill(src, from);
+  const ease = 'cubic-bezier(.3,.7,.4,1)';
 
   const go = src.animate(
-    [{ transform: lifted === 'none' ? 'none' : lifted }, { transform: `translate(${dx}px, ${dy}px) rotate(${side * TILT_DEG}deg)` }],
-    { duration: 260, easing: 'cubic-bezier(.3,.7,.4,1)', fill: 'forwards' },
+    [{ transform: lifted === 'none' ? 'none' : lifted }, { transform: `translate(${dx}px, ${dy}px) rotate(${side * ANIM.tilt}deg)` }],
+    { duration: ANIM.lift, easing: ease, fill: 'forwards' },
   );
+  const tiltIn = tilt.fill.animate(tilt.keyframes(0, rad, side), { duration: ANIM.lift, easing: ease, fill: 'forwards' });
   await go.finished;
 
   // Stream of sand from the mouth to the target's surface.
@@ -285,31 +478,49 @@ async function animatePour(from: number, to: number): Promise<void> {
   stream.style.height = `${Math.max(8, surface - mouthY)}px`;
   stream.style.setProperty('--c', color);
   document.body.appendChild(stream);
-  await stream.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 110, easing: 'ease-in', fill: 'forwards' }).finished;
+  const moved = pourAmount(session.board, from, to);
+  audio.play('pour', { units: moved });
+  await stream.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: ANIM.streamIn, easing: 'ease-in', fill: 'forwards' }).finished;
 
+  const before = session.board.jars[from].units.length;
   session.pour(from, to);
-  await wait(260);
+  const after = session.board.jars[from].units.length;
+  // Drain the poured stripes from the tilted fill.
+  tilt.stripes.slice(after, before).forEach((el) => el.animate([{ height: `${unitHeight}px` }, { height: '0px' }], { duration: ANIM.flow, fill: 'forwards' }));
+  burst({ x: mouthX, y: surface - (before - after) * unitHeight * 0.5, colors: [color], count: 10, spread: 22, angle: 0, cone: 160, size: 4, duration: 420, gravity: 14 });
+  audio.play('land', { pitch: targetLen });
+  await wait(ANIM.flow);
 
   stream.style.transformOrigin = 'bottom';
-  await stream.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: 120, fill: 'forwards' }).finished;
+  await stream.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(0)' }], { duration: ANIM.streamOut, fill: 'forwards' }).finished;
   stream.remove();
 
-  const back = src.animate(
-    [{ transform: `translate(${dx}px, ${dy}px) rotate(${side * TILT_DEG}deg)` }, { transform: 'none' }],
-    { duration: 240, easing: 'cubic-bezier(.4,0,.3,1)', fill: 'forwards' },
-  );
+  // Let the player act again while the jar flies home.
+  returning.add(from);
+  src.classList.add('returning');
+  finishPour(from);
+  const back = src.animate([{ transform: `translate(${dx}px, ${dy}px) rotate(${side * ANIM.tilt}deg)` }, { transform: 'none' }], {
+    duration: ANIM.back,
+    easing: 'cubic-bezier(.4,0,.3,1)',
+    fill: 'forwards',
+  });
+  const tiltOut = tilt.fill.animate(tilt.keyframes(rad, 0, side), { duration: ANIM.back, easing: 'cubic-bezier(.4,0,.3,1)', fill: 'forwards' });
   await back.finished;
   go.cancel();
   back.cancel();
-  src.classList.remove('pouring');
-  finishPour();
+  tiltIn.cancel();
+  tiltOut.cancel();
+  tilt.remove();
+  src.classList.remove('pouring', 'returning');
+  returning.delete(from);
+  if (pendingWin) showWin();
 }
 
-function finishPour(): void {
-  selected = null;
+function finishPour(from: number): void {
+  if (selected === from) selected = null;
   renderSelectedState();
   busy = false;
-  if (pendingWin) window.setTimeout(showWin, reducedMotion() ? 0 : 450);
+  if (pendingWin && reducedMotion()) showWin();
 }
 
 function renderSelectedState(): void {
@@ -323,7 +534,6 @@ function wait(ms: number): Promise<void> {
   return new Promise((res) => window.setTimeout(res, ms));
 }
 
-let toastTimer = 0;
 function showToast(text: string): void {
   toastEl.textContent = text;
   toastEl.classList.add('show');
@@ -331,14 +541,45 @@ function showToast(text: string): void {
   toastTimer = window.setTimeout(() => toastEl.classList.remove('show'), 2600);
 }
 
-function showHint(): void {
-  if (busy) return;
+// ---- Boosters -----------------------------------------------------------
+
+/** Spends a charge (or coins) and applies the booster; refunds if it couldn't apply. */
+function useBooster(id: BoosterId): void {
+  audio.unlock();
+  if (busy || returning.size || inTutorial || session.status === 'won') return;
+  if (id === 'undo' && !session.canUndo) return showToast(t.noUndo);
+  if (id === 'extraJar' && session.extraJarsLeft <= 0) return showToast(t.noJars);
+  const before = save.wallet;
+  const r = spendBooster(save.wallet, id, config);
+  if (!r.ok) {
+    audio.play('nope');
+    return showToast(t.notEnoughCoins(config.boosters[id].price));
+  }
+  let applied = false;
+  setSelected(null);
+  if (id === 'undo') applied = session.undo();
+  else if (id === 'extraJar') applied = session.addExtraJar();
+  else if (id === 'shuffle') {
+    applied = session.shuffle(shuffleRng);
+    if (!applied) showToast(t.noShuffle);
+    else audio.play('shuffle');
+  } else if (id === 'hint') applied = showHint();
+  save.wallet = applied ? r.wallet : before;
+  writeSave(save);
+  if (applied) {
+    if (id !== 'shuffle') audio.play('booster');
+    if (r.paidCoins) showToast(t.boughtWith(r.paidCoins));
+  }
+  updateHud();
+}
+
+/** Highlights the solver's next move. Returns false if there is none. */
+function showHint(): boolean {
   const m = session.hint();
   if (!m) {
     showToast(t.noHint);
-    return;
+    return false;
   }
-  setSelected(null);
   clearHint();
   for (const [i, cls] of [
     [m.from, 'hint-from'],
@@ -348,34 +589,57 @@ function showHint(): void {
     void el.offsetWidth; // restart the CSS animation
     el.classList.add(cls);
   }
-  hintTimer = window.setTimeout(clearHint, 1800);
+  hintTimer = window.setTimeout(clearHint, 2400);
+  return true;
 }
 
-let hintTimer = 0;
 /** Removes any visible hint highlight, so only one hint shows at a time. */
 function clearHint(): void {
   window.clearTimeout(hintTimer);
   for (const el of jarEls) el.classList.remove('hint-from', 'hint-to');
 }
 
+// ---- Wiring -------------------------------------------------------------
+
 function wireInput(): void {
-  btnUndo.addEventListener('click', () => !busy && session.undo());
-  btnRestart.addEventListener('click', () => !busy && session.restart());
-  btnJar.addEventListener('click', () => {
-    if (busy) return;
-    if (!session.addExtraJar()) showToast(t.noJars);
+  for (const btn of toolButtons) btn.addEventListener('click', () => useBooster(btn.dataset.booster as BoosterId));
+  $('btn-restart').addEventListener('click', () => {
+    if (busy || returning.size || inTutorial) return;
+    session.restart();
   });
-  btnHint.addEventListener('click', showHint);
-  btnNext.addEventListener('click', () => startLevel(level + 1));
-  btnPatterns.addEventListener('click', () => {
-    patterns = !patterns;
-    writePatternsPref(patterns);
-    btnPatterns.setAttribute('aria-pressed', String(patterns));
-    renderAllJars();
+  $('btn-play').addEventListener('click', play);
+  btnNext.addEventListener('click', () => {
+    winEl.hidden = true;
+    startLevel(inTutorial ? 1 : level + 1);
   });
+  $('btn-settings').addEventListener('click', openSettings);
+  $('btn-close-settings').addEventListener('click', () => (settingsEl.hidden = true));
+  $('btn-home').addEventListener('click', () => {
+    settingsEl.hidden = true;
+    showHome();
+  });
+  $('btn-tutorial').addEventListener('click', () => {
+    settingsEl.hidden = true;
+    startTutorial();
+  });
+  for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) {
+    $<HTMLInputElement>(`set-${key}`).addEventListener('change', (e) => {
+      save.settings[key] = (e.target as HTMLInputElement).checked;
+      writeSave(save);
+      audio.configure(save.settings);
+      if (key === 'patterns') renderAllJars();
+    });
+  }
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!homeEl.hidden) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        play();
+      }
+      return;
+    }
     if (!winEl.hidden) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -383,11 +647,16 @@ function wireInput(): void {
       }
       return;
     }
+    if (!settingsEl.hidden) {
+      if (e.key === 'Escape') settingsEl.hidden = true;
+      return;
+    }
     const k = e.key.toLowerCase();
-    if (busy) return;
-    if (k === 'z') session.undo();
-    else if (k === 'r') session.restart();
-    else if (k === 'h') showHint();
+    if (k === 'z') useBooster('undo');
+    else if (k === 's') useBooster('shuffle');
+    else if (k === 'j') useBooster('extraJar');
+    else if (k === 'h') useBooster('hint');
+    else if (k === 'r') $('btn-restart').click();
     else if (k === 'escape') setSelected(null);
     else if (/^[0-9]$/.test(k)) {
       const i = k === '0' ? 9 : Number(k) - 1;
@@ -398,40 +667,31 @@ function wireInput(): void {
   let resizeTimer = 0;
   window.addEventListener('resize', () => {
     window.clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => !busy && buildJars(), 120);
+    resizeTimer = window.setTimeout(() => {
+      if (busy || returning.size) return;
+      buildJars();
+      if (inTutorial && !coachEl.hidden) coach(selected === null ? 0 : selected === 0 ? 1 : 0, coachText.textContent ?? '');
+    }, 120);
   });
 }
 
+function openSettings(): void {
+  for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) $<HTMLInputElement>(`set-${key}`).checked = save.settings[key];
+  settingsEl.hidden = false;
+  $('btn-close-settings').focus();
+}
+
 function applyStrings(): void {
-  btnUndo.querySelector('span')!.textContent = t.undo;
-  btnRestart.querySelector('span')!.textContent = t.restart;
-  btnJar.querySelector('span')!.textContent = t.jar;
-  btnHint.querySelector('span')!.textContent = t.hint;
-  btnNext.textContent = t.next;
-  $('win-title').textContent = t.winTitle;
+  for (const btn of toolButtons) (btn.querySelector('.tool-name') as HTMLElement).textContent = BOOSTER_NAMES[btn.dataset.booster as BoosterId];
+  $('moves-label').textContent = t.pours;
+  $('btn-restart').title = t.restart;
+  $('btn-settings').title = t.settings;
+  $('settings-title').textContent = t.settings;
+  for (const el of document.querySelectorAll<HTMLElement>('[data-s]')) el.textContent = t[el.dataset.s as 'sound' | 'music' | 'haptics' | 'patterns'];
+  $('btn-home').textContent = t.home;
+  $('btn-tutorial').textContent = t.replayTutorial;
+  $('btn-close-settings').textContent = t.close;
+  $('home-title').textContent = t.brand;
+  $('home-tagline').textContent = t.tagline;
   boardEl.setAttribute('aria-label', t.boardLabel);
-  document.querySelector('.hud-moves')!.lastChild!.textContent = ` ${t.pours}`;
-
-  btnPatterns.type = 'button';
-  btnPatterns.className = 'chip';
-  btnPatterns.textContent = t.patterns;
-  btnPatterns.title = t.patternsTitle;
-  btnPatterns.setAttribute('aria-pressed', String(patterns));
-  document.querySelector('.hud')!.appendChild(btnPatterns);
-}
-
-function readPatternsPref(): boolean {
-  try {
-    return JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}').patterns === true;
-  } catch {
-    return false;
-  }
-}
-
-function writePatternsPref(on: boolean): void {
-  try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({ patterns: on }));
-  } catch {
-    /* ignore */
-  }
 }

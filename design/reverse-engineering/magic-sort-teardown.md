@@ -72,3 +72,38 @@ code, level data or assets would also be copying protected material. REA's own
 `DISCLAIMER.md` excludes "copying proprietary software or reproducing its
 protected code and assets." If more detail is wanted later, play-testing the app
 and recording observations here is the right tool.
+
+---
+
+# Teardown v2: gameplay recording (2026-11-08)
+
+> **Evidence.** A 64-second screen recording of Magic Sort! (levels 1–5, home, shop and
+> locked tabs) plus three screenshots, supplied by the project owner. It was analysed
+> frame by frame with ffmpeg: 1 fps contact sheets, a 10 fps crop of one pour, and an
+> audio RMS envelope. REA was not used: it analyses binaries, apps and web bundles,
+> not video. Its evidence-and-confidence discipline still applies. Nothing in Strata
+> reproduces the app's art, names, characters, UI layout or levels.
+
+## Feel (the biggest gap found)
+
+| # | Observation | Evidence | Confidence | Strata response |
+|---|---|---|---|---|
+| V2-1 | A pour takes about 1.0–1.1 s from lift to return: tilt-in ~0.3 s, stream ~0.4 s, return ~0.3 s | 10 fps crop, t = 8.0–10.4 s | High | Cut from ~1.2 s to ~0.85 s, and let the player act while the jar flies home |
+| V2-2 | The bottle tips **past horizontal**, with the mouth lower than the base | 10 fps crop | High | Tilt raised from 72° to 100° |
+| V2-3 | **The liquid surface stays level** while the bottle rotates, and the colour bands stay horizontal | 10 fps crop | High | A world-level "tilted fill" band inside the tilting jar |
+| V2-4 | The stream splashes on landing | 10 fps crop | High | A small burst of sand grains where the stream lands |
+| V2-5 | Sealing: a stopper drops in from above, with a sparkle swirl | 1 fps sheets 1 and 3 | High | The cork drops in with a bounce, plus sparkles in the jar's colour |
+| V2-6 | Win: the screen dims and a celebration plays (~2 s), then a reward card ("PERFECT!", +20 coins, Continue) | Sheet 2 | High | A sand-grain burst in the board's colours, then a reward card with a coin count-up |
+| V2-7 | Audio never stops: continuous music plus effects | RMS above −30 dB for almost the whole clip | Medium | Synthesised ambient music, ocean noise and effects. Each can be toggled |
+
+## Progression and economy
+
+| # | Observation | Evidence | Confidence | Strata response |
+|---|---|---|---|---|
+| V2-8 | Three in-level boosters (Undo, Shuffle, +Bottle), **3 charges each**, shown as badges | Every in-level frame | High | Four boosters with charges (Undo 5, Shuffle 3, Jar 3, Hint 3); at 0 charges the badge shows a coin price |
+| V2-9 | Coins: 1000 at start, +20 per level | 1000 → 1020 after level 4 | High | 100 at start, +20 per level, +10 for a perfect clear, +30 for tall-jar levels. Boosters cost 40–120 |
+| V2-10 | A tutorial with a pointing hand: tap one bottle to pick up, tap the other to pour. Levels 1–4 are grouped | User screenshots 2 and 3 | High | A one-pour tutorial board with a pulsing ring and caption, shown on first launch |
+| V2-11 | Level 5 has 4 colours and 6 bottles (2 empty), capacity 4 | Sheet 3 | High | Matches our curve (level 3 → 4 colours) |
+| V2-12 | A home screen between levels, with a big "Level N" button | Sheets 2 and 4 | High | A home screen on launch with "Play · Level N" and coins. Continue goes straight to the next level |
+| V2-13 | 5 lives ("Full"), an IAP shop (bundles $1.69–$7.49 with ad removal) | Sheet 2 | High | **Not adopted** (decisions D1–D2 in `design/competitive-roadmap.md`) |
+| V2-14 | Leaderboard (unlocks at level 40), Teams (39), Collection (95) | Sheet 2 | High | Leaderboard and teams need a backend: deferred. Collection is a candidate for an original meta (roadmap C7) |

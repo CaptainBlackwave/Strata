@@ -98,3 +98,14 @@ describe('generateLevel', () => {
     expect(generateLevel(3, cfg).board).not.toEqual(generateLevel(4, cfg).board);
   });
 });
+
+describe('tutorial board', () => {
+  // Story: production/epics/competitive/story-003-tutorial.md
+  it('is a one-pour win built from config', async () => {
+    const { tutorialBoard } = await import('../../../src/core/generator');
+    const b = tutorialBoard(cfg);
+    const r = solve(b, 1000);
+    expect(r.solvable).toBe(true);
+    expect(r.path).toHaveLength(1);
+  });
+});

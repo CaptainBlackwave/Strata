@@ -52,3 +52,8 @@ export function generateLevel(level: number, config: GameConfig): GeneratedLevel
   }
   throw new Error(`No solvable board for level ${level} after ${maxAttempts} attempts`);
 }
+
+/** The first-launch tutorial board from config: one pour seals a jar. */
+export function tutorialBoard(config: GameConfig): Board {
+  return makeBoard(config.tutorial.capacity, config.tutorial.jars);
+}

@@ -10,15 +10,16 @@ for a full-screen app icon. Every push to `main` re-runs the tests and redeploys
 ```bash
 npm install
 npm run dev      # play at http://localhost:5173  (add ?level=N to jump to a level)
-npm test         # 53 unit tests: rules, solver, generator, curve, session, layout, save
+npm test         # 69 unit tests: rules, solver, generator, curve, session, economy, layout, save
 npm run build    # static site in dist/
 ```
 
 **How to play:** tap a jar to lift it, then tap another jar to pour its top layer. You
 can pour onto an empty jar or onto the same colour, as far as there's room. Seal every
-jar to clear the level. Undo is unlimited, there's one spare **Jar** per level, and
-**Hint** asks the solver for a move. **Patterns** adds a texture to each colour for
-colour-blind play. Keyboard: `1`–`9`/`0` pick jars, `Z` undo, `R` restart, `H` hint.
+jar to clear the level and earn coins (a bonus for a **Perfect** clear with no boosters).
+Boosters (**Undo**, **Shuffle**, an extra **Jar**, **Hint**) have charges, and once those
+are used they cost coins. No lives, no ads, no purchases. Keyboard: `1`–`9`/`0` pick jars,
+`Z` undo, `S` shuffle, `J` jar, `H` hint, `R` restart.
 
 ## What's in the box
 
@@ -29,6 +30,7 @@ colour-blind play. Keyboard: `1`–`9`/`0` pick jars, `Z` undo, `R` restart, `H`
 | `src/ui/` | DOM/CSS renderer, pour animation, layout fitting, strings table, `localStorage` save |
 | `tests/unit/core/` | Vitest suites. Levels 1–40 are proven solvable on every run |
 | `design/reverse-engineering/magic-sort-teardown.md` | The genre teardown the design is built from |
+| `design/competitive-roadmap.md` | What makes Strata competitive: decisions, done and next |
 | `design/game-brief.md` | One-page design record (Game Studios rigor `minimal`) |
 | `production/epics/strata/` | The MVP epic and its six stories |
 | `production/qa/evidence/` | Screenshots and the play-through log |
