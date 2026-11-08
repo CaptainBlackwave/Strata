@@ -140,6 +140,7 @@ let unitHeight = 0;
 const returning = new Set<number>();
 let toastTimer = 0;
 let hintTimer = 0;
+let restartTimer = 0; // Restart's second-tap window (F6); declared before boot uses it
 const audio = new GameAudio(save.settings);
 const shuffleRng = createRng(Date.now() >>> 0);
 
@@ -834,8 +835,6 @@ function onSessionEvent(e: SessionEvent): void {
 }
 
 // ---- Protect progress (F6) -------------------------------------------------
-
-let restartTimer = 0;
 
 /**
  * Restart from the HUD button or the R key. Restart can't be undone (the session clears
