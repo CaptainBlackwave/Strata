@@ -110,7 +110,9 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     buriedDepth = row.buriedDepth ?? buriedDepth;
   }
   const mechanics = pickMechanics(level, config);
-  if (spare > 1 && spareOneChance(level, config) > 0) {
+  // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
+  const debut = config.mechanics.list.some((m) => m.unlockAt === level);
+  if (!debut && spare > 1 && spareOneChance(level, config) > 0) {
     // Decision D1 (revised 2026-11-08): one of the two spares becomes a special jar.
     // A board with a single ordinary spare is almost never winnable, but one ordinary
     // spare plus a narrow jar or a funnel almost always is.
