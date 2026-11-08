@@ -76,7 +76,9 @@ const en = {
   allShellsBonus: (coins: number) => (coins > 0 ? `Collection complete: +${coins} coins` : 'Collection complete ✓'),
   nextShell: (n: number) => (n === 1 ? 'Next shell: clear 1 more level' : `Next shell: clear ${n} more levels`),
   setRewardNote: (coins: number) => `Complete the set: ${coins} coins + 1 Shuffle, Jar and Hint`,
-  lockedShell: '?',
+  /** A shell not found yet: the mark is drawn, the label is what a screen reader says (AX-15). */
+  lockedShellMark: '?',
+  lockedShell: 'Not found yet',
   setDone: 'Set complete ✓',
   mechanics: {
     narrow: { name: 'Narrow jar', rule: 'Holds only 2 layers and never seals. Use it as extra space, and empty it before the end.', tap: 'Narrow jar: holds 2 layers, never seals.' },
@@ -151,7 +153,6 @@ const en = {
   hintToast: (from: number, to: number) => `Hint: pour jar ${from} into jar ${to}`,
   hintFrom: 'From',
   hintTo: 'To',
-  noJars: 'Only one extra jar per level.',
   noUndo: 'Nothing to undo yet.',
   noShuffle: 'Couldn’t find a better shuffle.',
   notEnoughCoins: (price: number) => `Needs ${price} coins. Clear levels to earn more.`,

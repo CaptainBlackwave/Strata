@@ -303,6 +303,12 @@ function renderScenes(): void {
       const inUse = owned && currentTheme() === theme.id;
       status.textContent = inUse ? t.sceneInUse : owned ? t.sceneOwned : String(theme.price);
       status.classList.toggle('price', !owned);
+      if (!owned) {
+        const unit = document.createElement('span'); // "300 coins", not a bare number (UX-scenes-3)
+        unit.className = 'sr-only';
+        unit.textContent = ` ${t.coins}`;
+        status.append(unit);
+      }
       card.addEventListener('click', () => {
         previewing = theme.id;
         applyTheme(theme.id);
@@ -318,6 +324,7 @@ function renderScenes(): void {
   const btn = $<HTMLButtonElement>('btn-scene-buy');
   const inUse = owned && currentTheme() === theme.id;
   btn.hidden = inUse;
+  $('scene-previewing').textContent = previewing !== currentTheme() ? t.scenePreviewing(theme.name) : ''; // UX-scenes-4
   btn.disabled = !owned && save.wallet.coins < theme.price;
   btn.textContent = owned ? t.sceneUse(theme.name) : save.wallet.coins >= theme.price ? t.sceneBuy(theme.name, theme.price) : t.sceneNeed(theme.price, save.wallet.coins);
   $('scenes-auto-note').textContent = t.matchClockNote;
@@ -510,7 +517,15 @@ function openCabinet(): void {
         const cell = document.createElement('figure');
         cell.className = has ? 'shell-cell' : 'shell-cell locked';
         cell.innerHTML = `${shellSvg({ ...sh, effect: p.set.effect }, !has)}<figcaption></figcaption>`;
-        cell.querySelector('figcaption')!.textContent = has ? sh.name : t.lockedShell;
+        cell.querySelector('svg')?.setAttribute('aria-hidden', 'true');
+        const caption = cell.querySelector('figcaption')!;
+        if (has) caption.textContent = sh.name;
+        else {
+          // The "?" stays on screen; a screen reader hears "Not found yet" (UX-cab-1, AX-15).
+          caption.innerHTML = '<span aria-hidden="true"></span><span class="sr-only"></span>';
+          caption.children[0].textContent = t.lockedShellMark;
+          caption.children[1].textContent = t.lockedShell;
+        }
         grid.appendChild(cell);
       }
       const note = document.createElement('p');
@@ -1547,7 +1562,6 @@ function useBooster(id: BoosterId): void {
   audio.unlock();
   if (busy || returning.size || mode === 'tutorial' || session.status === 'won') return;
   if (id === 'undo' && !session.canUndo) return showToast(t.noUndo);
-  if (id === 'extraJar' && session.extraJarsLeft <= 0) return showToast(t.noJars);
   // With no charges left, the first tap only names the price and a second tap within the
   // window buys, like Restart's arm (UX-board-7). Too few coins skips this: the spend is refused anyway.
   const price = config.boosters[id].price;
@@ -1833,6 +1847,8 @@ function applyStrings(): void {
   $('btn-close-scenes').textContent = t.close;
   $('btn-intro-ok').textContent = t.gotIt;
   $('btn-close-settings').textContent = t.close;
+  $('patterns-help').textContent = t.patternsTitle; // UX-settings-5
+  for (const el of document.querySelectorAll<HTMLElement>('.coins-sr')) el.textContent = ` ${t.coins}`; // UX-home-2
   $('home-title').textContent = t.brand;
   $('home-tagline').textContent = t.tagline;
   $('btn-share').textContent = t.share;

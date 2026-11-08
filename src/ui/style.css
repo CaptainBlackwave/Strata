@@ -2477,3 +2477,26 @@ body[data-theme='harvestmoon']::before {
 .win-card p.share-status:empty {
   margin: 0;
 }
+
+/* UX-settings-5: helper text under a switch's label. */
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 12px;
+}
+.toggle-help {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+/* UX-scenes-4: "Previewing {name}" above Buy/Use. */
+.scene-previewing {
+  margin: 10px 0 4px;
+  text-align: center;
+  font-weight: 800;
+  color: var(--accent-text);
+}
+.scene-previewing:empty {
+  margin: 0;
+}
