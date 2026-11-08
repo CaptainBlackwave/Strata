@@ -7,14 +7,15 @@
 import './style.css';
 import rawConfig from '../config/game-config.json';
 import { type Board, type Jar, canPour, isClosed, isSealed, pourAmount } from '../core/board';
-import { type CollectionConfig, allShells, grantShell, knownShells, milestoneDue, setProgress } from '../core/collection';
-import { type DailyConfig, generateDaily, recordDailySolve, sharePours, streakStatus, utcDateKey, weekday } from '../core/daily';
-import { type BoosterId, type EconomyConfig, addBoosters, addCoins, clearReward, isFreeBooster, spendBooster } from '../core/economy';
+import { type CollectionConfig, allShells, knownShells, setProgress } from '../core/collection';
+import { type DailyConfig, generateDaily, sharePours, streakStatus, utcDateKey, weekday } from '../core/daily';
+import { type BoosterId, type EconomyConfig, isFreeBooster, spendBooster } from '../core/economy';
 import { tutorialBoard } from '../core/generator';
 import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
 import { type GenPort, type PreparedLevel, Prefetcher } from '../core/prefetch';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent, sessionOptions } from '../core/session';
+import { type ShellAward, type WinCard, type WinNote, applyWin } from '../core/win';
 import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, byIdOr, inSeason, isOwned, localDateKey, themeById } from '../core/themes';
 import {
   type Profile,
@@ -28,7 +29,6 @@ import {
   generateName,
   isUnlocked,
   isValidName,
-  newlyUnlocked,
   normaliseName,
   progressOf,
   repairProfile,
@@ -462,28 +462,18 @@ function openWhatsNew(opener: FocusTarget | null = document.activeElement as HTM
   openLayer($('whatsnew'), $('btn-whatsnew-ok'), opener);
 }
 
-/** Grants the next shell (or the completion bonus) and fills the win card's shell row. */
-function awardShell(): void {
-  const r = grantShell(save.shells, config);
-  const row = $('win-shell');
-  if (!r.shell) {
-    earn(config.collection.coinsWhenComplete);
+/** Fills the win card's shell row from the award `applyWin` made. */
+function renderShell(award: ShellAward): void {
+  if (award.kind === 'complete') {
     $('win-shell-art').innerHTML = '';
-    $('win-shell-text').textContent = t.allShellsBonus(config.collection.coinsWhenComplete);
-    row.hidden = false;
-    return;
+    $('win-shell-text').textContent = t.allShellsBonus(award.coins);
+  } else {
+    $('win-shell-art').innerHTML = shellSvg(award.shell);
+    let text = t.newShell(award.shell.name);
+    if (award.completedSet) text += `\n${t.setComplete(award.completedSet.name, award.setCoins)}`;
+    $('win-shell-text').textContent = text;
   }
-  save.shells = r.owned;
-  $('win-shell-art').innerHTML = shellSvg(r.shell);
-  let text = t.newShell(r.shell.name);
-  if (r.completedSet) {
-    const bonus = config.collection.setReward;
-    earn(bonus.coins);
-    save.wallet = addBoosters(save.wallet, bonus.boosters);
-    text += `\n${t.setComplete(r.completedSet.name, bonus.coins)}`;
-  }
-  $('win-shell-text').textContent = text;
-  row.hidden = false;
+  $('win-shell').hidden = false;
 }
 
 function openCabinet(): void {
@@ -548,12 +538,6 @@ function openCabinet(): void {
 }
 
 // ---- Player profile (design/gdd/player-profile.md) ----------------------
-
-/** Credits coins earned by play and counts them for the "Coins earned" stat. */
-function earn(coins: number): void {
-  save.wallet = addCoins(save.wallet, coins);
-  save.stats = bumpStats(save.stats, { coinsEarned: coins });
-}
 
 /** The progress values unlocks are measured against, from the live save. */
 function progressNow(): Progress {
@@ -1067,7 +1051,8 @@ function sealFx(i: number, color: string): void {
   }, reducedMotion() ? 0 : 180);
 }
 
-function showWin(): void {
+/** Shared opener: celebration, audio, and the card parts every mode resets. */
+function openWin(): void {
   pendingWin = false;
   coach(null);
   const colors = [...new Set(session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
@@ -1082,57 +1067,59 @@ function showWin(): void {
   $('btn-win-home').hidden = mode !== 'level'; // a level card can stop here (UX-win-2); the daily's Continue is already Home
   $('win-avatar').hidden = mode === 'tutorial';
   if (mode !== 'tutorial') $('win-avatar').innerHTML = portraitOf(save.profile);
-  const before = progressNow();
-  if (mode === 'tutorial') {
-    save.tutorialDone = true;
-    writeSave(save);
-    $('win-title').textContent = t.tutorialDoneTitle;
-    $('win-text').textContent = t.tutorialDoneText;
-    $('win-reward').hidden = true;
-    $('win-note').textContent = '';
-    btnNext.textContent = t.tutorialStart;
-  } else if (mode === 'daily') {
-    const r = recordDailySolve(save.daily, dailyDate, config);
-    save.daily = r.state;
-    const counts = !r.alreadySolved && !r.outOfOrder;
-    earn(r.reward);
-    save.stats = bumpStats(save.stats, { pours: session.moves, dailiesSolved: counts ? 1 : 0 });
-    if (counts) {
-      awardShell();
-      save.dailyShare = { date: dailyDate, pours: session.moves }; // Share reports this solve, not a replay (GA-DP-6)
-    }
-    writeSave(save);
-    showUnlocks(newlyUnlocked(config, before, progressNow()));
-    $('win-title').textContent = t.dailyWinTitle;
-    $('win-text').textContent = `${session.moves} ${t.poursLabel(session.moves)} · ${t.streakDays(r.state.streak)}`;
-    $('win-reward').hidden = !counts;
-    $('win-note').textContent = r.outOfOrder ? t.dailyOutOfOrder : r.alreadySolved ? t.dailyReplay : r.usedPass ? t.usedPass : r.earnedPass ? t.earnedPass : '';
-    $('btn-share').hidden = false;
-    btnNext.textContent = t.home;
-    if (counts) countUp($('win-coins'), r.reward);
-    $('win-reward-sr').textContent = `${t.reward(r.reward)} ${t.coins}`;
-  } else {
-    const perfect = session.assists === 0;
-    const firstClear = level >= save.level;
-    // Coins on the first clear only; replays pay nothing (design/gdd/economy.md, M1).
-    const reward = clearReward({ level, nextLevel: save.level, perfect, challenge }, config);
-    const key = String(level);
-    const prevBest = save.best[key];
-    if (prevBest === undefined || session.moves < prevBest) save.best[key] = session.moves;
-    save.level = Math.max(save.level, level + 1);
-    earn(reward);
-    save.stats = bumpStats(save.stats, { pours: session.moves, perfectClears: firstClear && perfect ? 1 : 0 });
-    if (firstClear && milestoneDue(level, config)) awardShell();
-    writeSave(save);
-    showUnlocks(newlyUnlocked(config, before, progressNow()));
-    $('win-title').textContent = perfect ? t.perfectTitle : t.winTitle;
-    $('win-text').textContent = t.winText(session.moves, prevBest);
-    $('win-reward').hidden = !firstClear;
-    $('win-note').textContent = !firstClear ? t.replayNote : perfect ? t.perfectNote : '';
-    btnNext.textContent = t.next;
-    if (firstClear) countUp($('win-coins'), reward);
-    $('win-reward-sr').textContent = `${t.reward(reward)} ${t.coins}`;
-  }
+}
+
+/** Applies the win to the save through the pure rules in core/win.ts and persists it. */
+function applyWinToSave(): WinCard {
+  const r = applyWin(save, { mode, level, challenge, dailyDate, moves: session.moves, assists: session.assists }, config);
+  Object.assign(save, r.state);
+  writeSave(save);
+  return r.card;
+}
+
+/** The parts of the card shared by the daily and level wins: shell row, unlocks, reward row. */
+function renderRewards(card: WinCard): void {
+  if (card.shell) renderShell(card.shell);
+  showUnlocks(card.unlocks);
+  $('win-reward').hidden = !card.rewardShown;
+  if (card.rewardShown) countUp($('win-coins'), card.reward);
+  $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;
+}
+
+function winTutorial(): void {
+  applyWinToSave();
+  $('win-title').textContent = t.tutorialDoneTitle;
+  $('win-text').textContent = t.tutorialDoneText;
+  $('win-reward').hidden = true;
+  $('win-note').textContent = '';
+  btnNext.textContent = t.tutorialStart;
+}
+
+function winDaily(): void {
+  const card = applyWinToSave();
+  const notes: Record<WinNote, string> = { none: '', replay: '', perfect: '', outOfOrder: t.dailyOutOfOrder, dailyReplay: t.dailyReplay, usedPass: t.usedPass, earnedPass: t.earnedPass };
+  $('win-title').textContent = t.dailyWinTitle;
+  $('win-text').textContent = `${card.moves} ${t.poursLabel(card.moves)} · ${t.streakDays(card.streak)}`;
+  $('win-note').textContent = notes[card.note];
+  $('btn-share').hidden = false;
+  btnNext.textContent = t.home;
+  renderRewards(card);
+}
+
+function winLevel(): void {
+  const card = applyWinToSave();
+  $('win-title').textContent = card.perfect ? t.perfectTitle : t.winTitle;
+  $('win-text').textContent = t.winText(card.moves, card.prevBest);
+  $('win-note').textContent = card.note === 'replay' ? t.replayNote : card.note === 'perfect' ? t.perfectNote : '';
+  btnNext.textContent = t.next;
+  renderRewards(card);
+}
+
+function showWin(): void {
+  openWin();
+  if (mode === 'tutorial') winTutorial();
+  else if (mode === 'daily') winDaily();
+  else winLevel();
   // Focus lands on Continue, so the dialog describes the result: only the parts shown this time (UX-win-3).
   const described = [
     'win-text',
