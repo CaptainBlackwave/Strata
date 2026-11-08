@@ -51,6 +51,8 @@ const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig 
 const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
+/** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
+const RESTART_CONFIRM_MS = 3000;
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const boardEl = $('board');
@@ -775,6 +777,7 @@ function beginSession(board: Board, isChallenge: boolean): void {
   returning.clear();
   closeLayer(winEl, false);
   hideStuckBanner(false);
+  disarmRestart();
   document.body.dataset.challenge = String(isChallenge);
   buildJars();
   updateHud();
@@ -822,8 +825,66 @@ function onSessionEvent(e: SessionEvent): void {
       showStuckBanner(t.stuck);
       break;
   }
-  if (e.type !== 'stuck' && e.type !== 'won') hideStuckBanner(); // the board changed
+  if (e.type !== 'stuck' && e.type !== 'won') {
+    hideStuckBanner(); // the board changed
+    disarmRestart();
+  }
   updateHud();
+}
+
+// ---- Protect progress (F6) -------------------------------------------------
+
+let restartTimer = 0;
+
+/**
+ * Restart from the HUD button or the R key. Restart can't be undone (the session clears
+ * its history), so with pours on the board the first tap arms it and a second tap within
+ * RESTART_CONFIRM_MS restarts.
+ */
+function requestRestart(): void {
+  if (busy || returning.size || mode === 'tutorial') return;
+  const btn = $('btn-restart');
+  if (session.moves === 0 || btn.classList.contains('armed')) {
+    disarmRestart();
+    session.restart();
+    return;
+  }
+  btn.classList.add('armed');
+  btn.setAttribute('aria-label', t.restartArmedLabel);
+  showToast(t.restartConfirm);
+  restartTimer = window.setTimeout(disarmRestart, RESTART_CONFIRM_MS);
+}
+
+function disarmRestart(): void {
+  window.clearTimeout(restartTimer);
+  const btn = $('btn-restart');
+  btn.classList.remove('armed');
+  btn.removeAttribute('aria-label');
+}
+
+let leaveAction: (() => void) | null = null;
+
+/**
+ * Runs `action` (go Home, replay the tutorial) from Settings. If a board is part-way
+ * played, asks "Leave this board?" first, because the board isn't kept.
+ */
+function leaveBoard(action: () => void): void {
+  const partWay = !layers.has(homeEl) && session.moves > 0 && session.status !== 'won';
+  if (!partWay) {
+    closeLayer(settingsEl, false);
+    action();
+    return;
+  }
+  leaveAction = action;
+  openLayer($('leave'), $('btn-keep-playing'));
+}
+
+function confirmLeave(): void {
+  const action = leaveAction;
+  leaveAction = null;
+  closeLayer($('leave'), false);
+  closeLayer(settingsEl, false);
+  action?.();
 }
 
 // ---- Stuck banner (F2) ---------------------------------------------------
@@ -1395,10 +1456,7 @@ function wireInput(): void {
     if (busy || returning.size || mode === 'tutorial') return;
     session.restart(); // an explicit, labelled choice offered while stuck
   });
-  $('btn-restart').addEventListener('click', () => {
-    if (busy || returning.size || mode === 'tutorial') return;
-    session.restart();
-  });
+  $('btn-restart').addEventListener('click', requestRestart);
   $('btn-play').addEventListener('click', play);
   btnNext.addEventListener('click', () => {
     closeLayer(winEl, false);
@@ -1441,20 +1499,28 @@ function wireInput(): void {
   $('btn-share').addEventListener('click', () => void shareDaily());
   $('btn-settings').addEventListener('click', openSettings);
   $('btn-close-settings').addEventListener('click', () => closeLayer(settingsEl));
-  $('btn-home').addEventListener('click', () => {
-    closeLayer(settingsEl, false);
-    showHome();
-  });
+  $('btn-home').addEventListener('click', () => leaveBoard(showHome));
+  $('btn-keep-playing').addEventListener('click', () => closeLayer($('leave')));
+  $('btn-leave').addEventListener('click', confirmLeave);
   $('btn-savecode').addEventListener('click', () => openTransfer(closeLayer(settingsEl, false)));
   $('btn-copy-code').addEventListener('click', () => void copySaveCode());
   $('btn-restore-code').addEventListener('click', restoreSaveCode);
+  // Editing the code disarms Restore, so a new code always gets its own warning (UX-settings-1).
+  $('transfer-code').addEventListener('input', () => {
+    if (!restoreArmed) return;
+    restoreArmed = false;
+    $('btn-restore-code').textContent = t.restoreCode;
+    $('transfer-status').textContent = t.saveCodeHelp;
+  });
   $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
   $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, closeLayer(settingsEl, false)));
   $('btn-intro-ok').addEventListener('click', () => closeLayer($('intro')));
-  $('btn-tutorial').addEventListener('click', () => {
-    closeLayer(settingsEl, false);
-    startTutorial();
-  });
+  $('btn-tutorial').addEventListener('click', () =>
+    leaveBoard(() => {
+      closeLayer(homeEl, false);
+      startTutorial();
+    }),
+  );
   for (const key of ['sound', 'music', 'haptics', 'patterns'] as const) {
     $<HTMLInputElement>(`set-${key}`).addEventListener('change', (e) => {
       save.settings[key] = (e.target as HTMLInputElement).checked;
@@ -1471,6 +1537,10 @@ function wireInput(): void {
     const onButton = document.activeElement instanceof HTMLButtonElement;
     if (top === $('discard')) {
       if (e.key === 'Escape') keepEditing();
+      return;
+    }
+    if (top === $('leave')) {
+      if (e.key === 'Escape') closeLayer(top);
       return;
     }
     if (top === $('edit-profile')) {
@@ -1519,7 +1589,7 @@ function wireInput(): void {
     else if (k === 's') useBooster('shuffle');
     else if (k === 'j') useBooster('extraJar');
     else if (k === 'h') useBooster('hint');
-    else if (k === 'r') $('btn-restart').click();
+    else if (k === 'r') requestRestart();
     else if (k === 'escape') setSelected(null);
     else if (/^[0-9]$/.test(k)) {
       const i = k === '0' ? 9 : Number(k) - 1;
@@ -1585,6 +1655,10 @@ function applyStrings(): void {
   $('plates-label').textContent = t.platesLabel;
   $('btn-save-profile').textContent = t.saveProfile;
   $('discard-title').textContent = t.discardTitle;
+  $('leave-title').textContent = t.leaveTitle;
+  $('leave-text').textContent = t.leaveText;
+  $('btn-keep-playing').textContent = t.keepPlaying;
+  $('btn-leave').textContent = t.leave;
   $('btn-keep-editing').textContent = t.keepEditing;
   $('btn-discard').textContent = t.discard;
   boardEl.setAttribute('aria-label', t.boardLabel);

@@ -2090,3 +2090,20 @@ body[data-theme='moonlit'] .profile-chip {
   min-height: 44px;
   padding: 0 14px;
 }
+
+/* F6: Restart waits for a second tap; the armed state is shown by fill, not motion. */
+.icon-btn.armed {
+  background: var(--coral-text);
+  color: var(--card);
+}
+.leave-text {
+  margin: 6px 0 0;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+/* F6: the save code and the name field allow selecting and pasting text (iOS, UX-settings-3). */
+textarea,
+input[type='text'] {
+  user-select: text;
+  -webkit-user-select: text;
+}
