@@ -47,7 +47,11 @@ export interface Run {
 export function makeBoard(capacity: number, jars: readonly (readonly Color[])[], hidden: readonly number[] = []): Board {
   return {
     capacity,
-    jars: jars.map((units, i) => ({ units: [...units], hidden: clampHidden(hidden[i] ?? 0, units.length) })),
+    // A jar that is already sealed shows its sand: it is one colour, so nothing is hidden.
+    jars: jars.map((units, i) => {
+      const jar: Jar = { units: [...units], hidden: clampHidden(hidden[i] ?? 0, units.length) };
+      return jar.hidden && isSealed(jar, capacity) ? { ...jar, hidden: 0 } : jar;
+    }),
   };
 }
 
@@ -150,7 +154,13 @@ export function settle(board: Board): Board {
   for (const j of board.jars) if (isSealed(j, board.capacity)) sealedColors.add(j.units[0]);
   if (sealedColors.size === 0) return board;
   let changed = false;
-  const jars = board.jars.map((j) => {
+  const jars = board.jars.map((j0) => {
+    // A sealed jar is one colour, so its buried units are revealed (owner bug report 2026-11-08).
+    let j = j0;
+    if (j0.hidden && isSealed(j0, board.capacity)) {
+      j = { ...j0, hidden: 0 };
+      changed = true;
+    }
     const thaw = j.frozen === true;
     const unlock = j.lock !== undefined && sealedColors.has(j.lock);
     if (!thaw && !unlock) return j;

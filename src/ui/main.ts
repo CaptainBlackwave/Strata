@@ -824,6 +824,7 @@ function onSessionEvent(e: SessionEvent): void {
       break;
   }
   if (e.type !== 'stuck' && e.type !== 'won') {
+    clearHint(); // a hint describes the old board, so it must not linger onto the new one
     hideStuckBanner(); // the board changed
     disarmRestart();
     // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
