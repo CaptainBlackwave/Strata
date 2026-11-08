@@ -1295,7 +1295,8 @@ function onJarTap(i: number): void {
   const from = selected;
   if (canPour(session.board, from, i)) {
     if (mode === 'tutorial') coach(null);
-    void animatePour(from, i);
+    // If the animation throws (a node detached by a rebuild, a cancelled animation), never leave `busy` stuck (TD-15).
+    animatePour(from, i).catch(() => recoverPour(from));
   } else {
     nope(i);
     explainRefusal(i);
@@ -1452,6 +1453,13 @@ async function animatePour(from: number, to: number): Promise<void> {
   src.classList.remove('pouring', 'returning');
   returning.delete(from);
   if (pendingWin) showWin();
+}
+
+/** Puts a jar and the input lock back to rest after a pour animation failed part-way. */
+function recoverPour(from: number): void {
+  returning.delete(from);
+  jarEls[from]?.classList.remove('pouring', 'returning');
+  finishPour(from);
 }
 
 function finishPour(from: number): void {
