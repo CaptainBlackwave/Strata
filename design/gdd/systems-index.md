@@ -80,6 +80,16 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D23 | Economy and difficulty targets (D-e, D-f) | **Deferred** to a later balance sprint. GA-ECON-1, GX-11 and GX-13 stay open, owner-acknowledged | economy, level-generation | no |
 | D24 | When does the game say "This board can't be won now"? (follow-up to D21, sprint 6) | The structural check of D21 almost never fires in play (pours can't mix a funnel, generation never traps a lock's key colour), so the message also shows **when Hint proves the board lost** (the solver, `hintResult()` = `unwinnable`); the hint is then refunded. When the hint's search budget runs out it says "Couldn't find a hint this time" instead. No background solver after each pour | session-boosters, jar-mechanics, pour-rules | built in sprint 6 |
 | D25 | Does free Undo count toward the profile's "Boosters used"? | **No**: free Undo is a pour taken back, not a booster. "Boosters used" counts Shuffle, Extra Jar and Hint | player-profile | built in sprint 6 |
+| D26 | Unknown shell ids in a save? (GX-15, GB-SC-2) | **Dropped on load**: only catalog shells are kept and counted | shell-collection, save-data | building in sprint 7 |
+| D27 | Rule for changing the shell catalog later? (GB-SC-6) | **Append-only**: new shells and sets only at the end; ids, order and names never change once shipped | shell-collection | recorded |
+| D28 | Should a debut mechanic appear alone? (GA-LG-7) | **Yes**: no spare-jar swap on a mechanic's debut level | jar-mechanics, level-generation | building in sprint 7 |
+| D29 | Formal pillars? (GX-7) | **Yes**: four pillars and an anti-pillar list, approved as drafted | game-brief | recorded |
+| D30 | Normalise names? (GB-PP-4) | **Yes**: stored in Unicode NFC, so a name typed two ways is one name | player-profile | building in sprint 7 |
+| D31 | Presentation timings in config? (GB-FA-8) | **Exempt**: they stay in `src/ui/` as named constants; gameplay values stay in config | feel-audio-ui | recorded |
+| D32 | Coins after the scenes? (GX-11, D23) | **A scene ladder**: about 12 more scenes (seasons, weather, holidays, special skies) with rising prices and 3 animation tiers (colour, one ambient layer, layered and reactive). Design all, build the first 4 in sprint 7 | scenes, economy | sprint 7 |
+| D33 | Seasonal and holiday availability? | **Buy any time, kept forever**; an "in season" badge on their dates, and Match my clock can switch to them | scenes | sprint 7 |
+| D34 | Difficulty target? (GX-13, D23) | **Pours per level band** (median and max), measured by the solver and enforced by a test | level-generation | sprint 7 |
+| D35 | Playtest approach? | **Simulated sweep, then a short owner list** of specific levels to play on a phone | level-generation, economy | sprint 7 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

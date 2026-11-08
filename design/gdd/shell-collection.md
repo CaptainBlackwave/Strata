@@ -77,6 +77,10 @@ Names are placeholders the owner may rename; ids stay fixed once shipped, becaus
 
 **Persistence**: the owned list (`save-data.md`).
 
+**Catalog changes are append-only** (D27, 2026-11-08): new shells and sets are only ever added at the end. Existing ids, their order and their names never change once shipped, so saves and the "next shell" order stay stable. A rename needs a new id and a migration note, and is avoided.
+
+**Unknown ids are dropped on load** (D26, 2026-11-08): only ids in the catalog are kept, in earned order, so an edited or very old save code can't count towards sets or the Gold frame. Building in sprint 7 (B1).
+
 ### 2.3 Integration Points
 
 - **Depends on**: `economy.md` (coins and boosters as rewards), `daily-puzzle.md` and the level win flow (`session-boosters.md` win, `level-generation.md` level numbers) (the triggers).
@@ -168,3 +172,4 @@ None open: fixed order; sets 5–8 built.
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude | Expedition sets 5–8 from the owner interview (SC-1 to SC-8) |
 | 2026-11-08 | Claude (sprint 6, F9) | Closed "Not Yet Handled" and "Unclear" items moved to Handled with their decisions (GB-SC-1); unknown-id behaviour stated as built, fix left to the owner (GB-SC-2, GX-15); play rate stated (GB-SC-3); dependencies match 2.3, with the level win flow and player-profile (GB-SC-4); replay and out-of-order dailies grant nothing (GB-SC-7); set reward without Undo (D19) |
+| 2026-11-08 | Claude (sprint 7, B6) | Catalog is append-only (D27); unknown ids dropped on load (D26, building) |

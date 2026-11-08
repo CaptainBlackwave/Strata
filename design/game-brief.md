@@ -2,6 +2,14 @@
 
 **One-sentence pitch:** Pour layers of coloured sand between glass jars at a sunny seaside stall until every jar holds a single, perfect colour.
 
+## Pillars (owner-approved 2026-11-08, D29)
+1. **Calm tidy-up in 1–3 minute bites.** Never timed, never punishing: free Undo, free Restart, no fail screens.
+2. **Always fair.** Every board is proven solvable, and the game tells you when you're stuck or lost.
+3. **Earned, never bought.** Coins, shells and cosmetics come only from play, on fixed milestones. Never random.
+4. **Warm, original and readable for everyone.** Original seaside art in every light; colour is never the only cue; any text size, touch, keyboard or screen reader.
+
+**Anti-pillars (never):** timers, lives or energy · ads, purchases or anything sold for money · random rewards (loot boxes, gacha) · mascots or story · online accounts or leaderboards (for now).
+
 ## Core loop
 - Read the jars, then tap a jar to lift it and tap another to pour its top layer.
 - Untangle the colours using the spare jars as working space. Undo is free and unlimited (D19). Shuffle, the extra jar and Hint are limited boosters: charges first, then coins earned by play.
@@ -21,7 +29,7 @@
 
 ## Approved since the MVP
 - **Collection meta, milestone-only:** a 40-shell cabinet with set rewards (`design/gdd/shell-collection.md`) and a player profile with earned cosmetics (`design/gdd/player-profile.md`). Never random, never sold.
-- **Scenes:** four time-of-day looks, including a night scene, Moonlit tide (`design/gdd/scenes.md`).
+- **Scenes:** four time-of-day looks, including a night scene, Moonlit tide, plus a **scene ladder** of about 12 more (seasons, weather, holidays, special skies) in three animation tiers, bought with coins and kept forever; seasonal ones can be bought any time (D32, D33; `design/gdd/scenes.md`). Animation always stops under reduced motion.
 - **Audio:** synthesised sound effects and music, each with its own switch (roadmap C1).
 
 ## Out of scope — not building this
