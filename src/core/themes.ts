@@ -64,6 +64,25 @@ export interface ThemeState {
   readonly auto: boolean;
 }
 
+/**
+ * The entry of `list` with this id, or the first entry when the id is unknown (the one place
+ * for the `find(...) ?? list[0]` fallback). `list` must not be empty.
+ * Example: `byIdOr(config.profile.avatars, save.profile.avatar)`.
+ */
+export function byIdOr<T extends { readonly id: string }>(list: readonly T[], id: string): T {
+  return list.find((x) => x.id === id) ?? list[0];
+}
+
+/** The scene with this id, or the first scene in the config when unknown. Example: `themeById(config, 'dusk')`. */
+export function themeById(config: ThemeConfig, id: string): Theme {
+  return byIdOr(config.themes.list, id);
+}
+
+/** Whether the player can use a scene: it is free (price 0) or listed in `owned`. Example: `isOwned(theme, save.themes.owned)`. */
+export function isOwned(theme: Pick<Theme, 'id' | 'price'>, owned: readonly string[]): boolean {
+  return theme.price === 0 || owned.includes(theme.id);
+}
+
 /** The time-of-day scene whose clock range contains `hour` (0-23). Scenes without `hours` are skipped. */
 export function themeForHour(hour: number, config: ThemeConfig): string {
   const hit = config.themes.list.find(({ hours }) => {
@@ -136,7 +155,7 @@ export function inSeason(theme: Theme, dateKey: string, opts: SeasonOptions = {}
  * Example: `activeTheme(save.themes, now.getHours(), config, localDateKey(now), { southern })`.
  */
 export function activeTheme(state: ThemeState, hour: number, config: ThemeConfig, dateKey?: string, opts: SeasonOptions = {}): string {
-  const owns = (id: string) => id === config.themes.default || state.owned.includes(id);
+  const owns = (id: string) => id === config.themes.default || state.owned.includes(id); // the default is always usable, even if priced
   const known = (id: string) => config.themes.list.some((t) => t.id === id);
   const selected = known(state.selected) && owns(state.selected) ? state.selected : config.themes.default;
   if (!state.auto) return selected;

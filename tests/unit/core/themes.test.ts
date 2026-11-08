@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { newWallet } from '../../../src/core/economy';
 import type { EconomyConfig } from '../../../src/core/economy';
-import { type Theme, type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, contrastRatio, inSeason, localDateKey, themeForHour } from '../../../src/core/themes';
+import { type Theme, type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, byIdOr, contrastRatio, inSeason, isOwned, localDateKey, themeById, themeForHour } from '../../../src/core/themes';
 import type { UiThemeTokens } from '../../../src/ui/theme-tokens';
 
 const cfg = config as unknown as ThemeConfig & EconomyConfig;
@@ -275,5 +275,26 @@ describe('readability (WCAG contrast) in every scene', () => {
   it('contrastRatio matches known values', () => {
     expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 0);
     expect(contrastRatio('#777777', '#777777')).toBeCloseTo(1, 5);
+  });
+});
+
+describe('byIdOr, themeById and isOwned (TD-3)', () => {
+  const free = cfg.themes.list.find((t) => t.price === 0)!;
+  const paid = cfg.themes.list.find((t) => t.price > 0)!;
+
+  it('byIdOr finds by id and falls back to the first entry for an unknown id', () => {
+    expect(byIdOr(cfg.themes.list, paid.id)).toBe(paid);
+    expect(byIdOr(cfg.themes.list, 'no-such-scene')).toBe(cfg.themes.list[0]);
+  });
+
+  it('themeById reads the config list', () => {
+    expect(themeById(cfg, paid.id)).toBe(paid);
+    expect(themeById(cfg, 'nope')).toBe(cfg.themes.list[0]);
+  });
+
+  it('a free scene is always owned; a priced one only when listed', () => {
+    expect(isOwned(free, [])).toBe(true);
+    expect(isOwned(paid, [])).toBe(false);
+    expect(isOwned(paid, [paid.id])).toBe(true);
   });
 });

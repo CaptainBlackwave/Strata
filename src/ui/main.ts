@@ -15,7 +15,7 @@ import { type GameConfig, type MechanicId, launchLevel } from '../core/levels';
 import { type GenPort, type PreparedLevel, Prefetcher } from '../core/prefetch';
 import { createRng } from '../core/rng';
 import { GameSession, type SessionEvent, sessionOptions } from '../core/session';
-import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, inSeason, localDateKey } from '../core/themes';
+import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, byIdOr, inSeason, isOwned, localDateKey, themeById } from '../core/themes';
 import {
   type Profile,
   type ProfileConfig,
@@ -237,7 +237,7 @@ function currentTheme(): string {
 
 /** Applies a scene's colour tokens. Sand colours are never touched (decision S4-4). */
 function applyTheme(id: string): void {
-  const theme = config.themes.list.find((x) => x.id === id) ?? config.themes.list[0];
+  const theme = themeById(config, id);
   const root = document.documentElement.style;
   for (const [key, cssVar] of Object.entries(TOKEN_VARS)) root.setProperty(cssVar, theme.tokens[key as keyof ThemeTokens]);
   const extra = theme.tokens as ThemeTokens & UiThemeTokens;
@@ -267,7 +267,7 @@ function renderScenes(): void {
   const today = localDateKey(new Date());
   grid.replaceChildren(
     ...[...config.themes.list].sort((a, b) => a.price - b.price).map((theme) => {
-      const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+      const owned = isOwned(theme, save.themes.owned);
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'scene-card';
@@ -303,8 +303,8 @@ function renderScenes(): void {
       return card;
     }),
   );
-  const theme = config.themes.list.find((x) => x.id === previewing)!;
-  const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+  const theme = themeById(config, previewing ?? config.themes.default);
+  const owned = isOwned(theme, save.themes.owned);
   const btn = $<HTMLButtonElement>('btn-scene-buy');
   const inUse = owned && currentTheme() === theme.id;
   btn.hidden = inUse;
@@ -315,8 +315,8 @@ function renderScenes(): void {
 
 function confirmScene(): void {
   if (!previewing) return;
-  const theme = config.themes.list.find((x) => x.id === previewing)!;
-  const owned = theme.price === 0 || save.themes.owned.includes(theme.id);
+  const theme = themeById(config, previewing);
+  const owned = isOwned(theme, save.themes.owned);
   if (!owned) {
     const r = buyTheme(save.wallet, save.themes.owned, theme.id, config);
     if (!r.ok) return;
@@ -359,7 +359,7 @@ function showHome(): void {
   $('btn-daily').hidden = !save.tutorialDone;
   const total = allShells(config).length;
   $('shells-label').textContent = t.shellCount(save.shells.length, total);
-  const last = allShells(config).find((x) => x.id === save.shells.at(-1)) ?? allShells(config)[0];
+  const last = byIdOr(allShells(config), save.shells.at(-1) ?? '');
   $('shell-ico').innerHTML = shellSvg(last, save.shells.length === 0);
   $('btn-shells').hidden = !save.tutorialDone;
   $('btn-scenes').hidden = !save.tutorialDone;
@@ -539,10 +539,10 @@ function repairSaveProfile(): void {
 }
 
 function avatarOf(id: string) {
-  return config.profile.avatars.find((a) => a.id === id) ?? config.profile.avatars[0];
+  return byIdOr(config.profile.avatars, id);
 }
 function plateOf(id: string) {
-  return config.profile.plates.find((p) => p.id === id) ?? config.profile.plates[0];
+  return byIdOr(config.profile.plates, id);
 }
 /** An avatar in its frame, as SVG markup. */
 function portraitOf(p: Pick<Profile, 'avatar' | 'frame'>): string {
@@ -584,7 +584,7 @@ function renderProfile(): void {
   $('profile-plate').replaceChildren(plateEl(save.profile.plate, save.profile.name, 'plate-lg'));
   $('profile-level').textContent = String(save.level);
   const sets = setProgress(save.shells, config);
-  const scenesOwned = config.themes.list.filter((x) => x.price === 0 || save.themes.owned.includes(x.id)).length;
+  const scenesOwned = config.themes.list.filter((x) => isOwned(x, save.themes.owned)).length;
   const s = save.stats;
   const rows: [keyof typeof t.statLabels, string][] = [
     ['levels', String(save.level - 1)],
