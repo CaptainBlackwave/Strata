@@ -1,9 +1,9 @@
-// Story: production/epics/sprint-4/EPIC.md (time-of-day scenes)
+// Story: production/epics/sprint-4/EPIC.md (time-of-day scenes); production/sprints/sprint-7.md B5 (scene ladder)
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { newWallet } from '../../../src/core/economy';
 import type { EconomyConfig } from '../../../src/core/economy';
-import { type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, contrastRatio, themeForHour } from '../../../src/core/themes';
+import { type Theme, type ThemeConfig, type ThemeTokens, activeTheme, buyTheme, contrastRatio, inSeason, localDateKey, themeForHour } from '../../../src/core/themes';
 import type { UiThemeTokens } from '../../../src/ui/theme-tokens';
 
 const cfg = config as unknown as ThemeConfig & EconomyConfig;
@@ -11,15 +11,93 @@ const ids = cfg.themes.list.map((t) => t.id);
 
 describe('catalog', () => {
   it('ships Midday free plus Dawn, Sunset and Moonlit at rising prices', () => {
-    expect(ids).toEqual(['midday', 'dawn', 'sunset', 'moonlit']);
+    expect(ids.slice(0, 4)).toEqual(['midday', 'dawn', 'sunset', 'moonlit']); // append-only (D27)
     const price = Object.fromEntries(cfg.themes.list.map((t) => [t.id, t.price]));
     expect(price.midday).toBe(0);
     expect(price.dawn).toBeLessThan(price.sunset);
     expect(price.sunset).toBeLessThan(price.moonlit);
   });
   it('the clock hours cover every hour of the day exactly once', () => {
-    const hits = Array.from({ length: 24 }, (_, h) => cfg.themes.list.filter((t) => inRange(h, t.hours)).length);
+    const hits = Array.from({ length: 24 }, (_, h) => cfg.themes.list.filter((t) => t.hours && inRange(h, t.hours)).length);
     expect(hits.every((n) => n === 1)).toBe(true);
+  });
+});
+
+describe('the scene ladder (scenes.md 2.1a, sprint 7 B5)', () => {
+  const byId = (id: string) => cfg.themes.list.find((t) => t.id === id)!;
+  it('appends the first four ladder rungs with their ladder prices, kinds, tiers and windows', () => {
+    expect(ids).toEqual(['midday', 'dawn', 'sunset', 'moonlit', 'seafog', 'wintersnow', 'harvestmoon', 'newyear']);
+    const rows = ['seafog', 'wintersnow', 'harvestmoon', 'newyear'].map((id) => {
+      const t = byId(id);
+      return [id, t.price, t.kind, t.tier, t.window ? `${t.window.from}..${t.window.to}` : null];
+    });
+    expect(rows).toEqual([
+      ['seafog', 2500, 'weather', 1, null],
+      ['wintersnow', 5050, 'season', 2, '12-01..02-29'],
+      ['harvestmoon', 5800, 'holiday', 2, '09-15..10-15'],
+      ['newyear', 8800, 'holiday', 3, '12-28..01-07'],
+    ]);
+  });
+  it('the original four keep their prices and stay plain time-of-day scenes', () => {
+    expect(['midday', 'dawn', 'sunset', 'moonlit'].map((id) => byId(id).price)).toEqual([0, 300, 500, 800]);
+    for (const id of ['midday', 'dawn', 'sunset', 'moonlit']) expect(byId(id).window).toBeUndefined();
+  });
+  it('the clock never picks a ladder scene', () => {
+    const picked = new Set(Array.from({ length: 24 }, (_, h) => themeForHour(h, cfg)));
+    expect([...picked].sort()).toEqual(['dawn', 'midday', 'moonlit', 'sunset']);
+  });
+});
+
+describe('inSeason', () => {
+  const scene = (window?: Theme['window']): Theme => ({ ...cfg.themes.list[0], id: 'x', window });
+  it('a window inside one year includes both end days', () => {
+    const t = scene({ from: '09-15', to: '10-15' });
+    expect(['2026-09-14', '2026-09-15', '2026-10-01', '2026-10-15', '2026-10-16'].map((d) => inSeason(t, d))).toEqual([false, true, true, true, false]);
+  });
+  it('a window may wrap the year end', () => {
+    const t = scene({ from: '12-28', to: '01-07' });
+    expect(['2026-12-27', '2026-12-28', '2026-12-31', '2027-01-01', '2027-01-07', '2027-01-08', '2027-06-01'].map((d) => inSeason(t, d))).toEqual([
+      false, true, true, true, true, false, false,
+    ]);
+  });
+  it('a window ending on 02-29 covers Feb 28 in common years and Feb 29 in leap years', () => {
+    const t = scene({ from: '12-01', to: '02-29' });
+    expect(['2026-11-30', '2026-12-01', '2027-02-28', '2027-03-01', '2028-02-29', '2028-03-01'].map((d) => inSeason(t, d))).toEqual([
+      false, true, true, false, true, false,
+    ]);
+  });
+  it('a scene with no window, or a malformed date, is never in season', () => {
+    expect(inSeason(scene(undefined), '2026-12-30')).toBe(false);
+    expect(inSeason(scene({ from: '12-28', to: '01-07' }), 'not-a-date')).toBe(false);
+  });
+  it('localDateKey uses the local calendar date', () => {
+    expect(localDateKey(new Date(2027, 0, 5, 23, 30))).toBe('2027-01-05');
+    expect(localDateKey(new Date(2026, 11, 31, 0, 5))).toBe('2026-12-31');
+  });
+});
+
+describe('activeTheme with a date (holiday scenes take over Match my clock)', () => {
+  const all = ['midday', 'moonlit', 'seafog', 'wintersnow', 'harvestmoon', 'newyear'];
+  it('an owned holiday scene in season replaces the clock scene', () => {
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 12, cfg, '2026-09-20')).toBe('harvestmoon');
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 22, cfg, '2027-01-03')).toBe('newyear');
+  });
+  it('out of season, or not owned, the clock decides as before', () => {
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 22, cfg, '2026-10-16')).toBe('moonlit');
+    expect(activeTheme({ owned: ['midday', 'moonlit'], selected: 'midday', auto: true }, 22, cfg, '2027-01-03')).toBe('moonlit');
+  });
+  it('season and weather scenes never take over the clock', () => {
+    expect(activeTheme({ owned: all, selected: 'seafog', auto: true }, 12, cfg, '2027-02-01')).toBe('midday'); // Winter Snow in season
+  });
+  it('when two holiday windows overlap, the higher price wins', () => {
+    const list = [...cfg.themes.list, { ...cfg.themes.list[0], id: 'cheaper', price: 100, kind: 'holiday', window: { from: '12-20', to: '01-02' } } as Theme];
+    const c: ThemeConfig = { themes: { ...cfg.themes, list } };
+    expect(activeTheme({ owned: [...all, 'cheaper'], selected: 'midday', auto: true }, 12, c, '2026-12-30')).toBe('newyear');
+    expect(activeTheme({ owned: [...all, 'cheaper'], selected: 'midday', auto: true }, 12, c, '2026-12-22')).toBe('cheaper');
+  });
+  it('manual mode ignores the date, and leaving the date out keeps the old behaviour', () => {
+    expect(activeTheme({ owned: all, selected: 'seafog', auto: false }, 12, cfg, '2027-01-03')).toBe('seafog');
+    expect(activeTheme({ owned: all, selected: 'midday', auto: true }, 22, cfg)).toBe('moonlit');
   });
 });
 
