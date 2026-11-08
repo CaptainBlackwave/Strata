@@ -3,6 +3,10 @@
 A calm, phone-first sort puzzle. Pour layers of coloured sand between glass jars at a
 sunny seaside stall until every jar holds one colour.
 
+**Play:** https://captainblackwave.github.io/Strata/. On a phone, use *Add to Home Screen*
+for a full-screen app icon. Every push to `main` re-runs the tests and redeploys
+(`.github/workflows/deploy-pages.yml`).
+
 ```bash
 npm install
 npm run dev      # play at http://localhost:5173  (add ?level=N to jump to a level)
