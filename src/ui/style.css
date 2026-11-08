@@ -2534,3 +2534,14 @@ body[data-theme='harvestmoon']::before {
     filter: brightness(1.06) saturate(1.05);
   }
 }
+
+/* AX-16: a locked name plate keeps its colours so its name stays readable (it was 2.28:1 at
+   opacity 0.45); the lock icon and a dashed edge mark it instead. */
+.plate-grid .pick.locked > :first-child {
+  filter: none;
+  opacity: 1;
+}
+.plate-grid .pick.locked {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+}

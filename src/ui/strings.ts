@@ -181,7 +181,7 @@ const en = {
   profileLabel: (name: string) => `Profile: ${name}`,
   editProfile: 'Edit profile',
   editProfileTitle: 'Edit profile',
-  levelBadge: 'Level',
+  levelBadge: 'On level', // "On level 12" beside "Levels cleared 11" (UX-profile-1)
   statsTitle: 'Stats',
   statLabels: {
     levels: 'Levels cleared',
