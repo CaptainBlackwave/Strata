@@ -196,6 +196,8 @@ const en = {
   nameLabel: 'Your name',
   reroll: 'New random name',
   nameInvalid: (min: number, max: number) => `Use ${min}–${max} letters or numbers`,
+  /** Beside Save when the name is invalid and the Name tab is not open (UX-edit-1). */
+  nameInvalidTab: (min: number, max: number) => `Name tab: use ${min}–${max} letters or numbers to save`,
   platesLabel: 'Name plate',
   saveProfile: 'Save',
   discardTitle: 'Discard changes?',

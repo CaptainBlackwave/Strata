@@ -644,7 +644,9 @@ let activeSlot: Slot = 'avatar';
 function openEditProfile(): void {
   draft = { ...save.profile };
   activeSlot = 'avatar';
-  $<HTMLInputElement>('name-input').value = draft.name;
+  const input = $<HTMLInputElement>('name-input');
+  input.value = draft.name;
+  input.maxLength = config.profile.name.max; // the rule, not twice it (UX-edit-2)
   $('pick-note').textContent = '';
   renderEdit();
   openLayer($('edit-profile'), $(`tab-${activeSlot}`));
@@ -696,6 +698,8 @@ function renderEdit(focusSlot: Slot | null = null, focusId: string | null = null
   $('name-error').textContent = valid ? '' : t.nameInvalid(config.profile.name.min, config.profile.name.max);
   $<HTMLInputElement>('name-input').setAttribute('aria-invalid', String(!valid));
   $<HTMLButtonElement>('btn-save-profile').disabled = !valid;
+  // On the other tabs the Name panel is hidden, so the reason Save is off shows by Save (UX-edit-1).
+  $('save-error').textContent = !valid && activeSlot !== 'plate' ? t.nameInvalidTab(config.profile.name.min, config.profile.name.max) : '';
   if (focusSlot && focusId) $(`grid-${focusSlot}`).querySelector<HTMLElement>(`[data-id="${focusId}"]`)?.focus();
 }
 

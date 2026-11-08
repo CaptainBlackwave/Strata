@@ -174,7 +174,7 @@
           <div id="panel-plate" class="tab-panel" role="tabpanel" aria-labelledby="tab-plate" hidden>
             <label id="name-label" class="name-label" for="name-input">Your name</label>
             <div class="name-row">
-              <input id="name-input" class="name-input" type="text" maxlength="32" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="name-error" />
+              <input id="name-input" class="name-input" type="text" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="name-error" />
               <button id="btn-reroll" class="icon-btn reroll" type="button" title="New random name"></button>
             </div>
             <p id="name-error" class="name-error" aria-live="polite"></p>
@@ -182,7 +182,8 @@
             <div id="grid-plate" class="pick-grid plate-grid" role="radiogroup" aria-labelledby="plates-label"></div>
           </div>
           <p id="pick-note" class="pick-note" aria-live="polite"></p>
-          <button id="btn-save-profile" class="primary" type="button">Save</button>
+          <p id="save-error" class="name-error save-error" aria-live="polite"></p>
+          <button id="btn-save-profile" class="primary" type="button" aria-describedby="save-error">Save</button>
         </div>
       </div>
       <div id="discard" class="cabinet discard-layer" hidden>

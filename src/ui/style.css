@@ -2500,3 +2500,12 @@ body[data-theme='harvestmoon']::before {
 .scene-previewing:empty {
   margin: 0;
 }
+
+/* UX-edit-1: the name error, repeated by Save on the other tabs. */
+.save-error {
+  text-align: center;
+}
+.save-error:empty {
+  min-height: 0;
+  margin: 0;
+}
