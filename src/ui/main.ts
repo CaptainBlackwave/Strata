@@ -907,6 +907,7 @@ function onSessionEvent(e: SessionEvent): void {
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
+      announce(t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) + (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : ''));
       break;
     case 'extraJar':
       buildJars();
@@ -1511,6 +1512,16 @@ function wait(ms: number): Promise<void> {
 function hideToast(): void {
   window.clearTimeout(toastTimer);
   toastEl.classList.remove('show');
+}
+
+/**
+ * Reads `text` out through the polite live region outside the app root, so no layer makes it
+ * inert (UX-board-5). Clearing it first lets the same sentence be read twice in a row.
+ */
+function announce(text: string): void {
+  const el = $('announce');
+  el.textContent = '';
+  window.setTimeout(() => (el.textContent = text), 50);
 }
 
 function showToast(text: string): void {

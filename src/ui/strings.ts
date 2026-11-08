@@ -160,6 +160,9 @@ const en = {
   boosterConfirm: (price: number) => `Tap again to buy for ${price} coins`,
   boosterArmedLabel: (name: string, price: number) => `${name}: tap again to buy for ${price} coins`,
   jarLabel: (i: number, contents: string) => `Jar ${i + 1}: ${contents}`,
+  /** Screen-reader summary of a pour (UX-board-5). `jar` is 1-based. */
+  pourAnnounce: (n: number, colour: string, jar: number) => `Poured ${n} ${colour} into jar ${jar}.`,
+  sealAnnounce: (jar: number) => `Jar ${jar} sealed.`,
   jarEmpty: 'empty',
   buried: 'buried',
   sealed: 'sealed',
