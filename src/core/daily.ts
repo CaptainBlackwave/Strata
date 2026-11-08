@@ -4,7 +4,7 @@
  * be saved by a banked "tide pass". Pure functions only.
  * Implements design/competitive-roadmap.md item C6 (sprint 2 decisions S2-1, S2-2).
  */
-import { type GeneratedLevel, generateFromSpec, lastResort } from './generator';
+import { type GeneratedLevel, NoDealError, generateFromSpec, lastResort } from './generator';
 import type { GameConfig, LevelSpec } from './levels';
 
 /** One weekday's board recipe. */
@@ -96,6 +96,11 @@ export function dailySpec(key: string, config: GameConfig & DailyConfig): DailyS
   };
 }
 
+/** The generation seed for a date's daily (the same for every player). Example: `dailySeed('2026-11-08', config)`. */
+export function dailySeed(key: string, config: DailyConfig): number {
+  return hashKey(key, config.daily.seedSalt);
+}
+
 /**
  * The daily board for a date: identical for every player. Never throws (F7, GA-DP-1):
  * the full recipe, then without its mechanic (capped by `generator.stepNodeBudget`), then
@@ -104,11 +109,18 @@ export function dailySpec(key: string, config: GameConfig & DailyConfig): DailyS
  */
 export function generateDaily(key: string, config: GameConfig & DailyConfig): GeneratedLevel & { spec: DailySpec } {
   const spec = dailySpec(key, config);
-  const seed = hashKey(key, config.daily.seedSalt);
+  const seed = dailySeed(key, config);
+  // Length cap (D36): each failed step may carry its shortest over-cap deal; keep the shortest
+  // of them for the last resort, as numbered levels do.
+  let shortest: GeneratedLevel | undefined;
+  const keep = (e: unknown) => {
+    const found = e instanceof NoDealError ? e.shortest : undefined;
+    if (found && (!shortest || found.solutionLength < shortest.solutionLength)) shortest = found;
+  };
   try {
     return { ...generateFromSpec(spec, seed, config), spec };
-  } catch {
-    // fall through to the easier steps
+  } catch (e) {
+    keep(e); // fall through to the easier steps
   }
   if (spec.mechanics.length) {
     const plain: DailySpec = { ...spec, mechanics: [] };
@@ -116,11 +128,11 @@ export function generateDaily(key: string, config: GameConfig & DailyConfig): Ge
     const perAttempt = config.generator.stepAttemptNodeBudget ?? config.generator.solverNodeBudget;
     try {
       return { ...generateFromSpec(plain, seed, config, config.generator.maxAttempts, cap, perAttempt), spec: plain };
-    } catch {
-      // fall through to the last resort
+    } catch (e) {
+      keep(e); // fall through to the last resort
     }
   }
-  return lastResort(spec, seed, config);
+  return lastResort(spec, seed, config, shortest);
 }
 
 /** Coins for solving on day `streak` of a streak. */

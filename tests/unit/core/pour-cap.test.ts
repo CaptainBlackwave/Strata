@@ -1,8 +1,8 @@
 // Story: production/sprints/sprint-7.md B7 (owner decision D36): the length cap at generation.
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { type DailyConfig, generateDaily } from '../../../src/core/daily';
-import { NoDealError, generateFromSpec, generateLevel, maxPoursFor } from '../../../src/core/generator';
+import { type DailyConfig, dailySeed, dailySpec, generateDaily } from '../../../src/core/daily';
+import { NoDealError, generateFromSpec, generateLevel, lastResort, maxPoursFor } from '../../../src/core/generator';
 import { type GameConfig, levelSpec } from '../../../src/core/levels';
 import { solve } from '../../../src/core/solver';
 
@@ -69,5 +69,32 @@ describe('length cap at generation', () => {
   });
   it('the capped board is the same on every call', () => {
     expect(generateLevel(153, cfg).board).toEqual(generateLevel(153, cfg).board);
+  });
+});
+
+describe('the daily keeps the shortest deal from every step (D36)', () => {
+  // With a cap nothing can meet, every step throws its shortest over-cap deal; the daily must
+  // return the shortest of all of them, not just the last resort's own.
+  const shortestOf = (fn: () => unknown): number => {
+    try {
+      fn();
+    } catch (e) {
+      if (e instanceof NoDealError && e.shortest) return e.shortest.solutionLength;
+    }
+    return Infinity;
+  };
+  it('returns the shortest proven deal across all its steps when the cap is impossible', () => {
+    const g = impossible.generator;
+    const cap = g.stepNodeBudget ?? g.solverNodeBudget;
+    const per = g.stepAttemptNodeBudget ?? g.solverNodeBudget;
+    for (let day = 1; day <= 14; day++) {
+      const key = `2026-11-${String(day).padStart(2, '0')}`;
+      const spec = dailySpec(key, impossible);
+      const seed = dailySeed(key, impossible);
+      const step1 = shortestOf(() => generateFromSpec(spec, seed, impossible));
+      const step2 = spec.mechanics.length ? shortestOf(() => generateFromSpec({ ...spec, mechanics: [] }, seed, impossible, g.maxAttempts, cap, per)) : Infinity;
+      const last = lastResort(spec, seed, impossible).solutionLength;
+      expect(generateDaily(key, impossible).solutionLength, key).toBe(Math.min(step1, step2, last));
+    }
   });
 });
