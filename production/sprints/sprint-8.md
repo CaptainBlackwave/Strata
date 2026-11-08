@@ -1,6 +1,6 @@
 # Sprint 8: finish the scene ladder, and polish
 
-> **Status: planned (2026-11-08).** Chosen in the owner interview after sprint 7 (D43–D51 in `design/gdd/systems-index.md`). Playtest notes from sprint 7 (`production/qa/sprint-7/playtest-list.md`) will be folded in when they arrive.
+> **Status: built (2026-11-08).** P1–P8 done; P9 (playtest follow-ups) waits for the owner's notes. Evidence: `production/qa/evidence/sprint-8/README.md`. 472 tests pass. Chosen in the owner interview after sprint 7 (D43–D51 in `design/gdd/systems-index.md`). Playtest notes from sprint 7 (`production/qa/sprint-7/playtest-list.md`) will be folded in when they arrive.
 
 ## Sprint Goal
 Finish the 12-scene ladder and make the game feel finished: accessible zoom and tap areas, instant level starts, a "What's new" card, a code review, and the most valuable fixes from the review backlog. The level map is designed now and built in sprint 9.

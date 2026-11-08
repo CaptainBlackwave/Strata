@@ -97,11 +97,11 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D39 | Which 4 ladder scenes first? | **One per tier**: Sea Fog (1), Winter Snow and Harvest Moon Lanterns (2), New Year Fireworks (3) | scenes | built in sprint 7 |
 | D40 | New Year win-card fireworks were faint behind the backdrop | **A short display in front of the backdrop, behind the card, on the win card only** (about 3.5 s, own canvas) | scenes | built in sprint 7 |
 | D41 | Scene names in the picker | **Keep as built**: sentence case; "Harvest moon" for rung 7 | scenes | recorded |
-| D42 | Southern-hemisphere seasons | **Later**: a Settings switch that shifts season windows by 6 months (holidays keep their dates) | scenes | follow-up |
-| D43 | Sprint 8 focus (owner interview, after sprint 7) | **All 8 remaining ladder scenes** plus a **polish pass**; the southern-hemisphere switch (D42) ships with them | scenes | sprint 8 |
-| D44 | Pinch zoom (AX-17) | **Allow pinch zoom**; double-tap zoom stays off on the board and buttons (`touch-action: manipulation`) so fast tapping never zooms | feel-audio-ui, accessibility-requirements | sprint 8 |
-| D45 | 43 px jars at level 120 on 320 px (AX-19) | **Widen the hit area** to at least 44 px using the gap between jars; the drawn jar keeps its size | feel-audio-ui | sprint 8 |
-| D46 | Polish depth | **Code review + tech-debt register**, **the top 15–20 backlog findings**, **background generation** of the next level so slow levels feel instant, and a **"What's new" card** after updates | feel-audio-ui, level-generation | sprint 8 |
+| D42 | Southern-hemisphere seasons | **Later**: a Settings switch that shifts season windows by 6 months (holidays keep their dates) | scenes | built in sprint 8 |
+| D43 | Sprint 8 focus (owner interview, after sprint 7) | **All 8 remaining ladder scenes** plus a **polish pass**; the southern-hemisphere switch (D42) ships with them | scenes | built in sprint 8 |
+| D44 | Pinch zoom (AX-17) | **Allow pinch zoom**; double-tap zoom stays off on the board and buttons (`touch-action: manipulation`) so fast tapping never zooms | feel-audio-ui, accessibility-requirements | built in sprint 8 |
+| D45 | 43 px jars at level 120 on 320 px (AX-19) | **Widen the hit area** to at least 44 px using the gap between jars; the drawn jar keeps its size | feel-audio-ui | built in sprint 8 |
+| D46 | Polish depth | **Code review + tech-debt register**, **the top 15–20 backlog findings**, **background generation** of the next level so slow levels feel instant, and a **"What's new" card** after updates | feel-audio-ui, level-generation | built in sprint 8 |
 | D47 | Level map timing | **Design in sprint 8, build in sprint 9** | level-map | sprint 8 (design) |
 | D48 | Level map style | **A winding beach path**: level stones on a vertical scrolling shoreline, with scenery changing every 20 levels; opens at your next level | level-map | design |
 | D49 | Level map markers | **All four**: Perfect mark, best pours (on tap), special-level icons (tall jars, shell milestones, new-jar debuts), locked levels ahead shown dimmed | level-map | design |
