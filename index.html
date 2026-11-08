@@ -95,12 +95,14 @@
       <div id="transfer" class="sheet" hidden>
         <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
           <h2 id="transfer-title">Save code</h2>
+          <label id="code-mine-label" class="transfer-label" for="transfer-code">Your code</label>
+          <textarea id="transfer-code" class="transfer-code" rows="3" readonly spellcheck="false" autocomplete="off" aria-describedby="copy-status"></textarea>
+          <p id="copy-status" class="transfer-status" aria-live="polite"></p>
+          <button id="btn-copy-code" class="secondary transfer-btn" type="button">Copy code</button>
+          <label id="code-paste-label" class="transfer-label" for="transfer-paste">Paste a code to restore</label>
+          <textarea id="transfer-paste" class="transfer-code" rows="3" spellcheck="false" autocomplete="off" aria-describedby="transfer-status"></textarea>
           <p id="transfer-status" class="transfer-status" aria-live="polite"></p>
-          <textarea id="transfer-code" class="transfer-code" rows="4" spellcheck="false" autocomplete="off" aria-labelledby="transfer-title"></textarea>
-          <div class="sheet-row">
-            <button id="btn-copy-code" class="secondary" type="button">Copy code</button>
-            <button id="btn-restore-code" class="secondary" type="button">Restore from code</button>
-          </div>
+          <button id="btn-restore-code" class="secondary transfer-btn" type="button">Restore from code</button>
           <button id="btn-close-transfer" class="primary" type="button">Close</button>
         </div>
       </div>

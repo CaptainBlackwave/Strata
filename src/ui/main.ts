@@ -181,12 +181,18 @@ if (qaLevel) {
 
 let restoreArmed = false;
 
+/**
+ * Opens the save-code sheet (UX-settings-6): this device's code is read-only with Copy, and
+ * Restore reads only the separate, empty paste box, so it never warns about your own progress.
+ */
 function openTransfer(opener: FocusTarget | null = null): void {
   $<HTMLTextAreaElement>('transfer-code').value = exportSave(save);
-  $('transfer-status').textContent = t.saveCodeHelp;
+  $<HTMLTextAreaElement>('transfer-paste').value = '';
+  $('copy-status').textContent = t.saveCodeHelp;
+  $('transfer-status').textContent = t.restoreHelp;
   restoreArmed = false;
   $('btn-restore-code').textContent = t.restoreCode;
-  openLayer($('transfer'), $('transfer-code'), opener);
+  openLayer($('transfer'), $('btn-copy-code'), opener);
 }
 
 async function copySaveCode(): Promise<void> {
@@ -194,20 +200,21 @@ async function copySaveCode(): Promise<void> {
   box.value = exportSave(save);
   try {
     await navigator.clipboard.writeText(box.value);
-    $('transfer-status').textContent = t.codeCopied;
+    $('copy-status').textContent = t.codeCopied;
   } catch {
     box.select(); // clipboard blocked: leave it selected for a manual copy
-    $('transfer-status').textContent = t.codeSelectManually;
+    $('copy-status').textContent = t.codeSelectManually;
   }
 }
 
 /** Restores from the pasted code. The first tap asks for confirmation; the second replaces progress. */
 function restoreSaveCode(): void {
-  const imported = importSave($<HTMLTextAreaElement>('transfer-code').value, config);
+  const pasted = $<HTMLTextAreaElement>('transfer-paste').value;
+  const imported = pasted.trim() ? importSave(pasted, config) : null;
   if (!imported) {
     restoreArmed = false;
     $('btn-restore-code').textContent = t.restoreCode;
-    $('transfer-status').textContent = t.codeInvalid;
+    $('transfer-status').textContent = pasted.trim() ? t.codeInvalid : t.codeEmpty;
     audio.play('nope');
     return;
   }
@@ -1638,11 +1645,11 @@ function wireInput(): void {
   $('btn-copy-code').addEventListener('click', () => void copySaveCode());
   $('btn-restore-code').addEventListener('click', restoreSaveCode);
   // Editing the code disarms Restore, so a new code always gets its own warning (UX-settings-1).
-  $('transfer-code').addEventListener('input', () => {
+  $('transfer-paste').addEventListener('input', () => {
     if (!restoreArmed) return;
     restoreArmed = false;
     $('btn-restore-code').textContent = t.restoreCode;
-    $('transfer-status').textContent = t.saveCodeHelp;
+    $('transfer-status').textContent = t.restoreHelp;
   });
   $('btn-close-transfer').addEventListener('click', () => closeLayer($('transfer')));
   $('btn-guide').addEventListener('click', () => showMechanicCards(MECHANICS, t.jarGuide, closeLayer(settingsEl, false)));
@@ -1780,6 +1787,8 @@ function applyStrings(): void {
   $('btn-savecode').textContent = t.saveCode;
   $('transfer-title').textContent = t.saveCode;
   $('btn-copy-code').textContent = t.copyCode;
+  $('code-mine-label').textContent = t.yourCode;
+  $('code-paste-label').textContent = t.pasteCode;
   $('btn-close-transfer').textContent = t.close;
   $('scenes-label').textContent = t.scenes;
   $('btn-scenes-2').textContent = t.scenes;

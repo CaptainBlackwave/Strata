@@ -2427,3 +2427,18 @@ body[data-theme='harvestmoon']::before {
   color: var(--card);
   background: var(--coral-text);
 }
+
+/* UX-settings-6: two boxes, "Your code" (read-only) and "Paste a code to restore". */
+.transfer-label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+.transfer-btn {
+  width: 100%;
+  margin-bottom: 4px;
+}
+.transfer-code[readonly] {
+  color: var(--ink-soft);
+}
