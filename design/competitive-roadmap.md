@@ -40,11 +40,18 @@ Decisions from the owner interview (2026-11-08):
 | C6 | Daily puzzle: home card, weekly rhythm, streak + tide passes, replay without reward, Share result | `production/qa/evidence/sprint-2/` 01, 03–05, 08 |
 | C7 | Shell collection: cabinet, milestone grants, set rewards, completion bonus | `production/qa/evidence/sprint-2/` 02, 06, 07 |
 
+## Sprint 3: planned
+
+Plan: `production/sprints/sprint-3.md`. Decisions S3-1 to S3-6 (owner interview, 2026-11-08):
+all four mechanics (Narrow 21, Frozen 41, Locked 61, Funnel 81), each in about 1 in 3 levels after
+unlock, combos after 100, a mechanic on Saturday dailies, and frozen jars thaw when any jar seals.
+Plus offline install. Next sprint: time-of-day theme scenes. Backend social: deferred.
+
 ## Next sprints (proposed)
 
 | ID | Item | Why |
 |---|---|---|
 | C8 | New level mechanics every ~20 levels (frozen jar, locked jar with key colour, mixed capacities) | Long-term variety; competitors add mechanics over time |
 | C9 | Offline install (service worker) so the home-screen app works without signal | Phone-first web parity with native |
-| C10 | Theme packs (dusk, tide pool) bought with coins | A coin sink once boosters are plentiful |
-| C11 | Leaderboard / friends (needs a backend) | Social pull. Only after retention is proven |
+| C10 | Time-of-day theme scenes (Dawn, Midday, Sunset, Moonlit tide), ~300–800 coins each (S3-6) | A coin sink once boosters are plentiful |
+| C11 | Leaderboard / friends (needs a backend): **deferred** (S3-6) | Social pull. Revisit once people play regularly; the daily Share carries social for now |
