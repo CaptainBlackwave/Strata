@@ -20,6 +20,17 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.10.0 | `1ad5c4c` (sprint 10, PR #8) |
 | v0.10.1 | `22d66e6` (look fixes, PR #9) |
 | v0.11.0 | `6537631` (sprint 11, PR #12) |
+| v0.11.1 | `57cfc47` (first-run fixes, PR #13) |
+
+## 0.12.0 (2026-11-09): sprint 12, jar styles
+**For players**
+- Jar styles: from level 60, coins buy new looks for your jars in three slots: glass (Sea glass, Amber bottle, Cobalt rim, Pearl), corks (Driftwood, Rope knot, Scallop cap, Brass lid) and sand textures (Fine grain, Glint, Layered, Ripple). Mix and match any pieces you own.
+- Preview any piece on sample jars before buying. Pieces cost 1,700 to 3,350 coins, about one or two weeks of play each.
+- Styles are cosmetic only: they never change a rule or a sand colour, colour patterns stay visible on top, and nothing moves.
+
+**Under the hood**
+- A balance pass over a simulated year sets the prices (`production/qa/sprint-12/balance.md`); it also found that the scene ladder's top rungs now take three to five weeks each, noted for a later pass.
+- The economy doc's stale post-collection bonus lines are corrected (the bonus was removed in sprint 7, D38).
 
 ## 0.11.1 (2026-11-09): a smoother first run, and a weekly bonus
 **For players**

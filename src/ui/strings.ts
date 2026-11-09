@@ -108,9 +108,9 @@ const en = {
     title: "What's new",
     button: "What's new",
     lines: [
-      'Clear all five weekly boards for a coin bonus, once a week.',
-      'Share the weekly set and the link opens it directly.',
-      'Level 10, the first tall-jar level, is a gentler step.',
+      'Jar styles: from level 60, spend coins on new glass, corks and sand textures.',
+      'Mix and match pieces, and preview any of them before you buy.',
+      'Styles never change a sand colour, and colour patterns stay on top.',
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
