@@ -56,7 +56,7 @@ Also checked:
 The script is `m3/shots.cjs` (`node shots.cjs http://localhost:5310 <outDir>` against `vite preview`). The screenshots are Pixel 7 except the SE ones.
 
 ## Tests
-`npm test`: 509 tests in 32 files. The new ones are in `tests/unit/map/`:
+`npm test`: 506 tests in 32 files. The new ones are in `tests/unit/map/`:
 - `map.test.ts`
 - `replay.test.ts`
 - `save-perfect.test.ts`
