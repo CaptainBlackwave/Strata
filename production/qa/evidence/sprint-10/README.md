@@ -24,3 +24,12 @@ Sprint plan: `production/sprints/sprint-10.md`. Each part has its own notes:
   - the sprint 9 backlog checks;
   - the 0.9.1 fixes: late tab write, the "New" mark, the map title and labels;
   - the 0.10.0 upgrade.
+
+**Live site after the merge (2026-11-09, `https://captainblackwave.github.io/Strata/`):**
+- The release workflow tagged `v0.10.0` and published its release.
+- The Pages deploy succeeded, and the live bundle reports 0.10.0.
+- `live/live-check.cjs` played the live site as a returning 0.9.1 player:
+  - the 0.10.0 What's new card showed (`live/live-0.10.0-whatsnew.png`);
+  - Home → map → Level 7 started;
+  - Settings had both volume sliders;
+  - the service worker was active, with no page errors.

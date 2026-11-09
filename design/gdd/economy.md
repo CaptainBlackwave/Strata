@@ -31,7 +31,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 - Shuffle, Extra Jar and Hint are limited but earnable: stored charges first, then coins (roadmap R3).
 - **Undo is free and unlimited** (D19): it has no charges, no price and is not in any reward. *Decided 2026-11-08, built in sprint 6.*
 - **A level pays coins on its first clear only; replays pay nothing** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (`clearReward`, M1).
-- **Targets deferred** (D23): no reward or price is tied to a target yet. Every value below is a first estimate until a later balance sprint sets targets (GA-ECON-1, GX-11 stay open, owner-acknowledged).
+- **Targets** (D23, then D32): the sprint 7 economy model (`production/qa/sprint-7/economy-model.md`) projected coins for three simulated players over 90 days and priced the scene ladder from it. The ladder is the long-term coin goal (D32). Still open: an explicit time-to-earn target per scene, and a coin sink once every scene is owned (GX-11). Both are candidates for a later late-game economy sprint (D75).
 
 ---
 
@@ -101,11 +101,11 @@ A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It
 - **Undo costs nothing** (D19), so a player with 0 coins and 0 charges can always undo. Restart was the free substitute for a paid Undo; that workaround is gone.
 
 **Not Yet Handled**:
-- ⚠️ After about level 60, coins have only one repeatable sink (boosters). A player who buys none accumulates coins with nothing left to buy (GX-11). Deferred by D23.
+- ⚠️ Once a player owns every scene, coins again have only one repeatable sink (boosters). The scene ladder (D32) pushes that point far out, but a long-term sink after it is still open (GX-11; D23, D75).
 
 **Unclear**:
 - ✅ Decided 2026-11-08: no shop for now (D7). `buyBooster` stays unexposed.
-- ⚠️ The long-run balance (coins per hour against scene and booster prices) has not been measured; the numbers are first estimates. **Deferred by D23** to a later balance sprint.
+- ⚠️ The long-run balance is modelled (sprint 7, three simulated players), not measured from real play. The prices follow the model; the open questions are time-to-earn targets and the final sink.
 
 ---
 
@@ -130,14 +130,14 @@ A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It
 
 **Definition of Done**:
 - [x] Replay reward gated on first clear, with a test (win level 1 twice: coins rise once).
-- [ ] D19: Undo spends nothing at any wallet state; a new wallet and the set reward carry no Undo charges (tests).
-- [ ] A balance pass (`/balance-check`) on coin income against prices, once targets exist (deferred, D23).
+- [x] D19: Undo spends nothing at any wallet state; a new wallet and the set reward carry no Undo charges (`tests/unit/core/economy.test.ts`).
+- [ ] A balance pass (`/balance-check`) on coin income against prices, with time-to-earn targets: the late-game economy sprint (D23, D75).
 
 ---
 
 ## Open Questions and Follow-Up Work
 
-1. What is the target time to earn each scene, and does coin need a long-term sink after level 60? **Deferred by D23** to a later balance sprint (GA-ECON-1, GX-11, owner-acknowledged).
+1. What is the target time to earn each scene, and what is the coin sink once every scene is owned? The scene ladder (D32) answered the sink for levels 60 and later; the rest is still open (GA-ECON-1, GX-11; D23, D75).
 
 ### Flagged Follow-Up Work
 - [x] In `main.ts` `showWin`, pay only on a first clear (`clearReward`).
@@ -154,3 +154,4 @@ A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; replay-coin rule confirmed by the owner |
 | 2026-11-08 | Claude | M1 fixed: replays pay nothing (`clearReward`) |
 | 2026-11-08 | Claude (sprint 6, F9) | D19 free Undo and D23 deferred targets recorded; full faucet table incl. daily shells, recurring post-collection bonus and charge faucets (GA-ECON-2); roadmap cited as R1–R3 (GX-8, GA-ECON-6); scene cost labelled level income only (GA-ECON-3) and owned here (GX-16); `addCoins` wording (GA-ECON-4); tall-jar flag reference and daily payout stated (GA-ECON-5); `?level=N` item moved to Handled |
+| 2026-11-09 | Claude (0.10.1, D79) | Stale "targets deferred" lines updated: the sprint 7 economy model and the scene ladder (D32) are recorded; time-to-earn targets and the final sink stay open (D75); the D19 tests are ticked |

@@ -28,6 +28,7 @@ function syncSlider(v: Volume): void {
   el.value = String(Math.round(state.save.settings[v.field] * 100));
   // Read back the value the slider shows: it snaps to its step (a saved 0.33 shows as 35%).
   el.setAttribute('aria-valuetext', t.volumeValue(Number(el.value)));
+  el.style.setProperty('--fill', `${el.value}%`); // D72: the filled part of the track
   el.disabled = !state.save.settings[v.mute];
 }
 
@@ -36,6 +37,7 @@ function onSlider(v: Volume, el: HTMLInputElement, commit: boolean): void {
   const percent = Math.min(100, Math.max(0, Math.round(Number(el.value) || 0)));
   state.save.settings[v.field] = percent / 100;
   el.setAttribute('aria-valuetext', t.volumeValue(percent));
+  el.style.setProperty('--fill', `${percent}%`);
   audio.unlock();
   audio.configure(state.save.settings); // music changes live
   const now = performance.now();

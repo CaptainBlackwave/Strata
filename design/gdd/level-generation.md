@@ -31,7 +31,7 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 - A level number always gives the same board, on every device.
 - **Difficulty keeps rising throughout the game** — `INTENDED — confirmed 2026-11-08`. **Implemented in sprint 5** (M3, D1): see Edge Cases and Formulas.
 - **A level always loads** (F7): generation never leaves the player on a broken screen. *Decided 2026-11-08, built in sprint 6.*
-- **No difficulty target yet** (D23): per-band targets (for example median solution length) are deferred to a later balance sprint. GX-13 stays open, owner-acknowledged.
+- **Difficulty target** (D34, D36, set in sprint 7): pours per level band, a median and a max (`generator.pourBands`), measured by the solver and enforced by a test. A level over its band's max is re-dealt. The sweep is `production/qa/sprint-7/difficulty-sweep.md` (levels 1–200, plus bands for 201–500). This closes GX-13.
 
 ---
 
@@ -126,7 +126,7 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 - **Fallback drops a debut mechanic** (GA-LG-6): the intro card waits for the next level that has it.
 
 **Not Yet Handled**:
-- ⚠️ The solver proves a deal winnable but not how hard it is: `solutionLength` is recorded but unused for pacing. No per-band difficulty target exists (D23, deferred).
+- ✅ Solved in sprint 7: the solver's solution length is the difficulty measure, and the per-band pour targets (D34, D36) use it.
 - ⚠️ A debut level from 60 up can also get the swap's narrow jar, so a new mechanic is not always alone (GA-LG-7; no rule yet).
 - ⚠️ Levels are endless, but generation is only tested to level 200 plus 460 and 470 (below).
 
@@ -168,9 +168,9 @@ None open. Ramp: all four levers (D1). Tall-jar levels: mechanics from level 100
 ### Flagged Follow-Up Work
 - [x] Implement the ramp (sprint 5).
 - [x] Build F7 and the GA-LG-6 intro-card rule (sprint 6): built 2026-11-08 (evidence: `production/qa/evidence/sprint-6-fixes/`).
-- [ ] Keep the 1–500 sweep as a retained test or report.
-- [ ] Set a per-band difficulty target, run `/balance-check` on the ramp, and playtest levels 60–150 (deferred, D23).
-- [ ] Use `solutionLength` (or solver node count) to sanity-check that difficulty is actually rising.
+- [x] Keep the 1–500 sweep as a retained report (`production/qa/sprint-7/difficulty-sweep.md`).
+- [x] Set a per-band difficulty target and sweep the ramp (D34, D36, sprint 7). The owner playtest was skipped; the sweep and band test stand as the evidence (D53).
+- [x] Use the solution length to check that difficulty rises (the band test, sprint 7).
 
 ---
 
@@ -181,3 +181,4 @@ None open. Ramp: all four levers (D1). Tall-jar levels: mechanics from level 100
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; ramp-needed confirmed by the owner |
 | 2026-11-08 | Claude | Sprint 5: ramp built (spare-jar lever revised with owner approval), tall-jar mechanics from 100, fallback chain |
 | 2026-11-08 | Claude (sprint 6, F9) | Tall-jar bullet follows D8 (GA-LG-1); ranges, jar-count formula and config keys updated to 14 colours, depth 0–3 and the ramp (GA-LG-2, GX-9); difficulty score defined (GA-LG-4); fixture and replay ranges match the tests (GA-LG-5); fallback effects stated with the GA-LG-6 default; F7 never-failing generation recorded; D22, D23 recorded; "a level always loads" no longer overclaimed (GA-LG-3, building) |
+| 2026-11-09 | Claude (0.10.1, D79) | Stale "no difficulty target" lines updated: the per-band pour targets (D34, D36) were set in sprint 7, so GX-13 is closed |

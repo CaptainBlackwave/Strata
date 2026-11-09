@@ -118,6 +118,9 @@ export function burst(o: BurstOptions): void {
  * Gentle motes in `layer`: small round grains that fade in, drift up `rise` px with a little
  * sideways sway and fade out, each finishing within `within` ms. Positions come from `at`.
  */
+/** The scene's glow-core colour (D73) for the light sand motes in the seal and win effects. */
+const GLOW_MOTE = 'rgb(var(--glow-core))';
+
 function motes(layer: HTMLElement, n: number, colors: readonly string[], at: () => readonly [number, number], rise: readonly [number, number], within: number): void {
   for (let i = 0; i < n; i++) {
     const [x, y] = at();
@@ -170,7 +173,7 @@ export function sealShimmer(jar: HTMLElement, color: string): void {
     ),
   ).addEventListener('finish', () => sweep.remove());
   const r = glass.getBoundingClientRect();
-  motes(fxLayer(), FX_COUNT.sealMotes, [color, '#fff6d8'], () => [rand(r.left + r.width * 0.2, r.right - r.width * 0.2), r.top + rand(-4, 8)], [22, 42], FX_MS.seal);
+  motes(fxLayer(), FX_COUNT.sealMotes, [color, GLOW_MOTE], () => [rand(r.left + r.width * 0.2, r.right - r.width * 0.2), r.top + rand(-4, 8)], [22, 42], FX_MS.seal);
 }
 
 // ---- Win ------------------------------------------------------------------------
@@ -232,7 +235,7 @@ export function winBloom(colors: readonly string[]): void {
     if (side === 1) return [rand(cx - w / 2, cx + w / 2), cy + h / 2 + rand(10, 40)];
     return [side === 2 ? cx - w / 2 - rand(6, 22) : cx + w / 2 + rand(6, 22), rand(cy - h / 2, cy + h / 2)];
   };
-  motes(layer, plan.motes, [...colors, '#fff6d8'], at, [26, 56], FX_MS.winBloom);
+  motes(layer, plan.motes, [...colors, GLOW_MOTE], at, [26, 56], FX_MS.winBloom);
 }
 
 /**

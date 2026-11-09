@@ -11,6 +11,10 @@ export interface UiThemeTokens {
   readonly coralText?: string;
   /** Keyboard focus ring: ≥ 3:1 on card, surface-2 and both background stops. */
   readonly focus?: string;
+  /** The seal shimmer's and win glow's halo, as `r, g, b` (D73): a calm light tint in the scene's hue. */
+  readonly glow?: string;
+  /** The bright centre of that glow and the colour of its sand motes, as `r, g, b` (D73). */
+  readonly glowCore?: string;
 }
 
 /** CSS custom property for each UI token. */
@@ -18,4 +22,6 @@ export const UI_TOKEN_VARS: Readonly<Record<keyof UiThemeTokens, string>> = {
   accentText: '--accent-text',
   coralText: '--coral-text',
   focus: '--focus',
+  glow: '--glow',
+  glowCore: '--glow-core',
 };

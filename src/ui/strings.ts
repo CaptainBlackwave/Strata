@@ -105,10 +105,9 @@ const en = {
     title: "What's new",
     button: "What's new",
     lines: [
-      'Every scene now has its own music.',
-      'Sliders for sound and music volume in Settings.',
-      'Softer, richer sounds, and a gentle glow when you seal a jar or clear a level.',
-      'Smoother moves between Home, the map and the board.',
+      'The volume sliders now match the scene you are in.',
+      'Sealing a jar and clearing a level glow in each scene\'s own colours.',
+      'In the night scenes that glow is cool moonlight instead of warm sand.',
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
