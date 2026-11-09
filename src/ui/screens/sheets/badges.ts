@@ -69,7 +69,7 @@ export function badgeRow(ids: readonly string[]): HTMLElement | null {
 /** One shelf tile: medallion, name, description, and for a not-yet badge its progress line. */
 function tile(art: string, name: string, desc: string, progress: string | null): HTMLElement {
   const li = document.createElement('li');
-  li.className = `badge${progress === null ? ' earned' : ' locked'}`;
+  li.className = `badge-tile${progress === null ? ' earned' : ' locked'}`;
   li.innerHTML = `${art}<span class="badge-text"><b class="badge-name"></b><span class="badge-desc"></span></span>`;
   li.querySelector('.badge-name')!.textContent = name;
   li.querySelector('.badge-desc')!.textContent = desc;

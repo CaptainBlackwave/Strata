@@ -3132,13 +3132,13 @@ body[data-theme='harvestmoon']::before {
 }
 .badge-shelf {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
   gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.badge {
+.badge-tile {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -3195,11 +3195,11 @@ body[data-theme='harvestmoon']::before {
   stroke-linejoin: round;
 }
 .bm-dots { fill: var(--bm-ink); }
-.badge.locked .badge-medal {
+.badge-tile.locked .badge-medal {
   filter: grayscale(1);
   opacity: 0.45;
 }
-.badge.locked .badge-name {
+.badge-tile.locked .badge-name {
   color: var(--ink-soft);
 }
 .win-badge .win-shell-art .badge-medal {
