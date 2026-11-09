@@ -11,7 +11,7 @@ import { $, toolButtons } from './dom';
 import { assistsOnMainThread, prefetcher, startDaily, startLevel, startTutorial, wireBoard } from './screens/board';
 import { openWhatsNew, showHome, wireHome } from './screens/home';
 import { wireOtherTab } from './screens/other-tab';
-import { countThisVisit, openDailyOver, wireOnboarding } from './screens/onboarding';
+import { countThisVisit, listenForOffline, openDailyOver, wireOnboarding } from './screens/onboarding';
 import { wireKeys } from './screens/keys';
 import { wireMap } from './screens/map';
 import { wireCabinet } from './screens/sheets/cabinet';
@@ -101,9 +101,10 @@ function wireAll(): void {
   wireOtherTab(); // last: a newer tab may make this one yield at once (D57)
 }
 
-/** Offline install (sprint 3, T8). */
+/** Offline install (sprint 3, T8), and the one-time notice when it is ready (sprint 11 O4). */
 function registerServiceWorker(): void {
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    listenForOffline(navigator.serviceWorker);
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {
         /* offline support unavailable; the game still works online */

@@ -227,6 +227,18 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   };
 }
 
+/**
+ * Whether the save is really kept on this device: it reads back after boot's write. False when
+ * storage is blocked or throws (O4). Example: `saveStored()`.
+ */
+export function saveStored(store: KeyValueStore | null = defaultStore()): boolean {
+  try {
+    return !!store && store.getItem(KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** Whether the "What's new" card is due: the save has not seen `version` yet. */
 export function whatsNewDue(save: Pick<SaveData, 'seenWhatsNew'>, version: string = WHATS_NEW_VERSION): boolean {
   return save.seenWhatsNew !== version;

@@ -95,3 +95,19 @@ export function installPlatform(env: InstallEnv): InstallPlatform {
 export function installCardDue(o: Onboarding, cleared: number, afterLevels: number, platform: InstallPlatform): boolean {
   return !o.installShown && o.visits >= 2 && cleared >= afterLevels && (platform === 'ios' || platform === 'prompt');
 }
+
+/** The `type` of the message sw.js posts once its install has cached every file (O4). */
+export const OFFLINE_READY = 'strata:offline-ready';
+
+/** Whether a service worker message is the offline-ready one. Example: `isOfflineReady(e.data)`. */
+export function isOfflineReady(data: unknown): boolean {
+  return !!data && typeof data === 'object' && (data as { type?: unknown }).type === OFFLINE_READY;
+}
+
+/**
+ * Whether the offline-ready toast shows (O4): once, and never when storage is blocked, since
+ * then it could not be remembered and would show on every visit.
+ */
+export function offlineNoticeDue(o: Onboarding, storageOk: boolean): boolean {
+  return storageOk && !o.offlineNoticed;
+}

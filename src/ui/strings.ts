@@ -297,6 +297,8 @@ const en = {
       return `The puzzle for ${new Date(y, m - 1, d).toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })} has ended. Today\u2019s is ready.`;
     },
     playToday: 'Play today\u2019s',
+    /** Once, when the service worker has cached everything (O4). */
+    offlineReady: 'Strata is ready to play offline',
   },
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most

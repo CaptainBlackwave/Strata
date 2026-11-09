@@ -2,10 +2,10 @@
  * Install and onboarding on screen (sprint 11, D78): the one-time Add to Home Screen card (O1).
  * The rules are the DOM-free src/ui/logic/onboarding.ts; this reads the browser and shows them.
  */
-import { type InstallPlatform, countVisit, installCardDue, installPlatform } from '../logic/onboarding';
-import { whatsNewDue, writeSave } from '../storage';
+import { type InstallPlatform, countVisit, installCardDue, installPlatform, isOfflineReady, offlineNoticeDue } from '../logic/onboarding';
+import { saveStored, whatsNewDue, writeSave } from '../storage';
 import { t } from '../strings';
-import { $, closeLayer, homeEl, layers, openLayer } from '../dom';
+import { $, closeLayer, homeEl, layers, openLayer, showToast } from '../dom';
 import { config, state } from '../state';
 import { startDaily } from './board';
 
@@ -95,6 +95,27 @@ async function install(): Promise<void> {
 export function openDailyOver(date: string): void {
   $('daily-over-text').textContent = t.onboarding.dailyOverText(date);
   openLayer($('daily-over'), $('btn-daily-over-play'), $('btn-daily'));
+}
+
+/** The one-time "ready to play offline" toast (O4), unless already shown or storage is blocked. */
+export function noticeOffline(): void {
+  if (!offlineNoticeDue(state.save.onboarding, saveStored())) return;
+  state.save.onboarding.offlineNoticed = true;
+  writeSave(state.save);
+  showToast(t.onboarding.offlineReady);
+}
+
+/**
+ * Listens for sw.js's offline-ready message (O4), sent once its install has cached everything.
+ * Call before registering the worker. A page that is already controlled was cached on an
+ * earlier visit (sw.js only installs when complete), so it shows the notice too if it was missed.
+ */
+export function listenForOffline(container: ServiceWorkerContainer): void {
+  container.addEventListener('message', (e) => {
+    if (isOfflineReady(e.data)) noticeOffline();
+  });
+  container.startMessages();
+  if (container.controller) noticeOffline();
 }
 
 /** Captures the install prompt and wires the card's buttons. */

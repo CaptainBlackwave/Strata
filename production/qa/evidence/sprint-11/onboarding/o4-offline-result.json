@@ -1,0 +1,14 @@
+{
+ "firstVisitToast": true,
+ "controlledWhenShown": false,
+ "messages": [
+  "{\"type\":\"strata:offline-ready\"}"
+ ],
+ "saved": true,
+ "secondVisitToast": false,
+ "offlineLoads": "Play",
+ "blockedToast": false,
+ "blockedToastText": "",
+ "blockedWorkerActive": true,
+ "errors": []
+}
