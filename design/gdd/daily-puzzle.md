@@ -83,6 +83,7 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 
 - **Depends on**: `level-generation.md` (`generateFromSpec`), `jar-mechanics.md` (Saturday), `economy.md` (coins), `shell-collection.md` (shell on first solve).
 - **Depended on by**: `feel-audio-ui.md` (home card, win card), `save-data.md`, `player-profile.md` (streak, best streak and counted solves feed its stats and unlocks).
+- **The weekly set** (`weekly-set.md`, D77) borrows the Monday-to-Friday recipes, the seed hash shape (with its own key text and salt) and the fallback chain (`dailySteps`), and follows the same UTC clock. It is a separate mode with no streak and no coins.
 
 ---
 

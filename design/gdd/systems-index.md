@@ -14,7 +14,7 @@
 
 ## Overview
 
-Strata is a phone-first sort puzzle: the player pours layers of sand between jars until every jar is empty or sealed. Around that loop sit a generator that guarantees winnable levels, four jar mechanics, boosters and an economy of coins earned only by playing, a daily puzzle with a streak, a shell collection and four time-of-day scenes. There are eleven systems, all implemented (the player profile was added on 2026-11-08), plus the level map and the badge shelf (sprint 11, D76).
+Strata is a phone-first sort puzzle: the player pours layers of sand between jars until every jar is empty or sealed. Around that loop sit a generator that guarantees winnable levels, four jar mechanics, boosters and an economy of coins earned only by playing, a daily puzzle with a streak, a shell collection and four time-of-day scenes. There are eleven systems, all implemented (the player profile was added on 2026-11-08), plus the level map, the badge shelf (sprint 11, D76) and the weekly set (sprint 11, D77).
 
 ---
 
@@ -35,6 +35,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 11 | Player profile | Meta | Full Vision | Implemented (PP-1 to PP-10) | [player-profile.md](player-profile.md) | 4–8, 10 |
 | 12 | Level map | UI | Full Vision | Designed and signed off (D47–D52), building in sprint 9 | [level-map.md](level-map.md) | 4, 7, 9, 11 |
 | 13 | Badges | Meta | Full Vision | Implemented (sprint 11 A1, A2, D76) | [badges.md](badges.md) | 3, 4, 6, 7, 8, 10, 11 |
+| 14 | Weekly set | Progression | Full Vision | Designed (sprint 11 W1, D77), building in sprint 11 W2 | [weekly-set.md](weekly-set.md) | 2, 3, 6, 9, 10, 13 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
