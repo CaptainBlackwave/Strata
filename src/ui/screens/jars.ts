@@ -1,0 +1,219 @@
+/** Jar rendering: building the jars for the board size, redrawing one, mechanic effects, selection and refusals. */
+import { type Board, type Jar, isSealed } from '../../core/board';
+import { burst, sparkleAround } from '../fx';
+import { sceneSealBurst } from '../scene-fx';
+import { computeLayout } from '../layout';
+import { t } from '../strings';
+import { boardEl, reducedMotion, showToast } from '../dom';
+import { audio, config, state } from '../state';
+
+/** How long a refused jar keeps its static red outline (ms): presentation only. */
+const NOPE_MS = 700;
+/** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour (tests/unit/core/config-schema.test.ts keeps the two counts equal). */
+const PATTERNS = config.palette.length;
+
+let tapHandler: (i: number) => void = () => {};
+
+/** Registers what a tap on jar `i` does. The board sets it at boot, so this file need not import the board. */
+export function onJarTapDo(handler: (i: number) => void): void {
+  tapHandler = handler;
+}
+
+export function buildJars(): void {
+  const board = state.session.board;
+  const rect = boardEl.getBoundingClientRect();
+  const layout = computeLayout({ width: rect.width, height: rect.height, jars: board.jars.length, capacity: board.capacity });
+  state.unitHeight = layout.unitHeight;
+  const s = boardEl.style;
+  s.setProperty('--jar-w', `${layout.jarWidth}px`);
+  s.setProperty('--unit-h', `${layout.unitHeight}px`);
+  s.setProperty('--jar-h', `${layout.jarHeight}px`);
+  s.setProperty('--gap-x', `${layout.gapX}px`);
+  s.setProperty('--gap-y', `${layout.gapY}px`);
+  s.setProperty('--cols', String(layout.cols));
+
+  boardEl.replaceChildren();
+  const rows = document.createElement('div');
+  rows.className = 'rows';
+  state.jarEls = board.jars.map((_, i) => {
+    const jar = document.createElement('button');
+    jar.type = 'button';
+    jar.className = 'jar';
+    jar.dataset.index = String(i);
+    jar.innerHTML =
+      '<span class="cork" aria-hidden="true"></span><span class="padlock" aria-hidden="true"></span><span class="funnel-mark" aria-hidden="true"></span>' +
+      '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
+      '<span class="hint-badge" aria-hidden="true"></span>';
+    jar.addEventListener('click', () => tapHandler(i));
+    rows.appendChild(jar);
+    return jar;
+  });
+  boardEl.appendChild(rows);
+  renderAllJars();
+}
+
+export function renderAllJars(shake = false): void {
+  state.session.board.jars.forEach((_, i) => {
+    updateJar(i);
+    if (shake && !reducedMotion()) state.jarEls[i].animate([{ translate: '0 0' }, { translate: '0 -6px' }, { translate: '0 0' }], { duration: 260, delay: i * 25 });
+  });
+}
+
+export function unitColor(color: number, buried: boolean): string {
+  return buried ? 'var(--buried)' : config.palette[color].hex;
+}
+
+/** Redraws jar `i`. Units at index `growFrom` and above animate in. */
+export function updateJar(i: number, growFrom = Infinity): void {
+  const board: Board = state.session.board;
+  const jar = board.jars[i];
+  const el = state.jarEls[i];
+  if (!el) return;
+  const sand = el.querySelector('.sand') as HTMLElement;
+  sand.replaceChildren(
+    ...jar.units.map((color, k) => {
+      const u = document.createElement('span');
+      u.className = 'unit';
+      if (k < jar.hidden) {
+        u.classList.add('buried');
+      } else {
+        u.style.setProperty('--c', config.palette[color].hex);
+        if (state.save.settings.patterns) u.classList.add(`pat-${color % PATTERNS}`);
+      }
+      if (k >= growFrom) {
+        u.classList.add('grow');
+        u.style.animationDelay = `${(k - growFrom) * 70}ms`;
+      }
+      return u;
+    }),
+  );
+  const sealed = isSealed(jar, board.capacity);
+  el.classList.toggle('sealed', sealed);
+  if (!sealed) el.classList.remove('just-sealed');
+  renderMechanics(el, jar);
+  el.classList.toggle('selected', state.selected === i);
+  el.setAttribute('aria-pressed', String(state.selected === i));
+  const contents = jar.units.length ? jar.units.map((c, k) => (k < jar.hidden ? t.buried : config.palette[c].id)).join(', ') : t.jarEmpty;
+  const states = [
+    jar.cap !== undefined ? t.jarStates.narrow : '',
+    jar.frozen ? t.jarStates.frozen : '',
+    jar.lock !== undefined ? t.jarStates.locked(config.palette[jar.lock].id) : '',
+    jar.funnel ? t.jarStates.funnel : '',
+    sealed ? t.sealed : '',
+  ].filter(Boolean);
+  el.setAttribute('aria-label', t.jarLabel(i, states.length ? `${contents} (${states.join(', ')})` : contents));
+}
+
+/** Draws a jar's mechanic state, and plays the thaw/unlock effect when one ends. */
+export function renderMechanics(el: HTMLElement, jar: Jar): void {
+  const wasFrozen = el.dataset.frozen === '1';
+  const wasLocked = el.dataset.lock !== undefined && el.dataset.lock !== '';
+  el.classList.toggle('narrow', jar.cap !== undefined);
+  el.classList.toggle('funnel', jar.funnel === true);
+  el.classList.toggle('frozen', jar.frozen === true);
+  el.classList.toggle('locked', jar.lock !== undefined);
+  const glass = el.querySelector('.glass') as HTMLElement;
+  if (jar.cap !== undefined) glass.style.height = `${state.unitHeight * jar.cap + Math.round(state.unitHeight * 0.45)}px`;
+  else glass.style.removeProperty('height');
+  const padlock = el.querySelector('.padlock') as HTMLElement;
+  if (jar.lock !== undefined) {
+    padlock.style.setProperty('--lock', config.palette[jar.lock].hex);
+    padlock.className = `padlock${state.save.settings.patterns ? ` pat-${jar.lock % PATTERNS}` : ''}`;
+  }
+  if (wasFrozen && !jar.frozen) mechanicFx(el, 'thawing', t.thawed);
+  if (wasLocked && jar.lock === undefined) mechanicFx(el, 'unlocking', t.unlocked);
+  el.dataset.frozen = jar.frozen ? '1' : '';
+  el.dataset.lock = jar.lock !== undefined ? String(jar.lock) : '';
+}
+
+export function mechanicFx(el: HTMLElement, cls: string, label: string): void {
+  showToast(label);
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+  window.setTimeout(() => el.classList.remove(cls), 900);
+  audio.play('booster');
+  const r = el.getBoundingClientRect();
+  burst({ x: r.left + r.width / 2, y: r.top + r.height * 0.3, colors: ['#dff3ff', '#ffffff', '#b9e0f5'], count: 14, spread: r.width, size: 5, duration: 600, className: 'spark' });
+}
+
+export function setSelected(i: number | null): void {
+  const prev = state.selected;
+  state.selected = i;
+  if (prev !== null) updateJar(prev);
+  if (i !== null) updateJar(i);
+}
+
+export function renderSelectedState(): void {
+  state.jarEls.forEach((el, i) => {
+    el.classList.toggle('selected', state.selected === i);
+    el.setAttribute('aria-pressed', String(state.selected === i));
+  });
+}
+
+export function nope(i: number): void {
+  const el = state.jarEls[i];
+  el.classList.remove('nope');
+  void el.offsetWidth; // restart the CSS animation
+  el.classList.add('nope');
+  window.clearTimeout(Number(el.dataset.nopeTimer));
+  el.dataset.nopeTimer = String(window.setTimeout(() => el.classList.remove('nope'), NOPE_MS));
+  audio.play('nope');
+}
+
+export function sealFx(i: number, color: string): void {
+  const el = state.jarEls[i];
+  el.classList.remove('just-sealed');
+  void el.offsetWidth;
+  el.classList.add('just-sealed');
+  window.setTimeout(() => {
+    sparkleAround(el, color);
+    sceneSealBurst(el, color); // tier 3 scenes: a firework, a meteor or an aurora ripple
+    audio.play('seal');
+  }, reducedMotion() ? 0 : 180);
+}
+
+/**
+ * The tilted fill: a world-level band of sand inside the tilting glass, so the
+ * surface stays horizontal while the jar rotates (teardown V2-3).
+ * Returns the element plus helpers to animate it in step with the jar.
+ */
+export function makeTiltFill(jarEl: HTMLElement, i: number) {
+  const glass = jarEl.querySelector('.glass') as HTMLElement;
+  const jar = state.session.board.jars[i];
+  const Hg = glass.clientHeight;
+  const W = glass.clientWidth;
+  const fill = document.createElement('span');
+  fill.className = 'tilt';
+  const band = document.createElement('span');
+  band.className = 'tilt-band';
+  band.style.width = `${Hg * 3}px`;
+  band.style.left = `${-Hg * 1.5}px`;
+  const stripes = jar.units.map((c, k) => {
+    const s = document.createElement('span');
+    s.style.background = unitColor(c, k < jar.hidden);
+    s.style.height = `${state.unitHeight + (k === 0 ? 40 : 0)}px`;
+    return s;
+  });
+  band.append(...stripes);
+  fill.appendChild(band);
+  glass.appendChild(fill);
+  jarEl.classList.add('tilting');
+  /** Transform at tilt angle `phi` (radians): counter-rotate, drop to the low point, squash with the tilt. */
+  const at = (phi: number, sign: number) => {
+    const E = (Hg / 2) * Math.abs(Math.cos(phi)) + (W / 2) * Math.sin(phi);
+    const k = (2 * E) / Hg;
+    return `rotate(${-sign * phi}rad) translateY(${E - 3}px) scaleY(${k.toFixed(4)})`;
+  };
+  const keyframes = (from: number, to: number, sign: number) =>
+    Array.from({ length: 9 }, (_, n) => ({ transform: at(from + ((to - from) * n) / 8, sign) }));
+  return {
+    fill,
+    stripes,
+    keyframes,
+    remove: () => {
+      fill.remove();
+      jarEl.classList.remove('tilting');
+    },
+  };
+}
