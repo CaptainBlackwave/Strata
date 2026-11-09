@@ -18,6 +18,18 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.9.0 | `4a35afb` (sprint 9, PR #5) |
 | v0.9.1 | `4cdd71f` (fixes after 0.9.0, PR #6) |
 
+## 0.10.0 (2026-11-09): sprint 10, feel and audio
+**For players**
+- Every scene has its own music: the same calm style, in its own key, tempo and sound, with an extra layer in some scenes (rain, sparkles, a soft thump at New Year). Changing scene crossfades, and the music goes quiet while the game is in the background.
+- Sliders for sound and music volume in Settings; the switches still mute.
+- Softer, richer sounds, plus new ones for the map, unlocks, shells, buying a scene and taking over from another tab. Vibration is tuned to match (Android).
+- A soft shimmer when a jar seals, a gentle glow behind the win card, and coins that fly to your total. Smoother moves between Home, the map and the board. Reduced motion turns all of it off.
+- At very large text sizes the booster counts stay readable and no longer cover the buttons.
+
+**Under the hood**
+- The booster, restart and leave confirmations and the key mapping are pure logic with unit tests (TD-12).
+- Releases are tagged and published automatically from this changelog (D60).
+
 ## 0.9.1 (2026-11-09): fixes after 0.9.0
 **For players**
 - Hint and Shuffle think in the background, so the game no longer freezes on the biggest boards; the button shows "Thinking…" meanwhile.

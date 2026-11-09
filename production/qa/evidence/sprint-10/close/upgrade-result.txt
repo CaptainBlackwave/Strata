@@ -1,0 +1,7 @@
+whats new card: What's new Every scene now has its own music. Sliders for sound and music volume in Settings. Softer, richer sounds, and a gentle glow when you seal a jar or clear a level. Smoother moves between Home, the map and the board. Got it
+seenWhatsNew: 0.10.0 | perfect: [] | level: 12 | perfectClears: 4
+map open: true | map play: Play · Level 12
+board label: Strata Tall jars Level 12 300 coins
+won level 12: true
+after win: level 13 | best[12] 28 | perfect []
+errors: []

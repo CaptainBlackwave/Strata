@@ -115,17 +115,17 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D57 | Strata open in two tabs | **One active tab**: the newest tab takes over, and older tabs show "Strata is open in another tab" with **Play here**, so saves never overwrite each other | save-data | built (sprint 9 M4) |
 | D58 | Real-device checks | **A short checklist for the owner** (`production/qa/device-checklist.md`) | feel-audio-ui | owner |
 | D59 | Sprint 9 order | **Art fixes, then the main.ts split** (checked with a before/after browser comparison), **then the level map** as its own module, then one active tab and the backlog | — | followed (sprint 9) |
-| D60 | Tags and GitHub releases | **A release workflow**: when `package.json`'s version changes on `main`, tag that commit `vX.Y.Z` and publish a GitHub release from `production/releases/CHANGELOG.md`; a manual run backfills v0.5.0–v0.9.1 | feel-audio-ui | sprint 10 (P0) |
+| D60 | Tags and GitHub releases | **A release workflow**: when `package.json`'s version changes on `main`, tag that commit `vX.Y.Z` and publish a GitHub release from `production/releases/CHANGELOG.md`; a manual run backfills v0.5.0–v0.9.1 | feel-audio-ui | built (PR #7; v0.5.0–v0.9.1 backfilled) |
 | D61 | Merging to main | **Standing approval**: Claude merges its own PRs once tests, its browser checks and the review bot (or an independent review if the bot fails) are clean, then checks the live site. Anything with an open question still goes to the owner | — | standing |
-| D62 | Device checklist (D58) | **Claude runs an emulated pass** on the live site (Chromium device emulation) and lists what only a real phone can confirm | feel-audio-ui | sprint 10 (P0) |
+| D62 | Device checklist (D58) | **Claude runs an emulated pass** on the live site (Chromium device emulation) and lists what only a real phone can confirm | feel-audio-ui | done (`production/qa/device-pass-0.9.1.md`) |
 | D63 | Sprint 9 calls | **Keep all**: "Back to map" after a replay; the map title and scenery names; the other-tab, tutorial-tools, save-failed and "New" wording; the darker other-tab dim | level-map, save-data | recorded |
-| D64 | Sprint 10 scope | **Feel and audio polish**: sound effects (richer, plus new events), music, haptics, and animation and celebrations | feel-audio-ui | sprint 10 |
-| D65 | Music direction | **A variation per scene**: the same calm style, with each scene's own key, tempo and timbre | feel-audio-ui | sprint 10 |
-| D66 | Volume | **Sliders for sound and music**, saved with the settings; the switches stay as mute | feel-audio-ui, save-data | sprint 10 |
-| D67 | Audio sign-off | **Rendered clips page**: Claude measures loudness and clipping, then publishes every sound and music clip (before and after) for the owner to listen to and approve **before merging** (an exception to D61) | feel-audio-ui | sprint 10 |
-| D68 | Celebration size | **Calm, a little richer**: a soft sand shimmer and a warm chime on seal, a gentle bloom on win; nothing loud or long; reduced motion respected | feel-audio-ui | sprint 10 |
+| D64 | Sprint 10 scope | **Feel and audio polish**: sound effects (richer, plus new events), music, haptics, and animation and celebrations | feel-audio-ui | built (sprint 10) |
+| D65 | Music direction | **A variation per scene**: the same calm style, with each scene's own key, tempo and timbre | feel-audio-ui | built (sprint 10 F2) |
+| D66 | Volume | **Sliders for sound and music**, saved with the settings; the switches stay as mute | feel-audio-ui, save-data | built (sprint 10 F3) |
+| D67 | Audio sign-off | **Rendered clips page**: Claude measures loudness and clipping, then publishes every sound and music clip (before and after) for the owner to listen to and approve **before merging** (an exception to D61) | feel-audio-ui | page published; awaiting the owner |
+| D68 | Celebration size | **Calm, a little richer**: a soft sand shimmer and a warm chime on seal, a gentle bloom on win; nothing loud or long; reduced motion respected | feel-audio-ui | built (sprint 10 F5) |
 | D69 | Defaults for new players | **Everything on** (sound, music, haptics): already the defaults, no change | feel-audio-ui | recorded |
-| D70 | TD-12 | **Close it alongside sprint 10**: extract and unit-test the booster arm and confirm, restart and leave confirms and key mapping as the polish touches them | — | sprint 10 |
+| D70 | TD-12 | **Close it alongside sprint 10**: extract and unit-test the booster arm and confirm, restart and leave confirms and key mapping as the polish touches them | — | built (sprint 10 F6) |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

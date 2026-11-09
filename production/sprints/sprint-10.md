@@ -1,6 +1,6 @@
 # Sprint 10: feel and audio polish
 
-> **Status: planned (2026-11-09).** Chosen in the owner interview after 0.9.1 (D60–D70 in `design/gdd/systems-index.md`). Target release: **0.10.0**.
+> **Status: built (2026-11-09); the PR waits for the owner's audio sign-off (D67).** P0 and F1–F9 are done; 685 tests pass. Evidence index: `production/qa/evidence/sprint-10/README.md`. Chosen in the owner interview after 0.9.1 (D60–D70 in `design/gdd/systems-index.md`). Target release: **0.10.0**.
 
 ## Sprint Goal
 Make every moment sound and feel as good as it looks, while staying calm. Each scene gets its own music. Sounds become richer and cover the events that have none yet. Haptics are tuned. Seals and wins get a gentle celebration. Players get volume sliders. The UI logic that only screenshots cover today gets unit tests (TD-12).
