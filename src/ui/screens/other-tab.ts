@@ -66,7 +66,7 @@ export function wireOtherTab(): void {
   }
   const channel = broadcastChannel(CHANNEL) ?? (store ? storageChannel(store, CHANNEL, (fn) => window.addEventListener('storage', fn)) : null);
   if (!channel) return;
-  const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  const id = globalThis.crypto?.randomUUID?.() ?? `${state.clock().getTime().toString(36)}-${state.rng().toString(36).slice(2)}`;
   lock = new TabLock(channel, id, onOwnerChange);
   lock.start();
 }

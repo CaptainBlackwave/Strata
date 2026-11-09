@@ -1,9 +1,10 @@
 /** The shell cabinet sheet. */
 import { allShells, setProgress } from '../../../core/collection';
-import { streakStatus, utcDateKey } from '../../../core/daily';
+import { streakStatus } from '../../../core/daily';
 import { shellSvg } from '../../shells';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
+import { dailyKey } from '../../clock';
 import { audio, config, state } from '../../state';
 
 /** How many shells the player had when the cabinet was last opened (or at boot). Later ones are "New" (UX-cab-4). */
@@ -18,7 +19,7 @@ export function openCabinet(): void {
   const remaining = every - (cleared % every);
   $('cabinet-title').textContent = t.cabinetTitle;
   // Today's unsolved daily also grants a shell, and the complete line is a standing rule, not a payout (UX-cab-3).
-  const dailyOpen = state.save.tutorialDone && !streakStatus(state.save.daily, utcDateKey(new Date())).solvedToday;
+  const dailyOpen = state.save.tutorialDone && !streakStatus(state.save.daily, dailyKey(state.clock)).solvedToday;
   $('cabinet-next').textContent = state.save.shells.length < allShells(config).length ? t.nextShell(remaining, dailyOpen) : t.collectionDone(config.collection.coinsWhenComplete);
   const sets = $('cabinet-sets');
   sets.replaceChildren(

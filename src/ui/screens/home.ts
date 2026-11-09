@@ -1,6 +1,6 @@
 /** The Home screen and the What's new card. */
 import { allShells } from '../../core/collection';
-import { streakStatus, utcDateKey, weekday } from '../../core/daily';
+import { streakStatus, weekday } from '../../core/daily';
 import { byIdOr } from '../../core/themes';
 import { type FocusTarget } from '../layers';
 import { shellSvg } from '../shells';
@@ -8,13 +8,14 @@ import { writeSave } from '../storage';
 import { t } from '../strings';
 import { $, closeLayer, homeEl, openLayer, winEl } from '../dom';
 import { renderProfileChip } from './sheets/profile';
+import { dailyKey } from '../clock';
 import { config, state } from '../state';
 
 export function showHome(): void {
   closeLayer(winEl, false);
   $('home-coins').textContent = String(state.save.wallet.coins);
   $('btn-play').textContent = state.save.tutorialDone ? t.play(state.save.level) : t.playTutorial;
-  const today = utcDateKey(new Date()); // the daily follows UTC (design/gdd/daily-puzzle.md, M4)
+  const today = dailyKey(state.clock); // the daily follows UTC (design/gdd/daily-puzzle.md, M4)
   const day = config.daily.week[weekday(today)];
   const status = streakStatus(state.save.daily, today);
   const [y, m, d] = today.split('-').map(Number);

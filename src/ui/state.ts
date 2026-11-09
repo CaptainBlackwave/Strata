@@ -13,6 +13,7 @@ import { createRng } from '../core/rng';
 import type { GameSession } from '../core/session';
 import type { ThemeConfig } from '../core/themes';
 import { GameAudio } from './audio';
+import { type Clock, type Random, systemClock } from './clock';
 import { type SaveData, loadSave } from './storage';
 import { t } from './strings';
 
@@ -45,6 +46,10 @@ export interface UiState {
   returning: Set<number>;
   /** A coin purchase waiting for its second tap (UX-board-7). */
   armedBooster: BoosterId | null;
+  /** The clock every UI date read goes through (TD-16); the real one by default. Animation timing is exempt. */
+  clock: Clock;
+  /** Randomness for UI choices such as a re-rolled name (TD-16); `Math.random` by default. */
+  rng: Random;
 }
 
 const initialSave = loadSave(config);
@@ -65,6 +70,9 @@ export const state: UiState = {
   unitHeight: 0,
   returning: new Set<number>(),
   armedBooster: null,
+  clock: systemClock,
+  rng: Math.random,
 };
 export const audio = new GameAudio(initialSave.settings);
-export const shuffleRng = createRng(Date.now() >>> 0);
+/** The Shuffle booster's RNG, seeded once from the app clock at load (TD-16). */
+export const shuffleRng = createRng(state.clock().getTime() >>> 0);
