@@ -9,7 +9,9 @@ import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 import { WHATS_NEW_VERSION } from './strings';
 
-const KEY = 'strata.save.v2';
+/** The localStorage key of the save. Other tabs' writes to it arrive as `storage` events (D57). */
+export const SAVE_KEY = 'strata.save.v2';
+const KEY = SAVE_KEY;
 const LEGACY_PROGRESS = 'strata.progress.v1';
 const LEGACY_PREFS = 'strata.prefs.v1';
 
@@ -60,6 +62,11 @@ export interface SaveData {
    * (`''`), so the card shows once.
    */
   seenWhatsNew: string;
+  /**
+   * How many of `shells` the player has seen in the cabinet; later ones show "New" there
+   * (UX-cab-4). An older save without it counts every owned shell as seen.
+   */
+  seenShells: number;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -125,7 +132,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0 };
 }
 
 /**
@@ -155,6 +162,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const pr = isObj(v2.profile) ? v2.profile : {};
   const st = isObj(v2.stats) ? v2.stats : {};
   const str = (v: unknown) => (typeof v === 'string' ? v : '');
+  const shells = strings(v2.shells);
   return {
     level,
     best: bestOf(v2.best),
@@ -177,7 +185,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       best: nonNegInt(d.best, 0),
       passes: nonNegInt(d.passes, 0),
     },
-    shells: strings(v2.shells),
+    shells,
     seenMechanics: strings(v2.seenMechanics),
     themes: {
       owned: [...new Set(['midday', ...strings(isObj(v2.themes) ? v2.themes.owned : [])])],
@@ -191,6 +199,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
         ? { date: v2.dailyShare.date, pours: v2.dailyShare.pours as number }
         : null,
     seenWhatsNew: typeof v2.seenWhatsNew === 'string' ? v2.seenWhatsNew : '',
+    seenShells: Math.min(nonNegInt(v2.seenShells, shells.length), shells.length),
   };
 }
 

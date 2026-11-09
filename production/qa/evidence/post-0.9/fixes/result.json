@@ -1,0 +1,49 @@
+{
+ "lateWrite": {
+  "bPlay": "Play · Level 4",
+  "aOverlay": true,
+  "afterBStarts": {
+   "level": 4,
+   "best3": 12,
+   "coins": 525,
+   "hud": "Strata Tall jars Level 4 525 c"
+  },
+  "ok": true
+ },
+ "newMark": {
+  "firstOpen": 1,
+  "afterReopenAndReload": 0,
+  "seenShells": 2
+ },
+ "big": {
+  "title": {
+   "text": "Beach path",
+   "lines": 1,
+   "px": "20.48px"
+  },
+  "badges": [
+   {
+    "text": "80",
+    "lines": 1,
+    "textOverName": false
+   },
+   {
+    "text": "120",
+    "lines": 1,
+    "textOverName": false
+   },
+   {
+    "text": "60",
+    "lines": 1,
+    "textOverName": false
+   }
+  ],
+  "labelOnTop": [
+   {
+    "text": "Lighthouse point",
+    "onTop": true
+   }
+  ]
+ },
+ "errors": []
+}

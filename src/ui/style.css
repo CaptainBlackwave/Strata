@@ -553,6 +553,8 @@ button {
   color: var(--accent-ink);
   font-size: 0.6875rem;
   line-height: 1.65em;
+  /* At large text the price's coin dot and number wrapped onto two lines, and the number fell onto the tool's name. */
+  white-space: nowrap;
 }
 
 /* ---- Toast ---- */
@@ -2634,8 +2636,10 @@ body[data-theme='harvestmoon']::before {
 }
 .map-title {
   flex: 1;
+  min-width: 0;
   margin: 0;
-  font-size: 1.25rem;
+  /* Stays on one line at 150% text on a 320 px screen (about 20 px there), and is 1.25rem everywhere it fits. */
+  font-size: min(1.25rem, 6.4vw);
   font-weight: 900;
   line-height: 1.1;
 }
@@ -2689,14 +2693,22 @@ body[data-theme='harvestmoon']::before {
 }
 .band-name {
   position: absolute;
+  /* Above the path's SVG (drawn later in the track), and level with the stones, which come after it in the DOM. */
+  z-index: 1;
   bottom: 8px;
   left: 10px;
   padding: 2px 9px;
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
-  font-size: 0.75rem;
+  /* Narrow enough at 150% text on 320 px to clear a stone at the path's centre. */
+  font-size: min(0.75rem, 3.6vw);
   font-weight: 800;
+  white-space: nowrap;
+}
+.band-name-right {
+  left: auto;
+  right: 6px;
 }
 .motif {
   position: absolute;

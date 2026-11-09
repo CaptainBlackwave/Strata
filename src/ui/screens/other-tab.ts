@@ -5,7 +5,7 @@
  * The protocol itself is the pure src/ui/tab-lock.ts.
  */
 import { knownShells } from '../../core/collection';
-import { loadSave, onSaveError, pauseSaves, writeSave } from '../storage';
+import { SAVE_KEY, loadSave, onSaveError, pauseSaves, writeSave } from '../storage';
 import { t } from '../strings';
 import { TabLock, broadcastChannel, storageChannel } from '../tab-lock';
 import { $, canFocus, closeLayer, layers, showToast } from '../dom';
@@ -17,6 +17,14 @@ import { applyTheme, currentTheme } from '../theme';
 
 /** BroadcastChannel name, and the localStorage key of the fallback channel. */
 const CHANNEL = 'strata.tab.v1';
+/**
+ * After this tab claims the save, an older tab may still write once before it hears the claim
+ * (a win landing in the same instant). For this long after a claim, another tab's write to the
+ * save makes this tab reload it, so that last write isn't erased by this tab's older copy.
+ * Not a gameplay value: it only has to outlast one message hop between tabs.
+ */
+const LATE_WRITE_MS = 3000;
+let claimedAt = -Infinity;
 
 let lock: TabLock | null = null;
 
@@ -33,6 +41,12 @@ function onOwnerChange(active: boolean): void {
 /** Play here: take the save back, reload it from storage and show Home on the reloaded progress. */
 export function playHere(): void {
   lock?.claim(); // resumes saves through onOwnerChange(true), and the other tabs yield
+  claimedAt = performance.now();
+  reloadSave();
+}
+
+/** Replaces this tab's save with the stored one and shows Home on it. */
+function reloadSave(): void {
   state.save = loadSave(config);
   state.save.shells = knownShells(state.save.shells, config); // D26, as at boot
   repairSaveProfile();
@@ -69,4 +83,10 @@ export function wireOtherTab(): void {
   const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   lock = new TabLock(channel, id, onOwnerChange);
   lock.start();
+  claimedAt = performance.now();
+  // A late write from the tab that just yielded: take it instead of overwriting it (D57).
+  window.addEventListener('storage', (e) => {
+    if (e.key !== SAVE_KEY || !e.newValue || !lock?.active || state.busy) return;
+    if (performance.now() - claimedAt <= LATE_WRITE_MS) reloadSave();
+  });
 }

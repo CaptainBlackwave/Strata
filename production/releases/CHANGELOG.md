@@ -10,7 +10,7 @@ The game's release history. The repository's root `CHANGELOG.md` belongs to the 
 | v0.6.0 | `43c1420` (sprint 6, PR #2) |
 | v0.7.0 | `ab56334` (sprint 7, PR #3) |
 | v0.8.0 | `05d5be5` (sprint 8, PR #4) |
-| v0.9.0 | the sprint 9 squash commit on `main`, once its PR is merged |
+| v0.9.0 | `4a35afb` (sprint 9, PR #5) |
 
 ## 0.9.0 (2026-11-09): sprint 9
 **For players**
