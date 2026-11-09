@@ -8,6 +8,7 @@ import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { dailyKey } from '../../clock';
 import { config, state } from '../../state';
+import { backfillSaveBadges, renderBadgeShelf } from './badges';
 
 /** The progress values unlocks are measured against, from the live save. */
 export function progressNow(): Progress {
@@ -20,9 +21,14 @@ export function progressNow(): Progress {
   });
 }
 
-/** Makes the saved profile safe to show: a valid name, and only known, unlocked picks. */
+/**
+ * Makes the saved profile safe to show: a valid name, and only known, unlocked picks. Runs after
+ * every load (start-up, import, another tab's save), so it also back-fills the badges already
+ * earned, quietly (badges.md §3.5).
+ */
 export function repairSaveProfile(): void {
   state.save.profile = repairProfile(state.save.profile, config, progressNow(), () => generateName(state.rng, t.nameWords));
+  backfillSaveBadges();
 }
 
 export function avatarOf(id: string) {
@@ -85,6 +91,7 @@ export function renderProfile(): void {
     ['sets', `${sets.filter((p) => p.complete).length}/${sets.length}`],
     ['scenes', `${scenesOwned}/${config.themes.list.length}`],
     ['pours', s.pours.toLocaleString('en')],
+    ['jarsSealed', s.jarsSealed.toLocaleString('en')],
     ['coinsEarned', s.coinsEarned.toLocaleString('en')],
     ['boostersUsed', String(s.boostersUsed)],
   ];
@@ -111,6 +118,7 @@ export function renderProfile(): void {
     }),
   );
   $('stats-note').textContent = t.statsFootnote;
+  renderBadgeShelf();
 }
 
 /** Wires the profile sheet's open and close buttons. */

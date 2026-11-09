@@ -14,6 +14,7 @@ import { $, btnNext, hideToast, openLayer, reducedMotion, winEl } from '../dom';
 import { showHome } from './home';
 import { coach, updateHud } from './hud';
 import { plateEl, portraitOf } from './sheets/profile';
+import { badgeRow } from './sheets/badges';
 import { ANIM, audio, config, state } from '../state';
 
 /** Seconds after the win chime that a shell row's sound starts, so the two don't blur (F1, D68). */
@@ -36,9 +37,10 @@ export function renderShell(award: ShellAward): void {
   $('win-shell').hidden = false;
 }
 
-/** Win card rows for cosmetics unlocked by this win (§3.7). */
-export function showUnlocks(items: SlotItem[]): void {
-  if (items.length) audio.play('unlock', { delay: UNLOCK_SOUND_DELAY });
+/** Win card rows for cosmetics unlocked by this win (§3.7), then one row for its badges (badges.md §3.6). */
+export function showUnlocks(items: SlotItem[], badges: readonly string[] = []): void {
+  if (items.length || badges.length) audio.play('unlock', { delay: UNLOCK_SOUND_DELAY }); // once, for both
+  const badgeEl = badgeRow(badges);
   $('win-unlocks').replaceChildren(
     ...items.map(({ slot, item }) => {
       const row = document.createElement('div');
@@ -52,6 +54,7 @@ export function showUnlocks(items: SlotItem[]): void {
       row.append(art, text);
       return row;
     }),
+    ...(badgeEl ? [badgeEl] : []),
   );
 }
 
@@ -115,7 +118,7 @@ export function applyWinToSave(): WinCard {
 /** The parts of the card shared by the daily and level wins: shell row, unlocks, reward row. */
 export function renderRewards(card: WinCard): void {
   if (card.shell) renderShell(card.shell);
-  showUnlocks(card.unlocks);
+  showUnlocks(card.unlocks, card.badges);
   $('win-reward').hidden = !card.rewardShown;
   if (card.rewardShown) countUp($('win-coins'), card.reward, reducedMotion() ? 0 : ANIM.winDelay); // counts on the open card
   $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;

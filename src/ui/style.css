@@ -3118,3 +3118,91 @@ body[data-theme='harvestmoon']::before {
   z-index: 25;
   pointer-events: none;
 }
+
+/* Badge shelf (sprint 11, D76, design/gdd/badges.md §3.8). Medallion colours are fixed per family, like
+   the name plates, so each reads the same in every scene; a not-yet badge is greyed and dimmed. */
+.badges-title {
+  margin-top: 16px;
+}
+.badges-count {
+  margin: -4px 0 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.badge-shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.badge-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.badge-name {
+  font-size: 0.8125rem;
+  font-weight: 900;
+}
+.badge-desc,
+.badge-prog {
+  font-size: 0.6875rem;
+  color: var(--ink-soft);
+}
+.badge-prog {
+  font-weight: 700;
+}
+.badge-medal {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  --bm-rim: #2a7f75;
+  --bm-face: #3fa496;
+  --bm-ink: #ffffff;
+}
+.badge-medal[data-family='mastery'] { --bm-rim: #a87a22; --bm-face: #ecc154; --bm-ink: #3f2b0e; }
+.badge-medal[data-family='collection'] { --bm-rim: #a8392a; --bm-face: #e07a5f; --bm-ink: #ffffff; }
+.badge-medal[data-family='exploration'] { --bm-rim: #2f5f8a; --bm-face: #5b8fc0; --bm-ink: #ffffff; }
+.badge-medal[data-family='daily'] { --bm-rim: #b8621a; --bm-face: #f2a541; --bm-ink: #3f2410; }
+.badge-medal[data-family='weekly'] { --bm-rim: #634684; --bm-face: #9a7bbf; --bm-ink: #ffffff; }
+.bm-rim { fill: var(--bm-rim); }
+.bm-face { fill: var(--bm-face); }
+.bm-rope {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 1.4;
+  stroke-dasharray: 2.2 2.2;
+}
+.bm-glyph {
+  color: var(--bm-ink);
+  fill: none;
+  stroke: var(--bm-ink);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bm-dots { fill: var(--bm-ink); }
+.badge.locked .badge-medal {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+.badge.locked .badge-name {
+  color: var(--ink-soft);
+}
+.win-badge .win-shell-art .badge-medal {
+  width: 100%;
+  height: 100%;
+}
