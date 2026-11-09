@@ -852,6 +852,12 @@ button {
   font-size: 1rem;
 }
 
+/* Above the jar's top edge (the ring sits at 55% of the jar's height), clear of the tools note. */
+.coach.above .coach-text {
+  top: auto;
+  bottom: calc(var(--jar-h, 160px) * 0.55 + 10px);
+}
+
 /* Win reward */
 .win-reward {
   display: inline-flex;

@@ -54,4 +54,13 @@ export function coach(i: number | null, text = ''): void {
   const right = centre + half;
   const shift = left < 8 ? 8 - left : right > window.innerWidth - 8 ? window.innerWidth - 8 - right : 0;
   coachEl.style.setProperty('--coach-shift', `${shift}px`);
+  // At large text the caption below the jar can cover the "tools unlock" note (UX-board-9);
+  // then it sits above the jar instead.
+  coachEl.classList.remove('above');
+  const note = $('tools-note');
+  if (!note.hidden) {
+    const c = coachText.getBoundingClientRect();
+    const n = note.getBoundingClientRect();
+    if (c.bottom > n.top && c.top < n.bottom) coachEl.classList.add('above');
+  }
 }
