@@ -6,6 +6,7 @@
 import gameConfig from '../config/game-config.json';
 import { type BadgeConfig, repairBadges } from '../core/badges';
 import type { DailyShareRecord, StreakState } from '../core/daily';
+import { type StyleState, type StylesConfig, defaultStyles, stylesOf } from '../core/styles';
 import type { ThemeState } from '../core/themes';
 import { type WeeklyConfig, type WeeklyState, emptyWeekly, repairWeekly } from '../core/weekly';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
@@ -94,6 +95,11 @@ export interface SaveData {
    * their best pours. Repaired field by field on load; an older save loads an empty set.
    */
   weekly: WeeklyState;
+  /**
+   * Jar styles (design/gdd/jar-styles.md §3.5, sprint 12 S2): bought pieces as `slot:id` (defaults never
+   * stored) and the piece worn in each slot. Repaired field by field on load; an older save gets defaults.
+   */
+  styles: StyleState;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -169,7 +175,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding(), weekly: emptyWeekly() };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding(), weekly: emptyWeekly(), styles: defaultStyles(gameConfig as unknown as StylesConfig) };
 }
 
 /**
@@ -243,6 +249,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     scenesPlayed: strings(v2.scenesPlayed).filter((id) => SCENE_IDS.has(id)),
     onboarding: onboardingOf(v2.onboarding, true), // any v2 save is from an earlier visit (D78)
     weekly: repairWeekly(v2.weekly, gameConfig as unknown as WeeklyConfig),
+    styles: stylesOf(v2.styles, gameConfig as unknown as StylesConfig),
   };
 }
 

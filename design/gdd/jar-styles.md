@@ -137,8 +137,10 @@ All in `styles` in `game-config.json`.
 
 ## 8. Acceptance Criteria
 
-- [ ] Rules: unlock, buy (coins, owned, worn), wear, defaults free, any order; unit tests seen failing first.
-- [ ] Save: repair field by field, old saves get defaults, unknown ids dropped; the save code round-trips.
+- [x] Rules: unlock, buy (coins, owned, worn), wear, defaults free, any order; unit tests seen failing first
+  (`src/core/styles.ts`, `tests/unit/styles/styles.test.ts`; sprint 12 S2).
+- [x] Save: repair field by field, old saves get defaults, unknown ids dropped; the save code round-trips
+  (`src/ui/storage.ts`, `tests/unit/styles/styles-save.test.ts`; sprint 12 S2).
 - [ ] Art: every piece in all 16 scenes on the board and Home art; the patterns stay visible on top of every
   sand style; reduced motion has no animation; the sand overlay cap test passes.
 - [ ] Sheet: keyboard and screen reader operable; preview before buying; 150% text at 320 px without
@@ -151,3 +153,4 @@ All in `styles` in `game-config.json`.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-09 | Claude (sprint 12, S1) | Designed from D85–D92: three slots, 15 pieces (3 free), unlock at 60, sand texture only, patterns on top |
+| 2026-11-09 | Claude (sprint 12, S2) | Rules and Save criteria met: `src/core/styles.ts` (unlock, buy, wear, `stylesOf` repair) and the `styles` save field; tests in `tests/unit/styles/` |
