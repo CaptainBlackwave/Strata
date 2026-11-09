@@ -192,6 +192,9 @@ const en = {
   hintTo: 'To',
   noUndo: 'Nothing to undo yet.',
   noShuffle: 'Couldn’t find a better shuffle.',
+  /** On a Hint or Shuffle button while the worker searches (TD-13). */
+  thinking: 'Thinking…',
+  boosterThinkingLabel: (name: string) => `${name}, thinking…`,
   notEnoughCoins: (price: number) => `Needs ${price} coins. Clear levels to earn more.`,
   boughtWith: (price: number) => `Used ${price} coins`,
   /** First tap on a booster with no charges: nothing is spent yet (UX-board-7). */

@@ -74,6 +74,7 @@ export class GameSession {
   private moveCount = 0;
   private extrasAdded = 0;
   private assistCount = 0;
+  private rev = 0;
   private readonly listeners = new Set<(e: SessionEvent) => void>();
   /** The last solver plan: `steps[i]` is the move to make from the board whose exact key is `keys[i]`. */
   private plan: { keys: string[]; steps: Move[] } | null = null;
@@ -82,6 +83,19 @@ export class GameSession {
     this.initial = board;
     this.current = board;
     this.extraLeft = options.extraJarsPerLevel ?? Infinity;
+  }
+
+  /**
+   * Changes with every board change (each emitted event) and never with a hint. A worker
+   * reply asked for at an older revision is stale (TD-13).
+   */
+  get revision(): number {
+    return this.rev;
+  }
+
+  /** The tuning this session was built with; a worker job carries it (TD-13). */
+  get tuning(): SessionOptions {
+    return this.options;
   }
 
   /** The board as it stands now. */
@@ -188,47 +202,36 @@ export class GameSession {
     return true;
   }
 
+
   /**
    * Re-deals the sand in every unsealed jar, keeping each jar's fill level, and only
    * accepts a deal the solver proves winnable. Undoable. Returns false if no such
    * deal was found or the level is already won. All attempts together spend at most
    * `shuffleTotalNodeBudget` solver states (F7, GA-SB-4), so it can't freeze the game.
+   * The same as `applyShuffle(findShuffle(board, tuning, rng))`, which is how the worker
+   * path splits it (TD-13, `src/core/assist.ts`).
    */
   shuffle(rng: Rng): boolean {
     if (this.status === 'won') return false;
-    const board = this.current;
-    // Only free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand.
-    const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.funnel ? -1 : i)).filter((i) => i >= 0);
-    const pool = open.flatMap((i) => board.jars[i].units);
-    const before = exactKey(board);
-    const attempts = this.options.shuffleAttempts ?? 40;
-    const budget = this.options.shuffleNodeBudget ?? this.options.hintNodeBudget;
-    const total = this.options.shuffleTotalNodeBudget ?? budget;
-    let spent = 0;
-    for (let a = 0; a < attempts && spent < total; a++) {
-      shuffleInPlace(pool, rng);
-      let k = 0;
-      const jars: Jar[] = board.jars.map((j, i) => {
-        if (!open.includes(i)) return j;
-        const units = pool.slice(k, k + j.units.length);
-        k += j.units.length;
-        return { ...j, units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)) };
-      });
-      const next: Board = settle({ capacity: board.capacity, jars });
-      if (exactKey(next) === before || isWon(next)) continue;
-      const allowed = Math.min(budget, total - spent);
-      const proof = solve(next, allowed);
-      spent += Math.min(proof.nodes, allowed);
-      if (proof.solvable !== true) continue;
-      this.history.push(board);
-      this.current = next;
-      this.plan = null;
-      this.assistCount++;
-      this.emit({ type: 'shuffle' });
-      this.emitStatus();
-      return true;
-    }
-    return false;
+    const next = findShuffle(this.current, this.options, rng);
+    return next !== null && this.applyShuffle(next);
+  }
+
+  /**
+   * Puts a re-deal that `findShuffle` found for the current board on the table, as an
+   * undoable move that counts against Perfect. Returns false once the level is won.
+   * `next` must come from the board as it stands now: the caller drops replies for a
+   * board that changed (TD-13).
+   */
+  applyShuffle(next: Board): boolean {
+    if (this.status === 'won') return false;
+    this.history.push(this.current);
+    this.current = next;
+    this.plan = null;
+    this.assistCount++;
+    this.emit({ type: 'shuffle' });
+    this.emitStatus();
+    return true;
   }
 
   /**
@@ -248,6 +251,16 @@ export class GameSession {
    * Example: `const r = s.hintResult(); if ('move' in r) show(r.move); else toast(r.reason);`
    */
   hintResult(): HintResult {
+    return this.hintWithoutSearch() ?? this.adoptHint(searchHint(this.current, this.options.hintNodeBudget));
+  }
+
+  /**
+   * The hint when no solver search is needed: the level is won, the player is still on the
+   * last plan (this counts against Perfect, like any hint with a move), or the board is
+   * structurally lost. `null` means a search is needed: run `searchHint` (on a worker,
+   * TD-13) and pass its result to `adoptHint`.
+   */
+  hintWithoutSearch(): HintResult | null {
     if (this.status === 'won') return { reason: 'won' };
     // Keep following one plan while the player stays on it. Re-solving from every state
     // can suggest moves that undo each other, so the hints would loop forever.
@@ -261,20 +274,29 @@ export class GameSession {
       this.plan = null;
       return { reason: 'unwinnable' };
     }
-    const result = solve(this.current, this.options.hintNodeBudget);
-    if (result.solvable !== true || result.path.length === 0) {
+    return null;
+  }
+
+  /**
+   * Turns a `searchHint` of the current board into the hint, and keeps its path as the plan
+   * later hints follow. Only a hint with a move counts against Perfect (M2).
+   * Example: `const r = s.hintWithoutSearch() ?? s.adoptHint(searchHint(s.board, budget));`
+   */
+  adoptHint(search: HintSearch): HintResult {
+    if (this.status === 'won') return { reason: 'won' };
+    if ('reason' in search) {
       this.plan = null;
-      return { reason: result.solvable === null ? 'budget' : 'unwinnable' };
+      return { reason: search.reason };
     }
     const keys: string[] = [];
     let b = this.current;
-    for (const m of result.path) {
+    for (const m of search.path) {
       keys.push(exactKey(b));
       b = pour(b, m.from, m.to).board;
     }
-    this.plan = { keys, steps: [...result.path] };
+    this.plan = { keys, steps: [...search.path] };
     this.assistCount++; // only a hint that actually helps counts against Perfect (M2)
-    return { move: result.path[0] };
+    return { move: search.path[0] };
   }
 
   private emitStatus(): void {
@@ -284,8 +306,59 @@ export class GameSession {
   }
 
   private emit(e: SessionEvent): void {
+    this.rev++; // every event is a board change (won and stuck come with the pour)
     for (const l of this.listeners) l(e);
   }
+}
+
+/**
+ * What the solver says from a board, without touching any session: a winning path, or why
+ * there is none (`'budget'`: the search ran out, so the board may still be winnable).
+ */
+export type HintSearch = { readonly path: readonly Move[] } | { readonly reason: 'unwinnable' | 'budget' };
+
+/**
+ * Runs the hint search. Pure, so the worker and the main thread run the same code (TD-13).
+ * Example: `searchHint(board, 40000) // { path: [{ from: 0, to: 14 }, ...] }`
+ */
+export function searchHint(board: Board, budget: number): HintSearch {
+  const result = solve(board, budget);
+  if (result.solvable !== true || result.path.length === 0) return { reason: result.solvable === null ? 'budget' : 'unwinnable' };
+  return { path: result.path };
+}
+
+/**
+ * Finds a re-deal of `board`'s free jars that the solver proves winnable, or `null`. Only
+ * free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand. Pure and
+ * deterministic for a given `rng`, so a worker given the same seed finds the same board
+ * (TD-13). All attempts together spend at most `shuffleTotalNodeBudget` states (F7, GA-SB-4).
+ * Example: `findShuffle(board, sessionOptions(config), createRng(seed))`
+ */
+export function findShuffle(board: Board, options: SessionOptions, rng: Rng): Board | null {
+  const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.funnel ? -1 : i)).filter((i) => i >= 0);
+  const pool = open.flatMap((i) => board.jars[i].units);
+  const before = exactKey(board);
+  const attempts = options.shuffleAttempts ?? 40;
+  const budget = options.shuffleNodeBudget ?? options.hintNodeBudget;
+  const total = options.shuffleTotalNodeBudget ?? budget;
+  let spent = 0;
+  for (let a = 0; a < attempts && spent < total; a++) {
+    shuffleInPlace(pool, rng);
+    let k = 0;
+    const jars: Jar[] = board.jars.map((j, i) => {
+      if (!open.includes(i)) return j;
+      const units = pool.slice(k, k + j.units.length);
+      k += j.units.length;
+      return { ...j, units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)) };
+    });
+    const next: Board = settle({ capacity: board.capacity, jars });
+    if (exactKey(next) === before || isWon(next)) continue;
+    const allowed = Math.min(budget, total - spent);
+    const proof = solve(next, allowed);
+    spent += Math.min(proof.nodes, allowed);
+    if (proof.solvable === true) return next;
+  }
+  return null;
 }
 
 /** An order-sensitive board key. Plans use jar indices, so jar order matters here. */

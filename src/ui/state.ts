@@ -9,7 +9,6 @@ import type { BoosterId, EconomyConfig } from '../core/economy';
 import type { GameConfig } from '../core/levels';
 import type { MapConfig } from '../core/map';
 import type { ProfileConfig } from '../core/profile';
-import { createRng } from '../core/rng';
 import type { GameSession } from '../core/session';
 import type { ThemeConfig } from '../core/themes';
 import { GameAudio } from './audio';
@@ -50,6 +49,10 @@ export interface UiState {
   clock: Clock;
   /** Randomness for UI choices such as a re-rolled name (TD-16); `Math.random` by default. */
   rng: Random;
+  /** Hint or Shuffle waiting for the worker (TD-13): its button is disabled and `aria-busy`. */
+  thinking: 'hint' | 'shuffle' | null;
+  /** The thinking cue is visible (after a short delay, so a fast answer doesn't flicker). */
+  thinkingShown: boolean;
 }
 
 const initialSave = loadSave(config);
@@ -72,7 +75,12 @@ export const state: UiState = {
   armedBooster: null,
   clock: systemClock,
   rng: Math.random,
+  thinking: null,
+  thinkingShown: false,
 };
 export const audio = new GameAudio(initialSave.settings);
-/** The Shuffle booster's RNG, seeded once from the app clock at load (TD-16). */
-export const shuffleRng = createRng(state.clock().getTime() >>> 0);
+/**
+ * The seed for one Shuffle, read from the app clock (TD-16) so `src/core` never reads it.
+ * The seed travels with the job, so the worker and the main thread deal the same (TD-13).
+ */
+export const shuffleSeed = (): number => state.clock().getTime() >>> 0;

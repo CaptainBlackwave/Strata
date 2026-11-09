@@ -21,8 +21,17 @@ export function updateHud(): void {
     badge.classList.toggle('price', charges === 0);
     const usable =
       !over && state.mode !== 'tutorial' && (id !== 'undo' || state.session.canUndo) && (id !== 'extraJar' || state.session.extraJarsLeft > 0);
-    btn.disabled = !usable;
-    const label = state.armedBooster === id ? t.boosterArmedLabel(BOOSTER_NAMES[id], price) : free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price);
+    // TD-13: while Hint or Shuffle waits for the worker, that button is disabled and busy at
+    // once; the visible cue (and disabling the other one) waits for `thinkingShown`, so a fast
+    // answer doesn't flicker. A second assist tap is ignored by useBooster meanwhile.
+    const thinking = state.thinking === id;
+    const held = state.thinkingShown && state.thinking !== null && (id === 'hint' || id === 'shuffle');
+    btn.disabled = !usable || thinking || held;
+    if (thinking) btn.setAttribute('aria-busy', 'true');
+    else btn.removeAttribute('aria-busy');
+    btn.classList.toggle('thinking', thinking && state.thinkingShown);
+    (btn.querySelector('.tool-name') as HTMLElement).textContent = thinking && state.thinkingShown ? t.thinking : BOOSTER_NAMES[id];
+    const label = thinking ? t.boosterThinkingLabel(BOOSTER_NAMES[id]) : state.armedBooster === id ?t.boosterArmedLabel(BOOSTER_NAMES[id], price) : free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price);
     btn.setAttribute('aria-label', label);
   }
   ($('btn-restart') as HTMLButtonElement).disabled = state.mode === 'tutorial';
