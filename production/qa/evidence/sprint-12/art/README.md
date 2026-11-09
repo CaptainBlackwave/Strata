@@ -17,6 +17,11 @@ buried units are repainted in all 14 palette colours (level 61 starts mostly bur
 | `sheet-sand.png` | (a) plain, fine, glint, layered and ripple in the same four scenes |
 | `sheet-sand-patterns-on.png` | (b) every sand piece with colour patterns ON (midday and auroranight): the `.pat-*` pattern stays on top of each texture |
 | `sheet-cork-closeup.png` | (c) a close-up of the sealed jar for every cork, in all four scenes |
-| `home-midday-default.png`, `home-moonlit-default.png` | (d) Home with no style attributes: today's look |
+| `home-midday-default.png`, `home-moonlit-default.png` | (d) Home with no style attributes: today's art plus the default cork stopper (added at the owner's review) |
 | `home-midday-seaglass-brass-ripple.png`, `home-moonlit-seaglass-brass-ripple.png` | (d) Home with one combined look (sea glass, brass, ripple) |
 | `home-midday-art-closeup.png`, `home-moonlit-art-closeup.png` | (d) a close-up of the same Home art |
+| `pour-ripple-midday.png`, `pour-layered-midday.png` | (e) mid-pour with motion on, frozen with `document.getAnimations().forEach(a => a.pause())`: the tilted fill and the buried "?" units both show the worn texture |
+
+The owner's review fixes are all in these shots. The default cork has a Home stopper. The sea glass
+frost is quieter in dark scenes. Glint has a dark halo, so it reads on light sand. The pearl outline is
+at least as strong as clear glass. The worn texture also shows mid-pour and on buried units.

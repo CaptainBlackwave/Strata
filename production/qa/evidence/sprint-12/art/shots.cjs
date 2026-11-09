@@ -189,6 +189,42 @@ async function sheet(b, file, title, cols, rows, cells, width) {
     await ctx.close();
   }
 
+  // (e) Mid-pour: a hinted pour with motion on, frozen while the tilted fill (.tilt-band) shows, for two sand pieces.
+  for (const sand of ['ripple', 'layered']) {
+    const ctx = await b.newContext({ ...VIEW, reducedMotion: 'no-preference' });
+    await ctx.addInitScript(([v]) => {
+      if (!sessionStorage.getItem('seeded')) {
+        localStorage.setItem('strata.save.v2', v);
+        sessionStorage.setItem('seeded', '1');
+      }
+    }, [JSON.stringify(seed('midday', false))]);
+    const p = await ctx.newPage();
+    await p.goto(base + '?level=61');
+    await p.waitForTimeout(1200);
+    await wear(p, { glass: 'clear', cork: 'cork', sand });
+    await p.keyboard.press('h');
+    await p.waitForTimeout(300);
+    await p.locator('#board .hint-from').first().click({ force: true });
+    await p.waitForTimeout(250);
+    const frozen = await p.evaluate(async () => {
+      document.querySelector('#board .hint-to').click();
+      const t0 = performance.now();
+      while (performance.now() - t0 < 2000) {
+        await new Promise((r) => requestAnimationFrame(r));
+        const band = document.querySelector('#board .tilt-band');
+        if (band && performance.now() - t0 > 260) {
+          document.getAnimations().forEach((a) => a.pause());
+          return true;
+        }
+      }
+      return false;
+    });
+    report['pour-' + sand] = frozen;
+    const jar = await p.locator('#board .jar.tilting').first().boundingBox().catch(() => null);
+    if (jar) await p.screenshot({ path: path.join(out, `pour-${sand}-midday.png`), clip: { x: Math.max(0, jar.x - 60), y: Math.max(0, jar.y - 60), width: Math.min(300, 412 - Math.max(0, jar.x - 60)), height: jar.height + 140 } });
+    await ctx.close();
+  }
+
   console.log(JSON.stringify(report, null, 1));
   await b.close();
 })();
