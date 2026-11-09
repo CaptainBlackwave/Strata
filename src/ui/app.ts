@@ -9,6 +9,7 @@ import { $, toolButtons } from './dom';
 import { assistsOnMainThread, prefetcher, startLevel, startTutorial, wireBoard } from './screens/board';
 import { openWhatsNew, showHome, wireHome } from './screens/home';
 import { wireOtherTab } from './screens/other-tab';
+import { countThisVisit, wireOnboarding } from './screens/onboarding';
 import { wireKeys } from './screens/keys';
 import { wireMap } from './screens/map';
 import { wireCabinet } from './screens/sheets/cabinet';
@@ -50,6 +51,7 @@ export function boot(): void {
   applyStrings();
   state.save.shells = knownShells(state.save.shells, config); // D26: before the profile repair counts them
   repairSaveProfile();
+  countThisVisit(); // O1: the install card never shows on the first visit
   writeSave(state.save);
   applyTheme(currentTheme());
   window.setInterval(() => {
@@ -84,6 +86,7 @@ function wireAll(): void {
   wireSettings({ home: showHome, tutorial: startTutorial });
   wireTransfer();
   wireGuide();
+  wireOnboarding();
   wireKeys();
   wireOtherTab(); // last: a newer tab may make this one yield at once (D57)
 }

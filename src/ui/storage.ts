@@ -9,6 +9,7 @@ import type { ThemeState } from '../core/themes';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 import { WHATS_NEW_VERSION } from './strings';
+import { type Onboarding, freshOnboarding, onboardingOf } from './logic/onboarding';
 
 /** The scene every save owns and falls back to: `themes.default` in the config (TD-3). */
 const DEFAULT_THEME: string = (gameConfig as unknown as { themes: { default: string } }).themes.default;
@@ -75,6 +76,8 @@ export interface SaveData {
    * (UX-cab-4). An older save without it counts every owned shell as seen.
    */
   seenShells: number;
+  /** One-time install and onboarding notices and the visit count (sprint 11 O1, O2, O4; D78). */
+  onboarding: Onboarding;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -150,7 +153,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0 };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, onboarding: freshOnboarding() };
 }
 
 /**
@@ -220,6 +223,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
         : null,
     seenWhatsNew: typeof v2.seenWhatsNew === 'string' ? v2.seenWhatsNew : '',
     seenShells: Math.min(nonNegInt(v2.seenShells, shells.length), shells.length),
+    onboarding: onboardingOf(v2.onboarding, true), // any v2 save is from an earlier visit (D78)
   };
 }
 

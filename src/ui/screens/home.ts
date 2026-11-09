@@ -9,6 +9,7 @@ import { t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, winEl } from '../dom';
 import { screenIn } from '../fx';
 import { renderProfileChip } from './sheets/profile';
+import { maybeShowInstall } from './onboarding';
 import { dailyKey } from '../clock';
 import { config, state } from '../state';
 
@@ -38,6 +39,7 @@ export function showHome(): void {
   renderProfileChip();
   openLayer(homeEl, $('btn-play'), null);
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
+  maybeShowInstall(); // once, after a few levels, never on the first visit (O1, D78)
 }
 
 /**

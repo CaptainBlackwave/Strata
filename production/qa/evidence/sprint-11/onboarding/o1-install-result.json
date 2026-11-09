@@ -1,0 +1,23 @@
+{
+ "androidShown": true,
+ "androidPrompted": true,
+ "androidClosed": true,
+ "androidSaved": {
+  "visits": 2,
+  "installShown": true,
+  "offlineNoticed": false,
+  "mapHintSeen": false,
+  "boosterHintSeen": false
+ },
+ "androidOnce": true,
+ "ios100Shown": true,
+ "ios100Overflow": false,
+ "iosEscapeClosed": true,
+ "iosOnce": true,
+ "ios150Shown": true,
+ "ios150Overflow": true,
+ "firstVisitHidden": true,
+ "twoClearedHidden": true,
+ "installedHidden": true,
+ "errors": []
+}
