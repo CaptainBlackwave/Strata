@@ -14,6 +14,7 @@ import { mapFx, popIn, revealStretchFx, screenHold, screenIn, screenOut, settle 
 import { startLevel } from './board';
 import { showHome } from './home';
 import { audio, config, state } from '../state';
+import { mapHintOnOpen } from './onboarding';
 
 const mapEl = $('map');
 const scrollEl = $('map-scroll');
@@ -324,6 +325,7 @@ export function openMap(level: number = state.save.level): void {
   $('map-coins').textContent = String(state.save.wallet.coins);
   focusLevel = level;
   clearTrack();
+  mapHintOnOpen(); // the first open says what the path is (O2)
   openLayer(mapEl, playBtn, $('btn-play'));
   screenIn(mapEl, FX_MS.mapRise); // sprint 10 F5: a short fade and rise
   measure();

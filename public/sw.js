@@ -20,6 +20,8 @@ const CORE = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png'
 const ASSET_REF = /(?:src|href)="(\.?\/?assets\/[^"]+)"/g;
 const CHUNK_REF = /new URL\(\s*["'`]([^"'`]+\.[A-Za-z0-9]+)["'`]\s*,\s*import\.meta\.url/g; // workers, and any file JS names by URL
 const IMPORT_REF = /(?:from|import)\s*\(?\s*["'](\.\/[^"']+\.js)["']/g; // static and dynamic imports between chunks
+/** The message posted to every window once the install has cached everything (sprint 11 O4). */
+const OFFLINE_READY = 'strata:offline-ready';
 const CSS_URL_REF = /url\(\s*["']?(?!data:)([^"')]+)["']?\s*\)/g; // fonts and images named by CSS
 
 /**
@@ -112,6 +114,11 @@ async function cacheAssets(cache, html, prune = true) {
   return complete;
 }
 
+/** Tells every open window that offline play is ready (O4). The page shows a one-time toast. */
+async function notifyOfflineReady() {
+  for (const client of await self.clients.matchAll({ type: 'window', includeUncontrolled: true })) client.postMessage({ type: OFFLINE_READY });
+}
+
 function register() {
   self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -124,6 +131,7 @@ function register() {
         // and the browser tries the update again later (review of PR #6).
         const complete = page ? await cacheAssets(cache, await page.text()).catch(() => false) : false;
         if (!complete) throw new Error('Strata: offline files incomplete; keeping the previous version');
+        await notifyOfflineReady().catch(() => undefined);
         await self.skipWaiting();
       })(),
     );
@@ -201,5 +209,5 @@ function register() {
 }
 
 // Under Node (unit tests) export the pure helpers; in the worker, register the listeners.
-if (typeof module !== 'undefined') module.exports = { assetsOf, refsOf, referencedUrls, staleAssets, isComplete };
+if (typeof module !== 'undefined') module.exports = { assetsOf, refsOf, referencedUrls, staleAssets, isComplete, OFFLINE_READY };
 else register();

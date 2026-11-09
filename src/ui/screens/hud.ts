@@ -3,6 +3,7 @@ import { type BoosterId } from '../../core/economy';
 import { t } from '../strings';
 import { $, coachEl, coachText, coinsEl, movesEl, toolButtons } from '../dom';
 import { BOOSTER_NAMES, config, state } from '../state';
+import { boosterHintShown } from './onboarding';
 
 export function updateHud(): void {
   movesEl.textContent = String(state.session.moves);
@@ -37,7 +38,10 @@ export function updateHud(): void {
   ($('btn-restart') as HTMLButtonElement).disabled = state.mode === 'tutorial';
   // UX-board-9: in the tutorial a caption says why the tools are off, and each one points at it.
   const tutorial = state.mode === 'tutorial';
-  $('tools-note').hidden = !tutorial;
+  const note = $('tools-note');
+  const boosterHint = !tutorial && boosterHintShown(); // O2: level 1 names the boosters once
+  note.hidden = !tutorial && !boosterHint;
+  note.textContent = boosterHint ? t.onboarding.boosterHint : t.toolsLocked;
   for (const btn of [...toolButtons, $('btn-restart')]) {
     if (tutorial) btn.setAttribute('aria-describedby', 'tools-note');
     else btn.removeAttribute('aria-describedby');

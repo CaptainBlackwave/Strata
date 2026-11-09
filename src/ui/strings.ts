@@ -339,6 +339,31 @@ const en = {
   musicVolume: 'Music volume',
   /** A slider's spoken value (aria-valuetext), e.g. "80%". */
   volumeValue: (percent: number) => `${percent}%`,
+  // sprint 11 onboarding
+  /** Install and onboarding (sprint 11 O1-O4, D78). */
+  onboarding: {
+    installTitle: 'Keep Strata on your home screen',
+    installText: 'It opens full screen, like an app, and plays offline.',
+    installButton: 'Add to Home Screen',
+    notNow: 'Not now',
+    /** iPhone and iPad: Safari has no install prompt, so the steps are shown. The share icon is drawn after step 1. */
+    iosSteps: ['Tap Share', 'Choose \u201cAdd to Home Screen\u201d', 'Tap Add'],
+    /** Under the steps: newer Safari hides Share behind the ··· button. */
+    iosNote: 'No Share button? Tap \u00b7\u00b7\u00b7 first. You may need to scroll to find Add to Home Screen.',
+    /** A `?daily=` link from an earlier day (O3). `date` is that day's key. */
+    dailyOverTitle: 'That daily is over',
+    dailyOverText: (date: string) => {
+      const [y, m, d] = date.split('-').map(Number);
+      return `The puzzle for ${new Date(y, m - 1, d).toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })} has ended. Today\u2019s is ready.`;
+    },
+    playToday: 'Play today\u2019s',
+    /** Once, when the service worker has cached everything (O4). */
+    offlineReady: 'Strata is ready to play offline',
+    /** Above the map's Play button the first time the map opens (O2). */
+    mapHint: 'Your path along the beach. Play the next level, or tap a cleared stone to replay it.',
+    /** Above the boosters on level 1, the first board they work on (O2). */
+    boosterHint: 'Stuck? Undo is free, and Shuffle, Jar and Hint help too.',
+  },
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most
    * 7 letters and nouns at most 5, so every name fits the 16-character limit (unit-tested).

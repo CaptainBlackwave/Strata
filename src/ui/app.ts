@@ -4,11 +4,14 @@ import { type BoosterId } from '../core/economy';
 import { launchLevel } from '../core/levels';
 import { DICE_SVG } from './avatars';
 import { whatsNewDue, writeSave } from './storage';
+import { dailyLaunch, parseLaunch } from './logic/launch';
+import { dailyKey } from './clock';
 import { t } from './strings';
 import { $, toolButtons } from './dom';
-import { assistsOnMainThread, prefetcher, startLevel, startTutorial, wireBoard } from './screens/board';
+import { assistsOnMainThread, prefetcher, startDaily, startLevel, startTutorial, wireBoard } from './screens/board';
 import { openWhatsNew, showHome, wireHome } from './screens/home';
 import { wireOtherTab } from './screens/other-tab';
+import { countThisVisit, listenForOffline, openDailyOver, wireOnboarding } from './screens/onboarding';
 import { wireKeys } from './screens/keys';
 import { wireMap } from './screens/map';
 import { wireCabinet } from './screens/sheets/cabinet';
@@ -44,20 +47,19 @@ function applyStrings(): void {
 
 /** Starts Strata: fills the labels, repairs the save, wires every screen, then shows Home (or the QA level). */
 export function boot(): void {
-  const params = new URLSearchParams(location.search);
-  const levelParam = Number(params.get('level'));
-  const qaLevel = Number.isInteger(levelParam) && levelParam >= 1; // QA launch argument (run-and-observe)
+  const launch = parseLaunch(location.search); // ?level=N (QA, D3), ?daily=YYYY-MM-DD (O3), ?weekly= (parsed only, D77)
   applyStrings();
   state.save.shells = knownShells(state.save.shells, config); // D26: before the profile repair counts them
   repairSaveProfile();
+  countThisVisit(); // O1: the install card never shows on the first visit
   writeSave(state.save);
   applyTheme(currentTheme());
   window.setInterval(() => {
     if ($('scenes').hidden) applyTheme(currentTheme()); // follow the clock in auto mode
   }, 60_000);
   wireAll();
-  if (qaLevel) {
-    state.level = launchLevel(levelParam, state.save.level); // replay only, never beyond progress (D3)
+  if (launch.kind === 'level') {
+    state.level = launchLevel(launch.level, state.save.level); // replay only, never beyond progress (D3)
     assistsOnMainThread(); // QA route: Hint and Shuffle stay synchronous, so a scripted check sees them at once (TD-13)
     startLevel(state.level);
   } else {
@@ -66,9 +68,19 @@ export function boot(): void {
     prefetcher.request([state.level, state.level + 1]);
     startLevel(state.level, true);
     showHome();
-    if (whatsNewDue(state.save)) openWhatsNew($('btn-play')); // once per version, never on a first install (D52)
+    if (launch.kind !== 'none') history.replaceState(history.state, '', location.pathname + location.hash); // a reload or the installed app opens Home
+    if (launch.kind === 'daily' && state.save.tutorialDone) openSharedDaily(launch.date);
+    else if (whatsNewDue(state.save)) openWhatsNew($('btn-play')); // once per version, never on a first install (D52)
+    // A new player's daily link opens Home: the tutorial comes first, and the daily card appears after it.
+    // A weekly link opens Home until the weekly set (D77, W2) is built.
   }
   registerServiceWorker();
+}
+
+/** A shared `?daily=` link (O3): today's daily at once, or a note first when the link's day is over. */
+function openSharedDaily(date: string): void {
+  if (dailyLaunch(date, dailyKey(state.clock)).over) openDailyOver(date);
+  else startDaily();
 }
 
 /** Each screen wires its own buttons. */
@@ -84,13 +96,15 @@ function wireAll(): void {
   wireSettings({ home: showHome, tutorial: startTutorial });
   wireTransfer();
   wireGuide();
+  wireOnboarding();
   wireKeys();
   wireOtherTab(); // last: a newer tab may make this one yield at once (D57)
 }
 
-/** Offline install (sprint 3, T8). */
+/** Offline install (sprint 3, T8), and the one-time notice when it is ready (sprint 11 O4). */
 function registerServiceWorker(): void {
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    listenForOffline(navigator.serviceWorker);
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {
         /* offline support unavailable; the game still works online */

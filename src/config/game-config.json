@@ -754,5 +754,9 @@
     { "id": "slate", "hex": "#5b6770" },
     { "id": "lavender", "hex": "#b39ddb" },
     { "id": "sky", "hex": "#4fa3d9" }
-  ]
+  ],
+  "onboarding": {
+    "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit.",
+    "installAfterLevels": 3
+  }
 }
