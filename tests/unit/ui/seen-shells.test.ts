@@ -31,3 +31,15 @@ describe('seenShells in the save', () => {
     expect(importSave(exportSave(save), econ)?.seenShells).toBe(1);
   });
 });
+
+describe('the default scene comes from config (TD-3)', () => {
+  const def = (config as unknown as { themes: { default: string } }).themes.default;
+  it('a fresh save owns and selects themes.default', () => {
+    expect(freshSave(econ).themes).toEqual({ owned: [def], selected: def, auto: false });
+  });
+  it('a loaded save always owns it, and falls back to it when nothing is selected', () => {
+    const t = loadSave(econ, store({ ...BASE, themes: { owned: ['dawn'] } })).themes;
+    expect(t.owned).toEqual([def, 'dawn']);
+    expect(t.selected).toBe(def);
+  });
+});

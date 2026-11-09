@@ -3,11 +3,15 @@
  * Every access is guarded, so a private window or blocked storage just means no save.
  * Implements design/game-brief.md MVP 6 and design/competitive-roadmap.md C2/C5.
  */
+import gameConfig from '../config/game-config.json';
 import type { DailyShareRecord, StreakState } from '../core/daily';
 import type { ThemeState } from '../core/themes';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 import { WHATS_NEW_VERSION } from './strings';
+
+/** The scene every save owns and falls back to: `themes.default` in the config (TD-3). */
+const DEFAULT_THEME: string = (gameConfig as unknown as { themes: { default: string } }).themes.default;
 
 /** The localStorage key of the save. Other tabs' writes to it arrive as `storage` events (D57). */
 export const SAVE_KEY = 'strata.save.v2';
@@ -132,7 +136,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0 };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0 };
 }
 
 /**
@@ -188,8 +192,8 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     shells,
     seenMechanics: strings(v2.seenMechanics),
     themes: {
-      owned: [...new Set(['midday', ...strings(isObj(v2.themes) ? v2.themes.owned : [])])],
-      selected: isObj(v2.themes) && typeof v2.themes.selected === 'string' ? v2.themes.selected : 'midday',
+      owned: [...new Set([DEFAULT_THEME, ...strings(isObj(v2.themes) ? v2.themes.owned : [])])],
+      selected: isObj(v2.themes) && typeof v2.themes.selected === 'string' ? v2.themes.selected : DEFAULT_THEME,
       auto: isObj(v2.themes) && v2.themes.auto === true,
     },
     profile: { name: str(pr.name), avatar: str(pr.avatar), frame: str(pr.frame), plate: str(pr.plate) },
