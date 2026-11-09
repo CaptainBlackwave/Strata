@@ -13,6 +13,7 @@ import {
   recordDailySolve,
   sharePours,
   streakReward,
+  streakStep,
   streakStatus,
 } from '../../../src/core/daily';
 import type { GameConfig } from '../../../src/core/levels';
@@ -135,9 +136,25 @@ describe('streak', () => {
     expect(streakStatus({ last: '2026-11-06', streak: 4, best: 4, passes: 1 }, '2026-11-08')).toEqual({ current: 4, solvedToday: false, passAtRisk: true });
     expect(streakStatus({ last: '2026-11-06', streak: 4, best: 4, passes: 0 }, '2026-11-08').current).toBe(0);
   });
-  it('streakReward is base + per-day growth, capped', () => {
+  it('streakReward is base + per-day growth, capped, until the long-streak steps', () => {
     expect(streakReward(1, cfg)).toBe(s.baseCoins);
-    expect(streakReward(1000, cfg)).toBe(s.maxCoins);
+    expect(streakReward(29, cfg)).toBe(s.maxCoins);
+  });
+  it('long streaks pay the step bonus on top of the cap: +25 from day 30, +50 from day 60 (D99)', () => {
+    // Boundary values are the point here (daily-puzzle.md, D99).
+    expect(streakReward(29, cfg)).toBe(s.maxCoins);
+    expect(streakReward(30, cfg)).toBe(s.maxCoins + 25);
+    expect(streakReward(59, cfg)).toBe(s.maxCoins + 25);
+    expect(streakReward(60, cfg)).toBe(s.maxCoins + 50);
+    expect(streakReward(1000, cfg)).toBe(s.maxCoins + 50);
+  });
+  it('streakStep names the step on its own', () => {
+    expect([1, 29, 30, 59, 60, 400].map((d) => streakStep(d, cfg))).toEqual([0, 0, 25, 25, 50, 50]);
+  });
+  it('a solve on day 30 of a streak pays the step through recordDailySolve', () => {
+    const r = recordDailySolve({ last: '2026-11-07', streak: 29, best: 29, passes: 0 }, '2026-11-08', cfg);
+    expect(r.state.streak).toBe(30);
+    expect(r.reward).toBe(s.maxCoins + 25);
   });
 });
 

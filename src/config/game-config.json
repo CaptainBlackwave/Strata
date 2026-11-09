@@ -50,6 +50,7 @@
       "baseCoins": 30,
       "coinsPerDay": 10,
       "maxCoins": 100,
+      "longSteps": [{ "fromDay": 30, "coins": 25 }, { "fromDay": 60, "coins": 50 }],
       "passEvery": 7,
       "maxPasses": 2
     }
@@ -278,7 +279,7 @@
       {
         "id": "wintersnow",
         "name": "Winter snow",
-        "price": 5050,
+        "price": 4500,
         "kind": "season",
         "tier": 2,
         "window": {
@@ -312,7 +313,7 @@
       {
         "id": "harvestmoon",
         "name": "Harvest moon",
-        "price": 5800,
+        "price": 4600,
         "kind": "holiday",
         "tier": 2,
         "window": {
@@ -346,7 +347,7 @@
       {
         "id": "newyear",
         "name": "New Year fireworks",
-        "price": 8800,
+        "price": 5050,
         "kind": "holiday",
         "tier": 3,
         "window": {
@@ -512,7 +513,7 @@
       {
         "id": "softrain",
         "name": "Soft rain",
-        "price": 6650,
+        "price": 4750,
         "kind": "weather",
         "tier": 2,
         "tokens": {
@@ -542,7 +543,7 @@
       {
         "id": "winterlights",
         "name": "Winter lights",
-        "price": 7650,
+        "price": 4900,
         "kind": "holiday",
         "tier": 2,
         "window": {
@@ -576,7 +577,7 @@
       {
         "id": "meteorshower",
         "name": "Meteor shower",
-        "price": 10100,
+        "price": 5200,
         "kind": "sky",
         "tier": 3,
         "window": {
@@ -610,7 +611,7 @@
       {
         "id": "auroranight",
         "name": "Aurora night",
-        "price": 11650,
+        "price": 5400,
         "kind": "sky",
         "tier": 3,
         "tokens": {

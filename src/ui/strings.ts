@@ -81,6 +81,8 @@ const en = {
   dailyReplay: 'Already solved today: no reward this time',
   usedPass: 'A tide pass saved your streak',
   earnedPass: 'You earned a tide pass',
+  /** The daily win card on a long streak (D99): the step included in the reward. */
+  longStreak: (coins: number) => `Long streak bonus +${coins}`,
   share: 'Share',
   copied: 'Result copied',
   shared: 'Shared',
