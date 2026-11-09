@@ -1,8 +1,7 @@
 // Story: production/sprints/sprint-13.md M1 (hourglass jar, D96, D97). Design: design/gdd/jar-mechanics.md
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import plain from '../../fixtures/plain-boards.json';
-import lateBoards from '../../fixtures/boards-81-100.json';
+import early from '../../fixtures/boards-1-100.json';
 import saturdays from '../../fixtures/daily-saturdays.json';
 import { type Board, type Jar, boardKey, isSealed, isStuck, isWon, lostReason, makeBoard, pour, usefulMoves } from '../../../src/core/board';
 import { type DailyConfig, dailySpec, generateDaily } from '../../../src/core/daily';
@@ -138,7 +137,7 @@ describe('hourglass rules (D96)', () => {
 describe('solver and hint with the flip', () => {
   it('the solver plans through a flip: its path replays to a win with the flip rule', () => {
     // Flips every pour, so the hourglass turns over between every two moves of the plan.
-    const b = withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2, 0], [2, 1, 2]], 0, 1, 1);
+    const b = withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2], [2, 2]], 0, 1, 1);
     const r = solve(b, 50_000);
     expect(r.solvable).toBe(true);
     expect(r.path.length).toBeGreaterThan(1);
@@ -149,12 +148,13 @@ describe('solver and hint with the flip', () => {
 
   it('the solver key keeps the count: a state seen at another count is searched again', () => {
     // Same sand, different count: the solver must not treat them as one state.
-    const a = solve(withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2, 0], [2, 1, 2]], 0, 3, 1), 50_000);
-    const c = solve(withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2, 0], [2, 1, 2]], 0, 3, 3), 50_000);
+    const a = solve(withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2], [2, 2]], 0, 3, 1), 50_000);
+    const c = solve(withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2], [2, 2]], 0, 3, 3), 50_000);
     for (const [r, left] of [[a, 1], [c, 3]] as const) {
-      let s = withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2, 0], [2, 1, 2]], 0, 3, left);
+      let s = withGlass(4, [[0, 1, 0, 1], [1, 0, 1, 0], [], [2, 2], [2, 2]], 0, 3, left);
       for (const m of r.path) s = pour(s, m.from, m.to).board;
-      expect(isWon(s)).toBe(r.solvable === true);
+      expect(r.solvable).toBe(true);
+      expect(isWon(s)).toBe(true);
     }
   });
 
@@ -221,12 +221,10 @@ describe('hourglass placement and generation', () => {
 });
 
 describe('no existing board changes (sprint 13 M1 hard constraints)', () => {
-  it('levels 1-80 still match plain-boards.json', () => {
-    for (const [l, h] of Object.entries(plain.hashes as Record<string, string>)) expect(hash(generateLevel(Number(l), cfg).board), `level ${l}`).toBe(h);
-  });
-
-  it('levels 81-100 still match boards-81-100.json', () => {
-    for (const [l, h] of Object.entries(lateBoards.hashes as Record<string, string>)) expect(hash(generateLevel(Number(l), cfg).board), `level ${l}`).toBe(h);
+  it('levels 1-100 are byte-identical to boards-1-100.json', () => {
+    const hashes = early.hashes as Record<string, string>;
+    expect(Object.keys(hashes).length).toBe(100);
+    for (const [l, h] of Object.entries(hashes)) expect(hash(generateLevel(Number(l), cfg).board), `level ${l}`).toBe(h);
   });
 
   it('the daily Saturday rotation never picks the hourglass yet (W1 adds it from a start date)', () => {
@@ -246,6 +244,6 @@ describe('no existing board changes (sprint 13 M1 hard constraints)', () => {
   });
 
   it('no weekly theme features the hourglass yet', () => {
-    expect(cfg.weekly.themes.some((t) => t.mechanic === 'hourglass')).toBe(false);
+    expect((config.weekly.themes as { mechanic?: string }[]).some((t) => t.mechanic === 'hourglass')).toBe(false);
   });
 });
