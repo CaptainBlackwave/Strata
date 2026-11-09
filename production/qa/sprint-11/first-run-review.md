@@ -18,7 +18,7 @@
 | Levels 1–4 | 10–12 pours each, +20 or +30 coins, Perfect on every win | Gentle ramp |
 | Level 5 | 18 pours, first shell (Periwinkle) on the win card | Shell row explains itself |
 | Levels 6–9 | 19, 20, 22, 25 pours | Steady |
-| Level 10 | **42 pours** (7 jars), second shell (Limpet) and the first frame (Driftwood) | A jump: see R3 |
+| Level 10 | **42 pours** (7 jars), second shell (Limpet) and the first frame (Driftwood) | A jump: see R3 (now 32 pours, 6 jars) |
 | Win card, each level | Continue goes straight to the next level; Home is a secondary button | The player can play 10 levels without seeing Home again |
 | Home after level 10 | Profile chip, Play · Level 11, the Daily card, Shells 2/40, Scenes | **Daily, shells, scenes and profile all appear at once, unexplained** (R1) |
 | First map open | The beach path, cleared stones with Perfect marks, a shell badge and a new-jar badge, locked stones | **Before: nothing says what the path is or that stones can be replayed.** After: a one-time line above Play (fix 1) |
@@ -58,6 +58,11 @@ for a new player. Levels 1–4 may be a little easy for anyone who knows the gen
   not find the shortest path, so this overstates it, but it is the biggest step in the first ten,
   and it lands with the first frame unlock. Worth a look by `level-designer` in the difficulty
   bands (D36). It may be intended as the first "mini boss".
+  **Resolved (D82, R3):** not a documented peak. The cause is the first tall-jar shape (5 × 8 = 40
+  units against 24); shortest paths were 28 against 17, so the jump was real, not solver noise, and
+  no pour cap could fix it (no 5 × 8 deal under 36). Level 10 is now 4 × 8 (6 jars): 32 solver pours,
+  24 shortest. Tall jars from 20 stay 5 × 8; levels 1–9, the daily and the weekly are unchanged
+  (`challenge.curve`, `design/gdd/level-generation.md` §2.1).
 - **R4. Scenes are never introduced.** The Scenes button shows on Home with no hint that coins buy
   them. A "New: scenes" mark on the first Home after the player can afford one would fit the
   quiet style.
