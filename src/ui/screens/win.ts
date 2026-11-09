@@ -1,4 +1,5 @@
 /** The win card for a level, the daily and the tutorial. The rules are the pure core/win.ts; this shows them. */
+import { isSealed } from '../../core/board';
 import { sharePours } from '../../core/daily';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
 import { type SlotItem } from '../../core/profile';
@@ -7,6 +8,7 @@ import { noteFirstClear } from '../fx-plan';
 import { sceneWinDisplay } from '../scene-fx';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
+import { currentTheme } from '../theme';
 import { t } from '../strings';
 import { $, btnNext, hideToast, openLayer, reducedMotion, winEl } from '../dom';
 import { showHome } from './home';
@@ -102,7 +104,9 @@ export function openWin(): void {
 
 /** Applies the win to the save through the pure rules in core/win.ts and persists it. */
 export function applyWinToSave(): WinCard {
-  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists }, config);
+  const board = state.session.board;
+  const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length; // counted at the win, so Undo can't farm it (badges.md §3.2)
+  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists, sealed, scene: currentTheme() }, config);
   Object.assign(state.save, r.state);
   writeSave(state.save);
   return r.card;

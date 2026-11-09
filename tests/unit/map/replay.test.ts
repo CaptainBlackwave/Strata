@@ -8,10 +8,10 @@ import { type WinConfig, type WinResult, type WinState, applyWin } from '../../.
 const cfg = config as unknown as WinConfig;
 
 function state(over: Partial<WinState> = {}): WinState {
-  return { level: 10, best: { '3': 20 }, perfect: [], wallet: newWallet(cfg), tutorialDone: true, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], stats: emptyStats(), dailyShare: null, ...over };
+  return { level: 10, best: { '3': 20 }, perfect: [], wallet: newWallet(cfg), tutorialDone: true, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], stats: emptyStats(), dailyShare: null, badges: [], scenesPlayed: [], seenMechanics: [], themes: { owned: ['midday'] }, ...over };
 }
 function win(n: number, over: Partial<WinResult> = {}): WinResult {
-  return { mode: 'level', level: n, challenge: false, dailyDate: '', moves: 20, assists: 0, ...over };
+  return { mode: 'level', level: n, challenge: false, dailyDate: '', moves: 20, assists: 0, sealed: 3, scene: 'midday', ...over };
 }
 
 describe('replay (D50): no coins', () => {
@@ -73,7 +73,7 @@ describe('first Perfect counts once per level (D50, D52)', () => {
     expect(card.unlocks.map((u) => u.item.id)).toContain('driftwood');
   });
   it('a daily solve never touches the per-level Perfect list', () => {
-    const { state: n } = applyWin(state(), { mode: 'daily', level: 0, challenge: false, dailyDate: '2026-11-09', moves: 20, assists: 0 }, cfg);
+    const { state: n } = applyWin(state(), { mode: 'daily', level: 0, challenge: false, dailyDate: '2026-11-09', moves: 20, assists: 0, sealed: 3, scene: 'midday' }, cfg);
     expect(n.perfect).toEqual([]);
   });
 });

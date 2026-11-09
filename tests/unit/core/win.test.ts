@@ -12,13 +12,13 @@ const E = cfg.economy;
 const TIDEPOOL = cfg.collection.sets[0].shells.map((s) => s.id);
 
 function state(over: Partial<WinState> = {}): WinState {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(cfg), tutorialDone: false, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], stats: emptyStats(), dailyShare: null, ...over };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(cfg), tutorialDone: false, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], stats: emptyStats(), dailyShare: null, badges: [], scenesPlayed: [], seenMechanics: [], themes: { owned: ['midday'] }, ...over };
 }
 function level(n: number, over: Partial<WinResult> = {}): WinResult {
-  return { mode: 'level', level: n, challenge: false, dailyDate: '', moves: 12, assists: 1, ...over };
+  return { mode: 'level', level: n, challenge: false, dailyDate: '', moves: 12, assists: 1, sealed: 3, scene: 'midday', ...over };
 }
 function daily(date: string, moves = 20): WinResult {
-  return { mode: 'daily', level: 0, challenge: false, dailyDate: date, moves, assists: 0 };
+  return { mode: 'daily', level: 0, challenge: false, dailyDate: date, moves, assists: 0, sealed: 3, scene: 'midday' };
 }
 
 describe('level win', () => {
@@ -181,7 +181,7 @@ describe('daily win', () => {
 describe('tutorial win', () => {
   it('marks the tutorial done and changes nothing else', () => {
     const s = state();
-    const { state: n, card } = applyWin(s, { mode: 'tutorial', level: 0, challenge: false, dailyDate: '', moves: 6, assists: 0 }, cfg);
+    const { state: n, card } = applyWin(s, { mode: 'tutorial', level: 0, challenge: false, dailyDate: '', moves: 6, assists: 0, sealed: 0, scene: 'midday' }, cfg);
     expect(n).toEqual({ ...s, tutorialDone: true });
     expect(card).toMatchObject({ rewardShown: false, reward: 0, shell: null, unlocks: [], note: 'none' });
   });
