@@ -3374,3 +3374,98 @@ body[data-theme='harvestmoon']::before {
     font-size: 0.75rem;
   }
 }
+
+/* ===== Jar styles sheet and Home button (sprint 12 S4, jar-styles.md §3.2-§3.3) ===== */
+.styles-ico {
+  position: relative;
+  width: 14px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-radius: 3px 3px 6px 6px;
+}
+.styles-ico i {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  height: 45%;
+  border-radius: 1px 1px 4px 4px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.styles-intro {
+  margin: 4px 0 8px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+/* The sample jars: board-like sizes so the board's jar CSS applies unchanged. */
+.style-preview {
+  --jar-w: 44px;
+  --unit-h: 20px;
+  --jar-h: 84px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 18px;
+  pointer-events: none;
+}
+.style-preview .jar {
+  cursor: default;
+  flex: none;
+}
+.styles-stage {
+  padding: 14px 0 10px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.styles-slot h3 {
+  margin: 12px 0 6px;
+  font-size: 0.9375rem;
+}
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5em, 1fr));
+  gap: 8px;
+}
+.style-piece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  font: inherit;
+  text-align: center;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 2.5px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.style-piece[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+.style-piece:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.style-piece .scene-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.style-piece .scene-status {
+  font-size: 0.75rem;
+}
+.style-swatch {
+  --jar-w: 26px;
+  --unit-h: 10px;
+  --jar-h: 42px;
+  height: calc(var(--jar-h) + var(--jar-w) * 0.18);
+}
+.styles-btn {
+  margin-top: 10px;
+}
+.styles-btn[hidden] {
+  display: none;
+}

@@ -58,7 +58,7 @@ describe('installCardDue (O1)', () => {
 
 describe('the onboarding save field (O1)', () => {
   it('starts with no visits and nothing shown', () => {
-    expect(freshOnboarding()).toEqual({ visits: 0, installShown: false, offlineNoticed: false, mapHintSeen: false, boosterHintSeen: false, homeHintSeen: false, scenesNewSeen: false, pendingShare: null });
+    expect(freshOnboarding()).toEqual({ visits: 0, installShown: false, offlineNoticed: false, mapHintSeen: false, boosterHintSeen: false, homeHintSeen: false, scenesNewSeen: false, stylesNewSeen: false, pendingShare: null });
   });
   it('is repaired field by field', () => {
     expect(onboardingOf({ visits: 4, installShown: 'yes', offlineNoticed: true }, true)).toEqual({ ...freshOnboarding(), visits: 4, offlineNoticed: true });

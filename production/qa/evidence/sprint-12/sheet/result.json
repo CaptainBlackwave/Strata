@@ -1,0 +1,44 @@
+{
+  "closedAt59": true,
+  "openAt61": true,
+  "newMark": true,
+  "buttonName": "Jar styles, New",
+  "focusOnOpen": "clear",
+  "preview": {
+    "stage": "seaglass",
+    "board": "clear",
+    "button": "Buy Sea glass · 1700",
+    "live": "Previewing Sea glass"
+  },
+  "bought": {
+    "coins": 300,
+    "styles": {
+      "owned": [
+        "glass:seaglass"
+      ],
+      "worn": {
+        "glass": "seaglass",
+        "cork": "cork",
+        "sand": "plain"
+      }
+    },
+    "board": "seaglass",
+    "home": "seaglass",
+    "status": "Wearing"
+  },
+  "cannotAfford": {
+    "disabled": true,
+    "text": "Needs 1800 coins (you have 300)"
+  },
+  "woreDefault": "clear",
+  "escapeClosed": true,
+  "focusAfterClose": "btn-styles",
+  "newMarkAfter": false,
+  "afterReload": {
+    "newMark": false,
+    "board": "clear"
+  },
+  "errors": [],
+  "overflow320": false,
+  "errors320": []
+}
