@@ -2,7 +2,8 @@
 
 > **Status: planned (2026-11-09).** Chosen in the owner interview after 0.10.0 (D72–D80 in `design/gdd/systems-index.md`). First comes the 0.10.1 quick-fix release, then this sprint as one PR per feature (D80). Target release: **0.11.0**.
 
-## Before the sprint: 0.10.1 (D79)
+## Before the sprint: 0.10.1 (D79): done
+Evidence: `production/qa/evidence/0.10.1/README.md`.
 | ID | Task | Source | Acceptance Criteria |
 |----|------|--------|---------------------|
 | Q1 | **Slider track** styled from the scene's tokens | D72 | Contrast of 3:1 or more for the track and thumb in all 16 scenes (added to the scene contrast test); screenshots in light, dark and two animated scenes |

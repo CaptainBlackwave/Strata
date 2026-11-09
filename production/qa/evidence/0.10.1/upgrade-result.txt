@@ -1,0 +1,7 @@
+whats new card: What's new The volume sliders now match the scene you are in. Sealing a jar and clearing a level glow in each scene's own colours. In the night scenes that glow is cool moonlight instead of warm sand. Got it
+seenWhatsNew: 0.10.1 | perfect: [] | level: 12 | perfectClears: 4
+map open: true | map play: Play · Level 12
+board label: Strata Tall jars Level 12 300 coins
+won level 12: true
+after win: level 13 | best[12] 28 | perfect []
+errors: []

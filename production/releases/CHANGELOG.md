@@ -17,6 +17,16 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.8.0 | `05d5be5` (sprint 8, PR #4) |
 | v0.9.0 | `4a35afb` (sprint 9, PR #5) |
 | v0.9.1 | `4cdd71f` (fixes after 0.9.0, PR #6) |
+| v0.10.0 | `1ad5c4c` (sprint 10, PR #8) |
+
+## 0.10.1 (2026-11-09): look fixes
+**For players**
+- The volume sliders are drawn in each scene's colours instead of the browser's grey, and stay readable in every scene.
+- The seal shimmer and the win glow are tinted to match each scene: moonlight blue in Moonlit tide, blossom pink in Spring blossom, violet in Aurora night, and so on.
+
+**Under the hood**
+- Design docs brought up to date (the difficulty targets set in sprint 7, and the economy questions still open).
+- A phone checklist page for the checks that need a real phone (D74).
 
 ## 0.10.0 (2026-11-09): sprint 10, feel and audio
 **For players**
