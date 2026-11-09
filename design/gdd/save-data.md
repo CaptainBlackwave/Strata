@@ -49,6 +49,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 | `themes` | `owned`, `selected`, `auto` | `scenes.md` |
 | `profile` | `name`, `avatar`, `frame`, `plate` | `player-profile.md` §3.8 |
 | `stats` | `perfectClears`, `dailiesSolved`, `pours`, `coinsEarned`, `boostersUsed` | `player-profile.md` §3.8 |
+| `styles` | `owned` (bought pieces as `slot:id`; defaults never stored), `worn { glass, cork, sand }` | `jar-styles.md` §3.5 |
 
 **One active tab** (D57, *built in sprint 9 M4*): only one tab writes the save, and **the newest tab takes over**. A tab claims the save when it opens and when the player presses Play here (`src/ui/tab-lock.ts`, over `BroadcastChannel` `strata.tab.v1`, or the `storage` event on the localStorage key `strata.tab.v1` where `BroadcastChannel` is missing). A tab that hears a newer claim stops writing (`pauseSaves`), stops its music and shows a blocking "Strata is open in another tab" overlay with one button, **Play here**. Play here reloads the save from storage (the other tab may have progressed), runs the same repair as boot, writes it, re-renders Home on it, and makes every other tab yield. Claims carry a Lamport-style stamp, so a Play here always outranks the claim it answers; equal stamps go to the larger tab id, so exactly one tab is active.
 
@@ -66,6 +67,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 - Shell, intro and theme lists are de-duplicated and non-strings dropped. Unknown ids are **kept** (they are not checked against the catalog here). `themes.selected` is not checked against the catalog either; `activeTheme` falls back later (`scenes.md`). Midday is always owned.
 - `profile` strings are stored as read. `stats` counters that are missing or not non-negative integers become 0.
 - After every load and every restore, `main.ts` runs `repairProfile` (`player-profile.md` §3.8), which needs the catalog and progress: a missing or invalid name is regenerated and an unknown or locked avatar, frame or plate falls back to its default.
+- `styles` (`jar-styles.md` §3.5, sprint 12 S2) is repaired by `stylesOf` in `src/core/styles.ts`, field by field and **against the catalog** (unlike shells and themes): `owned` keeps only `slot:id` strings naming a priced piece of that slot (unknown, malformed, another slot's, default and duplicate ids are dropped); a `worn` id that is neither owned nor the slot's default falls back to the default; a save without `styles`, or with a non-object, gets `{ owned: [], worn: defaults }`.
 - Corrupt JSON gives a fresh save.
 
 **Export / import (save code, D16, built in sprint 5)**: Settings → Save code opens a sheet with the code, Copy and Restore.
@@ -86,7 +88,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 ### 2.3 Integration Points
 
 - **Depends on**: `economy.md` (the starting wallet), `player-profile.md` (the profile repair after load and restore needs its catalog and progress rules).
-- **Depended on by**: `level-generation.md` (`level`), `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md` (settings, tutorial flag, Save code sheet), `player-profile.md` (adds the `profile` and `stats` fields), `badges.md` (adds `badges`, `scenesPlayed` and `stats.jarsSealed`, repaired field by field; sprint 11), `weekly-set.md` (adds `weekly { week, cleared, pours }`, repaired field by field, reset by a new week; sprint 11 W2).
+- **Depended on by**: `level-generation.md` (`level`), `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md` (settings, tutorial flag, Save code sheet), `player-profile.md` (adds the `profile` and `stats` fields), `badges.md` (adds `badges`, `scenesPlayed` and `stats.jarsSealed`, repaired field by field; sprint 11), `weekly-set.md` (adds `weekly { week, cleared, pours }`, repaired field by field, reset by a new week; sprint 11 W2), `jar-styles.md` (adds `styles { owned, worn }`, repaired field by field against the catalog; sprint 12 S2).
 
 ---
 
@@ -140,6 +142,8 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
   - ✅ Export/import: a save round-trips through `exportSave` / `importSave`; an invalid code returns null.
 - `tests/unit/profile/profile-save.test.ts`:
   - ✅ An old save (no `profile`, no `stats`) loads with all counters at 0; `repairProfile` then gives a valid name and the defaults; profile and stats round-trip through a save code.
+- `tests/unit/styles/styles-save.test.ts`:
+  - ✅ A fresh save and an old save without `styles` get the defaults; a valid field loads as saved; junk is repaired field by field without touching other fields; `styles` round-trips through a save code and an imported code is repaired like a load.
 
 **Definition of Done**:
 - [x] Versioned key, migration, repair, tests.
@@ -167,3 +171,4 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude (sprint 6, F9) | `profile` and `stats` fields and their repair added (GB-SD-1); export/import rules written down (GB-SD-2); restore reset on edit recorded as building (GB-SD-3, GX-14); repair describes what the code really checks (GB-SD-4); full write list (GB-SD-5); dependencies listed explicitly, incl. player-profile (GB-SD-6); AC cites the profile and export tests (GB-SD-7); versioning note covers save codes (GB-SD-8) |
 | 2026-11-09 | Claude (sprint 9, M4) | One active tab (D57, TD-14): the newest tab takes over; older tabs pause writes and show "Strata is open in another tab" with Play here, which reloads the save and takes over. A refused write shows one toast per session. Tests: `tests/unit/ui/tab-lock.test.ts`, `tests/unit/ui/layers.test.ts`; two-tab evidence: `production/qa/evidence/sprint-9/README-m4.md` |
+| 2026-11-09 | Claude (sprint 12, S2) | `styles` field (`jar-styles.md` §3.5): `owned` as `slot:id`, `worn` per slot, repaired by `stylesOf` against the catalog; old saves get defaults; round-trips through the save code. Tests: `tests/unit/styles/styles-save.test.ts` |

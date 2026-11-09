@@ -13,6 +13,7 @@ import { screenIn } from '../fx';
 import { renderProfileChip } from './sheets/profile';
 import { maybeShowInstall } from './onboarding';
 import { renderWeeklyCard } from './sheets/weekly';
+import { applyStyles, renderStylesButton } from './sheets/styles';
 import { dailyKey } from '../clock';
 import { config, state } from '../state';
 
@@ -41,6 +42,8 @@ export function showHome(): void {
   $('btn-shells').hidden = !state.save.tutorialDone;
   $('btn-scenes').hidden = !state.save.tutorialDone;
   renderScenesMark();
+  renderStylesButton(); // sprint 12: from level 60 (jar-styles.md §3.2)
+  applyStyles(); // after a save reload or import too
   renderProfileChip();
   openLayer(homeEl, $('btn-play'), null);
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)

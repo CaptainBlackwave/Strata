@@ -777,6 +777,33 @@
     { "id": "lavender", "hex": "#b39ddb" },
     { "id": "sky", "hex": "#4fa3d9" }
   ],
+  "styles": {
+    "$comment": "Jar styles (design/gdd/jar-styles.md, D85-D91, sprint 12). Cosmetic only: never a rule or a sand colour. Three slots; the first piece of each is the free default (price 0). Ids are saved: never rename one. Prices: one rising ladder round50(1700 x 1.0636^(i-1)) across glass, cork, sand in turn: 7 to 14 days of a regular player's mean net income from level 60 (D86; tools/balance/styles-model.ts, production/qa/sprint-12/balance.md).",
+    "unlockLevel": 60,
+    "slots": {
+      "glass": [
+        { "id": "clear", "price": 0 },
+        { "id": "seaglass", "price": 1700 },
+        { "id": "amber", "price": 2050 },
+        { "id": "cobalt", "price": 2450 },
+        { "id": "pearl", "price": 2950 }
+      ],
+      "cork": [
+        { "id": "cork", "price": 0 },
+        { "id": "driftwood", "price": 1800 },
+        { "id": "rope", "price": 2200 },
+        { "id": "scallop", "price": 2600 },
+        { "id": "brass", "price": 3150 }
+      ],
+      "sand": [
+        { "id": "plain", "price": 0 },
+        { "id": "fine", "price": 1900 },
+        { "id": "glint", "price": 2300 },
+        { "id": "layered", "price": 2800 },
+        { "id": "ripple", "price": 3350 }
+      ]
+    }
+  },
   "onboarding": {
     "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
     "installAfterLevels": 3,

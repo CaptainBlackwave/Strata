@@ -22,6 +22,8 @@ export interface Onboarding {
   homeHintSeen: boolean;
   /** The Scenes button's "New" mark has been cleared by opening Scenes (R4, D82). */
   scenesNewSeen: boolean;
+  /** The Styles button's "New" mark has been cleared by opening Styles (sprint 12 S4). */
+  stylesNewSeen: boolean;
   /** A shared daily or weekly link opened before the tutorial, offered once after it (R2, D82). */
   pendingShare: ShareKey | null;
 }
@@ -56,7 +58,7 @@ const IN_APP = /FBAN|FBAV|Instagram|Line\/|GSA\/|Snapchat|TikTok/i;
 
 /** A new device's onboarding: no visits yet and nothing shown. */
 export function freshOnboarding(): Onboarding {
-  return { visits: 0, installShown: false, offlineNoticed: false, mapHintSeen: false, boosterHintSeen: false, homeHintSeen: false, scenesNewSeen: false, pendingShare: null };
+  return { visits: 0, installShown: false, offlineNoticed: false, mapHintSeen: false, boosterHintSeen: false, homeHintSeen: false, scenesNewSeen: false, stylesNewSeen: false, pendingShare: null };
 }
 
 /**
@@ -78,6 +80,7 @@ export function onboardingOf(v: unknown, returning: boolean): Onboarding {
     boosterHintSeen: flag('boosterHintSeen'),
     homeHintSeen: flag('homeHintSeen'),
     scenesNewSeen: flag('scenesNewSeen'),
+    stylesNewSeen: flag('stylesNewSeen'),
     pendingShare: shareKeyOf(o?.pendingShare),
   };
 }

@@ -3435,3 +3435,331 @@ body[data-theme='harvestmoon']::before {
     font-size: 0.75rem;
   }
 }
+
+/* ===== Jar styles sheet and Home button (sprint 12 S4, jar-styles.md §3.2-§3.3) ===== */
+.styles-ico {
+  position: relative;
+  width: 14px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-radius: 3px 3px 6px 6px;
+}
+.styles-ico i {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  height: 45%;
+  border-radius: 1px 1px 4px 4px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.styles-intro {
+  margin: 4px 0 8px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+/* The sample jars: board-like sizes so the board's jar CSS applies unchanged. */
+.style-preview {
+  --jar-w: 44px;
+  --unit-h: 20px;
+  --jar-h: 84px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 18px;
+  pointer-events: none;
+}
+.style-preview .jar {
+  cursor: default;
+  flex: none;
+}
+.styles-stage {
+  padding: 14px 0 10px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.styles-slot h3 {
+  margin: 12px 0 6px;
+  font-size: 0.9375rem;
+}
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5em, 1fr));
+  gap: 8px;
+}
+.style-piece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  font: inherit;
+  text-align: center;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 2.5px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.style-piece[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+.style-piece:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.style-piece .scene-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.style-piece .scene-status {
+  font-size: 0.75rem;
+}
+.style-swatch {
+  --jar-w: 26px;
+  --unit-h: 10px;
+  --jar-h: 42px;
+  height: calc(var(--jar-h) + var(--jar-w) * 0.18);
+}
+.styles-btn {
+  margin-top: 10px;
+}
+.styles-btn[hidden] {
+  display: none;
+}
+
+/* ==== Sprint 12 S3: jar styles (design/gdd/jar-styles.md §3.1, §3.4, §4) ====
+   One block, keyed by data-glass, data-cork and data-sand on a container (#board, #home or a
+   .style-preview): `[data-x='id'] …`. A missing attribute or a default id (clear, cork, plain) matches
+   nothing here, so it draws today's look exactly. Nothing in this block animates or transitions.
+   Mechanics keep their marks: ice (z 3), padlocks (z 4), funnel marks and the hint badge sit above
+   every piece, and these rules set only colours and textures, never position, outline or opacity. */
+/* style-art:pieces:begin (hand-written; tests/unit/ui/style-art.test.ts checks the ids and that nothing animates) */
+
+/* Glass: each piece sets custom properties on the container and the shared rules draw them: the
+   outline, the rim, the highlight and a faint band at the edge beside the sand. The body colour is
+   the glass's background, which the sand covers, so it only shows above the sand: never a tint over
+   the sand. Mixing with the scene's --glass-edge and --glass keeps each piece right in light and
+   dark scenes. */
+[data-glass='seaglass'] {
+  --style-edge: color-mix(in srgb, var(--glass-edge) 45%, rgb(112, 190, 156));
+  --style-body: color-mix(in srgb, var(--glass) 70%, rgba(196, 234, 216, 0.55));
+  --style-band: rgba(168, 222, 196, 0.5);
+  --style-rim: color-mix(in srgb, var(--glass) 50%, rgba(170, 224, 198, 0.6));
+  --style-shine: radial-gradient(closest-side, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+  --style-shine-w: 20%;
+  --style-shine-x: 13%;
+}
+[data-glass='amber'] {
+  --style-edge: color-mix(in srgb, var(--glass-edge) 40%, rgb(190, 120, 36));
+  --style-body: var(--glass);
+  --style-band: rgba(226, 150, 52, 0.32);
+  --style-rim: color-mix(in srgb, var(--glass) 40%, rgba(236, 166, 66, 0.75));
+  --style-shine: linear-gradient(180deg, rgba(255, 224, 166, 0.85), rgba(255, 200, 120, 0.12));
+}
+[data-glass='cobalt'] {
+  --style-edge: color-mix(in srgb, var(--glass-edge) 35%, rgb(38, 72, 176));
+  --style-body: var(--glass);
+  --style-band: rgba(70, 110, 215, 0.22);
+  --style-rim: color-mix(in srgb, var(--glass) 35%, rgba(52, 92, 200, 0.7));
+  --style-shine: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.15));
+  --style-shine-w: 9%;
+  --style-shine-x: 18%;
+}
+[data-glass='pearl'] {
+  /* A pearly grey-mauve that is more opaque than the scene edge, so the outline is at least as strong as clear glass. */
+  --style-edge: color-mix(in srgb, var(--glass-edge) 80%, rgb(120, 96, 120));
+  --style-body: color-mix(in srgb, var(--glass) 75%, rgba(252, 240, 248, 0.6));
+  --style-band: rgba(250, 232, 244, 0.42);
+  --style-rim: linear-gradient(90deg, rgba(255, 232, 244, 0.7), rgba(228, 238, 255, 0.7) 50%, rgba(255, 246, 228, 0.7));
+  --style-shine: linear-gradient(180deg, rgba(255, 238, 250, 0.8), rgba(226, 236, 255, 0.5) 45%, rgba(255, 248, 232, 0.12));
+  --style-shine-w: 17%;
+}
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .jar > .glass {
+  border-color: var(--style-edge);
+  background-color: var(--style-body);
+  box-shadow:
+    inset 0 0 0 3px var(--style-band),
+    inset 0 -6px 10px rgba(255, 255, 255, 0.35),
+    0 6px 0 rgba(90, 70, 50, 0.08);
+}
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .jar > .glass::before {
+  border-color: var(--style-edge);
+  background: var(--style-rim);
+}
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .jar .shine {
+  left: var(--style-shine-x, 16%);
+  width: var(--style-shine-w, 14%);
+  background: var(--style-shine);
+}
+/* Sea glass is frosted: a fine white speckle on the empty glass above the sand (the funnel keeps its stripes). */
+[data-glass='seaglass'] .jar:not(.funnel) > .glass {
+  /* Scene-aware: about 0.2 alpha on light scenes' glass, about 0.05 on dark scenes' (--glass is 0.1 there). */
+  background-image: radial-gradient(color-mix(in srgb, var(--glass) 55%, transparent) 0.6px, transparent 1px);
+  background-size: 3px 3px;
+}
+/* Home art: the outline and a highlight streak (the art has no rim). */
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .logo-jars i {
+  border-color: var(--style-edge);
+  background:
+    var(--style-shine) 18% 30% / var(--style-shine-w, 14%) 58% no-repeat,
+    linear-gradient(0deg, var(--a) 0 30%, var(--b) 30% 58%, var(--c2) 58% 84%, var(--style-body) 84%);
+}
+
+/* Cork: the stopper on sealed jars, and a stopper on the Home art. Each piece is one background, edge,
+   shape and shadow. The Home stopper shows for every cork, the default included (the owner's call in
+   sprint 12 review: this adds a stopper to today's Home art); its fallbacks are the board's default cork. */
+[data-cork='driftwood'] {
+  --cork-bg:
+    repeating-linear-gradient(90deg, rgba(64, 58, 52, 0.3) 0 1px, transparent 1px 3.5px),
+    radial-gradient(ellipse 22% 34% at 70% 55%, rgba(64, 58, 52, 0.45), transparent 70%),
+    linear-gradient(180deg, #c2bbb0, #8f887d);
+  --cork-edge: #5f584f;
+  --cork-radius: 3px 3px 2px 2px;
+  --cork-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+[data-cork='rope'] {
+  --cork-bg:
+    radial-gradient(circle at 86% 52%, #e9d6a6 0 1.6px, #9c7c48 1.8px 2.4px, transparent 2.6px),
+    repeating-linear-gradient(60deg, #eedfb6 0 1.4px, #b8955c 1.4px 2.8px) 0 45% / 100% 46% no-repeat,
+    radial-gradient(rgba(0, 0, 0, 0.18) 1px, transparent 1.5px) 0 0 / 5px 4px,
+    linear-gradient(180deg, #d8a86b, #b7834a);
+  --cork-edge: #8a6136;
+  --cork-radius: 5px 5px 3px 3px;
+}
+[data-cork='scallop'] {
+  --cork-bg:
+    radial-gradient(ellipse 70% 100% at 50% 100%, transparent 55%, rgba(120, 60, 40, 0.16)),
+    repeating-conic-gradient(from -90deg at 50% 100%, #fbe7d8 0 8deg, #e6b298 8deg 13deg);
+  --cork-edge: #b17860;
+  --cork-radius: 50% 50% 3px 3px / 90% 90% 3px 3px;
+}
+[data-cork='brass'] {
+  --cork-bg:
+    repeating-linear-gradient(90deg, rgba(90, 58, 12, 0.22) 0 1px, transparent 1px 3px) 0 100% / 100% 38% no-repeat,
+    linear-gradient(180deg, #f8e1a0 0 15%, #dcae55 38%, #bb8a33 70%, #9a6f22);
+  --cork-edge: #6c4d18;
+  --cork-radius: 3px 3px 2px 2px;
+  --cork-shadow: inset 0 1.5px 0 rgba(255, 250, 225, 0.75), inset 0 -1px 0 rgba(70, 45, 8, 0.3);
+}
+:is([data-cork='driftwood'], [data-cork='rope'], [data-cork='scallop'], [data-cork='brass']) .jar .cork {
+  background: var(--cork-bg);
+  border-color: var(--cork-edge);
+  border-radius: var(--cork-radius);
+  box-shadow: var(--cork-shadow, none);
+}
+.logo-jars i {
+  position: relative;
+}
+.logo-jars i::before {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: -10px;
+  height: 13px;
+  background: var(--cork-bg, radial-gradient(rgba(0, 0, 0, 0.18) 1px, transparent 1.5px) 0 0 / 5px 4px, linear-gradient(180deg, #d8a86b, #b7834a));
+  border: 2px solid var(--cork-edge, #8a6136);
+  border-radius: var(--cork-radius, 5px 5px 3px 3px);
+  box-shadow: var(--cork-shadow, none);
+  pointer-events: none;
+}
+/* style-art:pieces:end */
+
+/* Sand: the generated block below (src/ui/style-art.ts). */
+/* style-art:sand:begin: generated by sandTextureCss() in src/ui/style-art.ts; do not edit by hand.
+   tests/unit/ui/style-art.test.ts fails if this block and the table differ, and checks the cap (jar-styles.md §4).
+   The texture is drawn on ::before over the sand colour; with colour patterns on, ::after draws the
+   unit's own .pat-* layers again on top (background-* inherit), so a pattern is never under a texture.
+   Buried units take it too, under their "?" (their colour stays var(--buried)); so do the stripes of
+   the tilted fill mid-pour (.tilt-band, coloured inline), where the texture is a clear overlay.
+   Nothing here animates. */
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit,
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .tilt-band > span {
+  position: relative;
+}
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit::before,
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .tilt-band > span::before,
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit[class*='pat-']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit::before {
+  background-color: var(--c);
+  box-shadow: inherit;
+}
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit[class*='pat-']::after {
+  background-image: inherit;
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: inherit;
+}
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .logo-jars i {
+  position: relative;
+}
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .logo-jars i::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 16%;
+  border-radius: 0 0 17px 17px;
+  pointer-events: none;
+}
+[data-sand='fine'] .unit::before,
+[data-sand='fine'] .tilt-band > span::before,
+[data-sand='fine'] .logo-jars i::after {
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.2) 0.45px, transparent 0.8px),
+    radial-gradient(rgba(0, 0, 0, 0.16) 0.45px, transparent 0.8px),
+    radial-gradient(rgba(255, 255, 255, 0.12) 0.4px, transparent 0.7px);
+  background-size: 4px 4px, 5px 4px, 3px 3px;
+  background-position: 0px 0px, 2px 1px, 1px 2px;
+}
+[data-sand='glint'] .unit::before,
+[data-sand='glint'] .tilt-band > span::before,
+[data-sand='glint'] .logo-jars i::after {
+  background-image:
+    radial-gradient(3.2px 0.45px, rgba(255, 255, 255, 0.25) 15%, transparent),
+    radial-gradient(0.45px 3.2px, rgba(255, 255, 255, 0.25) 15%, transparent),
+    radial-gradient(1.1px 1.1px, rgba(255, 255, 255, 0.25) 50%, transparent),
+    radial-gradient(2.4px 2.4px, rgba(0, 0, 0, 0.22) 35%, transparent),
+    radial-gradient(2.4px 0.45px, rgba(255, 255, 255, 0.25) 15%, transparent),
+    radial-gradient(0.45px 2.4px, rgba(255, 255, 255, 0.25) 15%, transparent),
+    radial-gradient(1.1px 1.1px, rgba(255, 255, 255, 0.25) 50%, transparent),
+    radial-gradient(1.8px 1.8px, rgba(0, 0, 0, 0.22) 35%, transparent),
+    radial-gradient(rgba(255, 255, 255, 0.22) 0.8px, transparent 1.2px),
+    radial-gradient(rgba(0, 0, 0, 0.14) 0.8px, transparent 1.2px);
+  background-size: 26px 22px, 26px 22px, 26px 22px, 26px 22px, 34px 29px, 34px 29px, 34px 29px, 34px 29px, 6px 6px, 7px 5px;
+  background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px, 13px 15px, 13px 15px, 13px 15px, 13px 15px, 0px 0px, 3px 2px;
+}
+[data-sand='layered'] .unit::before,
+[data-sand='layered'] .tilt-band > span::before,
+[data-sand='layered'] .logo-jars i::after {
+  background-image:
+    linear-gradient(180deg, transparent 20%, rgba(255, 255, 255, 0.12) 24% 29%, transparent 33%),
+    linear-gradient(180deg, transparent 48%, rgba(0, 0, 0, 0.13) 52% 56%, transparent 60%),
+    linear-gradient(180deg, transparent 74%, rgba(255, 255, 255, 0.08) 77% 81%, transparent 84%),
+    radial-gradient(rgba(255, 255, 255, 0.22) 0.8px, transparent 1.2px),
+    radial-gradient(rgba(0, 0, 0, 0.14) 0.8px, transparent 1.2px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 6px 6px, 7px 5px;
+  background-position: 0 0, 0 0, 0 0, 0px 0px, 3px 2px;
+}
+[data-sand='ripple'] .unit::before,
+[data-sand='ripple'] .tilt-band > span::before,
+[data-sand='ripple'] .logo-jars i::after {
+  background-image:
+    radial-gradient(circle at 9px -5px, transparent 9.15px, rgba(255, 255, 255, 0.12) 9.65px 10.35px, transparent 10.85px),
+    radial-gradient(circle at 9px -3.8px, transparent 9.15px, rgba(0, 0, 0, 0.12) 9.65px 10.35px, transparent 10.85px),
+    radial-gradient(rgba(255, 255, 255, 0.22) 0.8px, transparent 1.2px),
+    radial-gradient(rgba(0, 0, 0, 0.14) 0.8px, transparent 1.2px);
+  background-size: 18px 10px, 18px 10px, 6px 6px, 7px 5px;
+  background-position: 0px 0px, 0px 0px, 0px 0px, 3px 2px;
+}
+/* style-art:sand:end */

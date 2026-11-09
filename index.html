@@ -125,6 +125,17 @@
           <button id="btn-close-scenes" data-s="close" class="secondary" type="button">Close</button>
         </div>
       </div>
+      <div id="styles" class="sheet" hidden>
+        <div class="sheet-card styles-card" role="dialog" aria-modal="true" aria-labelledby="styles-title" aria-describedby="styles-intro">
+          <div class="cabinet-head"><h2 id="styles-title" data-s="styles.title">Jar styles</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="styles-coins">0</span><span class="sr-only coins-sr"> coins</span></div></div>
+          <p id="styles-intro" data-s="styles.intro" class="styles-intro">Change how your jars look.</p>
+          <div id="styles-preview" class="style-preview styles-stage" aria-hidden="true"></div>
+          <div id="styles-slots" class="styles-slots"></div>
+          <p id="styles-previewing" class="scene-previewing" aria-live="polite"></p>
+          <button id="btn-style-action" class="primary scene-buy" type="button" hidden>Wear</button>
+          <button id="btn-close-styles" data-s="close" class="secondary" type="button">Close</button>
+        </div>
+      </div>
       <div id="intro" class="cabinet" hidden>
         <div class="cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
           <p id="intro-title" class="intro-kicker">New jar!</p>
@@ -278,6 +289,7 @@
             <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
             <button id="btn-scenes" class="secondary shells-btn" type="button"><span class="scene-ico" aria-hidden="true"></span><span id="scenes-label" data-s="scenes">Scenes</span><span id="scenes-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>
           </div>
+          <button id="btn-styles" class="secondary shells-btn styles-btn" type="button" hidden><span class="styles-ico" aria-hidden="true"><i></i></span><span id="styles-label" data-s="styles.title">Jar styles</span><span id="styles-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>
         </div>
       </div>
       <div id="map" class="map" hidden>

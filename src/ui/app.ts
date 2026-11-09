@@ -22,6 +22,7 @@ import { wireScenes } from './screens/sheets/scenes';
 import { wireSettings } from './screens/sheets/settings';
 import { wireTransfer } from './screens/sheets/transfer';
 import { wireWeekly } from './screens/sheets/weekly';
+import { applyStyles, wireStyles } from './screens/sheets/styles';
 import { wireWin } from './screens/win';
 import { BOOSTER_NAMES, config, state } from './state';
 import { applyTheme, currentTheme } from './theme';
@@ -56,6 +57,7 @@ export function boot(): void {
   state.save.onboarding = keepShare(state.save.onboarding, launch, state.save.tutorialDone); // D82 R2: a link before the tutorial waits for it
   writeSave(state.save);
   applyTheme(currentTheme());
+  applyStyles(); // sprint 12: the worn jar styles on the board and Home
   window.setInterval(() => {
     if ($('scenes').hidden) applyTheme(currentTheme()); // follow the clock in auto mode
   }, 60_000);
@@ -88,6 +90,7 @@ function wireAll(): void {
   wireScenes();
   wireCabinet();
   wireWeekly();
+  wireStyles();
   wireProfile();
   wireEditProfile();
   wireWin();

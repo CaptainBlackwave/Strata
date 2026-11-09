@@ -127,6 +127,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.12.0',
+        name: 'Jar styles',
+        lines: [
+          'Jar styles: from level 60, spend coins on new glass, corks and sand textures.',
+          'Mix and match pieces, and preview any of them before you buy.',
+          'Styles never change a sand colour, and colour patterns stay on top.',
+        ],
+      },
+      {
         version: '0.11.1',
         name: 'A smoother first run, and a weekly bonus',
         lines: [
@@ -456,6 +465,25 @@ const en = {
     playSharedWeekly: 'See the weekly set',
     /** The quiet mark on Scenes the first time one is affordable (R4, D82). */
     newMark: 'New',
+  },
+  /** Jar styles (design/gdd/jar-styles.md, sprint 12 S4): the Home button and the sheet. Names by slot and id. */
+  styles: {
+    title: 'Jar styles',
+    intro: 'Change how your jars look. A style never changes a sand colour.',
+    slots: { glass: 'Glass', cork: 'Cork', sand: 'Sand' } as Readonly<Record<string, string>>,
+    names: {
+      glass: { clear: 'Clear glass', seaglass: 'Sea glass', amber: 'Amber bottle', cobalt: 'Cobalt rim', pearl: 'Pearl' },
+      cork: { cork: 'Cork', driftwood: 'Driftwood', rope: 'Rope knot', scallop: 'Scallop cap', brass: 'Brass lid' },
+      sand: { plain: 'Plain sand', fine: 'Fine grain', glint: 'Glint', layered: 'Layered', ripple: 'Ripple' },
+    } as Readonly<Record<string, Readonly<Record<string, string>>>>,
+    wearing: 'Wearing',
+    owned: 'Owned',
+    free: 'Free',
+    wear: (name: string) => `Wear ${name}`,
+    buy: (name: string, price: number) => `Buy ${name} \u00b7 ${price}`,
+    need: (price: number, have: number) => `Needs ${price} coins (you have ${have})`,
+    bought: (name: string) => `${name} is yours`,
+    previewing: (name: string) => `Previewing ${name}`,
   },
   // sprint 11 weekly
   /** The weekly set (design/gdd/weekly-set.md, D77): Home card, chooser, board label, win card and Share. */

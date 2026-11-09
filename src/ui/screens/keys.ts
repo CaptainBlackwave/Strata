@@ -6,6 +6,7 @@ import { setSelected } from './jars';
 import { onMapKey, onStoneCardKey } from './map';
 import { closeEditProfile, keepEditing, saveEditProfile } from './sheets/edit-profile';
 import { closeScenes } from './sheets/scenes';
+import { closeStyles } from './sheets/styles';
 import { state } from '../state';
 
 /** Wires the global keyboard handler: keys go to the top layer, and the board shortcuts work when none is open. */
@@ -35,6 +36,10 @@ export function wireKeys(): void {
     }
     if (top === $('scenes')) {
       if (e.key === 'Escape') closeScenes();
+      return;
+    }
+    if (top === $('styles')) {
+      if (e.key === 'Escape') closeStyles();
       return;
     }
     if (top === $('intro') || top === $('whatsnew') || top === $('install') || top === $('daily-over')) {
