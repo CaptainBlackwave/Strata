@@ -13,6 +13,7 @@ import { writeSave } from '../storage';
 import { t } from '../strings';
 import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, showToast, toastEl, toolButtons, winEl } from '../dom';
 import { showHome } from './home';
+import { screenOut } from '../fx';
 import { coach, updateHud } from './hud';
 import { buildJars, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { animatePour, recoverPour } from './pour';
@@ -45,6 +46,7 @@ export function assistsOnMainThread(): void {
 
 export function startDaily(): void {
   audio.unlock();
+  screenOut(homeEl); // sprint 10 F5: Home fades off the board
   closeLayer(homeEl, false);
   state.mode = 'daily';
   state.dailyDate = utcDateKey(state.clock()); // TD-16: the app clock
@@ -62,6 +64,7 @@ export function startDaily(): void {
 export function play(): void {
   audio.unlock();
   if (mapAvailable(state.save)) return openMap();
+  screenOut(homeEl); // sprint 10 F5: Home fades off the board
   closeLayer(homeEl, false);
   if (!state.save.tutorialDone) startTutorial();
   else startLevel(state.save.level);
