@@ -29,6 +29,11 @@ export interface SaveData {
   level: number;
   /** Fewest pours used to clear each level, keyed by level number. */
   best: Record<string, number>;
+  /**
+   * Levels cleared Perfect (no hint, shuffle or extra jar), sorted, each once (level-map.md D50, D52).
+   * Counted from the M3 update on: an older save loads it as `[]` and keeps its Perfect stat.
+   */
+  perfect: number[];
   wallet: Wallet;
   tutorialDone: boolean;
   settings: Settings;
@@ -108,12 +113,19 @@ function bestOf(v: unknown): Record<string, number> {
   return out;
 }
 
+/** The usable part of a `perfect` list: level numbers (1 to {@link MAX_LEVEL}), each once, ascending. */
+function perfectOf(v: unknown): number[] {
+  if (!Array.isArray(v)) return [];
+  const levels = v.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= MAX_LEVEL);
+  return [...new Set(levels)].sort((a, b) => a - b);
+}
+
 /** A de-duplicated list of the strings in `v`, or [] if it isn't an array. */
 const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : []);
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION };
 }
 
 /**
@@ -146,6 +158,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   return {
     level,
     best: bestOf(v2.best),
+    perfect: perfectOf(v2.perfect),
     wallet: {
       coins: nonNegInt(w.coins, base.wallet.coins),
       boosters: Object.fromEntries(BOOSTERS.map((id) => [id, nonNegInt(b[id], base.wallet.boosters[id])])) as Record<BoosterId, number>,

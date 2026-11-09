@@ -2,6 +2,7 @@
 import { $, btnNext, closeLayer, homeEl, layers, settingsEl, winEl } from '../dom';
 import { onJarTap, play, requestRestart, useBooster } from './board';
 import { setSelected } from './jars';
+import { onMapKey, onStoneCardKey } from './map';
 import { closeEditProfile, keepEditing, saveEditProfile } from './sheets/edit-profile';
 import { closeScenes } from './sheets/scenes';
 import { state } from '../state';
@@ -38,6 +39,14 @@ export function wireKeys(): void {
     if (top === $('intro') || top === $('whatsnew')) {
       // Enter on a focused button activates that button natively.
       if (e.key === 'Escape' || (e.key === 'Enter' && !onButton)) closeLayer(top);
+      return;
+    }
+    if (top === $('stone-card')) {
+      onStoneCardKey(e);
+      return;
+    }
+    if (top === $('map')) {
+      onMapKey(e);
       return;
     }
     if (top === homeEl) {

@@ -239,6 +239,30 @@
           </div>
         </div>
       </div>
+      <div id="map" class="map" hidden>
+        <div class="map-top">
+          <button id="btn-map-home" data-s-title="home" data-s-label="home" class="icon-btn" type="button" title="Home" aria-label="Home">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <h2 id="map-title" data-s="map.title" class="map-title">Beach path</h2>
+          <div class="coins"><i class="coin" aria-hidden="true"></i><span id="map-coins">0</span><span class="sr-only coins-sr"> coins</span></div>
+        </div>
+        <div id="map-scroll" class="map-scroll" role="group" aria-labelledby="map-title">
+          <div id="map-track" class="map-track"><div class="map-sea" aria-hidden="true"></div></div>
+        </div>
+        <div class="map-foot"><button id="btn-map-play" class="primary map-play" type="button">Play</button></div>
+      </div>
+      <div id="stone-card" class="cabinet" hidden>
+        <div class="cabinet-card stone-card" role="dialog" aria-modal="true" aria-labelledby="stone-title" aria-describedby="stone-text stone-specials">
+          <h2 id="stone-title" class="stone-title">Level 1</h2>
+          <p id="stone-text" class="stone-text"></p>
+          <ul id="stone-specials" class="stone-specials"></ul>
+          <div class="sheet-row">
+            <button id="btn-stone-close" data-s="close" class="secondary" type="button">Close</button>
+            <button id="btn-stone-replay" data-s="map.replay" class="primary stone-replay" type="button">Replay</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="announce" class="sr-only" aria-live="polite"></div>
     <script type="module" src="/src/ui/main.ts"></script>

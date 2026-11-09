@@ -44,7 +44,12 @@ const en = {
   winText: (moves: number, best: number | undefined) =>
     best !== undefined && best < moves ? `${moves} pours · best ${best}` : `${moves} pours${best === undefined || best === moves ? ' · new best' : ''}`,
   perfectNote: 'No hint, shuffle or extra jar used',
-  replayNote: 'Already cleared: no coins this time',
+  /** The win card after a replay that changed nothing (level-map.md D50). */
+  replayNote: 'Replay: no coins',
+  /** The win card when this clear gave the level its first Perfect mark (D50, D52). */
+  perfectEarned: 'Perfect earned',
+  /** The win card when a replay beat the level's best pours (D50). */
+  newBest: (n: number) => `New best: ${n} ${n === 1 ? 'pour' : 'pours'}`,
   next: 'Continue',
   reward: (n: number) => `+${n}`,
   daily: 'Daily puzzle',
@@ -108,6 +113,33 @@ const en = {
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
+  /** The level map (design/gdd/level-map.md). */
+  map: {
+    title: 'Beach path',
+    /** Words of a stone's screen-reader name: "Level 41, cleared, perfect, new jar: frozen". */
+    stone: {
+      cleared: 'cleared',
+      next: 'next level',
+      locked: 'locked',
+      perfect: 'perfect',
+      tall: 'tall jars',
+      shell: 'shell milestone',
+      newJar: (jar: string) => `new jar: ${jar}`,
+    },
+    /** Short jar names for the debut badge. */
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel' },
+    best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
+    perfectYes: 'Perfect ✓',
+    perfectNo: 'Perfect –',
+    perfectYesSr: 'Perfect: yes',
+    perfectNoSr: 'Perfect: not yet',
+    unlocksAfter: (n: number) => `Unlocks after level ${n}`,
+    special: { tall: 'Tall jars', shell: 'Shell milestone', newJar: (jar: string) => `New jar: ${jar}` },
+    replay: 'Replay',
+    backToMap: 'Back to map',
+    /** One name per `map.scenery` id in game-config.json (tests/unit/map/map-ui.test.ts). */
+    scenery: { rockpools: 'Rock pools', dunes: 'Dunes', pier: 'The pier', lighthouse: 'Lighthouse point', cove: 'The cove' } as Record<string, string>,
+  },
   thawed: 'Thawed!',
   unlocked: 'Unlocked!',
   jarStates: { narrow: 'narrow', frozen: 'frozen', locked: (c: string) => `locked until ${c} is sealed`, funnel: 'one-way funnel' },

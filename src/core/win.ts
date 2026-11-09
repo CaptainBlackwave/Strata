@@ -2,7 +2,8 @@
  * What a win changes in the save and what the win card says (TD-2, sprint-8 P6).
  * Pure and DOM-free: `src/ui/main.ts` applies the returned state and renders the card.
  * Rules: design/gdd/economy.md (M1 first clear only), daily-challenge GDD (D10, GA-DP-6),
- * collection GDD (shell milestones), player-profile.md (stats, D25).
+ * collection GDD (shell milestones), player-profile.md (stats, D25), level-map.md (replays and
+ * the per-level Perfect mark, D50, D52).
  */
 import { type CollectionConfig, type Shell, type ShellSet, grantShell, milestoneDue, setProgress } from './collection';
 import { type DailyConfig, type DailyShareRecord, type StreakState, recordDailySolve } from './daily';
@@ -13,6 +14,8 @@ import { type ProfileConfig, type Progress, type SlotItem, type Stats, bumpStats
 export interface WinState {
   readonly level: number;
   readonly best: Readonly<Record<string, number>>;
+  /** Levels cleared Perfect from the M3 update on, sorted (D52). */
+  readonly perfect: readonly number[];
   readonly wallet: Wallet;
   readonly tutorialDone: boolean;
   readonly daily: StreakState;
@@ -57,6 +60,10 @@ export interface WinCard {
   readonly reward: number;
   /** The previous best pours for this level before this win, if any. */
   readonly prevBest: number | undefined;
+  /** This win gave the level its first Perfect mark (a first clear or a replay, D52). */
+  readonly perfectEarned: boolean;
+  /** This win beat a recorded best (D50). False on a first clear: there was no best before. */
+  readonly newBest: boolean;
   readonly moves: number;
   /** The daily streak after this solve. */
   readonly streak: number;
@@ -105,7 +112,7 @@ function awardShell(s: WinState, config: WinConfig): { state: WinState; award: S
 }
 
 function emptyCard(result: WinResult): WinCard {
-  return { mode: result.mode, perfect: false, rewardShown: false, reward: 0, prevBest: undefined, moves: result.moves, streak: 0, note: 'none', shell: null, unlocks: [] };
+  return { mode: result.mode, perfect: false, rewardShown: false, reward: 0, prevBest: undefined, perfectEarned: false, newBest: false, moves: result.moves, streak: 0, note: 'none', shell: null, unlocks: [] };
 }
 
 function winTutorial(s: WinState, result: WinResult): WinOutcome {
@@ -139,8 +146,12 @@ function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome
   const key = String(level);
   const prevBest = s.best[key];
   const best = prevBest === undefined || moves < prevBest ? { ...s.best, [key]: moves } : s.best;
-  let state = earn({ ...s, best, level: Math.max(s.level, level + 1) }, reward);
-  state = { ...state, stats: bumpStats(state.stats, { pours: moves, perfectClears: firstClear && perfect ? 1 : 0 }) };
+  const newBest = prevBest !== undefined && moves < prevBest;
+  // D52: a level's first Perfect counts once, from a first clear or a replay.
+  const perfectEarned = perfect && !s.perfect.includes(level);
+  const perfectList = perfectEarned ? [...s.perfect, level].sort((a, b) => a - b) : s.perfect;
+  let state = earn({ ...s, best, perfect: perfectList, level: Math.max(s.level, level + 1) }, reward);
+  state = { ...state, stats: bumpStats(state.stats, { pours: moves, perfectClears: perfectEarned ? 1 : 0 }) };
   let shell: ShellAward | null = null;
   if (firstClear && milestoneDue(level, config)) {
     const a = awardShell(state, config);
@@ -148,7 +159,7 @@ function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome
     shell = a.award;
   }
   const note: WinNote = !firstClear ? 'replay' : perfect ? 'perfect' : 'none';
-  const card: WinCard = { ...emptyCard(result), perfect, rewardShown: firstClear, reward, prevBest, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  const card: WinCard = { ...emptyCard(result), perfect, rewardShown: firstClear, reward, prevBest, perfectEarned, newBest, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
   return { state, card };
 }
 

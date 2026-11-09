@@ -124,12 +124,18 @@ export function winDaily(): void {
   renderRewards(card);
 }
 
+/** What a replay changed (D50): "Perfect earned", "New best: X pours", or "Replay: no coins". */
+export function replayNote(card: WinCard): string {
+  const changes = [card.perfectEarned && t.perfectEarned, card.newBest && t.newBest(card.moves)].filter(Boolean);
+  return changes.length ? changes.join(' · ') : t.replayNote;
+}
+
 export function winLevel(): void {
   const card = applyWinToSave();
   $('win-title').textContent = card.perfect ? t.perfectTitle : t.winTitle;
   $('win-text').textContent = t.winText(card.moves, card.prevBest);
-  $('win-note').textContent = card.note === 'replay' ? t.replayNote : card.note === 'perfect' ? t.perfectNote : '';
-  btnNext.textContent = t.next;
+  $('win-note').textContent = card.note === 'replay' ? replayNote(card) : card.note === 'perfect' ? t.perfectNote : '';
+  btnNext.textContent = state.replay ? t.map.backToMap : t.next;
   renderRewards(card);
 }
 

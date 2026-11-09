@@ -10,6 +10,7 @@ import { prefetcher, startLevel, startTutorial, wireBoard } from './screens/boar
 import { openWhatsNew, showHome, wireHome } from './screens/home';
 import { wireOtherTab } from './screens/other-tab';
 import { wireKeys } from './screens/keys';
+import { wireMap } from './screens/map';
 import { wireCabinet } from './screens/sheets/cabinet';
 import { wireEditProfile } from './screens/sheets/edit-profile';
 import { wireGuide } from './screens/sheets/guide';
@@ -73,6 +74,7 @@ export function boot(): void {
 function wireAll(): void {
   wireBoard();
   wireHome();
+  wireMap();
   wireScenes();
   wireCabinet();
   wireProfile();

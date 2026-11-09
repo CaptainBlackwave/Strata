@@ -94,11 +94,11 @@ verified-by: owner interview 2026-11-08
 See 2.3.
 
 ## 5. Acceptance Criteria (for sprint 9)
-- [ ] Play opens the map at the next level, and "Play · Level N" starts it in one tap.
-- [ ] Every cleared level shows its Perfect mark and best pours. Specials are iconed, and the next 20 levels are shown locked.
-- [ ] Replaying a cleared level pays no coins. A first Perfect sets the mark and counts once towards the Perfect stat. A better pour count updates the best. Unit tests cover the pure rules.
-- [ ] Works with the keyboard (arrow keys move between stones, Enter plays) and with a screen reader (each stone has a name such as "Level 41, cleared, perfect, new jar: frozen").
-- [ ] Screenshots: the map at levels 3, 60 and 201; a tap card; a locked stone; 150% text at 320 px; and reduced motion.
+- [x] Play opens the map at the next level, and "Play · Level N" starts it in one tap.
+- [x] Every cleared level shows its Perfect mark and best pours. Specials are iconed, and the next 20 levels are shown locked.
+- [x] Replaying a cleared level pays no coins. A first Perfect sets the mark and counts once towards the Perfect stat. A better pour count updates the best. Unit tests cover the pure rules.
+- [x] Works with the keyboard (arrow keys move between stones, Enter plays) and with a screen reader (each stone has a name such as "Level 41, cleared, perfect, new jar: frozen").
+- [x] Screenshots: the map at levels 3, 60 and 201; a tap card; a locked stone; 150% text at 320 px; and reduced motion.
 
 ## Open Questions and Follow-Up Work
 - Signed off 2026-11-08 (D52): about 6 stones per screen with new scenery every 20 levels, Perfect counted once per level from the update onwards, and the daily stays on its Home card, not on the map.
@@ -109,3 +109,4 @@ See 2.3.
 |------|--------|---------|
 | 2026-11-08 | Claude | Designed from the owner interview (D47–D51); drafts flagged for sign-off |
 | 2026-11-08 | Claude | Drafts signed off by the owner (D52) |
+| 2026-11-09 | Claude | Built in sprint 9 M3; §5 ticked with evidence in `production/qa/evidence/sprint-9/README-m3.md`. After a map replay, Continue returns to the map |
