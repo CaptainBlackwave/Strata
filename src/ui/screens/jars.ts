@@ -5,6 +5,7 @@ import { sceneSealBurst } from '../scene-fx';
 import { computeLayout } from '../layout';
 import { t } from '../strings';
 import { boardEl, reducedMotion, showToast } from '../dom';
+import { FLIP_MS } from '../logic/flip';
 import { audio, config, state } from '../state';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
@@ -153,6 +154,40 @@ export function mechanicFx(el: HTMLElement, cls: string, label: string): void {
   audio.play('booster');
   const r = el.getBoundingClientRect();
   burst({ x: r.left + r.width / 2, y: r.top + r.height * 0.3, colors: ['#dff3ff', '#ffffff', '#b9e0f5'], count: 14, spread: r.width, size: 5, duration: 600, className: 'spark' });
+}
+
+/** Flip animations still playing or waiting, so a board change can stop them (Undo, Restart, Shuffle). */
+const flips = new Set<Animation>();
+
+/**
+ * The hourglass flip on jar `i` (D96). The jar already shows its new order. Its sand column
+ * turns over about its own middle (rotateX 180° → 0°), so it starts looking exactly like the old
+ * order and ends in the new one, and the badge's glyph turns half over. The old look is held for
+ * `delay` ms, while the pour around it finishes. Reduced motion: no motion, the new order is
+ * simply drawn. The `flip` sound plays either way.
+ */
+export function flipFx(i: number, delay: number): void {
+  const el = state.jarEls[i];
+  if (!el) return;
+  audio.play('flip', { delay: delay / 1000 });
+  if (reducedMotion()) return;
+  const timing: KeyframeAnimationOptions = { duration: FLIP_MS, delay, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'backwards' };
+  const sand = el.querySelector('.sand') as HTMLElement;
+  const glyph = el.querySelector('.hourglass-mark svg') as SVGElement | null;
+  const runs = [
+    sand.animate([{ transform: 'perspective(160px) rotateX(180deg)' }, { transform: 'perspective(160px) rotateX(0deg)' }], timing),
+    ...(glyph ? [glyph.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(180deg)' }], { ...timing, fill: 'none' })] : []),
+  ];
+  for (const a of runs) {
+    flips.add(a);
+    a.addEventListener('finish', () => flips.delete(a));
+    a.addEventListener('cancel', () => flips.delete(a));
+  }
+}
+
+/** Stops every flip animation: the board was redrawn by something other than a pour. */
+export function cancelFlips(): void {
+  for (const a of [...flips]) a.cancel();
 }
 
 export function setSelected(i: number | null): void {

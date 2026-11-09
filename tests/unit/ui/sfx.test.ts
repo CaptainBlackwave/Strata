@@ -7,8 +7,8 @@ import { HAPTICS, MASTER_GAIN, SOUNDS, SOUND_EVENTS, type SoundDetail, type Soun
 /** Details the game passes: jar indexes and stack heights for pitch, pour sizes for units. */
 const DETAILS: SoundDetail[] = [{}, ...[0, 1, 2, 3, 5, 8, 12].map((pitch) => ({ pitch })), ...[1, 2, 3, 4, 6, 9, 16].map((units) => ({ units }))];
 
-/** Every event the game makes, before (sprint 4) and after sprint 10. */
-const EXPECTED: SoundEvent[] = ['select', 'deselect', 'nope', 'pour', 'land', 'seal', 'win', 'coin', 'booster', 'shuffle', 'mapStone', 'locked', 'unlock', 'shell', 'sceneBought', 'playHere'];
+/** Every event the game makes, before (sprint 4) and after sprint 10, and the hourglass flip (sprint 13 M1). */
+const EXPECTED: SoundEvent[] = ['select', 'deselect', 'nope', 'pour', 'land', 'seal', 'win', 'coin', 'booster', 'shuffle', 'mapStone', 'locked', 'unlock', 'shell', 'sceneBought', 'playHere', 'flip'];
 
 describe('sound recipes (F1)', () => {
   it('lists every event, old and new', () => {

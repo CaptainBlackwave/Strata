@@ -13,17 +13,18 @@ import { bumpStats } from '../../core/profile';
 import { mapAvailable } from '../../core/map';
 import { writeSave } from '../storage';
 import { t } from '../strings';
-import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, showToast, toastEl, toolButtons, winEl } from '../dom';
+import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, reducedMotion, showToast, toastEl, toolButtons, winEl } from '../dom';
 import { showHome } from './home';
 import { screenOut } from '../fx';
 import { coach, updateHud } from './hud';
-import { buildJars, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
+import { buildJars, cancelFlips, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
+import { flipDelay, grownFrom } from '../logic/flip';
 import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
 import { openMap } from './map';
 import { boosterHintOnStart } from './onboarding';
 import { openWeekly, weeklyThemeName } from './sheets/weekly';
-import { audio, config, shuffleSeed, state } from '../state';
+import { ANIM, audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
 const RESTART_CONFIRM_MS = 3000;
@@ -189,19 +190,25 @@ export function beginSession(board: Board, isChallenge: boolean): void {
 
 export function onSessionEvent(e: SessionEvent): void {
   cancelAssists(); // every event is a board change: a Hint or Shuffle still thinking is stale (TD-13)
+  // A pour, Undo, Restart or Shuffle redraws the jars: a flip still turning over describes the old board.
+  if (e.type !== 'won' && e.type !== 'stuck') cancelFlips();
   switch (e.type) {
-    case 'pour':
+    case 'pour': {
+      const flipped = e.flipped ?? [];
       updateJar(e.move.from);
-      updateJar(e.move.to, state.session.board.jars[e.move.to].units.length - e.moved);
+      updateJar(e.move.to, grownFrom(e.move.to, state.session.board.jars[e.move.to].units.length, e.moved, flipped));
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
+      // The hourglass turns over once the pour around it is done (D96).
+      for (const i of flipped) flipFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
       announce(
         t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
           (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
-          (e.flipped ?? []).map((i) => ` ${t.flipAnnounce(i + 1)}`).join(''),
+          flipped.map((i) => ` ${t.flipAnnounce(i + 1)}`).join(''),
       );
       break;
+    }
     case 'extraJar':
       buildJars();
       break;
