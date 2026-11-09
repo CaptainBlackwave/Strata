@@ -340,8 +340,10 @@ function onStone(el: HTMLButtonElement): void {
   focusLevel = level;
   el.tabIndex = 0;
   const s = stoneAt(level, state.save, config);
-  if (s.state === 'next') playFromMap(level, false);
-  else openCard(s, el);
+  if (s.state === 'next') return playFromMap(level, false);
+  audio.unlock();
+  audio.play(s.state === 'locked' ? 'locked' : 'mapStone');
+  openCard(s, el);
 }
 
 /**

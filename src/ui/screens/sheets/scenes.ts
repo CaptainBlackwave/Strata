@@ -86,7 +86,7 @@ export function confirmScene(): void {
     if (!r.ok) return;
     state.save.wallet = r.wallet;
     state.save.themes = { ...state.save.themes, owned: r.owned };
-    audio.play('coin');
+    audio.play('sceneBought');
     showToast(t.sceneBought(theme.name));
   }
   // Choosing a scene by hand pins it (turns clock-matching off).
