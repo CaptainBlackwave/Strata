@@ -6,6 +6,7 @@
  */
 import { STYLE_SLOTS, type StyleSlot, buyStyle, stylesOpen, wearStyle } from '../../../core/styles';
 import { styleAction, stylesNewDue } from '../../logic/styles-sheet';
+import { applyStyleAttrs } from '../../style-art';
 import { type FocusTarget } from '../../layers';
 import { writeSave } from '../../storage';
 import { t } from '../../strings';
@@ -23,15 +24,10 @@ function nameOf(slot: StyleSlot, id: string): string {
   return t.styles.names[slot]?.[id] ?? id;
 }
 
-/** Sets the three style attributes on `el` (an empty value removes one). */
-function setStyleAttrs(el: HTMLElement, worn: Record<StyleSlot, string>): void {
-  for (const slot of STYLE_SLOTS) el.dataset[slot] = worn[slot];
-}
-
 /** Wears the saved styles on the board and the Home art. Call after boot, a reload or a change. */
 export function applyStyles(): void {
-  setStyleAttrs($('board'), state.save.styles.worn);
-  setStyleAttrs($('home'), state.save.styles.worn);
+  applyStyleAttrs($('board'), state.save.styles.worn);
+  applyStyleAttrs($('home'), state.save.styles.worn);
 }
 
 /** Shows or hides the Home button and its one-time "New" mark (§3.2). */
@@ -66,7 +62,7 @@ function pieceButton(slot: StyleSlot, id: string, price: number): HTMLButtonElem
   const swatch = document.createElement('span');
   swatch.className = 'style-preview style-swatch';
   swatch.setAttribute('aria-hidden', 'true');
-  setStyleAttrs(swatch, { ...state.save.styles.worn, [slot]: id });
+  applyStyleAttrs(swatch, { ...state.save.styles.worn, [slot]: id });
   swatch.innerHTML = jarHtml([slot === 'sand' ? 1 : 0, slot === 'sand' ? 1 : 0, slot === 'sand' ? 1 : 0, slot === 'sand' ? 1 : 0], true);
   const name = document.createElement('span');
   name.className = 'scene-name';
@@ -101,7 +97,7 @@ export function renderStyles(): void {
   preview ??= { ...worn };
   $('styles-coins').textContent = String(state.save.wallet.coins);
   const stage = $('styles-preview');
-  setStyleAttrs(stage, preview);
+  applyStyleAttrs(stage, preview);
   stage.innerHTML = STAGE_HTML();
   $('styles-slots').replaceChildren(
     ...STYLE_SLOTS.map((slot) => {
