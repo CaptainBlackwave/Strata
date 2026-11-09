@@ -1,5 +1,6 @@
 /** Scene colour tokens: which scene is active, and applying it to the page. */
-import { type ThemeTokens, activeTheme, localDateKey, themeById } from '../core/themes';
+import { type ThemeTokens, activeTheme, themeById } from '../core/themes';
+import { sceneDay } from './clock';
 import { startSceneFx } from './scene-fx';
 import { type UiThemeTokens, UI_TOKEN_VARS } from './theme-tokens';
 import { config, state } from './state';
@@ -11,8 +12,8 @@ const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
 };
 
 export function currentTheme(): string {
-  const now = new Date();
-  return activeTheme(state.save.themes, now.getHours(), config, localDateKey(now), { southern: state.save.settings.southern }); // holiday scenes follow the local date (B5)
+  const { hour, dateKey } = sceneDay(state.clock);
+  return activeTheme(state.save.themes, hour, config, dateKey, { southern: state.save.settings.southern }); // holiday scenes follow the local date (B5)
 }
 
 /** Applies a scene's colour tokens. Sand colours are never touched (decision S4-4). */

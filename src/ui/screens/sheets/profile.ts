@@ -1,11 +1,12 @@
 /** The profile card, the avatar and plate helpers every screen uses, and the progress that unlocks are measured against (design/gdd/player-profile.md). */
 import { allShells, setProgress } from '../../../core/collection';
-import { streakStatus, utcDateKey } from '../../../core/daily';
+import { streakStatus } from '../../../core/daily';
 import { byIdOr, isOwned } from '../../../core/themes';
 import { type Profile, type Progress, STAT_KEYS, generateName, progressOf, repairProfile } from '../../../core/profile';
 import { STAT_ICONS, portraitSvg } from '../../avatars';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
+import { dailyKey } from '../../clock';
 import { config, state } from '../../state';
 
 /** The progress values unlocks are measured against, from the live save. */
@@ -21,7 +22,7 @@ export function progressNow(): Progress {
 
 /** Makes the saved profile safe to show: a valid name, and only known, unlocked picks. */
 export function repairSaveProfile(): void {
-  state.save.profile = repairProfile(state.save.profile, config, progressNow(), () => generateName(Math.random, t.nameWords));
+  state.save.profile = repairProfile(state.save.profile, config, progressNow(), () => generateName(state.rng, t.nameWords));
 }
 
 export function avatarOf(id: string) {
@@ -77,7 +78,7 @@ export function renderProfile(): void {
   const rows: [keyof typeof t.statLabels, string][] = [
     ['levels', String(state.save.level - 1)],
     ['perfectClears', String(s.perfectClears)],
-    ['streak', String(streakStatus(state.save.daily, utcDateKey(new Date())).current)],
+    ['streak', String(streakStatus(state.save.daily, dailyKey(state.clock)).current)],
     ['bestStreak', String(state.save.daily.best)],
     ['dailiesSolved', String(s.dailiesSolved)],
     ['shells', `${state.save.shells.length}/${allShells(config).length}`],

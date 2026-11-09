@@ -33,7 +33,7 @@ export function startDaily(): void {
   audio.unlock();
   closeLayer(homeEl, false);
   state.mode = 'daily';
-  state.dailyDate = utcDateKey(new Date());
+  state.dailyDate = utcDateKey(state.clock()); // TD-16: the app clock
   const gen = generateDaily(state.dailyDate, config);
   state.dailyName = gen.spec.name;
   beginSession(gen.board, gen.spec.challenge);
