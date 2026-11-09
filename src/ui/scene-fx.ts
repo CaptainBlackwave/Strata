@@ -168,6 +168,14 @@ export function sceneSealBurst(jar: Element, color: string): void {
 }
 
 /**
+ * Whether {@link sceneWinDisplay} would draw now (New Year, Meteor shower or Aurora night,
+ * motion allowed, tab visible). The win bloom in fx.ts stays out of its way (D40, sprint 10 F5).
+ */
+export function sceneWinDisplayRuns(): boolean {
+  return (kind === 'fireworks' || kind === 'meteors' || kind === 'aurora') && !reduced() && !document.hidden;
+}
+
+/**
  * The fuller display when the win card opens (New Year only, owner decision 2026-11-08):
  * a short burst on its own canvas inside the win overlay, above its dimmed backdrop and
  * below the card, so the card's text is never covered. It lasts about 3.5 s, then the

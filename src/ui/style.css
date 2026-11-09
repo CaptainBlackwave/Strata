@@ -376,17 +376,7 @@ button {
 .jar.sealed {
   cursor: default;
 }
-.jar.just-sealed .glass {
-  animation: shimmer 700ms ease-out;
-}
-@keyframes shimmer {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 236, 170, 0.9);
-  }
-  100% {
-    box-shadow: 0 0 0 14px rgba(255, 236, 170, 0);
-  }
-}
+/* The seal shimmer is a sweep drawn by fx.ts (sprint 10 F5); see the block at the end. */
 
 /* A refused pour also gets a static outline, so it shows under reduced motion (AX-5). */
 .jar.nope .glass {
@@ -2637,7 +2627,6 @@ body[data-theme='harvestmoon']::before {
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
-  animation: fade 180ms ease-out;
 }
 .map[hidden] {
   display: none;
@@ -2905,18 +2894,21 @@ body[data-theme='harvestmoon']::before {
     position: absolute;
     inset: -6px;
     border-radius: inherit;
-    border: 3px solid var(--accent);
-    animation: stone-pulse 1.8s ease-out infinite;
+    border: 2px solid var(--accent);
+    opacity: 0;
+    animation: stone-pulse 2.6s cubic-bezier(0.25, 0.6, 0.35, 1) infinite;
     pointer-events: none;
   }
 }
+/* Sprint 10 F5: a softer, slower ripple with a rest between breaths. */
 @keyframes stone-pulse {
-  from {
-    transform: scale(0.95);
-    opacity: 0.8;
+  0% {
+    transform: scale(1);
+    opacity: 0.65;
   }
-  to {
-    transform: scale(1.45);
+  60%,
+  100% {
+    transform: scale(1.32);
     opacity: 0;
   }
 }
@@ -2973,4 +2965,55 @@ body[data-theme='harvestmoon']::before {
 .stone-card .sheet-row .primary {
   flex: 1 1 8rem;
   width: auto;
+}
+
+/* ==== Sprint 10 F5: celebrations and transitions (D68: calm, a little richer) ====
+   Drawn by fx.ts with the Web Animations API, transform and opacity only, nothing under
+   reduced motion. These rules are only the look of the nodes it adds. */
+.seal-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgba(255, 246, 216, 0) 0%, rgba(255, 246, 216, 0.7) 45%, rgba(255, 255, 255, 0.85) 55%, rgba(255, 246, 216, 0) 100%);
+  opacity: 0;
+}
+#fx i.mote,
+.win-bloom i.mote {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(255, 246, 216, 0.75);
+}
+#fx i.fly-coin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+/* Inside the win overlay: over the dim backdrop, under the card (like .scene-fx-win). */
+.win-bloom {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bloom-glow {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 246, 216, 0.85), rgba(255, 236, 170, 0.4) 55%, rgba(255, 236, 170, 0) 100%);
+  opacity: 0;
+}
+.path-dot {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+/* The still copy of a screen fading out over the next one: never interactive. */
+.screen-ghost {
+  z-index: 25;
+  pointer-events: none;
 }

@@ -1,6 +1,6 @@
 /** Jar rendering: building the jars for the board size, redrawing one, mechanic effects, selection and refusals. */
 import { type Board, type Jar, isSealed } from '../../core/board';
-import { burst, sparkleAround } from '../fx';
+import { burst, sealShimmer } from '../fx';
 import { sceneSealBurst } from '../scene-fx';
 import { computeLayout } from '../layout';
 import { t } from '../strings';
@@ -167,7 +167,7 @@ export function sealFx(i: number, color: string): void {
   void el.offsetWidth;
   el.classList.add('just-sealed');
   window.setTimeout(() => {
-    sparkleAround(el, color);
+    sealShimmer(el, color); // a soft shimmer up the glass and a few motes (D68)
     sceneSealBurst(el, color); // tier 3 scenes: a firework, a meteor or an aurora ripple
     audio.play('seal');
   }, reducedMotion() ? 0 : 180);
