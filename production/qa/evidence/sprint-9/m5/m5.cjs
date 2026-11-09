@@ -26,7 +26,7 @@ async function open(b, save, { device = 'Pixel 7', big = false, query = '' } = {
   return { ctx, p };
 }
 async function solve(p) {
-  await p.click('#btn-play', { force: true }); await w(p, 700);
+  await p.click('#btn-play', { force: true }); await w(p, 700); if (await p.locator('#map:not([hidden])').count()) { await p.click('#btn-map-play', { force: true }); await w(p, 700); } // M3: Play opens the map
   for (let i = 0; i < 120; i++) {
     if (await p.evaluate(() => !document.getElementById('win').hidden)) return true;
     await p.keyboard.press('h'); await w(p, 200);
@@ -81,7 +81,7 @@ async function solve(p) {
     // UX-board-9 and UX-board-10: the tutorial on iPhone SE at 150% text
     for (const [label, big, device] of [['pixel7', false, 'Pixel 7'], ['se-150', true, 'iPhone SE']]) {
       const { ctx, p } = await open(b, mkSave({ level: 1, tutorialDone: false, shells: [] }), { device, big });
-      await p.click('#btn-play', { force: true }); await w(p, 800);
+      await p.click('#btn-play', { force: true }); await w(p, 800); if (await p.locator('#map:not([hidden])').count()) { await p.click('#btn-map-play', { force: true }); await w(p, 800); } // M3: Play opens the map
       const r = await p.evaluate(() => {
         const note = document.getElementById('tools-note'); const cap = document.getElementById('coach-text').getBoundingClientRect();
         return { note: note.hidden ? null : note.textContent, described: [...document.querySelectorAll('.tool, #btn-restart')].map((b) => `${b.disabled}:${b.getAttribute('aria-describedby')}`), caption: { left: Math.round(cap.left), right: Math.round(cap.right), height: Math.round(cap.height), vw: innerWidth }, coachShown: !document.getElementById('coach').hidden };

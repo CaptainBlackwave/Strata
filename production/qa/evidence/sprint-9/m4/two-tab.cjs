@@ -29,7 +29,7 @@ async function newTab(ctx, name) {
 }
 /** Plays the open board to a win with hints: press H, follow the ring, repeat. */
 async function solve(p) {
-  await p.click('#btn-play', { force: true }); await w(p, 700);
+  await p.click('#btn-play', { force: true }); await w(p, 700); if (await p.locator('#map:not([hidden])').count()) { await p.click('#btn-map-play', { force: true }); await w(p, 700); } // M3: Play opens the map
   for (let i = 0; i < 120; i++) {
     if (await p.evaluate(() => !document.getElementById('win').hidden)) return true;
     await p.keyboard.press('h'); await w(p, 200);
