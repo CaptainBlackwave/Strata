@@ -337,6 +337,15 @@ export function screenIn(el: HTMLElement, rise = 0): void {
 }
 
 /**
+ * Keeps `el` out of sight while the screen over it fades in, then shows it (Home under a map
+ * opened straight from the board, so the fade is board to map, not via Home).
+ */
+export function screenHold(el: HTMLElement): void {
+  if (!allowed()) return;
+  track(el.animate([{ opacity: 0 }, { opacity: 0, offset: 0.99 }, { opacity: 1 }], { duration: FX_MS.transition }));
+}
+
+/**
  * A screen fading out over the one it reveals. The real screen closes at once (input,
  * focus and state never wait); a still copy of it fades out on top, takes no input and is
  * hidden from assistive tech, so a tap or key goes straight to the new screen.

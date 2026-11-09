@@ -10,7 +10,7 @@ import { type Stone, type StoneWords, mapWindow, sceneryAt, stoneAt, stoneName }
 import { t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, reducedMotion } from '../dom';
 import { FX_MS, revealStretch, stretchDots } from '../fx-plan';
-import { mapFx, popIn, revealStretchFx, screenIn, screenOut, settle } from '../fx';
+import { mapFx, popIn, revealStretchFx, screenHold, screenIn, screenOut, settle } from '../fx';
 import { startLevel } from './board';
 import { showHome } from './home';
 import { audio, config, state } from '../state';
@@ -317,7 +317,8 @@ function focusStone(level: number): void {
 export function openMap(level: number = state.save.level): void {
   if (!layers.has(homeEl)) {
     showHome();
-    settle(homeEl); // the map fades in over the board; Home under it doesn't fade too
+    settle(homeEl);
+    screenHold(homeEl); // the map fades in over the board; Home under it waits out of sight
   }
   playBtn.textContent = t.play(state.save.level);
   $('map-coins').textContent = String(state.save.wallet.coins);
