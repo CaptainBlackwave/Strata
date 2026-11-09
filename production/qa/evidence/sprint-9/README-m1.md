@@ -66,3 +66,17 @@ Hidden page: the frames change while the page is visible, freeze while `document
 
 - Aurora night: the top band (at 10% of the screen height, 110 px thick) starts behind the board HUD. Its upper edge is faint, but a ripple passing near the left can brighten it slightly behind "Level N". If art review wants it clear, the fix is to start the bands under the HUD the way Winter lights now does.
 - The commit hook flagged "hardcoded gameplay values" in `scene-fx.ts`. They are visual tuning for the layer, not gameplay. They follow the file's existing convention and are named constants. Moving them to `game-config.json` would be a separate decision.
+
+## Follow-up: Aurora night bands clear the HUD (D54)
+
+The M1 review noted that the top aurora band started behind the board HUD, the same problem D54 fixed for Winter lights. `scene-fx.ts` now shares the Winter lights HUD measurement. Every band moves down until the top band's highest possible lit pixel, at full ripple stretch and top of sway, sits at least 10 px under the HUD. The measurement is repeated on resize, and the reduced-motion still frame is redrawn.
+
+Canvas alpha behind the HUD was measured by `aurora.cjs`, with `getImageData` over rows 0 to HUD bottom:
+
+| Case | HUD bottom | Max alpha behind HUD, before → after | First lit row, before → after |
+|---|---|---|---|
+| Pixel 7, 100% text | 66 | 35 → 0 | 29 → 104 |
+| iPhone SE, 150% text | 95 | 63 → 0 | 3 → 134 |
+| Pixel 7, reduced motion | 66 | 30 → 0 | 30 → 105 |
+
+Screenshots: `m1-auroranight-board-*-before.png` / `-after.png`. The seal ripple (`m1-auroranight-seal-*`) is unchanged; it only brightens the bands.

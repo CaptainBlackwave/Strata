@@ -42,6 +42,8 @@ const BANDS = [
 ] as const;
 /** Aurora night: slices per band (3 x 16 = 48 of the 60-particle budget; ripples use the rest). */
 const AURORA_COLS = 16;
+/** Aurora night: a full ripple lengthens a slice by this share of its thickness. */
+const RIPPLE_STRETCH = 0.2;
 const MAX_RIPPLES = 4;
 
 /** Winter lights: the bulb colours, cycled along the string. */
@@ -100,6 +102,8 @@ let wired = false;
 /** Winter lights: the wire's height at the hooks and its deepest dip below them, from {@link hangString}. */
 let hookY = 14;
 let sag = MAX_SAG;
+/** Aurora night: how far every band is moved down so the top band's glow starts below the HUD, from {@link hangString}. */
+let auroraShift = 0;
 let hudWatch: ResizeObserver | null = null;
 
 /**
@@ -120,7 +124,7 @@ export function startSceneFx(id: string): void {
   mount();
   resize();
   seed();
-  if (kind === 'lights') watchHud();
+  if (hugsHud()) watchHud();
   resume();
 }
 
@@ -363,11 +367,12 @@ function mount(): void {
   const home = document.getElementById('home');
   const parent = home && !home.hidden ? home : document.body;
   if (canvas.parentElement !== parent) parent.prepend(canvas);
-  if (kind === 'lights') rehang();
+  if (hugsHud()) rehang();
 }
 
 /**
- * Winter lights: measures where the string can hang. On Home it sits under the top row
+ * Winter lights and Aurora night: measures the HUD's bottom edge. Aurora night moves its bands
+ * down by {@link auroraShift} so no glow sits behind the HUD text. Winter lights: measures where the string can hang. On Home it sits under the top row
  * (profile chip and Settings); on the board, under the HUD ("Level N", Restart, coins,
  * Settings, pours). The swag depth shrinks if the logo or the jars start close below.
  */
@@ -378,18 +383,27 @@ function hangString(): void {
   const below = document.querySelector(onHome ? '#home .logo-jars' : '#board');
   const hudBottom = hud ? hud.getBoundingClientRect().bottom : 0;
   hookY = Math.round(hudBottom + HUD_CLEAR);
+  // Aurora night: the top band's highest lit pixel (thickest slice at full ripple lift, at the top of its sway).
+  const top = BANDS[0];
+  const highest = top.at * h - (top.thick * (1 + RIPPLE_STRETCH)) / 2 - top.sway;
+  auroraShift = Math.max(0, Math.ceil(hookY - highest));
   const room = below ? below.getBoundingClientRect().top - hookY - 16 : MAX_SAG;
   sag = Math.max(MIN_SAG, Math.min(MAX_SAG, room));
 }
 
+/** Scenes whose top layer must sit under the HUD rather than behind it: Winter lights and Aurora night (D54). */
+function hugsHud(): boolean {
+  return kind === 'lights' || kind === 'aurora';
+}
+
 /** Re-measures the string and, under reduced motion, redraws the one still frame in place. */
 function rehang(): void {
-  if (kind !== 'lights' || !canvas) return;
+  if (!hugsHud() || !canvas) return;
   hangString();
   if (reduced()) still();
 }
 
-/** Winter lights: re-measure when the HUD or the top row changes size (large text, wrapping, a tag). */
+/** Winter lights and Aurora night: re-measure when the HUD or the top row changes size (large text, wrapping, a tag). */
 function watchHud(): void {
   if (typeof ResizeObserver === 'undefined') return;
   hudWatch = new ResizeObserver(() => rehang());
@@ -410,7 +424,7 @@ function resize(): void {
   canvas.height = Math.round(h * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (oldW && oldW !== w) for (const p of ambient) p.x = (p.x / oldW) * w;
-  if (kind === 'lights') hangString();
+  if (hugsHud()) hangString();
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -678,8 +692,8 @@ function draw(): void {
       // Ambient slices stay capped at 0.5; the ripple lifts the cap and lengthens the slice a little.
       const lift = Math.min(1, gain);
       ctx.globalAlpha = Math.min(0.5 + (SEAL_RIPPLE.maxAlpha - 0.5) * lift, (0.22 + 0.08 * Math.sin(clock * 0.6 + p.x * 0.01 + p.phase)) * (1 + gain));
-      const tall = p.r * (1 + 0.2 * lift);
-      ctx.drawImage(auroraSprite(p.color), p.x - colW / 2, p.y + sway - tall / 2, colW, tall);
+      const tall = p.r * (1 + RIPPLE_STRETCH * lift);
+      ctx.drawImage(auroraSprite(p.color), p.x - colW / 2, p.y + auroraShift + sway - tall / 2, colW, tall);
     }
     ctx.globalAlpha = 1;
   } else if (kind === 'fireworks') {
