@@ -9,7 +9,6 @@ import type { BoosterId, EconomyConfig } from '../core/economy';
 import type { GameConfig } from '../core/levels';
 import type { MapConfig } from '../core/map';
 import type { ProfileConfig } from '../core/profile';
-import { createRng } from '../core/rng';
 import type { GameSession } from '../core/session';
 import type { ThemeConfig } from '../core/themes';
 import { GameAudio } from './audio';
@@ -45,6 +44,10 @@ export interface UiState {
   returning: Set<number>;
   /** A coin purchase waiting for its second tap (UX-board-7). */
   armedBooster: BoosterId | null;
+  /** Hint or Shuffle waiting for the worker (TD-13): its button is disabled and `aria-busy`. */
+  thinking: 'hint' | 'shuffle' | null;
+  /** The thinking cue is visible (after a short delay, so a fast answer doesn't flicker). */
+  thinkingShown: boolean;
 }
 
 const initialSave = loadSave(config);
@@ -65,6 +68,12 @@ export const state: UiState = {
   unitHeight: 0,
   returning: new Set<number>(),
   armedBooster: null,
+  thinking: null,
+  thinkingShown: false,
 };
 export const audio = new GameAudio(initialSave.settings);
-export const shuffleRng = createRng(Date.now() >>> 0);
+/**
+ * The seed for one Shuffle, read from the clock here so `src/core` never reads it (TD-16).
+ * The seed travels with the job, so the worker and the main thread deal the same (TD-13).
+ */
+export const shuffleSeed = (): number => Date.now() >>> 0;

@@ -4,30 +4,44 @@ import { generateDaily, utcDateKey } from '../../core/daily';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { tutorialBoard } from '../../core/generator';
 import { type MechanicId } from '../../core/levels';
-import { type GenPort, type PreparedLevel, Prefetcher } from '../../core/prefetch';
-import { type SessionEvent, GameSession, sessionOptions } from '../../core/session';
+import { type AssistJob, type AssistPort, type AssistRequest, type AssistResponse, type AssistResult, AssistClient, runAssist } from '../../core/assist';
+import { type GenPort, type GenRequest, type GenResponse, type PreparedLevel, Prefetcher } from '../../core/prefetch';
+import { type HintResult, type SessionEvent, GameSession, sessionOptions } from '../../core/session';
 import { bumpStats } from '../../core/profile';
 import { mapAvailable } from '../../core/map';
 import { writeSave } from '../storage';
 import { t } from '../strings';
-import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, levelLabel, showToast, toastEl, toolButtons, winEl } from '../dom';
+import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, showToast, toastEl, toolButtons, winEl } from '../dom';
 import { showHome } from './home';
 import { coach, updateHud } from './hud';
 import { buildJars, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
 import { openMap } from './map';
-import { audio, config, shuffleRng, state } from '../state';
+import { audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
 const RESTART_CONFIRM_MS = 3000;
+/** How long Hint or Shuffle waits on the worker before its "Thinking…" cue shows (ms): presentation only (TD-13). */
+const THINKING_CUE_MS = 150;
 
 let hintTimer = 0;
 let restartTimer = 0; // Restart's second-tap window (F6)
 let boosterTimer = 0;
 let startToken = 0; // the latest startLevel call; an older one still waiting gives way
+let thinkingTimer = 0;
+let thinkingHadFocus = false;
 /** Background generation of upcoming levels (sprint 8 P4, D46). */
 export const prefetcher = new Prefetcher(config, workerPort);
+/** Hint and Shuffle off the main thread (TD-13), on their own instance of the same worker module. */
+export const assists = new AssistClient(assistPort);
+/** False under the `?level=N` QA route: Hint and Shuffle then run synchronously, as before TD-13. */
+let assistsOffThread = true;
+
+/** Runs Hint and Shuffle on the main thread for this page (the `?level=N` QA route, TD-13). */
+export function assistsOnMainThread(): void {
+  assistsOffThread = false;
+}
 
 export function startDaily(): void {
   audio.unlock();
@@ -104,9 +118,19 @@ export function showLevel(gen: PreparedLevel): void {
 
 /** The Web Worker behind the prefetcher, or `null` where workers are unavailable. */
 export function workerPort(): GenPort | null {
+  return workerChannel<GenRequest, GenResponse>();
+}
+
+/** A second instance of the same worker for Hint and Shuffle (TD-13), or `null` without workers. */
+export function assistPort(): AssistPort | null {
+  return workerChannel<AssistRequest, AssistResponse>();
+}
+
+/** Starts `gen-worker.ts` and wraps it as a port; `null` where workers are unavailable. */
+function workerChannel<Req, Res>(): { post(req: Req): void; onMessage: ((res: Res) => void) | null; onError: (() => void) | null; terminate(): void } | null {
   if (typeof Worker === 'undefined') return null;
   const w = new Worker(new URL('../gen-worker.ts', import.meta.url), { type: 'module' });
-  const port: GenPort = { post: (req) => w.postMessage(req), onMessage: null, onError: null, terminate: () => w.terminate() };
+  const port = { post: (req: Req) => w.postMessage(req), onMessage: null as ((res: Res) => void) | null, onError: null as (() => void) | null, terminate: () => w.terminate() };
   w.onmessage = (e: MessageEvent) => port.onMessage?.(e.data);
   w.onerror = () => port.onError?.();
   w.onmessageerror = () => port.onError?.();
@@ -114,6 +138,7 @@ export function workerPort(): GenPort | null {
 }
 
 export function beginSession(board: Board, isChallenge: boolean): void {
+  cancelAssists(); // a reply for the old level must not land on the new one (TD-13)
   // One place builds the options, so the shuffle's total budget (F7, GA-SB-4) is always passed.
   state.session = new GameSession(board, sessionOptions(config));
   state.session.onChange(onSessionEvent);
@@ -131,6 +156,7 @@ export function beginSession(board: Board, isChallenge: boolean): void {
 }
 
 export function onSessionEvent(e: SessionEvent): void {
+  cancelAssists(); // every event is a board change: a Hint or Shuffle still thinking is stale (TD-13)
   switch (e.type) {
     case 'pour':
       updateJar(e.move.from);
@@ -298,6 +324,7 @@ export function disarmBooster(): void {
 export function useBooster(id: BoosterId): void {
   audio.unlock();
   if (state.busy || state.returning.size || state.mode === 'tutorial' || state.session.status === 'won') return;
+  if ((id === 'hint' || id === 'shuffle') && state.thinking) return; // one assist at a time (TD-13)
   if (id === 'undo' && !state.session.canUndo) return showToast(t.noUndo);
   // With no charges left, the first tap only names the price and a second tap within the
   // window buys, like Restart's arm (UX-board-7). Too few coins skips this: the spend is refused anyway.
@@ -313,35 +340,104 @@ export function useBooster(id: BoosterId): void {
     return;
   }
   disarmBooster();
+  if (!spendBooster(state.save.wallet, id, config).ok) {
+    audio.play('nope');
+    return showToast(t.notEnoughCoins(config.boosters[id].price));
+  }
+  setSelected(null);
+  if (id === 'hint' || id === 'shuffle') return askAssist(id);
+  chargeBooster(id, () => (id === 'undo' ? state.session.undo() : state.session.addExtraJar()));
+}
+
+/**
+ * Charges booster `id` (a charge, or coins) only if `apply` reports it applied, then saves,
+ * plays its sound and updates the HUD. Every booster ends here, on either thread path.
+ */
+function chargeBooster(id: BoosterId, apply: () => boolean): void {
   const before = state.save.wallet;
-  const r = spendBooster(state.save.wallet, id, config);
+  const r = spendBooster(before, id, config);
   if (!r.ok) {
     audio.play('nope');
     return showToast(t.notEnoughCoins(config.boosters[id].price));
   }
-  let applied = false;
-  setSelected(null);
-  if (id === 'undo') applied = state.session.undo();
-  else if (id === 'extraJar') applied = state.session.addExtraJar();
-  else if (id === 'shuffle') {
-    applied = state.session.shuffle(shuffleRng);
-    if (!applied) showToast(t.noShuffle);
-    else audio.play('shuffle');
-  } else if (id === 'hint') applied = showHint();
+  const applied = apply();
   state.save.wallet = applied ? r.wallet : before;
   // Free Undo is a pour taken back, not a booster, so it isn't counted (owner decision, sprint 6).
   if (applied && !isFreeBooster(id, config)) state.save.stats = bumpStats(state.save.stats, { boostersUsed: 1 });
   writeSave(state.save);
   if (applied) {
-    if (id !== 'shuffle') audio.play('booster');
+    audio.play(id === 'shuffle' ? 'shuffle' : 'booster');
     if (r.paidCoins) showToast(t.boughtWith(r.paidCoins));
   }
   updateHud();
 }
 
-/** Highlights the solver's next move. Returns false if there is none. */
-export function showHint(): boolean {
-  const r = state.session.hintResult();
+/**
+ * Hint or Shuffle (TD-13). A hint that needs no search answers at once. Otherwise the solver
+ * runs in the worker while the button shows "thinking"; the board stays playable, and a pour,
+ * Undo, Restart or leaving the level drops the reply uncharged. Without a working worker, and
+ * under the `?level=N` QA route, the same job runs on the main thread, so results are identical.
+ */
+function askAssist(id: 'hint' | 'shuffle'): void {
+  const s = state.session;
+  if (id === 'hint') {
+    const quick = s.hintWithoutSearch();
+    if (quick) return chargeBooster(id, () => showHint(quick));
+  }
+  const job: AssistJob = id === 'hint' ? { kind: 'hint', board: s.board, options: s.tuning } : { kind: 'shuffle', board: s.board, options: s.tuning, seed: shuffleSeed() };
+  if (!assistsOffThread) return applyAssist(id, runAssist(job));
+  const asked = s.revision;
+  const isCurrent = () => state.session === s && s.revision === asked && s.status !== 'won' && !layers.has(homeEl);
+  setThinking(id);
+  void assists.run(job, isCurrent).then((out) => {
+    if (out.status === 'stale') {
+      if (state.thinking === id) setThinking(null); // left the level: nothing applied, nothing charged
+      return;
+    }
+    setThinking(null);
+    applyAssist(id, out.status === 'done' ? out.result : runAssist(job)); // a failed worker falls back to this thread
+  });
+}
+
+/** Applies a Hint or Shuffle result to the current board and charges for it if it helped. */
+function applyAssist(id: 'hint' | 'shuffle', result: AssistResult): void {
+  chargeBooster(id, () => {
+    if (result.kind === 'hint') return showHint(state.session.adoptHint(result.search));
+    const applied = result.board !== null && state.session.applyShuffle(result.board);
+    if (!applied) showToast(t.noShuffle);
+    return applied;
+  });
+}
+
+/**
+ * Puts Hint or Shuffle into its "thinking" state, or clears it with `null` (TD-13): disabled
+ * and `aria-busy` at once, the visible cue after THINKING_CUE_MS. Focus that the disabled
+ * button dropped goes back to it.
+ */
+function setThinking(id: 'hint' | 'shuffle' | null): void {
+  window.clearTimeout(thinkingTimer);
+  const btn = toolButtons.find((b) => b.dataset.booster === (id ?? state.thinking));
+  if (id) thinkingHadFocus = !!btn && document.activeElement === btn;
+  const was = state.thinking;
+  state.thinking = id;
+  state.thinkingShown = false;
+  if (id)
+    thinkingTimer = window.setTimeout(() => {
+      state.thinkingShown = true;
+      updateHud();
+    }, THINKING_CUE_MS);
+  if (state.session) updateHud();
+  if (!id && was && thinkingHadFocus && btn && !btn.disabled && (document.activeElement === document.body || document.activeElement === null)) btn.focus();
+}
+
+/** Drops any Hint or Shuffle still thinking: its board is gone (TD-13). */
+export function cancelAssists(): void {
+  assists.cancel();
+  if (state.thinking) setThinking(null);
+}
+
+/** Highlights the hint's move. Returns false if there is none. */
+export function showHint(r: HintResult): boolean {
   if (!('move' in r)) {
     // Not applied, so the charge or coins are refunded. A proven loss shows the banner (D21);
     // a search that ran out of budget doesn't claim the board is lost (F7, GA-SB-2).

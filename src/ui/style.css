@@ -2481,6 +2481,32 @@ body[data-theme='harvestmoon']::before {
   background: var(--coral-text);
 }
 
+/* TD-13: Hint or Shuffle waiting for the worker. Busy, not dimmed like a disabled tool; the
+   label reads "Thinking…" (the cue under reduced motion) and the icon pulses otherwise. */
+.tool[aria-busy='true']:disabled {
+  opacity: 1;
+  cursor: progress;
+}
+.tool.thinking {
+  box-shadow:
+    0 0 0 3px #2a9d8f,
+    0 6px 14px rgba(90, 70, 50, 0.1);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tool.thinking svg {
+    animation: tool-think 900ms ease-in-out infinite;
+  }
+}
+@keyframes tool-think {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
 /* UX-settings-6: two boxes, "Your code" (read-only) and "Paste a code to restore". */
 .transfer-label {
   display: block;

@@ -6,7 +6,7 @@ import { DICE_SVG } from './avatars';
 import { whatsNewDue, writeSave } from './storage';
 import { t } from './strings';
 import { $, toolButtons } from './dom';
-import { prefetcher, startLevel, startTutorial, wireBoard } from './screens/board';
+import { assistsOnMainThread, prefetcher, startLevel, startTutorial, wireBoard } from './screens/board';
 import { openWhatsNew, showHome, wireHome } from './screens/home';
 import { wireOtherTab } from './screens/other-tab';
 import { wireKeys } from './screens/keys';
@@ -58,6 +58,7 @@ export function boot(): void {
   wireAll();
   if (qaLevel) {
     state.level = launchLevel(levelParam, state.save.level); // replay only, never beyond progress (D3)
+    assistsOnMainThread(); // QA route: Hint and Shuffle stay synchronous, so a scripted check sees them at once (TD-13)
     startLevel(state.level);
   } else {
     // P4: the home screen covers the board, so the first board is made in the worker while
