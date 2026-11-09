@@ -10,6 +10,18 @@ The game's release history. The repository's root `CHANGELOG.md` belongs to the 
 | v0.6.0 | `43c1420` (sprint 6, PR #2) |
 | v0.7.0 | `ab56334` (sprint 7, PR #3) |
 | v0.8.0 | `05d5be5` (sprint 8, PR #4) |
+| v0.9.0 | the sprint 9 squash commit on `main`, once its PR is merged |
+
+## 0.9.0 (2026-11-09): sprint 9
+**For players**
+- A level map: Play opens a winding beach path of level stones. The scenery changes every 20 levels. Each cleared stone shows its Perfect mark and best pours, special levels have icons, and the next 20 levels show as locked stones with what is coming.
+- Replay any cleared level from the map. Replays pay no coins, but they can earn a missing Perfect mark (which counts once towards the Perfect stat) and beat your best pours.
+- One tab at a time: opening Strata in a new tab takes over, and the older tab offers "Play here", so two tabs can no longer overwrite each other's progress.
+- Aurora night and Winter lights stay clear of the top bar. The Rainbow after rain arc no longer crosses the title. Seals in Meteor shower and Aurora night are easier to see.
+- Smaller fixes: the tutorial explains why boosters are off; its caption wraps on small screens; the daily card says which day it is to screen readers; the newest shell is marked "New"; and equalling your best no longer says "new best".
+
+**Under the hood**
+- `main.ts` was split into one module per screen (TD-1). The single version now lives in `package.json` (D56).
 
 ## 0.8.0 (2026-11-08): sprint 8
 **For players**
