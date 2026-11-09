@@ -15,7 +15,7 @@ Sprint plan: `production/sprints/sprint-10.md`. Each part has its own notes:
 | F9 | `f9/README.md` | Booster badges at large text: they take the icon's place, the toolbar keeps its height, and jar sizes match 0.9.1 |
 
 **Final regression on the merged build (2026-11-09):**
-- `npm test`: 685/685. `npm run typecheck` and `npm run build`: pass.
+- `npm test`: 689/689 (685 before the review fixes). `npm run typecheck` and `npm run build`: pass.
 - Browser scripts, all with no page errors:
   - hint play-through to a win;
   - level 141 instant start, at 100% and 150% text;
