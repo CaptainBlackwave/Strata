@@ -1,9 +1,10 @@
-// The "What's new" card's save field (production/sprints/sprint-8.md P5, D46, D52).
+// The "What's new" changelog and its save field (production/sprints/sprint-8.md P5, D46, D52).
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import type { EconomyConfig } from '../../../src/core/economy';
 import { type KeyValueStore, exportSave, freshSave, importSave, loadSave, whatsNewDue, writeSave } from '../../../src/ui/storage';
 import { WHATS_NEW_VERSION, t } from '../../../src/ui/strings';
+import { whatsNewReleases } from '../../../src/ui/logic/whats-new';
 
 const econ = config as unknown as EconomyConfig;
 const KEY = 'strata.save.v2';
@@ -20,10 +21,46 @@ function oldSave(): Record<string, unknown> {
 }
 
 describe("What's new content", () => {
-  it('has 3 to 5 lines for the current version', () => {
+  const releases = t.whatsNew.releases;
+  /** "0.10.1" -> [0, 10, 1], for comparing versions by number rather than as text. */
+  const parts = (v: string) => v.split('.').map(Number);
+  const newer = (a: string, b: string) => {
+    const [x, y] = [parts(a), parts(b)];
+    for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
+    return false;
+  };
+
+  it('opens with a posting for the current version', () => {
     expect(t.whatsNew.version).toBe(WHATS_NEW_VERSION);
-    expect(t.whatsNew.lines.length).toBeGreaterThanOrEqual(3);
-    expect(t.whatsNew.lines.length).toBeLessThanOrEqual(5);
+    expect(releases[0].version).toBe(WHATS_NEW_VERSION);
+  });
+  it('gives every posting 3 to 5 lines and a name', () => {
+    for (const r of releases) {
+      expect(r.lines.length, r.version).toBeGreaterThanOrEqual(3);
+      expect(r.lines.length, r.version).toBeLessThanOrEqual(5);
+      expect(r.name.length, r.version).toBeGreaterThan(0);
+    }
+  });
+  it('lists each version once, newest first', () => {
+    for (const r of releases) expect(r.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(new Set(releases.map((r) => r.version)).size).toBe(releases.length);
+    for (let i = 1; i < releases.length; i++) expect(newer(releases[i - 1].version, releases[i].version), releases[i].version).toBe(true);
+  });
+  it('keeps every posting back to the first card in 0.8.0', () => {
+    expect(releases.map((r) => r.version)).toEqual(expect.arrayContaining(['0.8.0', '0.9.0', '0.9.1', '0.10.0', '0.10.1', '0.11.0']));
+  });
+});
+
+describe('whatsNewReleases', () => {
+  it('shows the whole changelog from Settings', () => {
+    expect(whatsNewReleases(t.whatsNew.releases, true)).toEqual(t.whatsNew.releases);
+  });
+  it('shows only the newest posting on the card after an update', () => {
+    expect(whatsNewReleases(t.whatsNew.releases, false)).toEqual([t.whatsNew.releases[0]]);
+  });
+  it('shows nothing when there are no postings', () => {
+    expect(whatsNewReleases([], true)).toEqual([]);
+    expect(whatsNewReleases([], false)).toEqual([]);
   });
 });
 
