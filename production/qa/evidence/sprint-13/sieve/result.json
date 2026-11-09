@@ -21,8 +21,8 @@
   },
   "clearanceMidday": {
     "band": {
-      "w": 60,
-      "h": 14
+      "w": 58,
+      "h": 13
     },
     "jarW": 52,
     "overlapsMarks": false,
@@ -46,8 +46,8 @@
   "errorsGuide": [],
   "clearanceMoonlit": {
     "band": {
-      "w": 60,
-      "h": 14
+      "w": 58,
+      "h": 13
     },
     "jarW": 52,
     "overlapsMarks": false,
@@ -56,9 +56,24 @@
   "errorsMoonlit": [],
   "patternBand": "sieve-band pat-1",
   "errorsPatterns": [],
+  "stylesWorn": {
+    "glass": "amber",
+    "cork": "brass",
+    "sand": "glint"
+  },
+  "clearanceStyles": {
+    "band": {
+      "w": 58,
+      "h": 13
+    },
+    "jarW": 52,
+    "overlapsMarks": false,
+    "overlapsOtherJars": false
+  },
+  "errorsStyles": [],
   "clearance320": {
     "band": {
-      "w": 35,
+      "w": 31,
       "h": 11
     },
     "jarW": 27,
@@ -67,6 +82,7 @@
   },
   "pageOverflow320": false,
   "errors320": [],
+  "emptyTap": "Only saffron sand can go in this sieve.",
   "win": {
     "pours": 54,
     "shown": true,

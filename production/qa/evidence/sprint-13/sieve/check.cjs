@@ -148,14 +148,26 @@ const clearance = (p) => p.evaluate(() => {
     await ctx.close();
   }
 
+  // 3b. Jar styles worn (amber glass, brass cork, glint sand): the band keeps its colour and place.
+  {
+    const styles = { owned: ['glass:amber', 'cork:brass', 'sand:glint'], worn: { glass: 'amber', cork: 'brass', sand: 'glint' } };
+    const { ctx, p } = await open(b, px, { save: seed({ seenMechanics: seen, styles }) });
+    await closeIntro(p);
+    R.stylesWorn = await p.evaluate(() => { const bd = document.querySelector('#board'); return { glass: bd?.dataset.glass, cork: bd?.dataset.cork, sand: bd?.dataset.sand }; });
+    R.clearanceStyles = await clearance(p);
+    await p.screenshot({ path: path.join(out, '09-styles-amber-brass-glint.png') });
+    R.errorsStyles = p.errors;
+    await ctx.close();
+  }
+
   // 4. 150% text on 320 x 568.
   {
     const { ctx, p } = await open(b, SMALL, { big: true });
-    await p.screenshot({ path: path.join(out, '09-320-150-intro.png') });
+    await p.screenshot({ path: path.join(out, '10-320-150-intro.png') });
     await closeIntro(p);
     R.clearance320 = await clearance(p);
     R.pageOverflow320 = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth);
-    await p.screenshot({ path: path.join(out, '10-320-150-board.png') });
+    await p.screenshot({ path: path.join(out, '11-320-150-board.png') });
     R.errors320 = p.errors;
     await ctx.close();
   }
@@ -170,14 +182,20 @@ const clearance = (p) => p.evaluate(() => {
       try { await hintPour(p); } catch { break; }
       pours++;
       await settle(p, 1300);
+      // An empty sieve, tapped with nothing lifted, explains its band too.
+      if (!R.emptyTap && (await jars(p)).some((j) => j.sieve && j.units === 0) && !(await p.$('.jar.selected'))) {
+        await w(p, 2700);
+        await tap(p, (await jars(p)).find((j) => j.sieve).index);
+        R.emptyTap = await toast(p);
+      }
       if (!sealedSieve && (await p.$('.jar.sieve.sealed'))) {
         sealedSieve = true;
-        await p.screenshot({ path: path.join(out, '11-sieve-sealed.png') });
+        await p.screenshot({ path: path.join(out, '12-sieve-sealed.png') });
       }
     }
     R.win = { pours, shown: await p.locator('#win').isVisible(), sealedSieve, errors: p.errors };
     await w(p, 800);
-    await p.screenshot({ path: path.join(out, '12-win-141.png') });
+    await p.screenshot({ path: path.join(out, '13-win-141.png') });
     await ctx.close();
   }
 

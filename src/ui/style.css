@@ -1596,10 +1596,11 @@ button {
   display: block;
   position: absolute;
   z-index: 2;
-  left: -4px;
-  right: -4px;
-  top: calc(var(--jar-w) * 0.18 - 4px);
-  height: max(11px, calc(var(--jar-w) * 0.26));
+  /* --neck is where the glass starts: below the cork room on the board, 14 px in the Jar guide. */
+  left: min(-2px, calc(var(--jar-w) * -0.06));
+  right: min(-2px, calc(var(--jar-w) * -0.06));
+  top: calc(var(--neck, calc(var(--jar-w) * 0.18)) - 2px);
+  height: max(11px, calc(var(--jar-w) * 0.25));
   border: 2px solid var(--ink);
   border-radius: 5px;
   background-color: var(--band);
@@ -1618,12 +1619,18 @@ button {
     repeating-linear-gradient(90deg, rgba(40, 30, 20, 0.45) 0 1px, transparent 1px 4px),
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 4px);
 }
-/* Patterns on: the mesh keeps to a strip at the band's foot, so the pattern reads above it. */
+/* Patterns on: the mesh keeps to a woven strip at the band's foot, so the pattern reads above it. */
 .sieve-band[class*='pat-'] .sieve-mesh {
   top: auto;
   height: 4px;
-  border-top: 1px solid rgba(40, 30, 20, 0.45);
+  border-top: 1px solid rgba(40, 30, 20, 0.5);
   background-color: var(--band);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(40, 30, 20, 0.5) 0 1px, transparent 1px 3px),
+    linear-gradient(0deg, transparent 1.5px, rgba(40, 30, 20, 0.5) 1.5px 2.5px, transparent 2.5px);
+}
+.mini-jar {
+  --neck: 14px;
 }
 
 /* Intro card and jar guide */
