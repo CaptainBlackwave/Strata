@@ -42,7 +42,7 @@ const en = {
   winTitle: 'Level cleared',
   perfectTitle: 'Perfect!',
   winText: (moves: number, best: number | undefined) =>
-    best !== undefined && best < moves ? `${moves} pours · best ${best}` : `${moves} pours${best === undefined || best === moves ? ' · new best' : ''}`,
+    best !== undefined && best <= moves ? `${moves} pours · best ${best}` : `${moves} pours${best === undefined ? ' · new best' : ''}`,
   perfectNote: 'No hint, shuffle or extra jar used',
   /** The win card after a replay that changed nothing (level-map.md D50). */
   replayNote: 'Replay: no coins',
