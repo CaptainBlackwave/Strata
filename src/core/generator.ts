@@ -103,7 +103,8 @@ export interface FallbackStep<S extends LevelSpec = LevelSpec> {
 
 /**
  * A numbered level's fallback chain, so no level can ever fail to load: the full recipe,
- * then with a second ordinary spare (one-spare levels only), then without mechanics (levels
+ * then with a second ordinary spare (one-spare levels only), then without the hourglass but
+ * with the other mechanics (levels with both only, D96), then without mechanics (levels
  * with mechanics only). Every step but the last is capped by total solver work
  * (`generator.stepNodeBudget`), which keeps level starts fast and identical on every device.
  * Example: `levelSteps(levelSpec(150, config), config).length // 2 or 3`
@@ -112,7 +113,9 @@ export function levelSteps(spec: LevelSpec, config: GameConfig): FallbackStep[] 
   const g = config.generator;
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : g.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, g.maxAttempts]);
-  if (spec.mechanics.length) tries.push([{ ...spec, spare: 2, mechanics: [] }, g.maxAttempts]);
+  // An hourglass with other mechanics: try the others alone before dropping them all (D96).
+  if (spec.hourglass && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
+  if (hasAnyMechanic(spec)) tries.push([{ ...withoutMechanics(spec), spare: 2 }, g.maxAttempts]);
   const { cap, perAttempt } = stepBudgets(config);
   return tries.map(([s, maxAttempts], i) => {
     const last = i === tries.length - 1;
@@ -162,13 +165,13 @@ export function runFallbackSteps<S extends LevelSpec>(
  */
 export function lastResort<S extends LevelSpec>(spec: S, seed: number, config: GameConfig, shortest?: GeneratedLevel): GeneratedLevel & { spec: S } {
   const { cap, perAttempt } = stepBudgets(config);
-  const easier: S = { ...spec, spare: Math.max(2, spec.spare) + 1, mechanics: [] };
+  const easier: S = { ...withoutMechanics(spec), spare: Math.max(2, spec.spare) + 1 };
   try {
     return generateFromSpec(easier, seed, config, config.generator.maxAttempts, cap, perAttempt) as GeneratedLevel & { spec: S };
   } catch (e) {
     const kept = shorterDeal(shortest, e);
     if (kept) return kept as GeneratedLevel & { spec: S };
-    const plain: S = { ...spec, spare: 2, mechanics: [] };
+    const plain: S = { ...withoutMechanics(spec), spare: 2 };
     const board = fallbackBoard(plain, seed);
     return { spec: plain, board, seed, solutionLength: board.jars.filter((j) => j.units.length).length + 1, attempts: 0 };
   }
@@ -219,7 +222,7 @@ export function generateFromSpec(
     const seed = mixSeed(baseSeed, attempt);
     const dealt = dealBoard(spec, seed);
     // Mechanics use their own RNG stream, so a plain level's deal is untouched.
-    const board = spec.mechanics.length ? applyMechanics(dealt, spec, createRng(mixSeed(seed, 0xa11ce)), config) : dealt;
+    const board = hasAnyMechanic(spec) ? applyMechanics(dealt, spec, createRng(mixSeed(seed, 0xa11ce)), config) : dealt;
     const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length;
     if (sealed > maxSealedAtStart) continue;
     if (!hasMechanics(board, spec)) continue; // a mechanic couldn't be placed on this deal
@@ -235,10 +238,25 @@ export function generateFromSpec(
   throw new NoDealError(`No solvable board within ${maxPours} pours for ${spec.level > 0 ? `level ${spec.level}` : 'this spec'} after ${maxAttempts} attempts`, shortest);
 }
 
+/** True when a spec asks for any jar mechanic, the hourglass included (D96). */
+export function hasAnyMechanic(spec: LevelSpec): boolean {
+  return spec.mechanics.length > 0 || spec.hourglass === true;
+}
+
+/** The spec with every mechanic dropped, the hourglass included: a fallback step's recipe. */
+export function withoutMechanics<S extends LevelSpec>(spec: S): S {
+  const { hourglass: _dropped, ...rest } = spec;
+  return { ...rest, mechanics: [] } as unknown as S;
+}
+
 /**
  * Places a spec's mechanics on a dealt board. Narrow and funnel add an extra jar;
  * frozen and locked change random filled jars. A lock never uses a colour that
- * is inside its own jar (that would be an instant deadlock).
+ * is inside its own jar (that would be an instant deadlock). The hourglass (D96) is placed
+ * last, on a filled jar that is not sealed, frozen, locked, narrow or a funnel; its sand is
+ * shown (`hidden: 0`), since a flip would bring buried sand to the top. The stream `rng` is
+ * only drawn from for mechanics the spec has, so a spec without the hourglass deals exactly
+ * the board it did before the hourglass existed.
  */
 export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: GameConfig): Board {
   const jars: Jar[] = [...board.jars];
@@ -262,11 +280,19 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
       if (i !== undefined) jars[i] = { ...jars[i], lock: pick(absentIn(i)) };
     }
   }
+  if (spec.hourglass) {
+    const tune = config.mechanics.list.find((m) => m.id === 'hourglass');
+    const every = Math.max(1, Math.floor(tune?.every ?? 3));
+    const plainJar = (j: Jar) => j.cap === undefined && !j.funnel && !isSealed(j, board.capacity);
+    const i = pick(filled().filter((k) => plainJar(jars[k])));
+    if (i !== undefined) jars[i] = { ...jars[i], hidden: 0, hourglass: { every, left: every } };
+  }
   return { capacity: board.capacity, jars };
 }
 
 /** True when every mechanic the spec asks for is on the board. */
 export function hasMechanics(board: Board, spec: LevelSpec): boolean {
+  if (spec.hourglass && !board.jars.some((j) => j.hourglass)) return false;
   return spec.mechanics.every((id) =>
     id === 'narrow' ? board.jars.some((j) => j.cap !== undefined)
     : id === 'frozen' ? board.jars.some((j) => j.frozen)

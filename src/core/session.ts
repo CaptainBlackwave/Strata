@@ -13,7 +13,15 @@ export type SessionStatus = 'playing' | 'won' | 'stuck';
 
 /** What just happened, for the UI to animate. */
 export type SessionEvent =
-  | { readonly type: 'pour'; readonly move: Move; readonly moved: number; readonly color: number; readonly sealed: boolean }
+  | {
+      readonly type: 'pour';
+      readonly move: Move;
+      readonly moved: number;
+      readonly color: number;
+      readonly sealed: boolean;
+      /** Hourglass jars that flipped right after this pour (D96). Absent when none did. */
+      readonly flipped?: readonly number[];
+    }
   | { readonly type: 'undo' }
   | { readonly type: 'restart' }
   | { readonly type: 'extraJar' }
@@ -157,7 +165,8 @@ export class GameSession {
     this.current = result.board;
     this.moveCount++;
     const sealed = isSealed(result.board.jars[to], result.board.capacity);
-    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed });
+    const flipped = result.flipped.length ? { flipped: result.flipped } : {};
+    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped });
     this.emitStatus();
     return true;
   }
@@ -329,7 +338,8 @@ export function searchHint(board: Board, budget: number): HintSearch {
 
 /**
  * Finds a re-deal of `board`'s free jars that the solver proves winnable, or `null`. Only
- * free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand. Pure and
+ * free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand. An unsealed
+ * hourglass is a free jar: its sand is re-dealt and its count is kept (a shuffle is not a pour, D96). Pure and
  * deterministic for a given `rng`, so a worker given the same seed finds the same board
  * (TD-13). All attempts together spend at most `shuffleTotalNodeBudget` states (F7, GA-SB-4).
  * Example: `findShuffle(board, sessionOptions(config), createRng(seed))`

@@ -81,7 +81,8 @@ describe('specials (D49: tall jars, shell milestones, new-jar debuts)', () => {
     expect(specialsOf(7, cfg)).toEqual({ tall: false, shell: false, debut: null });
   });
   it('a mechanic debut names its jar, from the config schedule', () => {
-    for (const m of cfg.mechanics.list) expect(specialsOf(m.unlockAt, cfg).debut).toBe(m.id);
+    // The hourglass (D96) has no card yet, so its debut stone shows no badge until its UI lands.
+    for (const m of cfg.mechanics.list) expect(specialsOf(m.unlockAt, cfg).debut).toBe(m.id === 'hourglass' ? null : m.id);
     expect(specialsOf(debutOf('frozen') + 1, cfg).debut).toBeNull();
   });
   it('locked stones show their specials too (what is coming)', () => {
