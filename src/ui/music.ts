@@ -109,22 +109,22 @@ const DORIAN = [0, 2, 3, 5, 7, 9, 10];
  * An id not in the table (a scene added later) plays midday's variation (`musicFor`).
  */
 export const MUSIC: Readonly<Record<string, SceneVariation>> = {
-  midday: { root: 261.63, scale: MAJOR_PENT, stepMs: 620, lead: { type: 'sine' }, vol: 0.1, swell: 0.05 },
+  midday: { root: 261.63, scale: MAJOR_PENT, stepMs: 620, lead: { type: 'sine' }, vol: 0.0841, swell: 0.0421 },
   dawn: { root: 293.66, scale: MAJOR_HEX, stepMs: 680, lead: { type: 'triangle', filter: 1600 }, vol: 0.09, swell: 0.045 },
-  sunset: { root: 233.08, scale: MAJOR_PENT, stepMs: 720, lead: { type: 'triangle', filter: 1300 }, vol: 0.095, swell: 0.05 },
-  moonlit: { root: 220.0, scale: MINOR_PENT, stepMs: 860, lead: { type: 'triangle', filter: 700 }, vol: 0.12, swell: 0.06 },
-  seafog: { root: 293.66, scale: DORIAN, stepMs: 820, lead: { type: 'sine', filter: 1200 }, vol: 0.095, swell: 0.075 },
+  sunset: { root: 233.08, scale: MAJOR_PENT, stepMs: 720, lead: { type: 'triangle', filter: 1300 }, vol: 0.0918, swell: 0.0483 },
+  moonlit: { root: 220.0, scale: MINOR_PENT, stepMs: 860, lead: { type: 'triangle', filter: 700 }, vol: 0.0879, swell: 0.044 },
+  seafog: { root: 293.66, scale: DORIAN, stepMs: 820, lead: { type: 'sine', filter: 1200 }, vol: 0.0755, swell: 0.0596 },
   wintersnow: { root: 329.63, scale: MAJOR_PENT, stepMs: 760, lead: { type: 'sine' }, vol: 0.085, swell: 0.035, layer: 'sparkle', layerLevel: 0.012 },
-  harvestmoon: { root: 196.0, scale: MINOR_HEX, stepMs: 800, lead: { type: 'triangle', filter: 1000 }, vol: 0.11, swell: 0.05 },
-  newyear: { root: 261.63, scale: MAJOR_HEX, stepMs: 580, lead: { type: 'triangle', filter: 2400 }, vol: 0.075, swell: 0.04, layer: 'thump', layerLevel: 0.2 },
-  highsummer: { root: 220.0, scale: MAJOR_PENT, stepMs: 520, lead: { type: 'triangle', filter: 2800 }, vol: 0.075, swell: 0.055 },
-  springblossom: { root: 349.23, scale: MAJOR_PENT, stepMs: 560, lead: { type: 'sine' }, vol: 0.08, swell: 0.04 },
-  autumnshore: { root: 246.94, scale: MINOR_HEX, stepMs: 740, lead: { type: 'triangle', filter: 1100 }, vol: 0.1, swell: 0.055 },
+  harvestmoon: { root: 196.0, scale: MINOR_HEX, stepMs: 800, lead: { type: 'triangle', filter: 1000 }, vol: 0.0947, swell: 0.043 },
+  newyear: { root: 261.63, scale: MAJOR_HEX, stepMs: 580, lead: { type: 'triangle', filter: 2400 }, vol: 0.0871, swell: 0.0465, layer: 'thump', layerLevel: 0.2323 },
+  highsummer: { root: 220.0, scale: MAJOR_PENT, stepMs: 520, lead: { type: 'triangle', filter: 2800 }, vol: 0.0891, swell: 0.0654 },
+  springblossom: { root: 349.23, scale: MAJOR_PENT, stepMs: 560, lead: { type: 'sine' }, vol: 0.0828, swell: 0.0414 },
+  autumnshore: { root: 246.94, scale: MINOR_HEX, stepMs: 740, lead: { type: 'triangle', filter: 1100 }, vol: 0.0902, swell: 0.0496 },
   rainbowafterrain: { root: 311.13, scale: MAJOR_PENT, stepMs: 600, lead: { type: 'sine' }, vol: 0.085, swell: 0.045, layer: 'sparkle', layerLevel: 0.012 },
-  softrain: { root: 293.66, scale: MINOR_PENT, stepMs: 800, lead: { type: 'sine', filter: 1500 }, vol: 0.09, swell: 0.04, layer: 'rain', layerLevel: 0.03 },
-  winterlights: { root: 392.0, scale: MAJOR_PENT, stepMs: 680, lead: { type: 'sine', partial: 2.76, partialLevel: 0.28 }, vol: 0.07, swell: 0.035 },
-  meteorshower: { root: 277.18, scale: MINOR_PENT, stepMs: 780, lead: { type: 'sine' }, vol: 0.095, swell: 0.045, layer: 'streak', layerLevel: 0.018 },
-  auroranight: { root: 207.65, scale: MAJOR_HEX, stepMs: 840, lead: { type: 'sine' }, vol: 0.1, swell: 0.045, layer: 'sparkle', layerLevel: 0.016 },
+  softrain: { root: 293.66, scale: MINOR_PENT, stepMs: 800, lead: { type: 'sine', filter: 1500 }, vol: 0.0723, swell: 0.0321, layer: 'rain', layerLevel: 0.0241 },
+  winterlights: { root: 392.0, scale: MAJOR_PENT, stepMs: 680, lead: { type: 'sine', partial: 2.76, partialLevel: 0.28 }, vol: 0.0776, swell: 0.0388 },
+  meteorshower: { root: 277.18, scale: MINOR_PENT, stepMs: 780, lead: { type: 'sine' }, vol: 0.0856, swell: 0.0406, layer: 'streak', layerLevel: 0.0162 },
+  auroranight: { root: 207.65, scale: MAJOR_HEX, stepMs: 840, lead: { type: 'sine' }, vol: 0.0871, swell: 0.0392, layer: 'sparkle', layerLevel: 0.0139 },
 };
 
 /** Scenes that knowingly use the fallback (midday). Empty: every scene has its own variation. */
