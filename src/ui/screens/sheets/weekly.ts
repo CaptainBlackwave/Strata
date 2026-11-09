@@ -59,10 +59,11 @@ function boardButton(set: WeeklyState, i: number): HTMLLIElement {
   btn.dataset.board = String(i);
   const pours = set.pours[String(i)];
   btn.innerHTML = '<span class="weekly-board-jar" aria-hidden="true"></span><span class="weekly-board-text"><b></b><span></span></span>';
-  btn.querySelector('b')!.textContent = t.weekly.board(i + 1);
-  // A visually hidden comma keeps the two lines apart when read as one name.
-  btn.querySelector('.weekly-board-text > span')!.textContent = done && pours !== undefined ? t.weekly.boardCleared(pours) : t.weekly.boardOpen;
-  btn.querySelector('b')!.insertAdjacentHTML('afterend', '<span class="sr-only">, </span>');
+  const name = t.weekly.board(i + 1);
+  const status = done && pours !== undefined ? t.weekly.boardCleared(pours) : t.weekly.boardOpen;
+  btn.querySelector('b')!.textContent = name;
+  btn.querySelector('.weekly-board-text > span')!.textContent = status;
+  btn.setAttribute('aria-label', `${name}, ${status}`); // one spoken name, "Board 2, Not cleared yet"
   btn.addEventListener('click', () => {
     audio.play('select');
     closeLayer($('weekly'), false);

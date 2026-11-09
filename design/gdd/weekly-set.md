@@ -1,5 +1,5 @@
 ---
-status: designed 2026-11-09 (sprint 11 W1; owner decision D77), built in sprint 11 W2
+status: designed and built 2026-11-09 (sprint 11 W1, W2; owner decision D77)
 source: src/core/weekly.ts, src/core/win.ts, src/ui/storage.ts, src/ui/screens/home.ts, src/ui/screens/sheets/weekly.ts, src/ui/screens/board.ts, src/ui/screens/win.ts, src/ui/strings.ts, src/config/game-config.json
 date: 2026-11-09
 verified-by: owner plan approval 2026-11-09 (sprint 11)
@@ -285,20 +285,20 @@ All in `weekly` in `src/config/game-config.json`.
 
 ## 8. Acceptance Criteria
 
-- [ ] `weekKey`: Sunday 23:59:59 UTC and Monday 00:00 UTC are different weeks; 2025-12-29 is
+- [x] `weekKey`: Sunday 23:59:59 UTC and Monday 00:00 UTC are different weeks; 2025-12-29 is
   `2026-W01`; 2027-01-01 is `2026-W53`; 2027-01-04 is `2027-W01`; the same instant in four time
   zones gives the same key.
-- [ ] `weeklySeeds`: deterministic, five distinct seeds, and none equal to a daily seed of the same
+- [x] `weeklySeeds`: deterministic, five distinct seeds, and none equal to a daily seed of the same
   week, for 104 weeks.
-- [ ] A fixture of 8 weeks × 5 boards (board hashes) matches on every run.
-- [ ] Every board of 8 weeks is solvable, starts with nothing sealed, carries its theme's mechanic,
+- [x] A fixture of 8 weeks × 5 boards (board hashes) matches on every run.
+- [x] Every board of 8 weeks is solvable, starts with nothing sealed, carries its theme's mechanic,
   and is within its pour cap; colours rise from board 1 to 5.
-- [ ] Clearing boards in any order records each once, with the best pours kept; the fifth distinct
+- [x] Clearing boards in any order records each once, with the best pours kept; the fifth distinct
   clear returns the week's badge once; a new week resets; an older week's win is ignored.
-- [ ] Repair: a damaged `weekly` field is repaired field by field; a save code round-trips it.
-- [ ] A weekly win pays no coins and no shell, adds the badge to `save.badges`, and counts pours and
+- [x] Repair: a damaged `weekly` field is repaired field by field; a save code round-trips it.
+- [x] A weekly win pays no coins and no shell, adds the badge to `save.badges`, and counts pours and
   sealed jars.
-- [ ] Home card, chooser, a weekly board, the mid-week win card, the completing win card with the
+- [x] Home card, chooser, a weekly board, the mid-week win card, the completing win card with the
   badge, the Share text and 150% text at 320 px are captured in
   `production/qa/evidence/sprint-11/weekly/`.
 
@@ -309,3 +309,4 @@ All in `weekly` in `src/config/game-config.json`.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-09 | Claude (sprint 11 W1) | Designed from D77: ISO week key, seeds, five themes, the five-board ramp, the week boundary, no coins, Share |
+| 2026-11-09 | Claude (sprint 11 W2) | Built; acceptance criteria ticked. Tests: `tests/unit/weekly/`; evidence: `production/qa/evidence/sprint-11/weekly/` |
