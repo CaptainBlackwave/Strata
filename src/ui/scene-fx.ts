@@ -68,7 +68,17 @@ interface Particle {
   /** Seconds left for burst sparks; Infinity for ambient particles. */
   life: number;
   color: string;
+  /** Meteor shower seal meteors: drawn wider, with a halo and a white core (sprint 9 M1). */
+  bold?: boolean;
 }
+
+/**
+ * Seal reactions (sprint 9 M1, D54: brighter, a little larger, still short).
+ * Meteor shower: one meteor per seal; speed px/s, tail px, life s, stroke width px.
+ */
+const SEAL_METEOR = { speed: 300, tail: 125, life: 0.9, width: 3 } as const;
+/** Aurora night: one ripple per seal; life s, ring speed px/s, peak gain, ring width (2 sigma squared, px squared), max alpha. */
+const SEAL_RIPPLE = { life: 1.6, speed: 260, gain: 2.2, spread: 16200, maxAlpha: 0.85 } as const;
 
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -135,18 +145,22 @@ export function sceneFxKind(): string | null {
 
 /**
  * The tier 3 reaction when a jar seals, queued for the next frame: New Year, a small burst
- * above the jar in its sand colour; Meteor shower, one meteor streaking over the jar in that
- * colour; Aurora night, a ripple of brightness spreading along the bands from the jar.
- * Nothing for other scenes or under reduced motion.
+ * above the jar in its sand colour; Meteor shower, one bold meteor (halo and white core)
+ * streaking just over the jar in that colour for 0.9 s; Aurora night, a bright ripple
+ * spreading along the bands from the jar for 1.6 s. Nothing for other scenes or under
+ * reduced motion. Each is one particle against the MAX_PARTICLES cap.
  */
 export function sceneSealBurst(jar: Element, color: string): void {
   if (reduced() || (kind !== 'fireworks' && kind !== 'meteors' && kind !== 'aurora')) return;
   const r = jar.getBoundingClientRect();
   const cx = r.left + r.width / 2;
   if (kind === 'fireworks') queueBurst(cx, r.top - 6, [color, '#fff6d8'], 14, 70);
-  else if (kind === 'meteors') queueMeteor(newMeteor(cx + 70, r.top - 90, color, 260, 70, 0.6));
-  else if (canvas && sparks.length < MAX_RIPPLES && ambient.length + sparks.length < MAX_PARTICLES)
-    sparks.push({ x: cx, y: 0, vx: 0, vy: 0, r: 0, phase: 1.4, life: 1.4, color: '' });
+  else if (kind === 'meteors') {
+    // Starts up and to the right so the head crosses just above the jar's mouth about halfway through.
+    const m = SEAL_METEOR;
+    queueMeteor({ ...newMeteor(cx + 115, r.top - 125, color, m.speed, m.tail, m.life), bold: true });
+  } else if (canvas && sparks.length < MAX_RIPPLES && ambient.length + sparks.length < MAX_PARTICLES)
+    sparks.push({ x: cx, y: 0, vx: 0, vy: 0, r: 0, phase: SEAL_RIPPLE.life, life: SEAL_RIPPLE.life, color: '' });
 }
 
 /**
@@ -452,7 +466,11 @@ function queueMeteor(m: Particle): void {
   sparks.push(m);
 }
 
-/** A meteor's streak: a fading tail behind a bright head, eased in and out over its life. */
+/**
+ * A meteor's streak: a fading tail behind a bright head, eased in and out over its life.
+ * A `bold` meteor (a seal reaction) adds a soft halo along the tail and around the head, and a
+ * short white core, so it reads clearly in the jar's colour against the night sky.
+ */
 function drawMeteor(g: CanvasRenderingContext2D, m: Particle, width: number): void {
   const a = Math.sin(Math.PI * Math.max(0, Math.min(1, 1 - m.life / m.phase)));
   const tx = m.x - METEOR_DIR.x * m.r;
@@ -460,14 +478,39 @@ function drawMeteor(g: CanvasRenderingContext2D, m: Particle, width: number): vo
   const grad = g.createLinearGradient(m.x, m.y, tx, ty);
   grad.addColorStop(0, m.color);
   grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  g.globalAlpha = a;
   g.strokeStyle = grad;
-  g.lineWidth = width;
   g.lineCap = 'round';
+  if (m.bold) {
+    g.globalAlpha = a * 0.3;
+    g.lineWidth = width * 3.2;
+    g.beginPath();
+    g.moveTo(m.x, m.y);
+    g.lineTo(tx, ty);
+    g.stroke();
+    g.fillStyle = m.color;
+    g.beginPath();
+    g.arc(m.x, m.y, width * 2.6, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.globalAlpha = a;
+  g.lineWidth = width;
   g.beginPath();
   g.moveTo(m.x, m.y);
   g.lineTo(tx, ty);
   g.stroke();
+  if (m.bold) {
+    const cx = m.x - METEOR_DIR.x * m.r * 0.45;
+    const cy = m.y - METEOR_DIR.y * m.r * 0.45;
+    const core = g.createLinearGradient(m.x, m.y, cx, cy);
+    core.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+    core.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    g.strokeStyle = core;
+    g.lineWidth = width * 0.5;
+    g.beginPath();
+    g.moveTo(m.x, m.y);
+    g.lineTo(cx, cy);
+    g.stroke();
+  }
   g.fillStyle = '#ffffff';
   g.beginPath();
   g.arc(m.x, m.y, width * 0.75, 0, Math.PI * 2);
@@ -620,7 +663,7 @@ function draw(): void {
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
     }
-    for (const m of sparks) drawMeteor(ctx, m, 1.8);
+    for (const m of sparks) drawMeteor(ctx, m, m.bold ? SEAL_METEOR.width : 1.8);
     ctx.globalAlpha = 1;
   } else if (kind === 'aurora') {
     const colW = (w / AURORA_COLS) * 1.7;
@@ -628,12 +671,15 @@ function draw(): void {
       const sway = Math.sin((p.x / w) * 4.2 + clock * 0.35 + p.phase) * p.vy;
       let gain = 0;
       for (const s of sparks) {
-        // A ring of brightness moving out from the sealed jar at 300 px/s, fading over its life.
-        const d = Math.abs(p.x - s.x) - 300 * (s.phase - s.life);
-        gain += 1.1 * Math.exp(-(d * d) / 9800) * (s.life / s.phase);
+        // A ring of brightness moving out from the sealed jar, fading over its life (SEAL_RIPPLE).
+        const d = Math.abs(p.x - s.x) - SEAL_RIPPLE.speed * (s.phase - s.life);
+        gain += SEAL_RIPPLE.gain * Math.exp(-(d * d) / SEAL_RIPPLE.spread) * (s.life / s.phase);
       }
-      ctx.globalAlpha = Math.min(0.5, (0.22 + 0.08 * Math.sin(clock * 0.6 + p.x * 0.01 + p.phase)) * (1 + gain));
-      ctx.drawImage(auroraSprite(p.color), p.x - colW / 2, p.y + sway - p.r / 2, colW, p.r);
+      // Ambient slices stay capped at 0.5; the ripple lifts the cap and lengthens the slice a little.
+      const lift = Math.min(1, gain);
+      ctx.globalAlpha = Math.min(0.5 + (SEAL_RIPPLE.maxAlpha - 0.5) * lift, (0.22 + 0.08 * Math.sin(clock * 0.6 + p.x * 0.01 + p.phase)) * (1 + gain));
+      const tall = p.r * (1 + 0.2 * lift);
+      ctx.drawImage(auroraSprite(p.color), p.x - colW / 2, p.y + sway - tall / 2, colW, tall);
     }
     ctx.globalAlpha = 1;
   } else if (kind === 'fireworks') {
