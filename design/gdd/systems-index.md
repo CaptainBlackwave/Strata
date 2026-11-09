@@ -132,10 +132,10 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D72 | Volume slider track | **Styled from the scene's tokens**: the unfilled track takes a theme-aware colour instead of the browser's grey, with contrast checked in every scene | feel-audio-ui | built (0.10.1) |
 | D73 | Seal shimmer and win glow colour | **Tinted per scene** (e.g. cool for Winter snow, violet for Aurora night) instead of one warm sand colour; calm, contrast-checked | feel-audio-ui, scenes | built (0.10.1) |
 | D74 | Real-phone checks | **A phone checklist page** the owner opens on the phone; it stores the answers so Claude can read them back and fix issues | feel-audio-ui | built (0.10.1): https://claude.ai/artifact/P5gNC7P6YJoL15C4SZ8cKn |
-| D75 | Sprint 11 scope | **Achievements, a weekly challenge, and install and onboarding** (the late-game economy, D23, and new puzzle variety stay open) | — | sprint 11 |
-| D76 | Achievements | **A badge shelf with no rewards**: about 20–30 earned badges shown on the profile; recognition only, the economy untouched | player-profile, badges | sprint 11 |
-| D77 | Weekly challenge | **A five-board weekly set**: every Monday (UTC), five themed seeded boards, the same for everyone, playable all week; clearing all five earns a weekly badge; Share shows the pours | daily-puzzle | sprint 11 |
-| D78 | Install and onboarding | **All four**: a one-time Add to Home Screen card after a few levels (iPhone steps and the Android prompt), a review of the first run and first ten levels, a share link that opens the daily or weekly set, and a one-time offline-ready notice | feel-audio-ui | sprint 11 |
+| D75 | Sprint 11 scope | **Achievements, a weekly challenge, and install and onboarding** (the late-game economy, D23, and new puzzle variety stay open) | — | built (sprint 11) |
+| D76 | Achievements | **A badge shelf with no rewards**: about 20–30 earned badges shown on the profile; recognition only, the economy untouched | player-profile, badges | built (sprint 11 A1–A2, PR #10) |
+| D77 | Weekly challenge | **A five-board weekly set**: every Monday (UTC), five themed seeded boards, the same for everyone, playable all week; clearing all five earns a weekly badge; Share shows the pours | daily-puzzle | built (sprint 11 W1–W2) |
+| D78 | Install and onboarding | **All four**: a one-time Add to Home Screen card after a few levels (iPhone steps and the Android prompt), a review of the first run and first ten levels, a share link that opens the daily or weekly set, and a one-time offline-ready notice | feel-audio-ui | built (sprint 11 O1–O4, PR #11) |
 | D79 | Order of work | **Quick fixes first as 0.10.1** (D72–D74 and the cleanup), then sprint 11 | — | recorded |
 | D80 | Pull requests | **One PR per feature** from now on, so each review stays small; each still merges under D61 | — | standing |
 

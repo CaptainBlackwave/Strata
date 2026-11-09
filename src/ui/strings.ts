@@ -108,9 +108,10 @@ const en = {
     title: "What's new",
     button: "What's new",
     lines: [
-      'The volume sliders now match the scene you are in.',
-      'Sealing a jar and clearing a level glow in each scene\'s own colours.',
-      'In the night scenes that glow is cool moonlight instead of warm sand.',
+      'A shelf of 28 badges on your profile, earned as you play.',
+      'A weekly set: five new boards every Monday, and a badge for clearing them all.',
+      'Share a daily and the link opens that puzzle directly.',
+      'Add Strata to your home screen to play it like an app, even offline.',
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,

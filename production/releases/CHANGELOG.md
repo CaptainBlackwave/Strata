@@ -18,6 +18,15 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.9.0 | `4a35afb` (sprint 9, PR #5) |
 | v0.9.1 | `4cdd71f` (fixes after 0.9.0, PR #6) |
 | v0.10.0 | `1ad5c4c` (sprint 10, PR #8) |
+| v0.10.1 | `22d66e6` (look fixes, PR #9) |
+
+## 0.11.0 (2026-11-09): sprint 11, badges, the weekly set and a smoother start
+**For players**
+- A badge shelf on your profile: 28 original seaside badges for playing, mastery, collecting, exploring and the daily. They are earned only by play and never cost or pay coins. Badges you have already earned appear quietly.
+- A weekly set: every Monday (UTC), five themed boards, the same for everyone and playable all week. Each week features one special jar. Clearing all five earns that week's badge, and Share shows your pours. Weekly boards pay no coins.
+- Sharing a daily now includes a link that opens that puzzle directly; an old day's link says the daily is over and offers today's.
+- After a few levels, a one-time card shows how to add Strata to your home screen (the install prompt on Android, the steps on iPhone), and a one-time note says when the game is ready to play offline.
+- First-run touches: a short explanation the first time the map opens, and a note on the boosters during level 1.
 
 ## 0.10.1 (2026-11-09): look fixes
 **For players**
