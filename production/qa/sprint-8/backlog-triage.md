@@ -12,6 +12,8 @@
 
 ## Counts
 
+> **Sprint 9 M5 (2026-11-09):** the 9 remaining **OP** rows are now **F** (6 fixed, 3 verified already fixed by sprint 8 P3). No player-facing row is open. The plan said 11; the table had 9. Evidence: `production/qa/evidence/sprint-9/README-m5.md`.
+
 | Status | Count |
 |---|---|
 | Fixed in sprints 6-7 | 64 |
@@ -130,26 +132,26 @@ Status key: **F** fixed, **OP** still open (player-facing), **OD** still open (d
 | GX-21 | X | OD | low | M | N | Cross-References tables; add when each GDD is next edited |
 | UX-all-6 | U | F | med | S | Y (#16) | no `:hover` rules; fixed in P7 `352a776` |
 | UX-home-2 | U | F | med | S | Y (#7) | fixed in P7 `c7cfaaa` |
-| UX-home-3 | U | OP | low | S | N | next-best |
+| UX-home-3 | U | F | low | S | N | next-best; fixed in sprint 9 M5 (287820b): name reads "Daily puzzle, Monday 9" |
 | UX-board-5 | U | F | med | S | Y (#5) | fixed in P7 `285d2d5` |
 | UX-board-6 | U | F | med | S | n/a | static refused outline (AX-5) |
 | UX-board-7 | U | F | high | S-M | Y (#1) | fixed in P7 `097bc7c` |
 | UX-board-8 | U | F | low | S | Y (#15) | fixed in P7 `03bba2a` |
-| UX-board-9 | U | OP | low | S | N | next-best |
-| UX-board-10 | U | OP | low | S | N | next-best, not re-measured |
+| UX-board-9 | U | F | low | S | N | next-best; fixed in sprint 9 M5 (287820b): caption above the toolbar in the tutorial |
+| UX-board-10 | U | F | low | S | N | next-best, not re-measured; fixed in sprint 9 M5 (287820b, clamp corrected in 49456db) |
 | UX-win-2 | U | F | high | S | Y (#3) | fixed in P7 `6d98e13` |
 | UX-win-3 | U | F | med | S | Y (#6) | fixed in P7 `6d98e13` |
 | UX-win-4 | U | F | med | S | Y (#14) | fixed in P7 `6d98e13` |
 | UX-win-5 | U | OD | low | S | N | document that Esc does nothing on the win card |
 | UX-profile-1 | U | F | low | S | Y (#20) | fixed in P7 `b6373d2` |
-| UX-profile-2 | U | OP | low | S | N | asterisk on the 5 new counters |
+| UX-profile-2 | U | F | low | S | N | asterisk on the 5 new counters; fixed in sprint 9 M5 (287820b): asterisk on the 5 counters |
 | UX-edit-1 | U | F | med | S | Y (#9) | fixed in P7 `09c54b0` |
 | UX-edit-2 | U | F | low | S | Y (#10) | one attribute; fixed in P7 `09c54b0` |
 | UX-edit-3 | U | W | low | S | N | accepted as is: Re-roll is a deliberate overwrite |
 | UX-cab-1 | U | F | med | S | Y (#8) | fixed in P7 `c7cfaaa` |
-| UX-cab-2 | U | OP | low | S | N | 44 px part fixed (F5); h3-in-button structure remains |
+| UX-cab-2 | U | F | low | S | N | 44 px part fixed (F5); h3-in-button structure remains; fixed in sprint 9 M5 (287820b): button inside the h3 |
 | UX-cab-3 | U | F | low | S | Y (#17) | fixed in P7 `0c3092d` |
-| UX-cab-4 | U | OP | low | S | N | delight; next-best |
+| UX-cab-4 | U | F | low | S | N | delight; next-best; fixed in sprint 9 M5 (287820b): "New" until the cabinet is next opened |
 | UX-scenes-2 | U | F | med | S | Y (#11) | fixed in P7 `78abcd0` |
 | UX-scenes-3 | U | F | med | S | Y (#7) | fixed in P7 `c7cfaaa` |
 | UX-scenes-4 | U | F | low | S | Y (#13) | string exists; fixed in P7 `c7cfaaa` |
@@ -164,12 +166,12 @@ Status key: **F** fixed, **OP** still open (player-facing), **OD** still open (d
 | AX-11 | AX | F | med | S | Y (#18) | already fixed in sprint 6 (`43c1420`, 2 px ink-soft ring, contrast-tested) |
 | AX-12 | AX | F | high | S | n/a | F5, 44 px |
 | AX-13 | AX | F | med | S | n/a | F1 |
-| AX-14 | AX | OP | med | S | P3 | `intro-title` id missing |
+| AX-14 | AX | F | med | S | P3 | `intro-title` id missing; verified fixed in sprint 9 M5: `id="intro-title"` added in sprint 8 P3 (05d5be5) |
 | AX-15 | AX | F | med | S | Y (#8) | same fix as UX-cab-1; fixed in P7 `c7cfaaa` |
 | AX-16 | AX | F | low | S | Y (#19) | fixed in P7 `b6373d2` |
-| AX-17 | AX | OP | high | S | P3 | D44, still `user-scalable=no` |
+| AX-17 | AX | F | high | S | P3 | D44, still `user-scalable=no`; verified fixed in sprint 9 M5: no `user-scalable=no`, sprint 8 P3 D44 (05d5be5) |
 | AX-18 | AX | F | med | S | n/a | F5 |
-| AX-19 | AX | OP | med | S | P3 | D45 |
+| AX-19 | AX | F | med | S | P3 | D45; verified fixed in sprint 9 M5: 34 px jars get 45 px hit areas, sprint 8 P3 D45 (05d5be5) |
 | AX-20 | AX | F | low | S | n/a | HUD wrap fix |
 | AX-21 | AX | OD | low | S | N | A6 accepts 3:1 for soft text; revisit the criterion in `accessibility-requirements` |
 
