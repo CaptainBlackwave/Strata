@@ -2,7 +2,8 @@
 import { sharePours } from '../../core/daily';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
 import { type SlotItem } from '../../core/profile';
-import { celebrate } from '../fx';
+import { celebrate, flyCoins, mapFx, winBloom } from '../fx';
+import { noteFirstClear } from '../fx-plan';
 import { sceneWinDisplay } from '../scene-fx';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
@@ -76,11 +77,16 @@ export async function shareDaily(): Promise<void> {
   }
 }
 
+/** The board's sand colours (hex), for the celebration. */
+function colorsOf(): string[] {
+  return [...new Set(state.session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
+}
+
 /** Shared opener: celebration, audio, and the card parts every mode resets. */
 export function openWin(): void {
   state.pendingWin = false;
   coach(null);
-  const colors = [...new Set(state.session.board.jars.flatMap((j) => j.units))].map((c) => config.palette[c].hex);
+  const colors = colorsOf();
   celebrate(colors);
   sceneWinDisplay(colors); // tier 3 scenes: fireworks, a meteor shower or an aurora wave by the win card
   hideToast(); // a leftover hint or refusal toast must not sit over the win card
@@ -107,7 +113,7 @@ export function renderRewards(card: WinCard): void {
   if (card.shell) renderShell(card.shell);
   showUnlocks(card.unlocks);
   $('win-reward').hidden = !card.rewardShown;
-  if (card.rewardShown) countUp($('win-coins'), card.reward);
+  if (card.rewardShown) countUp($('win-coins'), card.reward, reducedMotion() ? 0 : ANIM.winDelay); // counts on the open card
   $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;
 }
 
@@ -144,6 +150,9 @@ export function winLevel(): void {
   $('win-note').textContent = card.note === 'replay' ? replayNote(card) : card.note === 'perfect' ? t.perfectNote : '';
   btnNext.textContent = state.replay ? t.map.backToMap : t.next;
   renderRewards(card);
+  // What the map shows when it next opens (sprint 10 F5): the new stretch, or a replay's Perfect mark.
+  if (card.rewardShown) mapFx.reveal = noteFirstClear(mapFx.reveal, state.level);
+  else if (card.perfectEarned) mapFx.perfect = state.level;
 }
 
 export function showWin(): void {
@@ -160,10 +169,17 @@ export function showWin(): void {
     $('win-unlocks').childElementCount > 0 && 'win-unlocks',
   ].filter(Boolean);
   winEl.querySelector('.win-card')!.setAttribute('aria-describedby', described.join(' '));
-  window.setTimeout(() => openLayer(winEl, btnNext, null), reducedMotion() ? 0 : ANIM.winDelay);
+  window.setTimeout(() => {
+    openLayer(winEl, btnNext, null);
+    winBloom(colorsOf()); // sprint 10 F5: a soft glow and drifting motes behind the card
+  }, reducedMotion() ? 0 : ANIM.winDelay);
 }
 
-export function countUp(el: HTMLElement, total: number): void {
+/**
+ * Counts the reward up on the card after `delay` ms (the card's open), then flies a few coins
+ * from the reward pill to the coin counter (sprint 10 F5), which updates and bumps as they land.
+ */
+export function countUp(el: HTMLElement, total: number, delay = 0): void {
   if (reducedMotion()) {
     el.textContent = t.reward(total);
     updateHud();
@@ -172,19 +188,24 @@ export function countUp(el: HTMLElement, total: number): void {
   let shown = 0;
   el.textContent = t.reward(0);
   const step = Math.max(1, Math.ceil(total / 12));
-  const timer = window.setInterval(() => {
-    shown = Math.min(total, shown + step);
-    el.textContent = t.reward(shown);
-    if (shown % (step * 3) === 0 || shown === total) audio.play('coin');
-    if (shown >= total) {
-      window.clearInterval(timer);
-      updateHud();
-      const chip = $('coins-chip');
-      chip.classList.remove('bump');
-      void chip.offsetWidth;
-      chip.classList.add('bump');
-    }
-  }, 55);
+  const land = () => {
+    updateHud();
+    const chip = $('coins-chip');
+    chip.classList.remove('bump');
+    void chip.offsetWidth;
+    chip.classList.add('bump');
+  };
+  window.setTimeout(() => {
+    const timer = window.setInterval(() => {
+      shown = Math.min(total, shown + step);
+      el.textContent = t.reward(shown);
+      if (shown % (step * 3) === 0 || shown === total) audio.play('coin');
+      if (shown >= total) {
+        window.clearInterval(timer);
+        flyCoins($('win-reward').querySelector('.coin'), $('coins-chip').querySelector('.coin'), total, land);
+      }
+    }, 55);
+  }, delay);
 }
 
 /** Wires the win card's Home and Share buttons (Continue is wired by the board, which starts the next level). */

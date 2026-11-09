@@ -6,12 +6,14 @@ import { type FocusTarget } from '../layers';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
 import { t } from '../strings';
-import { $, closeLayer, homeEl, openLayer, winEl } from '../dom';
+import { $, closeLayer, homeEl, layers, openLayer, winEl } from '../dom';
+import { screenIn } from '../fx';
 import { renderProfileChip } from './sheets/profile';
 import { dailyKey } from '../clock';
 import { config, state } from '../state';
 
 export function showHome(): void {
+  const arriving = !layers.has(homeEl);
   closeLayer(winEl, false);
   $('home-coins').textContent = String(state.save.wallet.coins);
   $('btn-play').textContent = state.save.tutorialDone ? t.play(state.save.level) : t.playTutorial;
@@ -35,6 +37,7 @@ export function showHome(): void {
   $('btn-scenes').hidden = !state.save.tutorialDone;
   renderProfileChip();
   openLayer(homeEl, $('btn-play'), null);
+  if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
 }
 
 /**

@@ -1,0 +1,20 @@
+trans-home-to-map: trans-home-to-map-before-01-87ms.png, trans-home-to-map-before-02-145ms.png, trans-home-to-map-before-03-195ms.png, trans-home-to-map-before-04-272ms.png
+trans-map-to-board: trans-map-to-board-before-01-12ms.png, trans-map-to-board-before-02-83ms.png, trans-map-to-board-before-03-152ms.png, trans-map-to-board-before-04-251ms.png
+seal: seal-before-01--8ms.png, seal-before-02-174ms.png, seal-before-03-318ms.png, seal-before-04-460ms.png, seal-before-05-691ms.png
+win: win-before-01--625ms.png, win-before-02-3ms.png, win-before-03-207ms.png, win-before-04-456ms.png, win-before-05-935ms.png
+coins: coins-before-01-636ms.png, coins-before-02-769ms.png, coins-before-03-888ms.png, coins-before-04-1008ms.png, coins-before-05-1157ms.png
+A: won level 5: true | moves: 18
+trans-board-to-home: trans-board-to-home-before-01-14ms.png, trans-board-to-home-before-02-71ms.png, trans-board-to-home-before-03-138ms.png, trans-board-to-home-before-04-269ms.png
+map-after-first-clear: map-after-first-clear-before-01-13ms.png, map-after-first-clear-before-02-155ms.png, map-after-first-clear-before-03-314ms.png, map-after-first-clear-before-04-448ms.png, map-after-first-clear-before-05-615ms.png, map-after-first-clear-before-06-1011ms.png
+trans-map-to-home: trans-map-to-home-before-01-4ms.png, trans-map-to-home-before-02-79ms.png, trans-map-to-home-before-03-145ms.png, trans-map-to-home-before-04-245ms.png
+A errors: []
+B: win note: Perfect earned · New best: 18 pours | title: Perfect!
+map-perfect-pop: map-perfect-pop-before-01-13ms.png, map-perfect-pop-before-02-159ms.png, map-perfect-pop-before-03-274ms.png, map-perfect-pop-before-04-374ms.png, map-perfect-pop-before-05-507ms.png, map-perfect-pop-before-06-809ms.png
+B errors: []
+C: map open, frames 150 ms apart identical: true
+C: seal, frames 200 ms apart identical: false
+C: win card, frames 400 ms apart identical: false | fx nodes: 0
+C: map after a first clear, frames 300 ms apart identical: true | reveal overlay: 0
+C errors: []
+D (4x CPU throttle): longest frame during the seal 23.2 ms, during the win 28.1 ms (frames recorded 2251)
+D errors: []
