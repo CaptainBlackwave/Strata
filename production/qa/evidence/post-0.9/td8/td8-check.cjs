@@ -7,7 +7,7 @@ const URL = 'http://localhost:5340/';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const results = [];
 const check = (name, ok, extra = '') => { results.push({ name, ok, extra }); console.log(ok ? 'PASS' : 'FAIL', name, extra); };
-const SAVE = { level: 3, tutorialDone: true, seenWhatsNew: '0.9.0' };
+const SAVE = { level: 3, tutorialDone: true, seenWhatsNew: require('../../../../../package.json').version };
 
 async function cacheList(page) {
   return page.evaluate(async () => {
@@ -101,6 +101,26 @@ async function play(page, shot) {
     await page.waitForSelector('#btn-play');
     const eb = await play(page, 'b-offline-after-deploy.png');
     check('(b) offline still works after the deploy', eb.length === 0, `errors=${eb.length}`);
+    await ctx.setOffline(false);
+
+    // (d) a deploy whose download fails part-way: the new main script never arrives (review of PR #6).
+    // The previous version must stay the offline copy: its page and its files.
+    fs.writeFileSync(f, orig.replace("playTutorial: 'Play',", "playTutorial: 'Play again',"));
+    try { execSync('npm run build', { stdio: 'ignore' }); } finally { fs.writeFileSync(f, orig); }
+    const brokenJs = fs.readdirSync('dist/assets').find((n) => n.startsWith('index-') && n.endsWith('.js'));
+    await ctx.route(`**/assets/${brokenJs}`, (r) => r.abort());
+    await page.goto(URL).catch(() => undefined);
+    await sleep(3000); // the new worker's install and the navigation's caching both try, and fail
+    const third = await cacheList(page);
+    const pageHtml = await page.evaluate(async () => { for (const k of await caches.keys()) { const r = await (await caches.open(k)).match('./'); if (r) return r.text(); } return ''; });
+    check('(d) failed download: the cached page is still the previous version', !pageHtml.includes(brokenJs), `caches=${Object.keys(third)}`);
+    await ctx.setOffline(true);
+    await page.reload().catch(() => undefined);
+    const okBoot = await page.waitForSelector('#btn-play', { timeout: 5000 }).then(() => true, () => false);
+    const ed = okBoot ? await play(page, 'd-offline-after-failed-update.png') : ['no #btn-play'];
+    check('(d) offline still boots and plays after a failed update', okBoot && ed.length === 0, `errors=${ed.length}`);
+    await ctx.unroute(`**/assets/${brokenJs}`);
+    await ctx.setOffline(false);
     fs.writeFileSync(`${OUT}/cache-before.json`, JSON.stringify(first, null, 1));
     fs.writeFileSync(`${OUT}/cache-after.json`, JSON.stringify(second, null, 1));
   } finally {

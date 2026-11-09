@@ -1,12 +1,13 @@
 // Every visible band label, at several levels, sizes and text scales: none covered by the path or a stone.
 const { chromium, devices } = require('/opt/node22/lib/node_modules/playwright');
+const VERSION = require('../../../../../package.json').version; // seen, so What's new doesn't cover Play
 (async () => {
   const b = await chromium.launch(); const bad = []; let checked = 0;
   for (const [dev, big] of [['iPhone SE', true], ['iPhone SE', false], ['Pixel 7', true], ['Pixel 7', false]]) for (const level of [3, 21, 40, 41, 60, 61, 100, 201, 333]) {
     const ctx = await b.newContext({ ...devices[dev], reducedMotion: 'reduce' });
     if (big) await ctx.addInitScript(() => document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.fontSize = '150%'; }));
     const p = await ctx.newPage(); await p.goto('http://localhost:5370/');
-    await p.evaluate((lv) => localStorage.setItem('strata.save.v2', JSON.stringify({ level: lv, best: {}, wallet: { coins: 0, boosters: {} }, tutorialDone: true, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, seenWhatsNew: '0.9.0' })), level);
+    await p.evaluate(([lv, v]) => localStorage.setItem('strata.save.v2', JSON.stringify({ level: lv, best: {}, wallet: { coins: 0, boosters: {} }, tutorialDone: true, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], themes: { owned: ['midday'], selected: 'midday', auto: false }, seenWhatsNew: v })), [level, VERSION]);
     await p.reload(); await p.waitForTimeout(400); await p.click('#btn-play', { force: true }); await p.waitForTimeout(500);
     for (const dy of [0, -300, 300]) {
       await p.evaluate((d) => document.getElementById('map-scroll').scrollBy(0, d), dy); await p.waitForTimeout(150);

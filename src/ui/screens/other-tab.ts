@@ -45,12 +45,15 @@ export function playHere(): void {
   reloadSave();
 }
 
-/** Replaces this tab's save with the stored one and shows Home on it. */
-function reloadSave(): void {
+/**
+ * Replaces this tab's save with the stored one and shows Home on it. `write` stores the
+ * repaired copy (Play here); a late-write reload doesn't, so two tabs can't set each other off.
+ */
+function reloadSave(write = true): void {
   state.save = loadSave(config);
   state.save.shells = knownShells(state.save.shells, config); // D26, as at boot
   repairSaveProfile();
-  writeSave(state.save);
+  if (write) writeSave(state.save);
   audio.configure(state.save.settings);
   applyTheme(currentTheme());
   for (const el of [...($('app').children as HTMLCollectionOf<HTMLElement>)]) if (layers.has(el)) closeLayer(el, false);
@@ -84,9 +87,12 @@ export function wireOtherTab(): void {
   lock = new TabLock(channel, id, onOwnerChange);
   lock.start();
   claimedAt = performance.now();
-  // A late write from the tab that just yielded: take it instead of overwriting it (D57).
+  // A late write from the tab that just yielded: take it instead of overwriting it (D57). Only
+  // while Home shows, so a board the player has already started is never swapped out under them.
   window.addEventListener('storage', (e) => {
     if (e.key !== SAVE_KEY || !e.newValue || !lock?.active || state.busy) return;
-    if (performance.now() - claimedAt <= LATE_WRITE_MS) reloadSave();
+    if (performance.now() - claimedAt > LATE_WRITE_MS || $('home').hidden) return;
+    if (e.newValue === JSON.stringify(state.save)) return; // nothing new
+    reloadSave(false);
   });
 }

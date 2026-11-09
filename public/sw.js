@@ -18,13 +18,16 @@ const BUILD_ID = '__BUILD_ID__';
 const CACHE = 'strata-' + BUILD_ID;
 const CORE = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const ASSET_REF = /(?:src|href)="(\.?\/?assets\/[^"]+)"/g;
-const CHUNK_REF = /new URL\(\s*["'`]([^"'`]+\.js)["'`]\s*,\s*import\.meta\.url/g;
-const IMPORT_REF = /(?:from|import)\s*["'](\.\/[^"']+\.js)["']/g; // static imports between chunks
+const CHUNK_REF = /new URL\(\s*["'`]([^"'`]+\.[A-Za-z0-9]+)["'`]\s*,\s*import\.meta\.url/g; // workers, and any file JS names by URL
+const IMPORT_REF = /(?:from|import)\s*\(?\s*["'](\.\/[^"']+\.js)["']/g; // static and dynamic imports between chunks
 const CSS_URL_REF = /url\(\s*["']?(?!data:)([^"')]+)["']?\s*\)/g; // fonts and images named by CSS
 
-/** Adds each URL on its own, so one missing file never fails the rest (TD-7). */
+/**
+ * Adds each URL on its own, so one missing file never fails the rest (TD-7). `cache: 'reload'`
+ * skips the browser's HTTP cache, so a host's max-age can't hand an install the previous page.
+ */
 function addEach(cache, urls) {
-  return Promise.allSettled(urls.map((u) => cache.add(u)));
+  return Promise.allSettled(urls.map((u) => cache.add(new Request(u, { cache: 'reload' }))));
 }
 
 /** The built assets (`assets/...`) an HTML page references, as absolute URLs (TD-7: the one copy of the regex). */
@@ -64,9 +67,20 @@ async function referencedUrls(html, scope, textOf) {
   return seen;
 }
 
-/** Cached `assets/*` URLs that the current page does not reference: safe to delete (TD-8). */
-function staleAssets(cachedUrls, keep, scope) {
-  if (keep.size === 0) return []; // no known references: delete nothing rather than everything
+/** Whether every URL the page needs is cached (an empty set is never complete). */
+function isComplete(keep, cachedUrls) {
+  if (keep.size === 0) return false;
+  const have = new Set(cachedUrls);
+  return [...keep].every((u) => have.has(u));
+}
+
+/**
+ * Cached `assets/*` URLs that the current page does not reference: safe to delete (TD-8).
+ * Only once the current page's own files are all cached (`complete`): otherwise the previous
+ * version's files are the only ones offline play has, so nothing is deleted.
+ */
+function staleAssets(cachedUrls, keep, scope, complete = true) {
+  if (keep.size === 0 || !complete) return []; // no known references, or the new set is partial: delete nothing
   const base = new URL('assets/', scope).href;
   return cachedUrls.filter((u) => u.startsWith(base) && !keep.has(u));
 }
@@ -76,8 +90,11 @@ async function textFromCache(cache, url) {
   return res ? res.text() : null;
 }
 
-/** Caches the page's assets and the chunks they load (P4), then prunes what it no longer uses. */
-async function cacheAssets(cache, html) {
+/**
+ * Caches the page's assets and the chunks they load (P4). Returns whether every file the page
+ * needs is now cached; only then, and when `prune` is set, deletes what it no longer uses.
+ */
+async function cacheAssets(cache, html, prune = true) {
   const scope = self.registration.scope;
   await addEach(cache, assetsOf(html, scope));
   // Chunks only show up inside cached scripts, so fetch them level by level until nothing is missing.
@@ -90,7 +107,9 @@ async function cacheAssets(cache, html) {
   }
   const keep = await referencedUrls(html, scope, (u) => textFromCache(cache, u));
   const cachedUrls = (await cache.keys()).map((r) => r.url);
-  for (const url of staleAssets(cachedUrls, keep, scope)) await cache.delete(url, { ignoreVary: true });
+  const complete = isComplete(keep, cachedUrls);
+  if (prune) for (const url of staleAssets(cachedUrls, keep, scope, complete)) await cache.delete(url, { ignoreVary: true });
+  return complete;
 }
 
 function register() {
@@ -100,7 +119,11 @@ function register() {
         const cache = await caches.open(CACHE);
         await addEach(cache, CORE);
         const page = await cache.match('./');
-        if (page) await cacheAssets(cache, await page.text()).catch(() => undefined);
+        // A new release has a new cache, and activating deletes the old one. So fail the install
+        // unless this cache holds everything the page needs: the old worker and its files stay,
+        // and the browser tries the update again later (review of PR #6).
+        const complete = page ? await cacheAssets(cache, await page.text()).catch(() => false) : false;
+        if (!complete) throw new Error('Strata: offline files incomplete; keeping the previous version');
         await self.skipWaiting();
       })(),
     );
@@ -129,9 +152,21 @@ function register() {
           try {
             const fresh = await fetch(req);
             if (fresh.ok) {
-              await cache.put('./', fresh.clone());
-              // Cache the assets this version of the page uses (and prune the rest) for the next launch.
-              event.waitUntil(fresh.clone().text().then((html) => cacheAssets(cache, html)).catch(() => undefined));
+              // For the next offline launch: cache this version's files first, and only when all of
+              // them are in, store the page itself and prune the old files. A download that fails
+              // part-way leaves the previous page and its files as the offline copy.
+              const page = fresh.clone();
+              event.waitUntil(
+                fresh
+                  .clone()
+                  .text()
+                  .then(async (html) => {
+                    if (!(await cacheAssets(cache, html, false))) return;
+                    await cache.put('./', page);
+                    await cacheAssets(cache, html);
+                  })
+                  .catch(() => undefined),
+              );
             }
             return fresh;
           } catch {
@@ -166,5 +201,5 @@ function register() {
 }
 
 // Under Node (unit tests) export the pure helpers; in the worker, register the listeners.
-if (typeof module !== 'undefined') module.exports = { assetsOf, refsOf, referencedUrls, staleAssets };
+if (typeof module !== 'undefined') module.exports = { assetsOf, refsOf, referencedUrls, staleAssets, isComplete };
 else register();

@@ -19,7 +19,10 @@ function swBuildStamp(): Plugin {
       for (const ch of Object.keys(bundle).sort().join('\n')) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
       const id = h.toString(16).padStart(8, '0');
       const file = `${outDir}/sw.js`;
-      writeFileSync(file, readFileSync(file, 'utf8').replace("'__BUILD_ID__'", `'${id}'`));
+      const src = readFileSync(file, 'utf8');
+      // Without the placeholder the cache name would never change, and updates would stop clearing old files.
+      if (!src.includes("'__BUILD_ID__'")) throw new Error('sw.js: the __BUILD_ID__ placeholder is missing, so the build cannot stamp it');
+      writeFileSync(file, src.replace("'__BUILD_ID__'", `'${id}'`));
     },
   };
 }

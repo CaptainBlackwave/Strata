@@ -5,7 +5,8 @@ const { chromium, devices } = require('/opt/node22/lib/node_modules/playwright')
 const path = require('path');
 const [base, out] = process.argv.slice(2);
 const KEY = 'strata.save.v2';
-const save = (o = {}) => ({ level: 3, best: { 1: 9, 2: 10 }, wallet: { coins: 500, boosters: { undo: 0, shuffle: 0, extraJar: 0, hint: 0 } }, tutorialDone: true, settings: { sound: false, music: false, haptics: false, patterns: false, southern: false }, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: ['periwinkle'], seenMechanics: ['narrow', 'frozen', 'locked', 'funnel'], themes: { owned: ['midday'], selected: 'midday', auto: false }, seenWhatsNew: '0.9.0', ...o });
+const VERSION = require('../../../../../package.json').version; // seen, so What's new doesn't cover Play
+const save = (o = {}) => ({ level: 3, best: { 1: 9, 2: 10 }, wallet: { coins: 500, boosters: { undo: 0, shuffle: 0, extraJar: 0, hint: 0 } }, tutorialDone: true, settings: { sound: false, music: false, haptics: false, patterns: false, southern: false }, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: ['periwinkle'], seenMechanics: ['narrow', 'frozen', 'locked', 'funnel'], themes: { owned: ['midday'], selected: 'midday', auto: false }, seenWhatsNew: VERSION, ...o });
 const w = (p, ms) => p.waitForTimeout(ms);
 (async () => {
   const b = await chromium.launch(); const errors = []; const R = {};
