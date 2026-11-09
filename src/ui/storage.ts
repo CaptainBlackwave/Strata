@@ -10,6 +10,7 @@ import type { ThemeState } from '../core/themes';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 import { WHATS_NEW_VERSION } from './strings';
+import { type Onboarding, freshOnboarding, onboardingOf } from './logic/onboarding';
 
 /** The scene every save owns and falls back to: `themes.default` in the config (TD-3). */
 const DEFAULT_THEME: string = (gameConfig as unknown as { themes: { default: string } }).themes.default;
@@ -85,6 +86,8 @@ export interface SaveData {
   badges: string[];
   /** Scenes the player has won a level or daily in, each once (badges.md §3.2). */
   scenesPlayed: string[];
+  /** One-time install and onboarding notices and the visit count (sprint 11 O1, O2, O4; D78). */
+  onboarding: Onboarding;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -160,7 +163,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [] };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding() };
 }
 
 /**
@@ -232,7 +235,20 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     seenShells: Math.min(nonNegInt(v2.seenShells, shells.length), shells.length),
     badges: repairBadges(v2.badges, gameConfig as unknown as BadgeConfig),
     scenesPlayed: strings(v2.scenesPlayed).filter((id) => SCENE_IDS.has(id)),
+    onboarding: onboardingOf(v2.onboarding, true), // any v2 save is from an earlier visit (D78)
   };
+}
+
+/**
+ * Whether the save is really kept on this device: it reads back after boot's write. False when
+ * storage is blocked or throws (O4). Example: `saveStored()`.
+ */
+export function saveStored(store: KeyValueStore | null = defaultStore()): boolean {
+  try {
+    return !!store && store.getItem(KEY) !== null;
+  } catch {
+    return false;
+  }
 }
 
 /** Whether the "What's new" card is due: the save has not seen `version` yet. */

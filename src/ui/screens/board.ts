@@ -20,6 +20,7 @@ import { buildJars, nope, onJarTapDo, renderAllJars, sealFx, setSelected, update
 import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
 import { openMap } from './map';
+import { boosterHintOnStart } from './onboarding';
 import { audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
@@ -117,6 +118,8 @@ export function showLevel(gen: PreparedLevel): void {
   challengeTag.textContent = t.challenge;
   challengeTag.hidden = !gen.spec.challenge;
   coach(null);
+  boosterHintOnStart(n, state.replay); // level 1's first play names the boosters once (O2)
+  updateHud();
   introduce(gen.spec.mechanics);
   // Next (n + 1, also after a replay) and Play from home (save.level).
   prefetcher.request([n + 1, state.save.level].filter((l) => l !== n));

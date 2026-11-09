@@ -1,0 +1,357 @@
+{
+  "tag": "before",
+  "runs": [
+    {
+      "device": "pixel7",
+      "errors": [],
+      "steps": [
+        {
+          "where": "home",
+          "play": "Play",
+          "daily": false
+        },
+        {
+          "where": "tutorial",
+          "coach": "Tap a jar to lift it"
+        },
+        {
+          "where": "l1",
+          "label": "Level 1",
+          "pours": 10,
+          "card": {
+            "title": "Perfect!",
+            "text": "10 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "130",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l2",
+          "label": "Level 2",
+          "pours": 11,
+          "card": {
+            "title": "Perfect!",
+            "text": "11 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "160",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l3",
+          "label": "Level 3",
+          "pours": 11,
+          "card": {
+            "title": "Perfect!",
+            "text": "11 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "190",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l4",
+          "label": "Level 4",
+          "pours": 12,
+          "card": {
+            "title": "Perfect!",
+            "text": "12 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "220",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l5",
+          "label": "Level 5",
+          "pours": 18,
+          "card": {
+            "title": "Perfect!",
+            "text": "18 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "New shell: Periwinkle",
+            "unlocks": "",
+            "coins": "250",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l6",
+          "label": "Level 6",
+          "pours": 19,
+          "card": {
+            "title": "Perfect!",
+            "text": "19 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "280",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l7",
+          "label": "Level 7",
+          "pours": 20,
+          "card": {
+            "title": "Perfect!",
+            "text": "20 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "310",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l8",
+          "label": "Level 8",
+          "pours": 22,
+          "card": {
+            "title": "Perfect!",
+            "text": "22 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "340",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l9",
+          "label": "Level 9",
+          "pours": 25,
+          "card": {
+            "title": "Perfect!",
+            "text": "25 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "370",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l10",
+          "label": "Level 10",
+          "pours": 42,
+          "card": {
+            "title": "Perfect!",
+            "text": "42 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "New shell: Limpet",
+            "unlocks": "\n      \n      \n      New frame: Driftwood",
+            "coins": "430",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "home-after-10",
+          "play": "Play · Level 11",
+          "daily": "Mon9 Daily puzzle, Monday 9Today: easyStart a streak today"
+        },
+        {
+          "where": "map-first",
+          "mapOpen": true,
+          "top": "toast,map"
+        }
+      ],
+      "seconds": 132
+    },
+    {
+      "device": "se150",
+      "errors": [],
+      "steps": [
+        {
+          "where": "home",
+          "play": "Play",
+          "daily": false
+        },
+        {
+          "where": "tutorial",
+          "coach": "Tap a jar to lift it"
+        },
+        {
+          "where": "l1",
+          "label": "Level 1",
+          "pours": 10,
+          "card": {
+            "title": "Perfect!",
+            "text": "10 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "130",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l2",
+          "label": "Level 2",
+          "pours": 11,
+          "card": {
+            "title": "Perfect!",
+            "text": "11 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "160",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l3",
+          "label": "Level 3",
+          "pours": 11,
+          "card": {
+            "title": "Perfect!",
+            "text": "11 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "190",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l4",
+          "label": "Level 4",
+          "pours": 12,
+          "card": {
+            "title": "Perfect!",
+            "text": "12 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "220",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l5",
+          "label": "Level 5",
+          "pours": 18,
+          "card": {
+            "title": "Perfect!",
+            "text": "18 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "New shell: Periwinkle",
+            "unlocks": "",
+            "coins": "250",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l6",
+          "label": "Level 6",
+          "pours": 19,
+          "card": {
+            "title": "Perfect!",
+            "text": "19 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "280",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l7",
+          "label": "Level 7",
+          "pours": 20,
+          "card": {
+            "title": "Perfect!",
+            "text": "20 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "310",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l8",
+          "label": "Level 8",
+          "pours": 22,
+          "card": {
+            "title": "Perfect!",
+            "text": "22 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "340",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l9",
+          "label": "Level 9",
+          "pours": 25,
+          "card": {
+            "title": "Perfect!",
+            "text": "25 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "",
+            "unlocks": "",
+            "coins": "370",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "l10",
+          "label": "Level 10",
+          "pours": 42,
+          "card": {
+            "title": "Perfect!",
+            "text": "42 pours · new best",
+            "note": "No hint, shuffle or extra jar used",
+            "shell": "New shell: Limpet",
+            "unlocks": "\n      \n      \n      New frame: Driftwood",
+            "coins": "430",
+            "next": "Continue",
+            "home": true
+          }
+        },
+        {
+          "where": "home-after-10",
+          "play": "Play · Level 11",
+          "daily": "Mon9 Daily puzzle, Monday 9Today: easyStart a streak today"
+        },
+        {
+          "where": "map-first",
+          "mapOpen": true,
+          "top": "toast,map"
+        }
+      ],
+      "seconds": 132
+    }
+  ]
+}
