@@ -1,5 +1,6 @@
 /** The global keyboard handler. */
 import { $, btnNext, closeLayer, homeEl, layers, settingsEl, winEl } from '../dom';
+import { hasCommandModifier, keyToAction } from '../logic/keymap';
 import { onJarTap, play, requestRestart, useBooster } from './board';
 import { setSelected } from './jars';
 import { onMapKey, onStoneCardKey } from './map';
@@ -10,7 +11,7 @@ import { state } from '../state';
 /** Wires the global keyboard handler: keys go to the top layer, and the board shortcuts work when none is open. */
 export function wireKeys(): void {
   window.addEventListener('keydown', (e) => {
-    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (hasCommandModifier(e)) return;
     // Keys go to the top layer only (F3); the board's shortcuts work when no layer is open.
     const top = layers.top();
     const onButton = document.activeElement instanceof HTMLButtonElement;
@@ -71,21 +72,12 @@ export function wireKeys(): void {
       if (e.key === 'Escape') closeLayer(settingsEl);
       return;
     }
-    if (top) return;
-    const k = e.key.toLowerCase();
-    if (k === 'z') useBooster('undo');
-    else if (k === 's') useBooster('shuffle');
-    else if (k === 'j') useBooster('extraJar');
-    else if (k === 'h') useBooster('hint');
-    else if (k === 'r') requestRestart();
-    else if (k === 'escape') setSelected(null);
-    else {
-      // 1-9 and 0 pick jars 1-10; with Shift they pick jars 11-20 (UX-board-8). Shift changes
-      // e.key ("!"), so the top-row digit comes from e.code.
-      const digit = /^Digit[0-9]$/.test(e.code) ? e.code.slice(5) : /^[0-9]$/.test(k) ? k : null;
-      if (digit === null) return;
-      const i = (digit === '0' ? 9 : Number(digit) - 1) + (e.shiftKey ? 10 : 0);
-      if (i < state.jarEls.length) onJarTap(i);
-    }
+    // Z/S/J/H/R, Escape, and 1-9 and 0 (Shift for 11-20) on the board: the pure mapping (UX-board-8, TD-12).
+    const action = keyToAction(e, { layerOpen: top !== null, jarCount: state.jarEls.length });
+    if (action === null) return;
+    if (action.kind === 'booster') useBooster(action.id);
+    else if (action.kind === 'restart') requestRestart();
+    else if (action.kind === 'deselect') setSelected(null);
+    else onJarTap(action.index);
   });
 }
