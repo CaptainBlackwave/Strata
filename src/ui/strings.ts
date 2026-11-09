@@ -7,10 +7,20 @@ import { version } from '../../package.json';
 
 /**
  * The release the "What's new" card describes (D46, D52): the game's version from
- * package.json, the single source (D56). Bump package.json together with
- * `whatsNew.lines`; a save whose `seenWhatsNew` differs sees the card once on Home.
+ * package.json, the single source (D56). Bump package.json together with a new first entry
+ * in `whatsNew.releases` (a unit test holds the two equal); a save whose `seenWhatsNew` differs sees the card once on Home.
  */
 export const WHATS_NEW_VERSION: string = version;
+
+/** One "What's new" posting: the release it describes, a short name and its 3-5 plain lines. */
+export interface WhatsNewRelease {
+  /** The release's version, as in package.json. */
+  version: string;
+  /** A few words naming the release. */
+  name: string;
+  /** What changed, for players, in 3-5 short plain lines. */
+  lines: string[];
+}
 
 /** A count with thousands separators, as the stats grid shows it: 1200 → "1,200". */
 const n0 = (n: number) => n.toLocaleString('en');
@@ -102,16 +112,99 @@ const en = {
   gotIt: 'Got it',
   jarGuide: 'Jar guide',
   keysNote: 'Keys: 1–9 and 0 pick jars 1–10; hold Shift for jars 11–20. Z Undo · S Shuffle · J Jar · H Hint · R Restart.',
-  /** The "What's new" card: 3-5 short plain lines, shown once per version (D52). */
+  /**
+   * The "What's new" changelog (D46, D52): one posting per release, newest first. Each posting
+   * keeps its 3-5 short plain lines exactly as it shipped. The card shown once on Home after an
+   * update lists only the first; Settings > What's new lists them all.
+   */
   whatsNew: {
     version: WHATS_NEW_VERSION,
     title: "What's new",
     button: "What's new",
-    lines: [
-      'Jar styles: from level 60, spend coins on new glass, corks and sand textures.',
-      'Mix and match pieces, and preview any of them before you buy.',
-      'Styles never change a sand colour, and colour patterns stay on top.',
-    ],
+    /** The heading above each posting. */
+    versionLabel: (v: string) => `Version ${v}`,
+    /** The mark beside the newest posting. */
+    latest: 'Latest',
+    releases: [
+      {
+        version: '0.12.0',
+        name: 'Jar styles',
+        lines: [
+          'Jar styles: from level 60, spend coins on new glass, corks and sand textures.',
+          'Mix and match pieces, and preview any of them before you buy.',
+          'Styles never change a sand colour, and colour patterns stay on top.',
+        ],
+      },
+      {
+        version: '0.11.1',
+        name: 'A smoother first run, and a weekly bonus',
+        lines: [
+          'Clear all five weekly boards for a coin bonus, once a week.',
+          'Share the weekly set and the link opens it directly.',
+          'Level 10, the first tall-jar level, is a gentler step.',
+        ],
+      },
+      {
+        version: '0.11.0',
+        name: 'Badges and the weekly set',
+        lines: [
+          'A shelf of 28 badges on your profile, earned as you play.',
+          'A weekly set: five new boards every Monday, and a badge for clearing them all.',
+          'Share a daily and the link opens that puzzle directly.',
+          'Add Strata to your home screen to play it like an app, even offline.',
+        ],
+      },
+      {
+        version: '0.10.1',
+        name: 'Look fixes',
+        lines: [
+          'The volume sliders now match the scene you are in.',
+          'Sealing a jar and clearing a level glow in each scene\'s own colours.',
+          'In the night scenes that glow is cool moonlight instead of warm sand.',
+        ],
+      },
+      {
+        version: '0.10.0',
+        name: 'Music and feel',
+        lines: [
+          'Every scene now has its own music.',
+          'Sliders for sound and music volume in Settings.',
+          'Softer, richer sounds, and a gentle glow when you seal a jar or clear a level.',
+          'Smoother moves between Home, the map and the board.',
+        ],
+      },
+      {
+        version: '0.9.1',
+        name: 'Fixes',
+        lines: [
+          'Hints and shuffles no longer freeze the game on big boards.',
+          'A shell you have not looked at yet stays marked "New" until you do.',
+          'Large text fits better on the map and the booster prices.',
+          'Updates download cleanly, and old files are cleared out.',
+        ],
+      },
+      {
+        version: '0.9.0',
+        name: 'The beach path',
+        lines: [
+          'A beach path map shows every level, with what you earned on each.',
+          'Replay any level to earn its Perfect mark or beat your best pours.',
+          'Strata now plays in one tab at a time, so no progress is lost.',
+          'Aurora night, Winter lights and Rainbow after rain look better.',
+        ],
+      },
+      {
+        version: '0.8.0',
+        name: 'Free undo and new scenes',
+        lines: [
+          'Undo is free now.',
+          'Twelve new scenes to buy, from sea fog to aurora night.',
+          "A banner tells you when you're stuck, and hints are clearer.",
+          'Jars are easier to tap, and you can pinch to zoom.',
+          'Sealed jars now show their sand.',
+        ],
+      },
+    ] as WhatsNewRelease[],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
   /** The level map (design/gdd/level-map.md). */

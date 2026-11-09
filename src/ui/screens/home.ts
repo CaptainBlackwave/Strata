@@ -3,10 +3,11 @@ import { allShells } from '../../core/collection';
 import { streakStatus, weekday } from '../../core/daily';
 import { byIdOr, isOwned } from '../../core/themes';
 import { scenesNewDue } from '../logic/onboarding';
+import { whatsNewReleases } from '../logic/whats-new';
 import { type FocusTarget } from '../layers';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
-import { t } from '../strings';
+import { type WhatsNewRelease, t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, winEl } from '../dom';
 import { screenIn } from '../fx';
 import { renderProfileChip } from './sheets/profile';
@@ -58,18 +59,49 @@ export function renderScenesMark(): void {
   $('scenes-new').hidden = !scenesNewDue(state.save.onboarding, state.save.wallet.coins, unowned);
 }
 
-/**
- * Shows the "What's new" card (D46, D52) and records that this version has been seen.
- * Focus goes to its button and returns to `opener` on close.
- */
-export function openWhatsNew(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
-  $('whatsnew-list').replaceChildren(
-    ...t.whatsNew.lines.map((line) => {
+/** One posting: its version heading (with a "Latest" mark on the newest), its name and its lines. */
+function releaseEl(release: WhatsNewRelease, latest: boolean): HTMLElement {
+  const section = document.createElement('section');
+  section.className = latest ? 'whatsnew-release latest' : 'whatsnew-release';
+  const head = document.createElement('h3');
+  head.className = 'whatsnew-version';
+  head.id = `whatsnew-v-${release.version.replace(/\W/g, '-')}`;
+  const label = document.createElement('span');
+  label.textContent = t.whatsNew.versionLabel(release.version);
+  head.append(label);
+  if (latest) {
+    const mark = document.createElement('span');
+    mark.className = 'new-mark';
+    mark.textContent = t.whatsNew.latest;
+    head.append(' ', mark);
+  }
+  section.setAttribute('aria-labelledby', head.id);
+  const name = document.createElement('p');
+  name.className = 'whatsnew-name';
+  name.textContent = release.name;
+  const list = document.createElement('ul');
+  list.className = 'whatsnew-list';
+  list.append(
+    ...release.lines.map((line) => {
       const li = document.createElement('li');
       li.textContent = line;
       return li;
     }),
   );
+  section.append(head, name, list);
+  return section;
+}
+
+/**
+ * Shows "What's new" (D46, D52) and records that this version has been seen. With `all` (Settings)
+ * it is the whole changelog, newest first; without it (once on Home after an update) it is only the
+ * newest posting. Focus goes to its button and returns to `opener` on close.
+ */
+export function openWhatsNew(opener: FocusTarget | null = document.activeElement as HTMLElement | null, all = false): void {
+  const log = $('whatsnew-log');
+  log.replaceChildren(...whatsNewReleases(t.whatsNew.releases, all).map((release, i) => releaseEl(release, i === 0)));
+  log.classList.toggle('all', all);
+  log.scrollTop = 0;
   if (state.save.seenWhatsNew !== t.whatsNew.version) {
     state.save.seenWhatsNew = t.whatsNew.version;
     writeSave(state.save);
@@ -79,6 +111,6 @@ export function openWhatsNew(opener: FocusTarget | null = document.activeElement
 
 /** Wires the What's new card's buttons. */
 export function wireHome(): void {
-  $('btn-whatsnew').addEventListener('click', () => openWhatsNew());
+  $('btn-whatsnew').addEventListener('click', () => openWhatsNew(undefined, true)); // Settings: the whole changelog
   $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
 }
