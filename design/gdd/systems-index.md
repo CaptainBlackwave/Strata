@@ -151,6 +151,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D90 | Style slots | **Mix and match**: three slots (glass, cork, sand), each with its own small ladder; any owned pieces combine | jar-styles | sprint 12 |
 | D91 | Style unlock | **From level 60**, sharing the 1–2 week pace with the scenes still to buy | jar-styles, economy | sprint 12 |
 | D92 | Sprint 12 delivery | **Build it all to 0.12.0**, merging under D61; the owner approves the style art before the merge (as D67 for audio) | — | sprint 12 |
+| D93 | Jar style art review (first pass) | **Fix all five open items**: a cork stopper on the default Home art (changes today's Home look), quieter sea glass frost in dark scenes, glint readable on light sand, a stronger pearl outline in light scenes, and the worn texture on the pouring sand and on buried units | jar-styles | sprint 12 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
