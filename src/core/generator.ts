@@ -103,7 +103,8 @@ export interface FallbackStep<S extends LevelSpec = LevelSpec> {
 
 /**
  * A numbered level's fallback chain, so no level can ever fail to load: the full recipe,
- * then with a second ordinary spare (one-spare levels only), then without mechanics (levels
+ * then with a second ordinary spare (one-spare levels only), then without the hourglass but
+ * with the other mechanics (levels with both only, D96), then without mechanics (levels
  * with mechanics only). Every step but the last is capped by total solver work
  * (`generator.stepNodeBudget`), which keeps level starts fast and identical on every device.
  * Example: `levelSteps(levelSpec(150, config), config).length // 2 or 3`
@@ -112,6 +113,8 @@ export function levelSteps(spec: LevelSpec, config: GameConfig): FallbackStep[] 
   const g = config.generator;
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : g.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, g.maxAttempts]);
+  // An hourglass with other mechanics: try the others alone before dropping them all (D96).
+  if (spec.hourglass && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
   if (hasAnyMechanic(spec)) tries.push([{ ...withoutMechanics(spec), spare: 2 }, g.maxAttempts]);
   const { cap, perAttempt } = stepBudgets(config);
   return tries.map(([s, maxAttempts], i) => {

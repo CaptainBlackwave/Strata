@@ -5,7 +5,7 @@ import early from '../../fixtures/boards-1-100.json';
 import saturdays from '../../fixtures/daily-saturdays.json';
 import { type Board, type Jar, boardKey, isSealed, isStuck, isWon, lostReason, makeBoard, pour, usefulMoves } from '../../../src/core/board';
 import { type DailyConfig, dailySpec, generateDaily } from '../../../src/core/daily';
-import { applyMechanics, generateLevel } from '../../../src/core/generator';
+import { applyMechanics, generateLevel, levelSteps } from '../../../src/core/generator';
 import { type GameConfig, levelSpec, pickMechanics } from '../../../src/core/levels';
 import { createRng } from '../../../src/core/rng';
 import { GameSession, findShuffle } from '../../../src/core/session';
@@ -201,6 +201,13 @@ describe('hourglass placement and generation', () => {
       expect(g.frozen || g.lock !== undefined || g.funnel || g.cap !== undefined).toBeFalsy();
       expect(g.hourglass).toEqual({ every: EVERY, left: EVERY });
     }
+  });
+
+  it('a level with the hourglass and another mechanic first falls back to the other mechanic alone', () => {
+    const spec = { ...levelSpec(170, cfg), mechanics: ['frozen'] as const, hourglass: true };
+    const steps = levelSteps(spec, cfg).map((st) => [st.spec.mechanics.join('+'), st.spec.hourglass === true]);
+    expect(steps).toEqual([['frozen', true], ['frozen', false], ['', false]]);
+    expect(levelSteps({ ...spec, mechanics: [] }, cfg).map((st) => st.spec.hourglass === true)).toEqual([true, false]);
   });
 
   it('levels 101-160: every board with an hourglass is solver-proven and its solution replays to a win', () => {
