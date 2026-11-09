@@ -8,7 +8,7 @@ const SAVE = {
   level: 1, best: {}, wallet: { coins: 100, boosters: { undo: 0, shuffle: 0, extraJar: 0, hint: 60 } }, tutorialDone: true,
   settings: { sound: false, music: false, haptics: false, patterns: false, southern: false }, daily: { last: null, streak: 0, best: 0, passes: 0 },
   shells: [], seenMechanics: ['narrow', 'frozen', 'locked', 'funnel'], themes: { owned: ['midday'], selected: 'midday', auto: false },
-  profile: { name: 'Tab Tester', avatar: 'sand-jar', frame: 'plain', plate: 'plain' }, stats: { perfectClears: 0, dailiesSolved: 0, pours: 0, coinsEarned: 0, boostersUsed: 0 }, dailyShare: null, seenWhatsNew: '0.8.0',
+  profile: { name: 'Tab Tester', avatar: 'sand-jar', frame: 'plain', plate: 'plain' }, stats: { perfectClears: 0, dailiesSolved: 0, pours: 0, coinsEarned: 0, boostersUsed: 0 }, dailyShare: null, seenWhatsNew: require('../../../../../package.json').version,
 };
 const log = []; const errs = [];
 const note = (k, v) => { log.push([k, v]); console.log(k, JSON.stringify(v)); };

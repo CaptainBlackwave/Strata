@@ -8,7 +8,7 @@ const mkSave = (o = {}) => ({
   level: 3, best: {}, wallet: { coins: 500, boosters: { undo: 0, shuffle: 0, extraJar: 0, hint: 60 } }, tutorialDone: true,
   settings: { sound: false, music: false, haptics: false, patterns: false, southern: false }, daily: { last: null, streak: 0, best: 0, passes: 0 },
   shells: ['periwinkle'], seenMechanics: ['narrow', 'frozen', 'locked', 'funnel'], themes: { owned: ['midday'], selected: 'midday', auto: false },
-  profile: { name: 'Shore Tester', avatar: 'sand-jar', frame: 'plain', plate: 'plain' }, stats: { perfectClears: 2, dailiesSolved: 1, pours: 340, coinsEarned: 900, boostersUsed: 4 }, dailyShare: null, seenWhatsNew: '0.8.0', ...o,
+  profile: { name: 'Shore Tester', avatar: 'sand-jar', frame: 'plain', plate: 'plain' }, stats: { perfectClears: 2, dailiesSolved: 1, pours: 340, coinsEarned: 900, boostersUsed: 4 }, dailyShare: null, seenWhatsNew: require('../../../../../package.json').version, ...o,
 });
 const out = []; const errs = [];
 const note = (k, v) => { out.push([k, v]); console.log(k, JSON.stringify(v)); };
