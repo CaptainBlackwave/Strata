@@ -12,6 +12,7 @@ const writeFileSync = writeFs as (path: URL, data: string) => void;
 const env = (globalThis as unknown as { process: { env: Record<string, string | undefined> } }).process.env;
 import gameConfig from '../../../src/config/game-config.json';
 import {
+  BURIED_GRAIN,
   PLAIN_GRAIN,
   SAND_ALPHA_CAP,
   SAND_CSS_BEGIN,
@@ -74,7 +75,17 @@ describe('sand textures: CSS and table stay in step', () => {
     expect(unitRule.replace(/\s+/g, ' ')).toContain(`background-size: ${PLAIN_GRAIN.map((l) => layerCss(l).size.replace(/px/g, 'px')).join(', ')};`);
     expect(unitRule.replace(/\s+/g, ' ')).toContain(`background-position: 0 0, 3px 2px;`);
   });
+
+  it('BURIED_GRAIN mirrors the hand-written grain on .unit.buried', () => {
+    const at = css.indexOf('\n.unit.buried {');
+    const rule = css.slice(at, css.indexOf('}', at));
+    for (const l of BURIED_GRAIN) expect(rule).toContain(layerCss(l).image);
+  });
 });
+
+/** Every sand colour, plus the buried ("?") colour (the root --buried token; scenes never change it). */
+const buriedHex = /--buried:\s*(#[0-9a-f]{6})/i.exec(css)![1];
+const units = [...config.palette.map((p) => ({ ...p, buried: false })), { id: 'buried', hex: buriedHex, buried: true }];
 
 describe('sand overlay cap (jar-styles.md §4)', () => {
   it(`every texture layer has alpha ≤ ${SAND_ALPHA_CAP} in the table`, () => {
@@ -91,8 +102,8 @@ describe('sand overlay cap (jar-styles.md §4)', () => {
   it(`each texture moves every sand colour's mean relative luminance by ≤ ${SAND_LUMINANCE_CAP * 100}% against plain sand`, () => {
     const worst: Record<string, number> = {};
     for (const id of SAND_IDS) {
-      for (const { id: colour, hex } of config.palette) {
-        const plain = meanUnitLuminance(hex, PLAIN_GRAIN);
+      for (const { id: colour, hex, buried } of units) {
+        const plain = meanUnitLuminance(hex, buried ? BURIED_GRAIN : PLAIN_GRAIN);
         const styled = meanUnitLuminance(hex, SAND_TEXTURES[id]);
         const change = Math.abs(styled - plain) / plain;
         worst[id] = Math.max(worst[id] ?? 0, change);

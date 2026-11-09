@@ -3509,7 +3509,8 @@ body[data-theme='harvestmoon']::before {
   --style-shine-x: 18%;
 }
 [data-glass='pearl'] {
-  --style-edge: color-mix(in srgb, var(--glass-edge) 65%, rgb(232, 214, 228));
+  /* A pearly grey-mauve that is more opaque than the scene edge, so the outline is at least as strong as clear glass. */
+  --style-edge: color-mix(in srgb, var(--glass-edge) 80%, rgb(120, 96, 120));
   --style-body: color-mix(in srgb, var(--glass) 75%, rgba(252, 240, 248, 0.6));
   --style-band: rgba(250, 232, 244, 0.42);
   --style-rim: linear-gradient(90deg, rgba(255, 232, 244, 0.7), rgba(228, 238, 255, 0.7) 50%, rgba(255, 246, 228, 0.7));
@@ -3535,7 +3536,8 @@ body[data-theme='harvestmoon']::before {
 }
 /* Sea glass is frosted: a fine white speckle on the empty glass above the sand (the funnel keeps its stripes). */
 [data-glass='seaglass'] .jar:not(.funnel) > .glass {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 0.6px, transparent 1px);
+  /* Scene-aware: about 0.2 alpha on light scenes' glass, about 0.05 on dark scenes' (--glass is 0.1 there). */
+  background-image: radial-gradient(color-mix(in srgb, var(--glass) 55%, transparent) 0.6px, transparent 1px);
   background-size: 3px 3px;
 }
 /* Home art: the outline and a highlight streak (the art has no rim). */
@@ -3546,8 +3548,9 @@ body[data-theme='harvestmoon']::before {
     linear-gradient(0deg, var(--a) 0 30%, var(--b) 30% 58%, var(--c2) 58% 84%, var(--style-body) 84%);
 }
 
-/* Cork: the stopper on sealed jars, and a stopper on the Home art (today's Home art has none, so the
-   default cork shows none there). Each piece is one background, edge, shape and shadow. */
+/* Cork: the stopper on sealed jars, and a stopper on the Home art. Each piece is one background, edge,
+   shape and shadow. The Home stopper shows for every cork, the default included (the owner's call in
+   sprint 12 review: this adds a stopper to today's Home art); its fallbacks are the board's default cork. */
 [data-cork='driftwood'] {
   --cork-bg:
     repeating-linear-gradient(90deg, rgba(64, 58, 52, 0.3) 0 1px, transparent 1px 3.5px),
@@ -3587,19 +3590,19 @@ body[data-theme='harvestmoon']::before {
   border-radius: var(--cork-radius);
   box-shadow: var(--cork-shadow, none);
 }
-:is([data-cork='driftwood'], [data-cork='rope'], [data-cork='scallop'], [data-cork='brass']) .logo-jars i {
+.logo-jars i {
   position: relative;
 }
-:is([data-cork='driftwood'], [data-cork='rope'], [data-cork='scallop'], [data-cork='brass']) .logo-jars i::before {
+.logo-jars i::before {
   content: '';
   position: absolute;
   left: 20%;
   right: 20%;
   top: -10px;
   height: 13px;
-  background: var(--cork-bg);
-  border: 2px solid var(--cork-edge);
-  border-radius: var(--cork-radius);
+  background: var(--cork-bg, radial-gradient(rgba(0, 0, 0, 0.18) 1px, transparent 1.5px) 0 0 / 5px 4px, linear-gradient(180deg, #d8a86b, #b7834a));
+  border: 2px solid var(--cork-edge, #8a6136);
+  border-radius: var(--cork-radius, 5px 5px 3px 3px);
   box-shadow: var(--cork-shadow, none);
   pointer-events: none;
 }
@@ -3610,18 +3613,22 @@ body[data-theme='harvestmoon']::before {
    tests/unit/ui/style-art.test.ts fails if this block and the table differ, and checks the cap (jar-styles.md §4).
    The texture is drawn on ::before over the sand colour; with colour patterns on, ::after draws the
    unit's own .pat-* layers again on top (background-* inherit), so a pattern is never under a texture.
-   Buried units keep their own look. Nothing here animates. */
-:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit:not(.buried) {
+   Buried units take it too, under their "?" (their colour stays var(--buried)); so do the stripes of
+   the tilted fill mid-pour (.tilt-band, coloured inline), where the texture is a clear overlay.
+   Nothing here animates. */
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit,
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .tilt-band > span {
   position: relative;
 }
-:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit:not(.buried)::before,
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit::before,
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .tilt-band > span::before,
 :is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit[class*='pat-']::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit:not(.buried)::before {
+:is([data-sand='fine'], [data-sand='glint'], [data-sand='layered'], [data-sand='ripple']) .unit::before {
   background-color: var(--c);
   box-shadow: inherit;
 }
@@ -3644,7 +3651,8 @@ body[data-theme='harvestmoon']::before {
   border-radius: 0 0 17px 17px;
   pointer-events: none;
 }
-[data-sand='fine'] .unit:not(.buried)::before,
+[data-sand='fine'] .unit::before,
+[data-sand='fine'] .tilt-band > span::before,
 [data-sand='fine'] .logo-jars i::after {
   background-image:
     radial-gradient(rgba(255, 255, 255, 0.2) 0.45px, transparent 0.8px),
@@ -3653,21 +3661,25 @@ body[data-theme='harvestmoon']::before {
   background-size: 4px 4px, 5px 4px, 3px 3px;
   background-position: 0px 0px, 2px 1px, 1px 2px;
 }
-[data-sand='glint'] .unit:not(.buried)::before,
+[data-sand='glint'] .unit::before,
+[data-sand='glint'] .tilt-band > span::before,
 [data-sand='glint'] .logo-jars i::after {
   background-image:
     radial-gradient(3.2px 0.45px, rgba(255, 255, 255, 0.25) 15%, transparent),
     radial-gradient(0.45px 3.2px, rgba(255, 255, 255, 0.25) 15%, transparent),
     radial-gradient(1.1px 1.1px, rgba(255, 255, 255, 0.25) 50%, transparent),
+    radial-gradient(2.4px 2.4px, rgba(0, 0, 0, 0.22) 35%, transparent),
     radial-gradient(2.4px 0.45px, rgba(255, 255, 255, 0.25) 15%, transparent),
     radial-gradient(0.45px 2.4px, rgba(255, 255, 255, 0.25) 15%, transparent),
     radial-gradient(1.1px 1.1px, rgba(255, 255, 255, 0.25) 50%, transparent),
+    radial-gradient(1.8px 1.8px, rgba(0, 0, 0, 0.22) 35%, transparent),
     radial-gradient(rgba(255, 255, 255, 0.22) 0.8px, transparent 1.2px),
     radial-gradient(rgba(0, 0, 0, 0.14) 0.8px, transparent 1.2px);
-  background-size: 26px 22px, 26px 22px, 26px 22px, 34px 29px, 34px 29px, 34px 29px, 6px 6px, 7px 5px;
-  background-position: 0px 0px, 0px 0px, 0px 0px, 13px 15px, 13px 15px, 13px 15px, 0px 0px, 3px 2px;
+  background-size: 26px 22px, 26px 22px, 26px 22px, 26px 22px, 34px 29px, 34px 29px, 34px 29px, 34px 29px, 6px 6px, 7px 5px;
+  background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px, 13px 15px, 13px 15px, 13px 15px, 13px 15px, 0px 0px, 3px 2px;
 }
-[data-sand='layered'] .unit:not(.buried)::before,
+[data-sand='layered'] .unit::before,
+[data-sand='layered'] .tilt-band > span::before,
 [data-sand='layered'] .logo-jars i::after {
   background-image:
     linear-gradient(180deg, transparent 20%, rgba(255, 255, 255, 0.12) 24% 29%, transparent 33%),
@@ -3678,7 +3690,8 @@ body[data-theme='harvestmoon']::before {
   background-size: 100% 100%, 100% 100%, 100% 100%, 6px 6px, 7px 5px;
   background-position: 0 0, 0 0, 0 0, 0px 0px, 3px 2px;
 }
-[data-sand='ripple'] .unit:not(.buried)::before,
+[data-sand='ripple'] .unit::before,
+[data-sand='ripple'] .tilt-band > span::before,
 [data-sand='ripple'] .logo-jars i::after {
   background-image:
     radial-gradient(circle at 9px -5px, transparent 9.15px, rgba(255, 255, 255, 0.12) 9.65px 10.35px, transparent 10.85px),
