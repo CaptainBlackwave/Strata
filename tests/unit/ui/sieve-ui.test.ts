@@ -3,6 +3,7 @@
 // while the daily and weekly still leave it out (isClassicMechanic) until W1.
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
+// @ts-expect-error node:fs types are not installed (as in style-art.test.ts)
 import { readFileSync as readFs } from 'node:fs';
 import { type CollectionConfig } from '../../../src/core/collection';
 import { type GameConfig, type MechanicId, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
