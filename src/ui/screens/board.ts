@@ -110,7 +110,10 @@ export function startTutorial(): void {
  * Starts numbered level `n` (P4): instantly from the prefetch cache when the worker already
  * made it; by waiting for the worker when it is making it now (a "Preparing" toast only after
  * 150 ms, `quiet` skips it); otherwise by generating synchronously, as before P4.
- * `replay` marks a replay started from the map (D50), so Continue returns to the map.
+ * `quiet` is the board made behind Home (at boot, or when this tab takes over): it also holds
+ * back the intro card, which shows when the level is played (sprint 13 M1: the "New jar!" card
+ * opened over Home and was spent there). `replay` marks a replay started from the map (D50),
+ * so Continue returns to the map.
  */
 export function startLevel(n: number, quiet = false, replay = false): void {
   state.mode = 'level';
@@ -118,8 +121,8 @@ export function startLevel(n: number, quiet = false, replay = false): void {
   state.level = n;
   const token = ++startToken;
   const ready = prefetcher.get(n);
-  if (ready) return showLevel(ready);
-  if (!prefetcher.pending(n)) return showLevel(prefetcher.generateNow(n));
+  if (ready) return showLevel(ready, quiet);
+  if (!prefetcher.pending(n)) return showLevel(prefetcher.generateNow(n), quiet);
   state.busy = true; // the previous board (if any) takes no input until the new one arrives
   let toasted = false;
   const spinner = quiet ? 0 : window.setTimeout(() => {
@@ -130,12 +133,15 @@ export function startLevel(n: number, quiet = false, replay = false): void {
     window.clearTimeout(spinner);
     if (toasted) toastEl.classList.remove('show');
     if (token !== startToken || state.mode !== 'level' || state.level !== n) return; // the player moved on
-    showLevel(p ?? prefetcher.generateNow(n)); // worker failed or timed out: synchronous
+    showLevel(p ?? prefetcher.generateNow(n), quiet); // worker failed or timed out: synchronous
   });
 }
 
-/** Puts a prepared level on the board, then prefetches what the player can start next. */
-export function showLevel(gen: PreparedLevel): void {
+/**
+ * Puts a prepared level on the board, then prefetches what the player can start next.
+ * `behindHome`: the board is made under Home, so its intro card waits until it is played.
+ */
+export function showLevel(gen: PreparedLevel, behindHome = false): void {
   const n = gen.level;
   beginSession(gen.board, gen.spec.challenge);
   levelLabel.textContent = t.level(n);
@@ -144,7 +150,7 @@ export function showLevel(gen: PreparedLevel): void {
   coach(null);
   boosterHintOnStart(n, state.replay); // level 1's first play names the boosters once (O2)
   updateHud();
-  introduce(specMechanics(gen.spec));
+  if (!behindHome) introduce(specMechanics(gen.spec));
   // Next (n + 1, also after a replay) and Play from home (save.level).
   prefetcher.request([n + 1, state.save.level].filter((l) => l !== n));
 }
