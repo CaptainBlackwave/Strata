@@ -24,6 +24,18 @@ describe('levelSpec', () => {
     expect(levelSpec(10, cfg)).toMatchObject({ challenge: true, capacity: 8 });
     expect(levelSpec(11, cfg).challenge).toBe(false);
   });
+  it('the first tall-jar level is 4 x 8 and later ones stay 5 x 8 (challenge.curve, D82 R3)', () => {
+    expect(levelSpec(10, cfg)).toMatchObject({ challenge: true, colors: 4, capacity: 8, spare: 2, buriedDepth: 0 });
+    for (const l of [20, 30, 100, 500]) expect(levelSpec(l, cfg), `level ${l}`).toMatchObject({ challenge: true, colors: 5, capacity: 8, spare: 2 });
+  });
+  it('tall-jar shape rows inherit omitted fields, and without rows the base shape is used', () => {
+    const rows = { ...cfg, challenge: { ...cfg.challenge, curve: [{ fromLevel: 20, colors: 6 }, { fromLevel: 40, spare: 3 }] } };
+    expect(levelSpec(10, rows)).toMatchObject({ colors: cfg.challenge.colors, spare: cfg.challenge.spare });
+    expect(levelSpec(30, rows)).toMatchObject({ colors: 6, capacity: cfg.challenge.capacity, spare: cfg.challenge.spare });
+    expect(levelSpec(40, rows)).toMatchObject({ colors: 6, spare: 3 });
+    const none = { ...cfg, challenge: { ...cfg.challenge, curve: undefined } };
+    expect(levelSpec(10, none)).toMatchObject({ colors: cfg.challenge.colors, capacity: cfg.challenge.capacity });
+  });
   it('clamps colours to the palette size', () => {
     expect(levelSpec(999, cfg).colors).toBeLessThanOrEqual(cfg.palette.length);
   });
