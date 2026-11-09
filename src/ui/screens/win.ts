@@ -16,6 +16,7 @@ import { showHome } from './home';
 import { coach, updateHud } from './hud';
 import { plateEl, portraitOf } from './sheets/profile';
 import { badgeRow } from './sheets/badges';
+import { shareWeekly } from './sheets/weekly';
 import { ANIM, audio, config, state } from '../state';
 
 /** Seconds after the win chime that a shell row's sound starts, so the two don't blur (F1, D68). */
@@ -59,11 +60,20 @@ export function showUnlocks(items: SlotItem[], badges: readonly string[] = []): 
   );
 }
 
+/** The page's address without query or hash, as Share posts it (D18). */
+export function shareUrl(): string {
+  return location.href.split('?')[0].split('#')[0];
+}
+
 export async function shareDaily(): Promise<void> {
   const url = shareLink(location.href, { daily: state.dailyDate }); // opens this daily directly; no save data (O3)
   const text = t.shareText(state.dailyDate, state.dailyName, sharePours(state.save.dailyShare, state.dailyDate, state.session.moves), state.save.daily.streak, url);
   // The outcome shows inside the card, not as a toast under the overlay (UX-win-4).
-  const status = $('share-status');
+  return shareTo(text, $('share-status'));
+}
+
+/** Shares `text` with the native sheet, else copies it, and says how it went in `status` (UX-win-4). */
+export async function shareTo(text: string, status: HTMLElement): Promise<void> {
   status.textContent = '';
   if (navigator.share) {
     try {
@@ -110,7 +120,8 @@ export function openWin(): void {
 export function applyWinToSave(): WinCard {
   const board = state.session.board;
   const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length; // counted at the win, so Undo can't farm it (badges.md §3.2)
-  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists, sealed, scene: currentTheme() }, config);
+  const weekly = state.mode === 'weekly' ? { week: state.weeklyWeek, index: state.weeklyIndex } : undefined;
+  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists, sealed, scene: currentTheme(), weekly }, config);
   Object.assign(state.save, r.state);
   writeSave(state.save);
   return r.card;
@@ -145,6 +156,22 @@ export function winDaily(): void {
   renderRewards(card);
 }
 
+/**
+ * A weekly board's win card (weekly-set.md §3.8): which board, the pours and the set's progress, a
+ * note for a replay or an out-of-date week, the week's badge when the set completes, and Share.
+ * No reward row: weekly boards pay nothing (§3.7).
+ */
+export function winWeekly(): void {
+  const card = applyWinToSave();
+  const w = card.weekly!;
+  $('win-title').textContent = w.completedNow ? t.weekly.completeTitle : t.weekly.winTitle(w.index + 1);
+  $('win-text').textContent = t.weekly.winText(card.moves, w.cleared, w.total);
+  $('win-note').textContent = w.outOfDate ? t.weekly.outOfDate : w.newBest ? t.newBest(card.moves) : w.firstClear ? '' : t.weekly.replay;
+  $('btn-share').hidden = false;
+  btnNext.textContent = t.next;
+  renderRewards(card);
+}
+
 /** What a replay changed (D50): "Perfect earned", "New best: X pours", or "Replay: no coins". */
 export function replayNote(card: WinCard): string {
   const changes = [card.perfectEarned && t.perfectEarned, card.newBest && t.newBest(card.moves)].filter(Boolean);
@@ -167,6 +194,7 @@ export function showWin(): void {
   openWin();
   if (state.mode === 'tutorial') winTutorial();
   else if (state.mode === 'daily') winDaily();
+  else if (state.mode === 'weekly') winWeekly();
   else winLevel();
   // Focus lands on Continue, so the dialog describes the result: only the parts shown this time (UX-win-3).
   const described = [
@@ -225,5 +253,5 @@ export function countUp(el: HTMLElement, total: number, delay = 0): void {
 /** Wires the win card's Home and Share buttons (Continue is wired by the board, which starts the next level). */
 export function wireWin(): void {
   $('btn-win-home').addEventListener('click', showHome); // showHome closes the card
-  $('btn-share').addEventListener('click', () => void shareDaily());
+  $('btn-share').addEventListener('click', () => void (state.mode === 'weekly' ? shareWeekly($('share-status')) : shareDaily()));
 }

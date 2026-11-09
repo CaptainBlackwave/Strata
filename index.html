@@ -167,6 +167,15 @@
           <div id="cabinet-sets"></div>
         </div>
       </div>
+      <div id="weekly" class="cabinet" hidden>
+        <div class="cabinet-card weekly-sheet" role="dialog" aria-modal="true" aria-labelledby="weekly-sheet-title" aria-describedby="weekly-sheet-sub">
+          <div class="cabinet-head"><h2 id="weekly-sheet-title" data-s="weekly.title">Weekly set</h2><button id="btn-close-weekly" data-s-title="close" data-s-label="close" class="icon-btn" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <p id="weekly-sheet-sub" class="cabinet-next"></p>
+          <ol id="weekly-boards" class="weekly-boards"></ol>
+          <button id="btn-weekly-share" data-s="share" class="secondary share" type="button" hidden>Share</button>
+          <p id="weekly-share-status" class="share-status" role="status"></p>
+        </div>
+      </div>
       <div id="profile" class="cabinet" hidden>
         <div class="cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
           <div class="cabinet-head"><h2 id="profile-title" data-s="profileTitle">Profile</h2><button id="btn-close-profile" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
@@ -259,6 +268,10 @@
           <button id="btn-daily" class="daily-card" type="button">
             <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
             <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
+          </button>
+          <button id="btn-weekly" class="daily-card weekly-card" type="button" hidden>
+            <span id="weekly-jars" class="weekly-jars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="daily-text"><strong id="weekly-title" data-s="weekly.title">Weekly set</strong><span id="weekly-sub"></span><span id="weekly-progress" class="daily-streak"></span></span>
           </button>
           <div class="home-row">
             <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>

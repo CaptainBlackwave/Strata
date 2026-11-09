@@ -21,6 +21,7 @@ import { repairSaveProfile, wireProfile } from './screens/sheets/profile';
 import { wireScenes } from './screens/sheets/scenes';
 import { wireSettings } from './screens/sheets/settings';
 import { wireTransfer } from './screens/sheets/transfer';
+import { wireWeekly } from './screens/sheets/weekly';
 import { wireWin } from './screens/win';
 import { BOOSTER_NAMES, config, state } from './state';
 import { applyTheme, currentTheme } from './theme';
@@ -90,6 +91,7 @@ function wireAll(): void {
   wireMap();
   wireScenes();
   wireCabinet();
+  wireWeekly();
   wireProfile();
   wireEditProfile();
   wireWin();

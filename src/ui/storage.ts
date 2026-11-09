@@ -7,6 +7,7 @@ import gameConfig from '../config/game-config.json';
 import { type BadgeConfig, repairBadges } from '../core/badges';
 import type { DailyShareRecord, StreakState } from '../core/daily';
 import type { ThemeState } from '../core/themes';
+import { type WeeklyConfig, type WeeklyState, emptyWeekly, repairWeekly } from '../core/weekly';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 import { WHATS_NEW_VERSION } from './strings';
@@ -84,10 +85,15 @@ export interface SaveData {
    * unknown ids and duplicates are dropped. An older save loads `[]`, and boot back-fills it quietly.
    */
   badges: string[];
-  /** Scenes the player has won a level or daily in, each once (badges.md §3.2). */
+  /** Scenes the player has won a level, daily or weekly board in, each once (badges.md §3.2). */
   scenesPlayed: string[];
   /** One-time install and onboarding notices and the visit count (sprint 11 O1, O2, O4; D78). */
   onboarding: Onboarding;
+  /**
+   * The weekly set's progress (design/gdd/weekly-set.md §3.10, D77): its week, the boards cleared and
+   * their best pours. Repaired field by field on load; an older save loads an empty set.
+   */
+  weekly: WeeklyState;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -163,7 +169,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding() };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding(), weekly: emptyWeekly() };
 }
 
 /**
@@ -236,6 +242,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     badges: repairBadges(v2.badges, gameConfig as unknown as BadgeConfig),
     scenesPlayed: strings(v2.scenesPlayed).filter((id) => SCENE_IDS.has(id)),
     onboarding: onboardingOf(v2.onboarding, true), // any v2 save is from an earlier visit (D78)
+    weekly: repairWeekly(v2.weekly, gameConfig as unknown as WeeklyConfig),
   };
 }
 

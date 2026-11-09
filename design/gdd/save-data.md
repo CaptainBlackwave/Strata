@@ -86,7 +86,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 ### 2.3 Integration Points
 
 - **Depends on**: `economy.md` (the starting wallet), `player-profile.md` (the profile repair after load and restore needs its catalog and progress rules).
-- **Depended on by**: `level-generation.md` (`level`), `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md` (settings, tutorial flag, Save code sheet), `player-profile.md` (adds the `profile` and `stats` fields), `badges.md` (adds `badges`, `scenesPlayed` and `stats.jarsSealed`, repaired field by field; sprint 11).
+- **Depended on by**: `level-generation.md` (`level`), `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md` (settings, tutorial flag, Save code sheet), `player-profile.md` (adds the `profile` and `stats` fields), `badges.md` (adds `badges`, `scenesPlayed` and `stats.jarsSealed`, repaired field by field; sprint 11), `weekly-set.md` (adds `weekly { week, cleared, pours }`, repaired field by field, reset by a new week; sprint 11 W2).
 
 ---
 

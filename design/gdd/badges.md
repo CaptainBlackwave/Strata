@@ -179,7 +179,8 @@ is read out. No sound beyond the purchase's own.
   `badges.list` (they are generated, not listed).
 - This task reserves the pattern: `isWeeklyBadgeId` and `weeklyBadgeId(year, week)` in
   `src/core/badges.ts`, and save repair keeps any well-formed weekly id (a week from 01 to 53).
-  Nothing awards one yet.
+  **Built in W2** (`weekly-set.md` §3.5): the fifth distinct board cleared in a week adds the id once,
+  first on that win card's badge row. A weekly win also counts its sealed jars and its scene (§3.2).
 
 ### 3.10 State and data
 

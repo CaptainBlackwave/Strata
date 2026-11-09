@@ -1,6 +1,7 @@
 /** The board screen: starting levels, session events, input, Restart, the stuck banner, boosters and hints. */
 import { type Board, canPour, isClosed, isSealed } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
+import { generateWeekly, parseWeek } from '../../core/weekly';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
 import { tutorialBoard } from '../../core/generator';
@@ -21,6 +22,7 @@ import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
 import { openMap } from './map';
 import { boosterHintOnStart } from './onboarding';
+import { openWeekly, weeklyThemeName } from './sheets/weekly';
 import { audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
@@ -59,6 +61,27 @@ export function startDaily(): void {
   beginSession(gen.board, gen.spec.challenge);
   levelLabel.textContent = t.dailyLabel(state.dailyDate);
   challengeTag.textContent = t.dailyTag(state.dailyName);
+  challengeTag.hidden = false;
+  coach(null);
+  introduce(gen.spec.mechanics);
+}
+
+/**
+ * Starts board `index` (0-based) of the weekly set of `week` (design/gdd/weekly-set.md §3.4, §3.8).
+ * Like the daily, it is generated here on the main thread (well inside the daily's budgets), and the
+ * week is fixed at the start, so a board won after Monday 00:00 UTC counts for its own week (§3.6).
+ */
+export function startWeekly(week: string, index: number): void {
+  audio.unlock();
+  screenOut(homeEl);
+  closeLayer(homeEl, false);
+  state.mode = 'weekly';
+  state.weeklyWeek = week;
+  state.weeklyIndex = index;
+  const gen = generateWeekly(week, index, config);
+  beginSession(gen.board, gen.spec.challenge);
+  levelLabel.textContent = t.weekly.label(parseWeek(week)?.week ?? 0, index + 1);
+  challengeTag.textContent = weeklyThemeName(week);
   challengeTag.hidden = false;
   coach(null);
   introduce(gen.spec.mechanics);
@@ -500,6 +523,10 @@ export function wireBoard(): void {
   btnNext.addEventListener('click', () => {
     closeLayer(winEl, false);
     if (state.mode === 'daily') showHome();
+    else if (state.mode === 'weekly') {
+      showHome();
+      openWeekly($('btn-weekly')); // back to the five boards (weekly-set.md §3.8)
+    }
     else if (state.mode === 'level' && state.replay) openMap(state.level);
     else startLevel(state.mode === 'tutorial' ? 1 : state.level + 1);
   });
