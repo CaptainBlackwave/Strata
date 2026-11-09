@@ -7,7 +7,7 @@ import { type GameConfig, type MechanicId, hasMechanicCard, isCardMechanic, isCl
 import { t } from '../../../src/ui/strings';
 
 const cfg = config as unknown as GameConfig;
-// Card mechanics: the sieve (sprint 13 M2) gets its card, strings and art with its UI task.
+// Every mechanic has a card since sprint 13 M2 (the sieve's UI).
 const ids = cfg.mechanics.list.map((m) => m.id).filter(hasMechanicCard);
 
 describe('hourglass strings (D96)', () => {

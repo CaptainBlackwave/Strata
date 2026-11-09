@@ -4,7 +4,7 @@
  * screen-reader name. DOM-free: `src/ui/screens/map.ts` draws what these return.
  */
 import { type CollectionConfig, milestoneDue } from './collection';
-import { type GameConfig, type MechanicId, hasMechanicCard, levelSpec } from './levels';
+import { type GameConfig, type MechanicId, levelSpec } from './levels';
 
 /** The `map` block of game-config.json. */
 export interface MapConfig {
@@ -94,12 +94,10 @@ export function mapWindow(nextLevel: number, config: MapConfig): { first: number
 
 /** The specials of `level` (D49): tall jars, a shell milestone, a mechanic debut. */
 export function specialsOf(level: number, config: GameConfig & CollectionConfig): StoneSpecials {
-  const debut = config.mechanics.list.find((m) => m.unlockAt === level)?.id;
   return {
     tall: levelSpec(level, config).challenge,
     shell: milestoneDue(level, config),
-    // Card mechanics only: the sieve (D96) gets its badge with its card (sprint 13 M2 UI task).
-    debut: debut !== undefined && hasMechanicCard(debut) ? debut : null,
+    debut: config.mechanics.list.find((m) => m.unlockAt === level)?.id ?? null,
   };
 }
 

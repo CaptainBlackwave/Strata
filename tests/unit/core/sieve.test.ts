@@ -206,11 +206,11 @@ describe('sieve colour choice (proveDeal)', () => {
 });
 
 describe('sieve placement and generation', () => {
-  it('is a board mechanic without a card yet: not classic, not in the intro cards, never in the daily rotation', () => {
+  it('is a card mechanic since its UI (sprint 13 M2), but not classic, so never in the daily rotation', () => {
     expect(isClassicMechanic('sieve')).toBe(false);
-    expect(hasMechanicCard('sieve')).toBe(false);
+    expect(hasMechanicCard('sieve')).toBe(true);
     expect(hasMechanicCard('hourglass')).toBe(true);
-    expect(specMechanics(levelSpec(UNLOCK, cfg))).toEqual([]);
+    expect(specMechanics(levelSpec(UNLOCK, cfg))).toEqual(['sieve']);
   });
 
   it('debuts alone on level 141 (no spare-jar swap, D28) and the board has one sieve', () => {
