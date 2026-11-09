@@ -3205,6 +3205,7 @@ body[data-theme='harvestmoon']::before {
 .win-badge .win-shell-art .badge-medal {
   width: 100%;
   height: 100%;
+}
 /* Add to Home Screen card (sprint 11 O1, D78) */
 .install-text {
   margin: 0 0 12px;
