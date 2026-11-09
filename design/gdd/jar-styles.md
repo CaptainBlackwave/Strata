@@ -1,8 +1,8 @@
 ---
-status: designed (sprint 12, S1)
+status: implemented (sprint 12)
 owner: game-designer / economy-designer
 decisions: D85, D86, D89, D90, D91, D92
-verified-by: pending (owner approves the art before the merge, D92)
+verified-by: owner art approval 2026-11-09 (D94)
 ---
 
 # Jar styles: Design Document
@@ -141,12 +141,13 @@ All in `styles` in `game-config.json`.
   (`src/core/styles.ts`, `tests/unit/styles/styles.test.ts`; sprint 12 S2).
 - [x] Save: repair field by field, old saves get defaults, unknown ids dropped; the save code round-trips
   (`src/ui/storage.ts`, `tests/unit/styles/styles-save.test.ts`; sprint 12 S2).
-- [ ] Art: every piece in all 16 scenes on the board and Home art; the patterns stay visible on top of every
-  sand style; reduced motion has no animation; the sand overlay cap test passes.
-- [ ] Sheet: keyboard and screen reader operable; preview before buying; 150% text at 320 px without
-  sideways scroll.
+- [x] Art: every piece in all 16 scenes on the board and Home art; the patterns stay visible on top of every
+  sand style; reduced motion has no animation; the sand overlay cap test passes
+  (`production/qa/evidence/sprint-12/art/`, `all-scenes-contact.png`; `tests/unit/ui/style-art.test.ts`; S3, D93).
+- [x] Sheet: keyboard and screen reader operable; preview before buying; 150% text at 320 px without
+  sideways scroll (`production/qa/evidence/sprint-12/sheet/`; S4).
 - [x] Balance: each piece costs 7–14 days of a regular player's mean income from level 60; prices recorded in §4 and `economy.md`; `tests/unit/balance/style-prices.test.ts` (S5).
-- [ ] The owner approves the art before the merge (D92).
+- [x] The owner approves the art before the merge (D92): approved 2026-11-09 after the D93 fixes (D94).
 
 ## Version History
 
@@ -154,3 +155,4 @@ All in `styles` in `game-config.json`.
 |------|--------|---------|
 | 2026-11-09 | Claude (sprint 12, S1) | Designed from D85–D92: three slots, 15 pieces (3 free), unlock at 60, sand texture only, patterns on top |
 | 2026-11-09 | Claude (sprint 12, S2) | Rules and Save criteria met: `src/core/styles.ts` (unlock, buy, wear, `stylesOf` repair) and the `styles` save field; tests in `tests/unit/styles/` |
+| 2026-11-09 | Claude (sprint 12) | Built (S2–S5); art fixed after the owner's first review (D93) and approved (D94); acceptance criteria ticked |

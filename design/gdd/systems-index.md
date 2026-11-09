@@ -36,7 +36,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 12 | Level map | UI | Full Vision | Designed and signed off (D47–D52), building in sprint 9 | [level-map.md](level-map.md) | 4, 7, 9, 11 |
 | 13 | Badges | Meta | Full Vision | Implemented (sprint 11 A1, A2, D76) | [badges.md](badges.md) | 3, 4, 6, 7, 8, 10, 11 |
 | 14 | Weekly set | Progression | Full Vision | Implemented (sprint 11 W1, W2, D77) | [weekly-set.md](weekly-set.md) | 2, 3, 6, 9, 10, 13 |
-| 15 | Jar styles | Economy | Full Vision | Designed (sprint 12 S1, D85–D91) | [jar-styles.md](jar-styles.md) | 5, 8, 9, 10 |
+| 15 | Jar styles | Economy | Full Vision | Implemented (sprint 12, D85–D94) | [jar-styles.md](jar-styles.md) | 5, 8, 9, 10 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -152,6 +152,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D91 | Style unlock | **From level 60**, sharing the 1–2 week pace with the scenes still to buy | jar-styles, economy | sprint 12 |
 | D92 | Sprint 12 delivery | **Build it all to 0.12.0**, merging under D61; the owner approves the style art before the merge (as D67 for audio) | — | sprint 12 |
 | D93 | Jar style art review (first pass) | **Fix all five open items**: a cork stopper on the default Home art (changes today's Home look), quieter sea glass frost in dark scenes, glint readable on light sand, a stronger pearl outline in light scenes, and the worn texture on the pouring sand and on buried units | jar-styles | sprint 12 |
+| D94 | Jar style art sign-off | **Approve all** after the D93 fixes (review page https://claude.ai/artifact/E328Qdg3TQzPXAZkBfBL2D) | jar-styles | recorded |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

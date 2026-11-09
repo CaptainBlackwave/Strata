@@ -1,6 +1,6 @@
 # Sprint 12: the late-game economy (jar styles)
 
-> **Status: in progress (2026-11-09).** Chosen in the owner interview after 0.11.1 (D84–D92 in `design/gdd/systems-index.md`). Target release: **0.12.0**.
+> **Status: done (2026-11-09).** S1–S7 are done; the owner approved the art after one round of fixes (D93, D94). Evidence index: `production/qa/evidence/sprint-12/README.md`. Chosen in the owner interview after 0.11.1 (D84–D92 in `design/gdd/systems-index.md`). Target release: **0.12.0**.
 
 ## Sprint Goal
 Give coins a lasting purpose (D85): jar and sand styles bought from level 60 (D91) in three mix-and-match slots (D90), cosmetic only and never changing a sand colour (D89), priced so a regular player affords something new about every 1–2 weeks (D86). A balance pass checks income against every price (D88).
