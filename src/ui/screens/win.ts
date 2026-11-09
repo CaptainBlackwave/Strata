@@ -1,6 +1,6 @@
 /** The win card for a level, the daily and the tutorial. The rules are the pure core/win.ts; this shows them. */
 import { isSealed } from '../../core/board';
-import { sharePours } from '../../core/daily';
+import { sharePours, streakStep } from '../../core/daily';
 import { type ShareKey, shareLink } from '../logic/launch';
 import { homeHintDue, takeShare } from '../logic/onboarding';
 import { openShared } from './onboarding';
@@ -163,7 +163,8 @@ export function winDaily(): void {
   const notes: Record<WinNote, string> = { none: '', replay: '', perfect: '', outOfOrder: t.dailyOutOfOrder, dailyReplay: t.dailyReplay, usedPass: t.usedPass, earnedPass: t.earnedPass };
   $('win-title').textContent = t.dailyWinTitle;
   $('win-text').textContent = `${card.moves} ${t.poursLabel(card.moves)} · ${t.streakDays(card.streak)}`;
-  $('win-note').textContent = notes[card.note];
+  const step = card.rewardShown ? streakStep(card.streak, config) : 0; // D99: say where the extra coins come from
+  $('win-note').textContent = [notes[card.note], step > 0 ? t.longStreak(step) : ''].filter(Boolean).join(' \u00b7 ');
   $('btn-share').hidden = false;
   btnNext.textContent = t.home;
   renderRewards(card);

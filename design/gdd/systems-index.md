@@ -153,6 +153,13 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D92 | Sprint 12 delivery | **Build it all to 0.12.0**, merging under D61; the owner approves the style art before the merge (as D67 for audio) | — | sprint 12 |
 | D93 | Jar style art review (first pass) | **Fix all five open items**: a cork stopper on the default Home art (changes today's Home look), quieter sea glass frost in dark scenes, glint readable on light sand, a stronger pearl outline in light scenes, and the worn texture on the pouring sand and on buried units | jar-styles | sprint 12 |
 | D94 | Jar style art sign-off | **Approve all** after the D93 fixes (review page https://claude.ai/artifact/E328Qdg3TQzPXAZkBfBL2D) | jar-styles | recorded |
+| D95 | Sprint 13 focus | **Puzzle variety**: new jar mechanics for the late game (the four existing ones all unlock by level 81) | jar-mechanics | sprint 13 |
+| D96 | New mechanics | **Three**: the **hourglass jar** (every third pour on the board, its stack flips), the **sieve jar** (banded in one colour; only that colour can be poured in, anything can be poured out) and the **clam jar** (closed under a shell until a set number of pours, then reveals its sand) | jar-mechanics | sprint 13 |
+| D97 | Their unlocks | **Hourglass at 101, sieve at 141, clam at 181** | jar-mechanics, level-generation | sprint 13 |
+| D98 | Daily and weekly | **Both use the new mechanics**: each joins the weekly themes and the daily rotation, from a set start date so no live board changes mid-day or mid-week | daily-puzzle, weekly-set | sprint 13 |
+| D99 | Late faucet | **Streak steps**: daily streaks pay +25 from day 30 and +50 from day 60, on top of the 100 cap | daily-puzzle, economy | sprint 13 |
+| D100 | Top scene prices | **Also lower ladder rungs 6–12** so each takes about 2 weeks for a regular player again (the streak steps alone add about 15% income); owned scenes are kept, nothing refunded | scenes, economy | sprint 13 |
+| D101 | Sprint 13 delivery | **One PR each** (D80): the economy (streak steps and rung prices) first, then each mechanic with its art, then 0.13.0; the owner approves each mechanic's art before its merge. The owner runs the phone checklist this week, and its findings join the sprint | — | sprint 13 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

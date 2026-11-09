@@ -1,0 +1,33 @@
+{
+  "day30": {
+    "text": "29 pours · 30-day streak",
+    "reward": "+125",
+    "note": "Long streak bonus +25",
+    "save": {
+      "last": "2026-11-12",
+      "streak": 30,
+      "best": 30,
+      "passes": 0
+    }
+  },
+  "errors30": [],
+  "prices": [
+    "Midday: In use",
+    "Dawn: 300 coins",
+    "Sunset: 500 coins",
+    "Moonlit tide: 800 coins",
+    "Sea fog: 2500 coins",
+    "High summer: 2900 coins",
+    "Spring blossom: 3300 coins",
+    "Autumn shore: 3800 coins",
+    "Rainbow after rain: 4350 coins",
+    "Winter snow: 4500 coins",
+    "Harvest moon: 4600 coins",
+    "Soft rain: 4750 coins",
+    "Winter lights: 4900 coins",
+    "New Year fireworks: 5050 coins",
+    "Meteor shower: 5200 coins",
+    "Aurora night: 5400 coins"
+  ],
+  "errorsScenes": []
+}

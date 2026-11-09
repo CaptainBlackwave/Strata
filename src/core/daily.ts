@@ -28,6 +28,8 @@ export interface DailyConfig {
       readonly baseCoins: number;
       readonly coinsPerDay: number;
       readonly maxCoins: number;
+      /** Long-streak steps (D99): from `fromDay` of a streak, `coins` more on top of the capped reward. The highest step reached applies. */
+      readonly longSteps?: readonly { readonly fromDay: number; readonly coins: number }[];
       readonly passEvery: number;
       readonly maxPasses: number;
     };
@@ -129,10 +131,18 @@ export function dailySteps<S extends LevelSpec = DailySpec>(spec: S, config: Gam
   return steps;
 }
 
-/** Coins for solving on day `streak` of a streak. */
+/**
+ * Coins for solving on day `streak` of a streak: base plus growth, capped, plus the highest
+ * long-streak step reached (D99). Example: `streakReward(30, config) // 100 + 25`.
+ */
 export function streakReward(streak: number, config: DailyConfig): number {
   const s = config.daily.streak;
-  return Math.min(s.maxCoins, s.baseCoins + s.coinsPerDay * Math.max(0, streak - 1));
+  return Math.min(s.maxCoins, s.baseCoins + s.coinsPerDay * Math.max(0, streak - 1)) + streakStep(streak, config);
+}
+
+/** The long-streak step for day `streak` (D99): 0 before the first step. Example: `streakStep(60, config) // 50`. */
+export function streakStep(streak: number, config: DailyConfig): number {
+  return (config.daily.streak.longSteps ?? []).filter((x) => streak >= x.fromDay).reduce((best, x) => Math.max(best, x.coins), 0);
 }
 
 /** The result of recording a solve. */

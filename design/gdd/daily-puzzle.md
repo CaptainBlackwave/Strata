@@ -75,7 +75,7 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 ### 2.2 State and Data
 
 - `StreakState`: `last` (date key or null), `streak`, `best`, `passes`.
-- `DailyConfig`: `seedSalt` 7351, `week[]`, `streak {baseCoins, coinsPerDay, maxCoins, passEvery, maxPasses}`.
+- `DailyConfig`: `seedSalt` 7351, `week[]`, `streak {baseCoins, coinsPerDay, maxCoins, longSteps, passEvery, maxPasses}`.
 
 **Persistence**: the streak state is saved (`save-data.md`). The daily board itself is regenerated from the date.
 
@@ -91,7 +91,7 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
-| Streak reward | `min(100, 30 + 10·(streak − 1))` | streak ≥ 1 | Day 1: 30; day 4: 60; day 8: 100 (cap) |
+| Streak reward | `min(100, 30 + 10·(streak − 1)) + step(streak)`; `step` = 25 from day 30, 50 from day 60 (`longSteps`, D99) | streak ≥ 1 | Day 1: 30; day 4: 60; day 8: 100 (cap); day 30: 125; day 60: 150. The win card says "Long streak bonus +25" (or +50) |
 | Weekday | `(dayNumber + 4) mod 7`, 0 = Sunday | `dayNumber` = whole days since 1970-01-01 | 2026-11-08 → Sunday |
 | Saturday mechanic | `list[floor(dayNumber / 7) mod 4]` | | Advances one mechanic per week |
 | Pass earned | `streak mod 7 == 0 and passes < 2` | | Streak 7 and 14 each bank one pass |

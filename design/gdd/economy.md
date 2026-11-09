@@ -49,7 +49,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 | Faucet | Pays | Rate | Ends? |
 |---|---|---|---|
 | Level first clear | 20, +10 if Perfect, +30 on a tall-jar level (every 10th) | once per level number | no (levels are endless) |
-| Daily streak coins | `min(100, 30 + 10·(streak − 1))` | once per UTC date, counted solves only (`daily-puzzle.md`) | no |
+| Daily streak coins | `min(100, 30 + 10·(streak − 1))`, plus 25 from day 30 and 50 from day 60 of a streak (D99) | once per UTC date, counted solves only (`daily-puzzle.md`) | no |
 | Shell from a level | a shell (no coins by itself) | first clear of every 5th level | after 40 shells, see below |
 | Shell from a daily | a shell | every counted daily solve (not replays, not out-of-order) | after 40 shells, see below |
 | Set reward | 150 coins + 1 Shuffle, 1 Jar, 1 Hint charge (D19 removes the Undo charge) | the shell that completes a set: 8 sets in total | yes: 1,200 coins and 8 charges of each booster, lifetime |
@@ -59,7 +59,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 
 A daily pays **only** its streak coins (and its shell). It pays no level reward, Perfect bonus or tall-jar bonus, even on the tall-jar Sunday (`challenge: true`).
 
-**Coin sinks**: Shuffle 80, Jar 120, Hint 60 at zero charges (repeatable); scenes 300 / 500 / 800 and the ladder 2,500–11,650 (one-time); jar styles from level 60, 12 pieces from 1,700 to 3,350, 29,250 in total (one-time, D85, `jar-styles.md`). Undo is not a sink (D19).
+**Coin sinks**: Shuffle 80, Jar 120, Hint 60 at zero charges (repeatable); scenes 300 / 500 / 800 and the ladder 2,500–5,400 (one-time; rungs 6–12 lowered by D100); jar styles from level 60, 12 pieces from 1,700 to 3,350, 29,250 in total (one-time, D85, `jar-styles.md`). Undo is not a sink (D19).
 
 **Player-facing**: a coin counter in the HUD and on the home screen, a coin count-up on the win card, a price shown on a booster's badge when its charges run out, toasts such as "Used 60 coins" and "Needs 80 coins. Clear levels to earn more."
 
@@ -103,7 +103,7 @@ A daily pays **only** its streak coins (and its shell). It pays no level reward,
 
 **Not Yet Handled**:
 - ⚠️ Once a player owns every scene and every jar style, coins again have only one repeatable sink (boosters). Jar styles (D85) add about 80 days of goals for a regular player; a repeatable sink is still open (GX-11).
-- ⚠️ The scene ladder's top rungs take 3–5 weeks each for a regular player since D38 removed the 50-coin bonus (`production/qa/sprint-12/balance.md`); repricing is left to a later pass.
+- ✅ The scene ladder's top rungs took 3–5 weeks each for a regular player after D38 (`production/qa/sprint-12/balance.md`). Sprint 13 (D99, D100) added long-streak steps and lowered rungs 6–12 so each takes 12–14 days (`production/qa/sprint-13/late-ladder.md`).
 
 **Unclear**:
 - ✅ Decided 2026-11-08: no shop for now (D7). `buyBooster` stays unexposed.

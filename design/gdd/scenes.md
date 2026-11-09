@@ -56,7 +56,7 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 
 **Why:** after the three original scenes (all affordable in the first week) coins had nothing lasting to buy (GX-11). The ladder gives them a goal for months. Prices come from the 90-day coin model (`production/qa/sprint-7/economy-model.md`, re-run after D38 removed the 50-coin collection bonus).
 
-**Price formula:** `price(n) = round50(2500 × 1.15^(n − 1))` for rung `n` = 1…12 (2,500 → 11,650; 72,550 in total). The three original scenes keep 300 / 500 / 800 as a first-week starter tier (D37). Fitted so that a **regular** player (8 levels and the daily a day) can afford a new rung about every 1–2 weeks (days 11, 19, 29, 41, 54, 70, 88), a **heavy** player (25 a day) still has the top 3 to chase at day 90, and a **light** player (3 a day, the daily 4 days a week) gets 3 rungs by day 82.
+**Price formula:** `price(n) = round50(2500 × 1.15^(n − 1))` for rungs `n` = 1…5 (2,500 → 4,350), and since D100 (sprint 13) `round50(4350 × 1.031^(n − 5))` for rungs 6…12 (4,500 → 5,400); 51,250 in total (was 72,550). The original fit is kept below for history; after D38 removed the 50-coin bonus the top rungs took 3–5 weeks each, so D100 lowered them to about 2 weeks (`production/qa/sprint-13/late-ladder.md`). Original fit (sprint 7): The three original scenes keep 300 / 500 / 800 as a first-week starter tier (D37). Fitted so that a **regular** player (8 levels and the daily a day) can afford a new rung about every 1–2 weeks (days 11, 19, 29, 41, 54, 70, 88), a **heavy** player (25 a day) still has the top 3 to chase at day 90, and a **light** player (3 a day, the daily 4 days a week) gets 3 rungs by day 82.
 
 **Animation tiers:**
 - **Tier 1, colour-only:** new colour tokens plus static CSS decoration, like the original four.
@@ -77,13 +77,13 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 | 3 | **Spring Blossom** (`springblossom`, "Spring blossom") | season | 1 | 3,300 | Mar 1 – May 31 | **built, sprint 8** |
 | 4 | **Autumn Shore** (`autumnshore`, "Autumn shore") | season | 1 | 3,800 | Sep 1 – Nov 30 | **built, sprint 8** |
 | 5 | **Rainbow After Rain** (`rainbowafterrain`, "Rainbow after rain") | weather | 1 | 4,350 | any time | **built, sprint 8** |
-| 6 | **Winter Snow** (`wintersnow`, "Winter snow") | season | 2 | 5,050 | Dec 1 – Feb 28/29 | **built, sprint 7** |
-| 7 | **Harvest Moon Lanterns** (`harvestmoon`, shown as "Harvest moon" to fit the picker) | holiday | 2 | 5,800 | Sep 15 – Oct 15 | **built, sprint 7** |
-| 8 | **Soft Rain** (`softrain`, "Soft rain") | weather | 2 | 6,650 | any time | **built, sprint 8** |
-| 9 | **Winter Lights** (`winterlights`, "Winter lights") | holiday | 2 | 7,650 | Dec 1 – Jan 6 | **built, sprint 8** |
-| 10 | **New Year Fireworks** (`newyear`, "New Year fireworks") | holiday | 3 | 8,800 | Dec 28 – Jan 7 | **built, sprint 7** |
-| 11 | **Meteor Shower** (`meteorshower`, "Meteor shower") | special sky | 3 | 10,100 | Aug 10 – Aug 14 (Perseids) | **built, sprint 8** |
-| 12 | **Aurora Night** (`auroranight`, "Aurora night") | special sky | 3 | 11,650 | any time | **built, sprint 8** |
+| 6 | **Winter Snow** (`wintersnow`, "Winter snow") | season | 2 | 4,500 | Dec 1 – Feb 28/29 | **built, sprint 7** |
+| 7 | **Harvest Moon Lanterns** (`harvestmoon`, shown as "Harvest moon" to fit the picker) | holiday | 2 | 4,600 | Sep 15 – Oct 15 | **built, sprint 7** |
+| 8 | **Soft Rain** (`softrain`, "Soft rain") | weather | 2 | 4,750 | any time | **built, sprint 8** |
+| 9 | **Winter Lights** (`winterlights`, "Winter lights") | holiday | 2 | 4,900 | Dec 1 – Jan 6 | **built, sprint 8** |
+| 10 | **New Year Fireworks** (`newyear`, "New Year fireworks") | holiday | 3 | 5,050 | Dec 28 – Jan 7 | **built, sprint 7** |
+| 11 | **Meteor Shower** (`meteorshower`, "Meteor shower") | special sky | 3 | 5,200 | Aug 10 – Aug 14 (Perseids) | **built, sprint 8** |
+| 12 | **Aurora Night** (`auroranight`, "Aurora night") | special sky | 3 | 5,400 | any time | **built, sprint 8** |
 
 **Availability (D33):**
 - Every scene can be bought any time and is kept forever.

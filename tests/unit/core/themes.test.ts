@@ -34,9 +34,9 @@ describe('the scene ladder (scenes.md 2.1a, sprint 7 B5)', () => {
     });
     expect(rows).toEqual([
       ['seafog', 2500, 'weather', 1, null],
-      ['wintersnow', 5050, 'season', 2, '12-01..02-29'],
-      ['harvestmoon', 5800, 'holiday', 2, '09-15..10-15'],
-      ['newyear', 8800, 'holiday', 3, '12-28..01-07'],
+      ['wintersnow', 4500, 'season', 2, '12-01..02-29'],
+      ['harvestmoon', 4600, 'holiday', 2, '09-15..10-15'],
+      ['newyear', 5050, 'holiday', 3, '12-28..01-07'],
     ]);
   });
   it('appends the other eight rungs after them (sprint 8 P1), with their kinds, tiers and windows', () => {
@@ -50,17 +50,18 @@ describe('the scene ladder (scenes.md 2.1a, sprint 7 B5)', () => {
       ['springblossom', 'Spring blossom', 3300, 'season', 1, '03-01..05-31'],
       ['autumnshore', 'Autumn shore', 3800, 'season', 1, '09-01..11-30'],
       ['rainbowafterrain', 'Rainbow after rain', 4350, 'weather', 1, null],
-      ['softrain', 'Soft rain', 6650, 'weather', 2, null],
-      ['winterlights', 'Winter lights', 7650, 'holiday', 2, '12-01..01-06'],
-      ['meteorshower', 'Meteor shower', 10100, 'sky', 3, '08-10..08-14'],
-      ['auroranight', 'Aurora night', 11650, 'sky', 3, null],
+      ['softrain', 'Soft rain', 4750, 'weather', 2, null],
+      ['winterlights', 'Winter lights', 4900, 'holiday', 2, '12-01..01-06'],
+      ['meteorshower', 'Meteor shower', 5200, 'sky', 3, '08-10..08-14'],
+      ['auroranight', 'Aurora night', 5400, 'sky', 3, null],
     ]);
   });
-  it('every rung costs round50(2500 x 1.15^(n - 1)) (scenes.md 2.1a price formula)', () => {
+  it('rungs 1-5 cost round50(2500 x 1.15^(n - 1)); rungs 6-12 round50(4350 x 1.031^k) since D100 (scenes.md 2.1a)', () => {
     const RUNGS = ['seafog', 'highsummer', 'springblossom', 'autumnshore', 'rainbowafterrain', 'wintersnow', 'harvestmoon', 'softrain', 'winterlights', 'newyear', 'meteorshower', 'auroranight'];
     const round50 = (x: number) => Math.round(x / 50) * 50;
-    expect(RUNGS.map((id) => byId(id).price)).toEqual(RUNGS.map((_, i) => round50(2500 * 1.15 ** i)));
-    expect(RUNGS.reduce((sum, id) => sum + byId(id).price, 0)).toBe(72550);
+    const expected = RUNGS.map((_, i) => (i < 5 ? round50(2500 * 1.15 ** i) : round50(4350 * 1.031 ** (i - 4))));
+    expect(RUNGS.map((id) => byId(id).price)).toEqual(expected);
+    expect(RUNGS.reduce((sum, id) => sum + byId(id).price, 0)).toBe(51250);
   });
   it('the picker lists all 16 scenes by price with no ties, so the order is stable', () => {
     const prices = cfg.themes.list.map((t) => t.price);
