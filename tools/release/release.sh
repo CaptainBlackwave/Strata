@@ -22,17 +22,23 @@ notes() {
 
 # Asks the remote, not the local clone: a local tag that was never pushed must not stop a release.
 tag_exists() { git ls-remote --exit-code --tags origin "refs/tags/$1" >/dev/null 2>&1; }
+release_exists() { gh release view "$1" >/dev/null 2>&1; }
 
 # One release: an annotated tag at $2, pushed, then a GitHub release with that version's notes.
 release() {
   local version="$1" sha="$2" tag="v$1" body
-  if tag_exists "$tag"; then echo "skip $tag (already tagged)"; return 0; fi
   body="$(notes "$version")"
-  if [ -z "$body" ]; then echo "no changelog section for $version; refusing to tag $tag" >&2; return 1; fi
-  run git tag -f -a "$tag" "$sha" -m "Strata $version" # -f: replaces only an unpushed local tag
-  run git push origin "refs/tags/$tag"
+  if [ -z "$body" ]; then echo "no changelog section for $version; refusing to release $tag" >&2; return 1; fi
+  if tag_exists "$tag"; then
+    # Already tagged. If an earlier run pushed the tag but failed before the release, finish it now.
+    if release_exists "$tag"; then echo "skip $tag (tagged and released)"; return 0; fi
+    echo "$tag is tagged but has no release; creating the release"
+  else
+    run git tag -f -a "$tag" "$sha" -m "Strata $version" # -f: replaces only an unpushed local tag
+    run git push origin "refs/tags/$tag"
+  fi
   run gh release create "$tag" --verify-tag --title "Strata $version" --notes "$body"
-  echo "released $tag at $sha"
+  echo "released $tag"
 }
 
 case "${1:-}" in
