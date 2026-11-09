@@ -642,6 +642,14 @@
     "spareOne": { "from": 60, "to": 150, "chanceFrom": 0.2, "chanceTo": 0.75, "salt": 4411, "maxAttempts": 12 },
     "mechanicChance": { "from": 45, "to": 120, "max": 0.5 }
   },
+  "map": {
+    "$comment": "Level map (design/gdd/level-map.md D48, D49, D52). stonesPerScreen: stones a phone screen height shows (large text shows fewer, never overlapping). lookahead: locked levels shown past the next one. bandSize: levels per scenery band; scenery cycles in this order, and each id needs a name in strings.ts (map.scenery) and art in src/ui/screens/map.ts. maxStones caps the track so its height stays inside browser element limits.",
+    "stonesPerScreen": 6,
+    "lookahead": 20,
+    "bandSize": 20,
+    "maxStones": 50000,
+    "scenery": ["rockpools", "dunes", "pier", "lighthouse", "cove"]
+  },
   "challenge": {
     "every": 10,
     "colors": 5,
