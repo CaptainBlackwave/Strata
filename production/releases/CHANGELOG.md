@@ -2,6 +2,15 @@
 
 The game's release history. The repository's root `CHANGELOG.md` belongs to the Claude Code Game Studios framework, not the game. Versions come from `package.json` (D56). Each release is tagged `vX.Y.Z` on `main`.
 
+**Tags to create.** This project's Claude sessions can't push tags (their GitHub access covers only the working branch). The owner creates each one, either from GitHub (Releases → *Draft a new release* → type the tag → *Target*: the commit below; the notes under each version can go in the release body) or from a local clone (`git tag -a v0.8.0 05d5be5 -m "Strata 0.8.0" && git push origin --tags`).
+
+| Tag | Commit on `main` |
+|---|---|
+| v0.5.0 | `b903057` (player profile) |
+| v0.6.0 | `43c1420` (sprint 6, PR #2) |
+| v0.7.0 | `ab56334` (sprint 7, PR #3) |
+| v0.8.0 | `05d5be5` (sprint 8, PR #4) |
+
 ## 0.8.0 (2026-11-08): sprint 8
 **For players**
 - Twelve new scenes to buy (the full scene ladder): Sea fog, High summer, Spring blossom, Autumn shore, Rainbow after rain, Winter snow, Harvest moon, Soft rain, Winter lights, New Year fireworks, Meteor shower and Aurora night. Seasonal ones show an "In season" badge, and holiday scenes take over Match my clock on their dates.
