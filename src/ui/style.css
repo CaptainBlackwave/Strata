@@ -960,6 +960,41 @@ button {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
+/* Sprint 10 F3 (D66): a volume slider sits under the switch that mutes it. */
+.toggle:has(+ .volume) {
+  border-bottom: 0;
+  padding-bottom: 4px;
+}
+.volume {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid rgba(90, 70, 50, 0.12);
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.volume-name {
+  flex: 0 0 auto;
+}
+.volume input {
+  flex: 1 1 140px;
+  min-width: 0;
+  height: 44px; /* F5 touch target */
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.volume input:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.volume input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
 .sheet-row {
   display: flex;
   gap: 10px;

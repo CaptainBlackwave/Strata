@@ -1,5 +1,6 @@
 // Story: production/sprints/sprint-10.md F3 (volume sliders, D66): the save fields and their repair.
 import { describe, expect, it } from 'vitest';
+import html from '../../../index.html?raw';
 import config from '../../../src/config/game-config.json';
 import type { EconomyConfig } from '../../../src/core/economy';
 import { DEFAULT_VOLUME, type KeyValueStore, exportSave, freshSave, importSave, loadSave, volumeOf, writeSave } from '../../../src/ui/storage';
@@ -63,4 +64,19 @@ describe('Sound and music volume settings (D66)', () => {
     expect(loadSave(econ, store).settings).toMatchObject({ soundVolume: 0.45, musicVolume: 0.1 });
     expect(importSave(exportSave(save), econ)?.settings).toMatchObject({ soundVolume: 0.45, musicVolume: 0.1 });
   });
+});
+
+describe('Settings sliders in index.html (D66)', () => {
+  for (const [id, key] of [
+    ['set-sound-volume', 'soundVolume'],
+    ['set-music-volume', 'musicVolume'],
+  ] as const) {
+    it(`${id} is a 0-100 range in steps of 5, labelled by its own visible text`, () => {
+      const label = html.match(new RegExp(`<label class="volume"[^>]*>(?:(?!</label>).)*id="${id}"(?:(?!</label>).)*</label>`, 's'))?.[0] ?? '';
+      expect(label, `a <label class="volume"> wraps #${id}`).not.toBe('');
+      expect(label).toContain(`data-s="${key}"`);
+      const input = label.match(/<input[^>]*>/)?.[0] ?? '';
+      for (const attr of ['type="range"', 'min="0"', 'max="100"', 'step="5"']) expect(input, attr).toContain(attr);
+    });
+  }
 });

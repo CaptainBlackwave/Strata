@@ -274,6 +274,12 @@ const en = {
   statNewSr: ', counted from this update',
   /** On shells earned since the cabinet was last opened (UX-cab-4). */
   shellNew: 'New',
+  // sprint 10 audio
+  /** The Settings volume sliders (D66, sprint 10 F3). */
+  soundVolume: 'Sound volume',
+  musicVolume: 'Music volume',
+  /** A slider's spoken value (aria-valuetext), e.g. "80%". */
+  volumeValue: (percent: number) => `${percent}%`,
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most
    * 7 letters and nouns at most 5, so every name fits the 16-character limit (unit-tested).
