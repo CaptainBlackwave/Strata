@@ -50,6 +50,10 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 | `profile` | `name`, `avatar`, `frame`, `plate` | `player-profile.md` §3.8 |
 | `stats` | `perfectClears`, `dailiesSolved`, `pours`, `coinsEarned`, `boostersUsed` | `player-profile.md` §3.8 |
 
+**One active tab** (D57, *built in sprint 9 M4*): only one tab writes the save, and **the newest tab takes over**. A tab claims the save when it opens and when the player presses Play here (`src/ui/tab-lock.ts`, over `BroadcastChannel` `strata.tab.v1`, or the `storage` event on the localStorage key `strata.tab.v1` where `BroadcastChannel` is missing). A tab that hears a newer claim stops writing (`pauseSaves`), stops its music and shows a blocking "Strata is open in another tab" overlay with one button, **Play here**. Play here reloads the save from storage (the other tab may have progressed), runs the same repair as boot, writes it, re-renders Home on it, and makes every other tab yield. Claims carry a Lamport-style stamp, so a Play here always outranks the claim it answers; equal stamps go to the larger tab id, so exactly one tab is active.
+
+**Write failure** (TD-14): a write the browser refuses (storage full or blocked) shows one toast per session: "Progress can't be saved: this browser's storage is full or blocked".
+
 **Not saved**: the board in play, move history, the hint plan, the current scene preview. Reloading mid-level restarts that level.
 
 **Writes**: after every state change: at boot (after the profile repair), after every win and daily solve, purchase, setting change (including the "Match my clock" toggle), tutorial completion, intro card, profile save, and restore.
@@ -95,6 +99,9 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 - ✅ A pre-profile save (no `profile`, no `stats`) loads with all counters at 0 and a generated name.
 - ✅ Duplicate shell ids are removed.
 - ✅ An invalid save code changes nothing.
+
+- ✅ Two tabs, or a home-screen app and a browser tab (D57, sprint 9 M4): the older one yields and writes nothing until Play here, so it can't erase newer progress. A board the older tab was playing when it yielded is not kept (boards are never saved); a pour already animating when the claim arrives finishes on screen, but its win is not written.
+- ⚠️ A write in the older tab in the few milliseconds between the newer tab's load and its claim arriving can still be overwritten by the newer tab's boot write. Closing that gap needs the Web Locks API; not worth it for a single-player save.
 
 **Decided 2026-11-08, built in sprint 6**:
 - **Code edited between the two restore taps** (F6, GB-SD-3): the restore disarms, so a player can't confirm code A's summary and restore code B.
@@ -159,3 +166,4 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude (sprint 6, F9) | `profile` and `stats` fields and their repair added (GB-SD-1); export/import rules written down (GB-SD-2); restore reset on edit recorded as building (GB-SD-3, GX-14); repair describes what the code really checks (GB-SD-4); full write list (GB-SD-5); dependencies listed explicitly, incl. player-profile (GB-SD-6); AC cites the profile and export tests (GB-SD-7); versioning note covers save codes (GB-SD-8) |
+| 2026-11-09 | Claude (sprint 9, M4) | One active tab (D57, TD-14): the newest tab takes over; older tabs pause writes and show "Strata is open in another tab" with Play here, which reloads the save and takes over. A refused write shows one toast per session. Tests: `tests/unit/ui/tab-lock.test.ts`, `tests/unit/ui/layers.test.ts`; two-tab evidence: `production/qa/evidence/sprint-9/README-m4.md` |

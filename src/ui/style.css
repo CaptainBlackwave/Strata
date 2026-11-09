@@ -1920,7 +1920,7 @@ svg.fx-stone {
 /* Edit Profile sheet */
 .edit-layer { z-index: 27; }
 .discard-layer { z-index: 28; }
-.other-tab-layer { z-index: 40; }
+.other-tab-layer { z-index: 40; background: rgba(74, 59, 44, 0.6); }
 .other-tab-layer .primary { width: 100%; margin-top: 4px; }
 .edit-preview {
   display: flex;
