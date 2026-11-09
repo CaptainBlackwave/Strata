@@ -116,11 +116,12 @@ export function generateDaily(key: string, config: GameConfig & DailyConfig): Ge
  * The daily's fallback chain (TD-5): the full recipe with the plain generator caps (it is
  * not capped by step work, unlike a level's first step), then, when the day has a mechanic,
  * the same recipe without it, capped by `generator.stepNodeBudget`.
+ * The weekly set uses the same chain for its boards (design/gdd/weekly-set.md §3.4).
  * Example: `dailySteps(dailySpec('2026-11-08', config), config).length // 1 or 2`
  */
-export function dailySteps(spec: DailySpec, config: GameConfig): FallbackStep<DailySpec>[] {
+export function dailySteps<S extends LevelSpec = DailySpec>(spec: S, config: GameConfig): FallbackStep<S>[] {
   const g = config.generator;
-  const steps: FallbackStep<DailySpec>[] = [{ spec, maxAttempts: g.maxAttempts, totalNodeBudget: Infinity, attemptNodeBudget: g.solverNodeBudget }];
+  const steps: FallbackStep<S>[] = [{ spec, maxAttempts: g.maxAttempts, totalNodeBudget: Infinity, attemptNodeBudget: g.solverNodeBudget }];
   if (spec.mechanics.length) {
     const { cap, perAttempt } = stepBudgets(config);
     steps.push({ spec: { ...spec, mechanics: [] }, maxAttempts: g.maxAttempts, totalNodeBudget: cap, attemptNodeBudget: perAttempt });
