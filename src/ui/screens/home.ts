@@ -9,6 +9,7 @@ import { t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, winEl } from '../dom';
 import { screenIn } from '../fx';
 import { renderProfileChip } from './sheets/profile';
+import { renderWeeklyCard } from './sheets/weekly';
 import { dailyKey } from '../clock';
 import { config, state } from '../state';
 
@@ -29,6 +30,7 @@ export function showHome(): void {
   $('daily-streak').textContent = status.passAtRisk ? t.passAtRisk : status.current > 0 ? `${t.streakDays(status.current)}${state.save.daily.passes ? ` · ${t.passes(state.save.daily.passes)}` : ''}` : t.noStreak;
   $('btn-daily').classList.toggle('solved', status.solvedToday);
   $('btn-daily').hidden = !state.save.tutorialDone;
+  renderWeeklyCard(); // sprint 11 W2: the weekly set's card, under the daily
   const total = allShells(config).length;
   $('shells-label').textContent = t.shellCount(state.save.shells.length, total);
   const last = byIdOr(allShells(config), state.save.shells.at(-1) ?? '');
