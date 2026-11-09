@@ -122,10 +122,11 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D64 | Sprint 10 scope | **Feel and audio polish**: sound effects (richer, plus new events), music, haptics, and animation and celebrations | feel-audio-ui | built (sprint 10) |
 | D65 | Music direction | **A variation per scene**: the same calm style, with each scene's own key, tempo and timbre | feel-audio-ui | built (sprint 10 F2) |
 | D66 | Volume | **Sliders for sound and music**, saved with the settings; the switches stay as mute | feel-audio-ui, save-data | built (sprint 10 F3) |
-| D67 | Audio sign-off | **Rendered clips page**: Claude measures loudness and clipping, then publishes every sound and music clip (before and after) for the owner to listen to and approve **before merging** (an exception to D61) | feel-audio-ui | page published; awaiting the owner |
+| D67 | Audio sign-off | **Rendered clips page**: Claude measures loudness and clipping, then publishes every sound and music clip (before and after) for the owner to listen to and approve **before merging** (an exception to D61) | feel-audio-ui | approved by the owner (2026-11-09) |
 | D68 | Celebration size | **Calm, a little richer**: a soft sand shimmer and a warm chime on seal, a gentle bloom on win; nothing loud or long; reduced motion respected | feel-audio-ui | built (sprint 10 F5) |
 | D69 | Defaults for new players | **Everything on** (sound, music, haptics): already the defaults, no change | feel-audio-ui | recorded |
 | D70 | TD-12 | **Close it alongside sprint 10**: extract and unit-test the booster arm and confirm, restart and leave confirms and key mapping as the polish touches them | — | built (sprint 10 F6) |
+| D71 | Sprint 10 audio sign-off | **Approve all as recorded**: the sounds and per-scene music on the sign-off page, the 80% default volume (music about 2 dB and sounds 2–6 dB quieter than 0.9.1), and the Winter lights bell overtone | feel-audio-ui | recorded |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
