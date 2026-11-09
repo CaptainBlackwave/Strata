@@ -1,0 +1,83 @@
+{
+ "smooth_auroranight": {
+  "idle": {
+   "frames": 240,
+   "p50": 16.7,
+   "p95": 16.8,
+   "max": 16.8
+  },
+  "errors": []
+ },
+ "smooth_winterlights": {
+  "idle": {
+   "frames": 241,
+   "p50": 16.7,
+   "p95": 16.7,
+   "max": 16.8
+  },
+  "errors": []
+ },
+ "fireworksWin": {
+  "won": true,
+  "during": {
+   "frames": 150,
+   "p50": 16.7,
+   "p95": 16.7,
+   "max": 16.8
+  },
+  "errors": []
+ },
+ "zoom": {
+  "meta": "width=device-width, initial-scale=1, viewport-fit=cover",
+  "pinchAllowed": true,
+  "touch": {
+   "board": "manipulation",
+   "body": "manipulation"
+  },
+  "jars": 8,
+  "minHitW": "68.0",
+  "minHitH": "256.2",
+  "overlap": 0,
+  "scaleAfterTaps": 1,
+  "errors": []
+ },
+ "text200_iphonese": {
+  "home": false,
+  "board": false,
+  "jarsAboveToolbar": true,
+  "won": true,
+  "win": false,
+  "winFits": true,
+  "errors": []
+ },
+ "text200_pixel7": {
+  "home": false,
+  "board": false,
+  "jarsAboveToolbar": true,
+  "won": true,
+  "win": false,
+  "winFits": true,
+  "errors": []
+ },
+ "screenReader": {
+  "afterHint": [
+   "500 coins",
+   "Hint: pour jar 1 into jar 6"
+  ],
+  "afterPour": [
+   "500 coins",
+   "Hint: pour jar 1 into jar 6",
+   "Poured 1 terracotta into jar 6."
+  ],
+  "errors": []
+ },
+ "offline": {
+  "jars": 7,
+  "errors": []
+ },
+ "whatsNew": {
+  "first": true,
+  "again": false,
+  "errors": []
+ }
+}

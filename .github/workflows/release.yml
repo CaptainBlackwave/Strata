@@ -1,0 +1,41 @@
+# Tags each release and publishes a GitHub release from the changelog (D56, D60).
+# - A push to main that changes package.json's version tags that commit vX.Y.Z.
+# - "Run workflow" with mode=backfill tags every row of the changelog's "Tags to create" table.
+# Existing tags are never moved, so re-running is safe. The logic is tools/release/release.sh.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths: [package.json]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'current (the version in package.json) or backfill (the changelog table)'
+        required: true
+        default: backfill
+        type: choice
+        options: [backfill, current]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Tag and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'current' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash tools/release/release.sh "$MODE"
