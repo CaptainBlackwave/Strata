@@ -20,6 +20,7 @@ export function showHome(): void {
   const [y, m, d] = today.split('-').map(Number);
   $('daily-dow').textContent = new Date(y, m - 1, d).toLocaleDateString('en', { weekday: 'short' });
   $('daily-dom').textContent = String(d);
+  $('daily-date-sr').textContent = t.dailyDate(new Date(y, m - 1, d).toLocaleDateString('en', { weekday: 'long' }), d); // UX-home-3
   $('daily-title').textContent = t.daily;
   $('daily-sub').textContent = status.solvedToday ? t.dailySolved : t.dailyNew(day.name);
   $('daily-streak').textContent = status.passAtRisk ? t.passAtRisk : status.current > 0 ? `${t.streakDays(status.current)}${state.save.daily.passes ? ` · ${t.passes(state.save.daily.passes)}` : ''}` : t.noStreak;

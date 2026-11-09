@@ -2,7 +2,7 @@
 import { allShells, setProgress } from '../../../core/collection';
 import { streakStatus, utcDateKey } from '../../../core/daily';
 import { byIdOr, isOwned } from '../../../core/themes';
-import { type Profile, type Progress, generateName, progressOf, repairProfile } from '../../../core/profile';
+import { type Profile, type Progress, STAT_KEYS, generateName, progressOf, repairProfile } from '../../../core/profile';
 import { STAT_ICONS, portraitSvg } from '../../avatars';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
@@ -92,7 +92,19 @@ export function renderProfile(): void {
       const tile = document.createElement('div');
       tile.className = 'stat';
       tile.innerHTML = `<svg class="stat-ico" viewBox="0 0 24 24" aria-hidden="true">${STAT_ICONS[key]}</svg><dt></dt><dd></dd>`;
-      tile.querySelector('dt')!.textContent = t.statLabels[key];
+      const dt = tile.querySelector('dt')!;
+      dt.textContent = t.statLabels[key];
+      if ((STAT_KEYS as readonly string[]).includes(key)) {
+        // UX-profile-2: an asterisk ties the counter to the footnote; a screen reader hears the words.
+        const mark = document.createElement('span');
+        mark.className = 'stat-new';
+        mark.setAttribute('aria-hidden', 'true');
+        mark.textContent = t.statNewMark;
+        const sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = t.statNewSr;
+        dt.append(mark, sr);
+      }
       tile.querySelector('dd')!.textContent = value;
       return tile;
     }),

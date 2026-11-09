@@ -197,7 +197,7 @@ const en = {
     coinsEarned: 'Coins earned',
     boostersUsed: 'Boosters used',
   },
-  statsFootnote: 'Some totals count from this update onwards.',
+  statsFootnote: '* These totals count from this update onwards.',
   tabs: { avatar: 'Avatar', frame: 'Frame', plate: 'Name' },
   nameLabel: 'Your name',
   reroll: 'New random name',
@@ -230,6 +230,16 @@ const en = {
   playHere: 'Play here',
   /** Once per session, when the browser refuses a save (storage full or blocked). */
   saveFailed: "Progress can't be saved: this browser's storage is full or blocked",
+  // Sprint 9 M5: the remaining backlog findings
+  /** Read after "Daily puzzle" by a screen reader; the calendar is hidden from it (UX-home-3). */
+  dailyDate: (weekday: string, day: number) => `, ${weekday} ${day}`,
+  /** Above the disabled toolbar in the tutorial (UX-board-9). */
+  toolsLocked: 'Boosters and Restart unlock after the tutorial',
+  /** Marks the counters that start at 0 from the profile update (UX-profile-2). */
+  statNewMark: '*',
+  statNewSr: ', counted from this update',
+  /** On shells earned since the cabinet was last opened (UX-cab-4). */
+  shellNew: 'New',
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most
    * 7 letters and nouns at most 5, so every name fits the 16-character limit (unit-tested).

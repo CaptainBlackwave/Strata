@@ -475,10 +475,27 @@ button {
 
 /* ---- Toolbar ---- */
 .toolbar {
+  position: relative;
   display: flex;
   justify-content: center;
   gap: 10px;
   padding-top: 8px;
+}
+/* UX-board-9: why the tools are off in the tutorial, just above them. */
+.tools-note {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+.tools-note[hidden] {
+  display: none;
 }
 .tool {
   position: relative;
@@ -822,8 +839,11 @@ button {
   position: absolute;
   top: calc(var(--jar-h, 160px) * 0.6);
   left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
+  /* UX-board-10: wraps instead of running off a 320 px screen at 150% text; coach() shifts it on screen. */
+  transform: translateX(calc(-50% + var(--coach-shift, 0px)));
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  text-align: center;
   padding: 9px 14px;
   border-radius: 14px;
   background: var(--toast-bg);
@@ -1208,7 +1228,7 @@ button {
   text-align: left;
   cursor: pointer;
 }
-.shell-set-head span::after {
+.shell-set-count::after {
   content: '';
   display: inline-block;
   width: 0.45em;
@@ -1219,7 +1239,7 @@ button {
   transform: translateY(-0.15em) rotate(45deg);
   transition: transform 0.2s;
 }
-.shell-set-head[aria-expanded='false'] span::after {
+.shell-set-head[aria-expanded='false'] .shell-set-count::after {
   transform: translateY(0) rotate(-45deg);
 }
 .shell-set-head:focus-visible {
@@ -1230,11 +1250,11 @@ button {
 .shell-set.complete .shell-set-head[aria-expanded='false'] {
   padding-bottom: 4px;
 }
-.shell-set-head h3 {
+.shell-set-title {
   margin: 0;
   font-size: 0.9375rem;
 }
-.shell-set-head span {
+.shell-set-count {
   font-size: 0.8125rem;
   font-weight: 800;
   color: var(--ink-soft);
@@ -1248,8 +1268,23 @@ button {
   margin-top: 6px;
 }
 .shell-cell {
+  position: relative;
   margin: 0;
   text-align: center;
+}
+/* UX-cab-4: shells earned since the cabinet was last opened. */
+.shell-new {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1.3;
 }
 .shell-cell svg {
   display: block;
@@ -1910,6 +1945,9 @@ svg.fx-stone {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 900;
+}
+.stat-new {
+  margin-left: 1px;
 }
 .stats-note {
   margin: 10px 0 0;

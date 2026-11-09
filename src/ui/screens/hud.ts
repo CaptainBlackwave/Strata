@@ -26,6 +26,13 @@ export function updateHud(): void {
     btn.setAttribute('aria-label', label);
   }
   ($('btn-restart') as HTMLButtonElement).disabled = state.mode === 'tutorial';
+  // UX-board-9: in the tutorial a caption says why the tools are off, and each one points at it.
+  const tutorial = state.mode === 'tutorial';
+  $('tools-note').hidden = !tutorial;
+  for (const btn of [...toolButtons, $('btn-restart')]) {
+    if (tutorial) btn.setAttribute('aria-describedby', 'tools-note');
+    else btn.removeAttribute('aria-describedby');
+  }
 }
 
 /** Shows the tutorial pointer on jar `i` with a caption, or hides it with `null`. */
@@ -39,4 +46,9 @@ export function coach(i: number | null, text = ''): void {
   coachEl.style.top = `${r.top + r.height * 0.55}px`;
   coachText.textContent = text;
   coachEl.hidden = false;
+  // Keep the wrapped caption 8 px inside the screen when the jar sits near an edge (UX-board-10).
+  coachEl.style.setProperty('--coach-shift', '0px');
+  const box = coachText.getBoundingClientRect();
+  const shift = box.left < 8 ? 8 - box.left : box.right > window.innerWidth - 8 ? window.innerWidth - 8 - box.right : 0;
+  coachEl.style.setProperty('--coach-shift', `${shift}px`);
 }

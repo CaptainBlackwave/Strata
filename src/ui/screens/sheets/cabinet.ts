@@ -6,8 +6,13 @@ import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { audio, config, state } from '../../state';
 
+/** How many shells the player had when the cabinet was last opened (or at boot). Later ones are "New" (UX-cab-4). */
+let seenShells = 0;
+
 export function openCabinet(): void {
   const owned = new Set(state.save.shells);
+  const fresh = new Set(state.save.shells.slice(seenShells));
+  seenShells = state.save.shells.length;
   const cleared = state.save.level - 1;
   const every = config.collection.everyLevels;
   const remaining = every - (cleared % every);
@@ -20,17 +25,23 @@ export function openCabinet(): void {
     ...setProgress(state.save.shells, config).map((p) => {
       const sec = document.createElement('section');
       sec.className = `shell-set${p.complete ? ' complete' : ''}`;
-      // Completed sets start collapsed so the list stays short; tap the header to open one.
+      // Completed sets start collapsed so the list stays short; tap the header to open one. A set
+      // holding a new shell opens so the mark is seen (UX-cab-4). The button sits inside the h3,
+      // so heading navigation still finds each set (UX-cab-2).
+      const expanded = !p.complete || p.set.shells.some((sh) => fresh.has(sh.id));
+      const title = document.createElement('h3');
+      title.className = 'shell-set-title';
       const head = document.createElement('button');
       head.type = 'button';
       head.className = 'shell-set-head';
-      head.innerHTML = `<h3></h3><span>${p.owned}/${p.total}</span>`;
-      head.querySelector('h3')!.textContent = p.set.name;
-      head.setAttribute('aria-expanded', String(!p.complete));
+      head.innerHTML = `<span class="shell-set-name"></span><span class="shell-set-count">${p.owned}/${p.total}</span>`;
+      head.querySelector('.shell-set-name')!.textContent = p.set.name;
+      head.setAttribute('aria-expanded', String(expanded));
+      title.append(head);
       const body = document.createElement('div');
       body.className = 'shell-set-body';
       body.id = `shell-set-${p.set.id}`;
-      body.hidden = p.complete;
+      body.hidden = !expanded;
       head.setAttribute('aria-controls', body.id);
       head.addEventListener('click', () => {
         const open = head.getAttribute('aria-expanded') !== 'true';
@@ -48,7 +59,13 @@ export function openCabinet(): void {
         cell.querySelector('svg')?.setAttribute('aria-hidden', 'true');
         const caption = cell.querySelector('figcaption')!;
         if (has) caption.textContent = sh.name;
-        else {
+        if (fresh.has(sh.id)) {
+          const badge = document.createElement('span');
+          badge.className = 'shell-new';
+          badge.textContent = t.shellNew;
+          cell.prepend(badge);
+        }
+        if (!has) {
           // The "?" stays on screen; a screen reader hears "Not found yet" (UX-cab-1, AX-15).
           caption.innerHTML = '<span aria-hidden="true"></span><span class="sr-only"></span>';
           caption.children[0].textContent = t.lockedShellMark;
@@ -60,7 +77,7 @@ export function openCabinet(): void {
       note.className = 'shell-set-note';
       note.textContent = p.complete ? t.setDone : t.setRewardNote(config.collection.setReward.coins);
       body.append(grid, note);
-      sec.append(head, body);
+      sec.append(title, body);
       return sec;
     }),
   );
@@ -69,6 +86,7 @@ export function openCabinet(): void {
 
 /** Wires the shell cabinet's buttons. */
 export function wireCabinet(): void {
+  seenShells = state.save.shells.length; // shells owned at boot are not new
   $('btn-shells').addEventListener('click', openCabinet);
   $('btn-close-cabinet').addEventListener('click', () => closeLayer($('cabinet')));
 }

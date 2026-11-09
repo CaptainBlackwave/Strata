@@ -40,6 +40,7 @@
         <button id="btn-stuck-restart" data-s="restart" class="secondary stuck-restart" type="button">Restart</button>
       </div>
       <nav class="toolbar" aria-label="Boosters">
+        <p id="tools-note" class="tools-note" data-s="toolsLocked" hidden>Boosters and Restart unlock after the tutorial</p>
         <button id="btn-undo" class="tool" type="button" data-booster="undo" title="Undo (Z)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
           <span class="tool-name">Undo</span><b class="badge"></b>
@@ -230,7 +231,7 @@
           <button id="btn-play" class="primary play" type="button">Play</button>
           <button id="btn-daily" class="daily-card" type="button">
             <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
-            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
+            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
           </button>
           <div class="home-row">
             <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
