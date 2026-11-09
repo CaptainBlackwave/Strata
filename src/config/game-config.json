@@ -777,6 +777,33 @@
     { "id": "lavender", "hex": "#b39ddb" },
     { "id": "sky", "hex": "#4fa3d9" }
   ],
+  "styles": {
+    "$comment": "Jar styles (design/gdd/jar-styles.md, D85-D91, sprint 12). Cosmetic only: never a rule or a sand colour. Three slots; the first piece of each is the free default (price 0). Ids are saved: never rename one. Prices are set by the sprint 12 balance pass (S5); until then they are placeholders.",
+    "unlockLevel": 60,
+    "slots": {
+      "glass": [
+        { "id": "clear", "price": 0 },
+        { "id": "seaglass", "price": 2000 },
+        { "id": "amber", "price": 2500 },
+        { "id": "cobalt", "price": 3000 },
+        { "id": "pearl", "price": 3500 }
+      ],
+      "cork": [
+        { "id": "cork", "price": 0 },
+        { "id": "driftwood", "price": 2000 },
+        { "id": "rope", "price": 2500 },
+        { "id": "scallop", "price": 3000 },
+        { "id": "brass", "price": 3500 }
+      ],
+      "sand": [
+        { "id": "plain", "price": 0 },
+        { "id": "fine", "price": 2000 },
+        { "id": "glint", "price": 2500 },
+        { "id": "layered", "price": 3000 },
+        { "id": "ripple", "price": 3500 }
+      ]
+    }
+  },
   "onboarding": {
     "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
     "installAfterLevels": 3,
