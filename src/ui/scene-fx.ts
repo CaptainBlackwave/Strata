@@ -49,6 +49,14 @@ const BULBS = ['#ffd27a', '#ff9a85', '#a6e3c4', '#9cc4ff'] as const;
 /** Winter lights: how many swags the string hangs in, and how many bulbs in all. */
 const SWAGS = 3;
 const BULB_COUNT = 18;
+/**
+ * Winter lights (sprint 9 M1, D54): the string hangs just under the top HUD row, never behind
+ * it. A bulb's glow reaches 8 px above the wire, so the hooks sit this far below the HUD's
+ * bottom edge, and the swags dip at most {@link MAX_SAG} px, less if the jars start sooner.
+ */
+const HUD_CLEAR = 10;
+const MAX_SAG = 16;
+const MIN_SAG = 6;
 
 interface Particle {
   x: number;
@@ -79,6 +87,10 @@ const bulbSprites = new Map<string, HTMLCanvasElement>();
 const auroraSprites = new Map<string, HTMLCanvasElement>();
 let nextMeteor = 0;
 let wired = false;
+/** Winter lights: the wire's height at the hooks and its deepest dip below them, from {@link hangString}. */
+let hookY = 14;
+let sag = MAX_SAG;
+let hudWatch: ResizeObserver | null = null;
 
 /**
  * Starts the layer for scene `id`, or stops the current one if the scene has none.
@@ -98,6 +110,7 @@ export function startSceneFx(id: string): void {
   mount();
   resize();
   seed();
+  if (kind === 'lights') watchHud();
   resume();
 }
 
@@ -105,6 +118,8 @@ export function startSceneFx(id: string): void {
 export function stopSceneFx(): void {
   cancelAnimationFrame(raf);
   raf = 0;
+  hudWatch?.disconnect();
+  hudWatch = null;
   canvas?.remove();
   canvas = null;
   ctx = null;
@@ -334,6 +349,40 @@ function mount(): void {
   const home = document.getElementById('home');
   const parent = home && !home.hidden ? home : document.body;
   if (canvas.parentElement !== parent) parent.prepend(canvas);
+  if (kind === 'lights') rehang();
+}
+
+/**
+ * Winter lights: measures where the string can hang. On Home it sits under the top row
+ * (profile chip and Settings); on the board, under the HUD ("Level N", Restart, coins,
+ * Settings, pours). The swag depth shrinks if the logo or the jars start close below.
+ */
+function hangString(): void {
+  const home = document.getElementById('home');
+  const onHome = !!home && !home.hidden;
+  const hud = document.querySelector(onHome ? '#home .home-top' : '.hud');
+  const below = document.querySelector(onHome ? '#home .logo-jars' : '#board');
+  const hudBottom = hud ? hud.getBoundingClientRect().bottom : 0;
+  hookY = Math.round(hudBottom + HUD_CLEAR);
+  const room = below ? below.getBoundingClientRect().top - hookY - 16 : MAX_SAG;
+  sag = Math.max(MIN_SAG, Math.min(MAX_SAG, room));
+}
+
+/** Re-measures the string and, under reduced motion, redraws the one still frame in place. */
+function rehang(): void {
+  if (kind !== 'lights' || !canvas) return;
+  hangString();
+  if (reduced()) still();
+}
+
+/** Winter lights: re-measure when the HUD or the top row changes size (large text, wrapping, a tag). */
+function watchHud(): void {
+  if (typeof ResizeObserver === 'undefined') return;
+  hudWatch = new ResizeObserver(() => rehang());
+  for (const sel of ['.hud', '#home .home-top', '#board']) {
+    const el = document.querySelector(sel);
+    if (el) hudWatch.observe(el);
+  }
 }
 
 function resize(): void {
@@ -347,6 +396,7 @@ function resize(): void {
   canvas.height = Math.round(h * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (oldW && oldW !== w) for (const p of ambient) p.x = (p.x / oldW) * w;
+  if (kind === 'lights') hangString();
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -374,16 +424,16 @@ function seed(): void {
       for (let k = 0; k < AURORA_COLS; k++)
         ambient.push({ x: ((k + 0.5) / AURORA_COLS) * w, y: band.at * h, vx: 0, vy: band.sway, r: band.thick, phase: band.at * 20, life: Infinity, color: band.rgb });
   } else if (kind === 'lights') {
-    // A string of bulbs hanging in swags along the very top; each bulb sits just under the wire.
+    // A string of bulbs hanging in swags just under the top HUD row; each bulb sits just under the wire.
     for (let i = 0; i < BULB_COUNT; i++) ambient.push({ x: ((i + 0.5) / BULB_COUNT) * w, y: 0, vx: 0, vy: 0, r: 1, phase: rand(0, 6.3), life: Infinity, color: BULBS[i % BULBS.length] });
   }
 }
 
-/** Winter lights: the wire's height at `x` (three quadratic swags, 14 px at the hooks, 30 px at the dips). */
+/** Winter lights: the wire's height at `x` (three quadratic swags, `hookY` at the hooks, `hookY + sag` at the dips). */
 function wireY(x: number): number {
   const span = w / SWAGS;
   const u = (x % span) / span;
-  return 14 + 64 * u * (1 - u);
+  return hookY + 4 * sag * u * (1 - u);
 }
 
 /** Lanterns rise along the sides, away from the home screen's centred text. */
@@ -552,8 +602,8 @@ function draw(): void {
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     for (let k = 0; k < SWAGS; k++) {
-      ctx.moveTo(k * span, 14);
-      ctx.quadraticCurveTo(k * span + span / 2, 46, (k + 1) * span, 14);
+      ctx.moveTo(k * span, hookY);
+      ctx.quadraticCurveTo(k * span + span / 2, hookY + 2 * sag, (k + 1) * span, hookY);
     }
     ctx.stroke();
     for (const p of ambient) {
