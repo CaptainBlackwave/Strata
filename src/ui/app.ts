@@ -8,6 +8,7 @@ import { t } from './strings';
 import { $, toolButtons } from './dom';
 import { prefetcher, startLevel, startTutorial, wireBoard } from './screens/board';
 import { openWhatsNew, showHome, wireHome } from './screens/home';
+import { wireOtherTab } from './screens/other-tab';
 import { wireKeys } from './screens/keys';
 import { wireCabinet } from './screens/sheets/cabinet';
 import { wireEditProfile } from './screens/sheets/edit-profile';
@@ -81,6 +82,7 @@ function wireAll(): void {
   wireTransfer();
   wireGuide();
   wireKeys();
+  wireOtherTab(); // last: a newer tab may make this one yield at once (D57)
 }
 
 /** Offline install (sprint 3, T8). */

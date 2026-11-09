@@ -186,12 +186,29 @@ export function whatsNewDue(save: Pick<SaveData, 'seenWhatsNew'>, version: strin
   return save.seenWhatsNew !== version;
 }
 
-/** Saves. Failures are ignored. */
+let savesPaused = false;
+let saveError: (() => void) | null = null;
+
+/**
+ * Stops (`true`) or resumes every {@link writeSave}. Paused while another tab owns the save,
+ * so this older tab can't overwrite newer progress (D57, TD-14, src/ui/tab-lock.ts).
+ */
+export function pauseSaves(paused: boolean): void {
+  savesPaused = paused;
+}
+
+/** Sets what runs when a write fails (full or blocked storage), or `null` for nothing (TD-14). */
+export function onSaveError(fn: (() => void) | null): void {
+  saveError = fn;
+}
+
+/** Saves, unless saves are paused. A failure calls the {@link onSaveError} handler and is otherwise ignored. */
 export function writeSave(save: SaveData, store: KeyValueStore | null = defaultStore()): void {
+  if (savesPaused) return;
   try {
     store?.setItem(KEY, JSON.stringify(save));
   } catch {
-    /* storage unavailable: progress simply isn't kept */
+    saveError?.(); // storage full or blocked: progress isn't kept, and the player is told once
   }
 }
 

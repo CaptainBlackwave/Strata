@@ -13,6 +13,7 @@ export function wireKeys(): void {
     // Keys go to the top layer only (F3); the board's shortcuts work when no layer is open.
     const top = layers.top();
     const onButton = document.activeElement instanceof HTMLButtonElement;
+    if (top === $('other-tab')) return; // blocking (D57): only Play here, by its own Enter/Space
     if (top === $('discard')) {
       if (e.key === 'Escape') keepEditing();
       return;

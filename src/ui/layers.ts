@@ -28,6 +28,8 @@ interface Entry<E> {
 /** The stack of open overlays (menus, cards, dialogs): the top one gets focus and Escape, and closing returns focus to its opener. */
 export class LayerStack<E extends LayerElement> {
   private stack: Entry<E>[] = [];
+  /** A layer that stays on top until it closes (the other-tab overlay, D57). */
+  private pinned: E | null = null;
 
   /**
    * @param siblings  every element that can be covered (the app root's children), read fresh on each change
@@ -58,14 +60,23 @@ export class LayerStack<E extends LayerElement> {
     const existing = this.stack.find((x) => x.el === el);
     this.stack = this.stack.filter((x) => x.el !== el);
     this.stack.push(existing ?? { el, opener });
+    const pin = this.stack.findIndex((x) => x.el === this.pinned);
+    if (pin >= 0 && el !== this.pinned) this.stack.push(...this.stack.splice(pin, 1)); // a later layer opens under the pin
     el.hidden = false;
     this.sync();
+  }
+
+  /** Opens `el` like {@link open} and keeps it on top: layers opened later go under it until it closes. */
+  pin(el: E, opener: FocusTarget | null): void {
+    this.pinned = el;
+    this.open(el, opener);
   }
 
   /** Hides `el` and returns the element that opened it (or `null`). Closing a layer that isn't open just hides it. */
   close(el: E): FocusTarget | null {
     const entry = this.stack.find((x) => x.el === el);
     this.stack = this.stack.filter((x) => x.el !== el);
+    if (el === this.pinned) this.pinned = null;
     el.hidden = true;
     el.style.zIndex = '';
     this.sync();

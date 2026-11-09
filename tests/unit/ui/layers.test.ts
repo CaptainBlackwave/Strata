@@ -78,4 +78,19 @@ describe('LayerStack', () => {
     expect(leave.hidden).toBe(true);
     expect(stack.has(leave)).toBe(false);
   });
+
+  it('a pinned layer stays on top and interactive when another opens later (D57, the other-tab overlay)', () => {
+    const { board, home, settings, stack } = setup();
+    stack.open(home, null);
+    stack.pin(settings, null);
+    stack.open(home, null); // e.g. a pour finishing behind the overlay
+    expect(stack.top()).toBe(settings);
+    expect(settings.inert).toBe(false);
+    expect(home.inert).toBe(true);
+    expect(board.inert).toBe(true);
+    expect(Number(settings.style.zIndex)).toBeGreaterThan(Number(home.style.zIndex));
+    stack.close(settings);
+    stack.open(board, null);
+    expect(stack.top()).toBe(board); // closing unpins
+  });
 });

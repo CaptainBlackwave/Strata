@@ -224,6 +224,12 @@ const en = {
     frame: (name: string) => `New frame: ${name}`,
     plate: (name: string) => `New name plate: ${name}`,
   },
+  // One active tab (sprint 9 M4, D57, TD-14)
+  otherTabTitle: 'Strata is open in another tab',
+  otherTabText: 'Your progress is kept in that tab. Play here to continue on this one.',
+  playHere: 'Play here',
+  /** Once per session, when the browser refuses a save (storage full or blocked). */
+  saveFailed: "Progress can't be saved: this browser's storage is full or blocked",
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most
    * 7 letters and nouns at most 5, so every name fits the 16-character limit (unit-tested).
