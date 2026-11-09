@@ -87,27 +87,69 @@ export function dealBoard(spec: LevelSpec, seed: number): Board {
  */
 export function generateLevel(level: number, config: GameConfig): GeneratedLevel {
   const spec = levelSpec(level, config);
-  const seed = mixSeed(config.baseSeed, level);
-  // Fallback chain, so no level can ever fail to load: the full recipe, then with a
-  // second ordinary spare, then without mechanics. Each step is still solver-proven.
-  // Every step but the last is capped by total solver work (generator.stepNodeBudget),
-  // which keeps level starts fast and stays identical on every device.
-  // Every step is also capped by length (generator.pourBands, D36). When no step finds a deal
-  // within it, the shortest proven deal any step found is kept (see lastResort).
+  return runFallbackSteps(levelSteps(spec, config), mixSeed(config.baseSeed, level), config, spec);
+}
+
+/**
+ * One step of a fallback chain (TD-5): the spec to deal and the caps `generateFromSpec` gets
+ * for it (attempts, solver work for the whole step, solver work per attempt).
+ */
+export interface FallbackStep<S extends LevelSpec = LevelSpec> {
+  readonly spec: S;
+  readonly maxAttempts: number;
+  readonly totalNodeBudget: number;
+  readonly attemptNodeBudget: number;
+}
+
+/**
+ * A numbered level's fallback chain, so no level can ever fail to load: the full recipe,
+ * then with a second ordinary spare (one-spare levels only), then without mechanics (levels
+ * with mechanics only). Every step but the last is capped by total solver work
+ * (`generator.stepNodeBudget`), which keeps level starts fast and identical on every device.
+ * Example: `levelSteps(levelSpec(150, config), config).length // 2 or 3`
+ */
+export function levelSteps(spec: LevelSpec, config: GameConfig): FallbackStep[] {
+  const g = config.generator;
+  const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : g.maxAttempts]];
+  if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, g.maxAttempts]);
+  if (spec.mechanics.length) tries.push([{ ...spec, spare: 2, mechanics: [] }, g.maxAttempts]);
   const { cap, perAttempt } = stepBudgets(config);
+  return tries.map(([s, maxAttempts], i) => {
+    const last = i === tries.length - 1;
+    return { spec: s, maxAttempts, totalNodeBudget: last ? Infinity : cap, attemptNodeBudget: last ? g.solverNodeBudget : perAttempt };
+  });
+}
+
+/** What `runFallbackSteps` calls; injectable so the runner's ordering can be unit-tested. */
+export interface FallbackDeps {
+  readonly generate: (spec: LevelSpec, seed: number, config: GameConfig, maxAttempts: number, totalNodeBudget: number, attemptNodeBudget: number) => GeneratedLevel;
+  readonly finish: (spec: LevelSpec, seed: number, config: GameConfig, shortest?: GeneratedLevel) => GeneratedLevel;
+}
+
+/**
+ * Runs a fallback chain (F7, TD-5), shared by numbered levels and the daily, which only build
+ * their own `steps`. Each step is tried in order with `seed`; the first that is solver-proven
+ * within the length cap (D36) is returned. A step that throws falls through to the next, and
+ * the shortest over-cap deal any `NoDealError` carried is kept. When every step fails, the
+ * chain ends with `lastResort(base, …)`, which never throws.
+ * Example: `runFallbackSteps(levelSteps(spec, config), seed, config, spec)`
+ */
+export function runFallbackSteps<S extends LevelSpec>(
+  steps: readonly FallbackStep<S>[],
+  seed: number,
+  config: GameConfig,
+  base: S,
+  deps: FallbackDeps = { generate: generateFromSpec, finish: lastResort },
+): GeneratedLevel & { spec: S } {
   let shortest: GeneratedLevel | undefined;
-  const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : config.generator.maxAttempts]];
-  if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, config.generator.maxAttempts]);
-  if (spec.mechanics.length) tries.push([{ ...spec, spare: 2, mechanics: [] }, config.generator.maxAttempts]);
-  for (let i = 0; i < tries.length; i++) {
+  for (const step of steps) {
     try {
-      const last = i === tries.length - 1;
-      return generateFromSpec(tries[i][0], seed, config, tries[i][1], last ? Infinity : cap, last ? config.generator.solverNodeBudget : perAttempt);
+      return deps.generate(step.spec, seed, config, step.maxAttempts, step.totalNodeBudget, step.attemptNodeBudget) as GeneratedLevel & { spec: S };
     } catch (e) {
       shortest = shorterDeal(shortest, e); // fall through to the next, easier step
     }
   }
-  return lastResort(spec, seed, config, shortest);
+  return deps.finish(base, seed, config, shortest) as GeneratedLevel & { spec: S };
 }
 
 /**
