@@ -21,6 +21,7 @@ Make every moment sound and feel as good as it looks, while staying calm. Each s
 | F5 | **Celebrations and animation** (D68): a soft sand shimmer and a warm chime on seal; a gentle bloom on win; map stone and path touches; screen transitions. Calm and short | D68 | Before and after screenshots and short frame captures; reduced motion removes all motion; frame time measured at 4× throttle |
 | F6 | **TD-12:** extract and unit-test the booster arm and confirm, restart and leave confirms and key mapping as F1–F5 touch them | D70 | New tests seen failing first; TD-12 marked done |
 | F7 | **Audio sign-off page** (D67): every sound and every scene's music, before and after, as playable clips, with the loudness table | D67 | Published page; **the owner approves before the PR merges** |
+| F9 | **Badges at 200% text** (device pass finding): the booster count badges cover the Shuffle, Jar and Hint icons at 200% text | `device-pass-0.9.1.md` | Icons visible at 200% on iPhone SE and Pixel 7; screenshots |
 | F8 | **0.10.0:** What's new lines, changelog entry, version bump (tagged by the P0-1 workflow) | D56, D60 | The upgrade play-through passes; the tag and release appear after the merge |
 
 ## Out of scope
