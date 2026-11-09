@@ -81,7 +81,9 @@ describe('specials (D49: tall jars, shell milestones, new-jar debuts)', () => {
     expect(specialsOf(7, cfg)).toEqual({ tall: false, shell: false, debut: null });
   });
   it('a mechanic debut names its jar, from the config schedule', () => {
+    // The hourglass (D96) included: level 101's stone shows "New jar: hourglass" (sprint 13 M1).
     for (const m of cfg.mechanics.list) expect(specialsOf(m.unlockAt, cfg).debut).toBe(m.id);
+    expect(specialsOf(101, cfg).debut).toBe('hourglass');
     expect(specialsOf(debutOf('frozen') + 1, cfg).debut).toBeNull();
   });
   it('locked stones show their specials too (what is coming)', () => {

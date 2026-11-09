@@ -160,6 +160,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D99 | Late faucet | **Streak steps**: daily streaks pay +25 from day 30 and +50 from day 60, on top of the 100 cap | daily-puzzle, economy | sprint 13 |
 | D100 | Top scene prices | **Also lower ladder rungs 6–12** so each takes about 2 weeks for a regular player again (the streak steps alone add about 15% income); owned scenes are kept, nothing refunded | scenes, economy | sprint 13 |
 | D101 | Sprint 13 delivery | **One PR each** (D80): the economy (streak steps and rung prices) first, then each mechanic with its art, then 0.13.0; the owner approves each mechanic's art before its merge. The owner runs the phone checklist this week, and its findings join the sprint | — | sprint 13 |
+| D102 | Hourglass jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/VP9f1xzygmbx9AaPJNaSsd): the badge, the flip, its sand fully shown, and levels from 101 rerolled | jar-mechanics | sprint 13 M1 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

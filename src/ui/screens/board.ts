@@ -5,7 +5,7 @@ import { generateWeekly, parseWeek } from '../../core/weekly';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
 import { tutorialBoard } from '../../core/generator';
-import { type MechanicId } from '../../core/levels';
+import { type MechanicId, specMechanics } from '../../core/levels';
 import { type AssistJob, type AssistPort, type AssistRequest, type AssistResponse, type AssistResult, AssistClient, runAssist } from '../../core/assist';
 import { type GenPort, type GenRequest, type GenResponse, type PreparedLevel, Prefetcher } from '../../core/prefetch';
 import { type HintResult, type SessionEvent, GameSession, sessionOptions } from '../../core/session';
@@ -13,17 +13,18 @@ import { bumpStats } from '../../core/profile';
 import { mapAvailable } from '../../core/map';
 import { writeSave } from '../storage';
 import { t } from '../strings';
-import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, showToast, toastEl, toolButtons, winEl } from '../dom';
+import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, reducedMotion, showToast, toastEl, toolButtons, winEl } from '../dom';
 import { showHome } from './home';
 import { screenOut } from '../fx';
 import { coach, updateHud } from './hud';
-import { buildJars, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
+import { buildJars, cancelFlips, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
+import { flipDelay, grownFrom } from '../logic/flip';
 import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
 import { openMap } from './map';
 import { boosterHintOnStart } from './onboarding';
 import { openWeekly, weeklyThemeName } from './sheets/weekly';
-import { audio, config, shuffleSeed, state } from '../state';
+import { ANIM, audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
 const RESTART_CONFIRM_MS = 3000;
@@ -63,7 +64,7 @@ export function startDaily(): void {
   challengeTag.textContent = t.dailyTag(state.dailyName);
   challengeTag.hidden = false;
   coach(null);
-  introduce(gen.spec.mechanics);
+  introduce(specMechanics(gen.spec));
 }
 
 /**
@@ -84,7 +85,7 @@ export function startWeekly(week: string, index: number): void {
   challengeTag.textContent = weeklyThemeName(week);
   challengeTag.hidden = false;
   coach(null);
-  introduce(gen.spec.mechanics);
+  introduce(specMechanics(gen.spec));
 }
 
 /** Home's Play: the tutorial until it is done, then level 1, then the level map from level 2 (D51). */
@@ -109,7 +110,10 @@ export function startTutorial(): void {
  * Starts numbered level `n` (P4): instantly from the prefetch cache when the worker already
  * made it; by waiting for the worker when it is making it now (a "Preparing" toast only after
  * 150 ms, `quiet` skips it); otherwise by generating synchronously, as before P4.
- * `replay` marks a replay started from the map (D50), so Continue returns to the map.
+ * `quiet` is the board made behind Home (at boot, or when this tab takes over): it also holds
+ * back the intro card, which shows when the level is played (sprint 13 M1: the "New jar!" card
+ * opened over Home and was spent there). `replay` marks a replay started from the map (D50),
+ * so Continue returns to the map.
  */
 export function startLevel(n: number, quiet = false, replay = false): void {
   state.mode = 'level';
@@ -117,8 +121,8 @@ export function startLevel(n: number, quiet = false, replay = false): void {
   state.level = n;
   const token = ++startToken;
   const ready = prefetcher.get(n);
-  if (ready) return showLevel(ready);
-  if (!prefetcher.pending(n)) return showLevel(prefetcher.generateNow(n));
+  if (ready) return showLevel(ready, quiet);
+  if (!prefetcher.pending(n)) return showLevel(prefetcher.generateNow(n), quiet);
   state.busy = true; // the previous board (if any) takes no input until the new one arrives
   let toasted = false;
   const spinner = quiet ? 0 : window.setTimeout(() => {
@@ -129,12 +133,15 @@ export function startLevel(n: number, quiet = false, replay = false): void {
     window.clearTimeout(spinner);
     if (toasted) toastEl.classList.remove('show');
     if (token !== startToken || state.mode !== 'level' || state.level !== n) return; // the player moved on
-    showLevel(p ?? prefetcher.generateNow(n)); // worker failed or timed out: synchronous
+    showLevel(p ?? prefetcher.generateNow(n), quiet); // worker failed or timed out: synchronous
   });
 }
 
-/** Puts a prepared level on the board, then prefetches what the player can start next. */
-export function showLevel(gen: PreparedLevel): void {
+/**
+ * Puts a prepared level on the board, then prefetches what the player can start next.
+ * `behindHome`: the board is made under Home, so its intro card waits until it is played.
+ */
+export function showLevel(gen: PreparedLevel, behindHome = false): void {
   const n = gen.level;
   beginSession(gen.board, gen.spec.challenge);
   levelLabel.textContent = t.level(n);
@@ -143,7 +150,7 @@ export function showLevel(gen: PreparedLevel): void {
   coach(null);
   boosterHintOnStart(n, state.replay); // level 1's first play names the boosters once (O2)
   updateHud();
-  introduce(gen.spec.mechanics);
+  if (!behindHome) introduce(specMechanics(gen.spec));
   // Next (n + 1, also after a replay) and Play from home (save.level).
   prefetcher.request([n + 1, state.save.level].filter((l) => l !== n));
 }
@@ -189,15 +196,25 @@ export function beginSession(board: Board, isChallenge: boolean): void {
 
 export function onSessionEvent(e: SessionEvent): void {
   cancelAssists(); // every event is a board change: a Hint or Shuffle still thinking is stale (TD-13)
+  // A pour, Undo, Restart or Shuffle redraws the jars: a flip still turning over describes the old board.
+  if (e.type !== 'won' && e.type !== 'stuck') cancelFlips();
   switch (e.type) {
-    case 'pour':
+    case 'pour': {
+      const flipped = e.flipped ?? [];
       updateJar(e.move.from);
-      updateJar(e.move.to, state.session.board.jars[e.move.to].units.length - e.moved);
+      updateJar(e.move.to, grownFrom(e.move.to, state.session.board.jars[e.move.to].units.length, e.moved, flipped));
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
-      announce(t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) + (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : ''));
+      // The hourglass turns over once the pour around it is done (D96).
+      for (const i of flipped) flipFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
+      announce(
+        t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
+          (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
+          flipped.map((i) => ` ${t.flipAnnounce(i + 1)}`).join(''),
+      );
       break;
+    }
     case 'extraJar':
       buildJars();
       break;

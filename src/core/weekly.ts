@@ -6,7 +6,7 @@
 import { weeklyBadgeId } from './badges';
 import { dailySteps, dayNumber } from './daily';
 import { type FallbackStep, type GeneratedLevel, runFallbackSteps } from './generator';
-import type { GameConfig, LevelSpec, MechanicId } from './levels';
+import type { ClassicMechanicId, GameConfig, LevelSpec } from './levels';
 
 /** One board of the set (weekly-set.md §3.4): a recipe and the level whose pour band caps it. */
 export interface WeeklyBoard {
@@ -21,7 +21,7 @@ export interface WeeklyBoard {
 /** A theme of the week (§3.3): one featured jar mechanic, or more buried sand. `id` keys the UI name. */
 export interface WeeklyTheme {
   readonly id: string;
-  readonly mechanic?: MechanicId;
+  readonly mechanic?: ClassicMechanicId;
   readonly buriedBonus?: number;
 }
 

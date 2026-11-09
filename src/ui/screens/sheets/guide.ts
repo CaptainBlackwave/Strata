@@ -5,8 +5,10 @@ import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
+import { HOURGLASS_MARK } from '../jars';
 
-export const MECHANICS: MechanicId[] = ['narrow', 'frozen', 'locked', 'funnel'];
+/** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
+export const MECHANICS: readonly MechanicId[] = config.mechanics.list.map((m) => m.id);
 
 /** A tiny static jar illustrating a mechanic, built from the same classes as the board. */
 export function miniJar(id: MechanicId): string {
@@ -15,7 +17,10 @@ export function miniJar(id: MechanicId): string {
   const sand = units.map((c) => `<span class="unit" style="--c:${c}"></span>`).join('');
   const extra = id === 'frozen' ? '<span class="ice"></span>' : '';
   const top = id === 'locked' ? `<span class="padlock" style="--lock:${lockC}"></span>` : id === 'funnel' ? '<span class="funnel-mark"></span>' : '';
-  return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span></span>`;
+  // The hourglass shows its full count, like a freshly dealt one.
+  const every = config.mechanics.list.find((m) => m.id === 'hourglass')?.every ?? 3;
+  const mark = id === 'hourglass' ? HOURGLASS_MARK.replace('></b>', `>${every}</b>`) : '';
+  return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span>${mark}</span>`;
 }
 
 /** Shows the intro card for any mechanic on this board the player hasn't met yet. */

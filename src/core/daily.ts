@@ -5,7 +5,7 @@
  * Implements design/competitive-roadmap.md item C6 (sprint 2 decisions S2-1, S2-2).
  */
 import { type FallbackStep, type GeneratedLevel, runFallbackSteps, stepBudgets } from './generator';
-import type { GameConfig, LevelSpec } from './levels';
+import { type GameConfig, type LevelSpec, isClassicMechanic } from './levels';
 
 /** One weekday's board recipe. */
 export interface DailyDay {
@@ -85,6 +85,9 @@ function hashKey(key: string, salt: number): number {
 /** The board recipe for a date. */
 export function dailySpec(key: string, config: GameConfig & DailyConfig): DailySpec {
   const day = config.daily.week[weekday(key)];
+  // The rotation is the four classic mechanics only: the hourglass (D96) joins it from a start date
+  // (sprint 13 W1, D98), so no daily changes before then (tests/fixtures/daily-saturdays.json).
+  const rotation = config.mechanics.list.map((m) => m.id).filter(isClassicMechanic);
   return {
     level: 0,
     date: key,
@@ -94,7 +97,7 @@ export function dailySpec(key: string, config: GameConfig & DailyConfig): DailyS
     spare: day.spare,
     buriedDepth: day.buriedDepth,
     challenge: day.capacity > 4,
-    mechanics: day.mechanic === 'rotate' ? [config.mechanics.list[Math.floor(dayNumber(key) / 7) % config.mechanics.list.length].id] : [],
+    mechanics: day.mechanic === 'rotate' ? [rotation[Math.floor(dayNumber(key) / 7) % rotation.length]] : [],
   };
 }
 

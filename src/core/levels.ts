@@ -80,8 +80,41 @@ export interface PourBand {
   readonly max: number;
 }
 
-/** The four sprint-3 jar mechanics. */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel';
+/**
+ * Every jar mechanic. Each one has an intro card, a Jar guide entry and player-facing strings,
+ * so the UI's lookup tables are keyed by this type. The hourglass (D96) joined in sprint 13 M1.
+ */
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass';
+
+/**
+ * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass
+ * rides in its own flag, `LevelSpec.hourglass`, so the generator's placement stream and every
+ * board from before the hourglass stay byte-identical. They are also the daily's Saturday
+ * rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
+ */
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass'>;
+
+/** @deprecated Since sprint 13 M1 every mechanic is a `MechanicId`; kept as an alias for older branches. */
+export type BoardMechanicId = MechanicId;
+
+/**
+ * True for the four original mechanics (`ClassicMechanicId`), false for the hourglass.
+ * Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
+ */
+export function isClassicMechanic(id: MechanicId): id is ClassicMechanicId {
+  return id !== 'hourglass';
+}
+
+/** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
+export const isCardMechanic = isClassicMechanic;
+
+/**
+ * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
+ * the hourglass when it has one. Example: level 101 gives `['hourglass']`.
+ */
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass'>): MechanicId[] {
+  return spec.hourglass ? [...spec.mechanics, 'hourglass'] : [...spec.mechanics];
+}
 
 /** One mechanic's schedule and tuning in game-config.json. */
 export interface MechanicConfig {
@@ -91,6 +124,8 @@ export interface MechanicConfig {
   readonly cap?: number;
   /** How many jars get frozen. */
   readonly count?: number;
+  /** Hourglass: it flips every this many successful pours on the board (D96). Default 3. */
+  readonly every?: number;
 }
 
 /** Fully resolved parameters for one level. */
@@ -101,8 +136,15 @@ export interface LevelSpec {
   readonly spare: number;
   readonly buriedDepth: number;
   readonly challenge: boolean;
-  /** Jar mechanics placed on this board (empty for a plain level). */
-  readonly mechanics: readonly MechanicId[];
+  /** Classic jar mechanics placed on this board (empty for a plain level). See `specMechanics`. */
+  readonly mechanics: readonly ClassicMechanicId[];
+  /** One filled jar is an hourglass (D96). Absent or false: none. See `ClassicMechanicId`. */
+  readonly hourglass?: boolean;
+}
+
+/** Splits rolled mechanics into the classic mechanics and the hourglass flag of a `LevelSpec`. */
+function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true } {
+  return { mechanics: ids.filter(isClassicMechanic), ...(ids.includes('hourglass') ? { hourglass: true as const } : {}) };
 }
 
 /**
@@ -130,7 +172,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       spare: ts,
       buriedDepth: tb,
       challenge: true,
-      mechanics: ch.mechanicsFrom !== undefined && level >= ch.mechanicsFrom ? pickMechanics(level, config) : [],
+      ...splitMechanics(ch.mechanicsFrom !== undefined && level >= ch.mechanicsFrom ? pickMechanics(level, config) : []),
     };
   }
   let colors = 3;
@@ -144,7 +186,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     spare = row.spare ?? spare;
     buriedDepth = row.buriedDepth ?? buriedDepth;
   }
-  const mechanics = pickMechanics(level, config);
+  const { mechanics, hourglass } = splitMechanics(pickMechanics(level, config));
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && spare > 1 && spareOneChance(level, config) > 0) {
@@ -160,7 +202,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics };
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}) };
 }
 
 const lerp = (level: number, from: number, to: number, a: number, b: number) =>

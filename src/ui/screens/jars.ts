@@ -5,12 +5,22 @@ import { sceneSealBurst } from '../scene-fx';
 import { computeLayout } from '../layout';
 import { t } from '../strings';
 import { boardEl, reducedMotion, showToast } from '../dom';
+import { FLIP_MS } from '../logic/flip';
 import { audio, config, state } from '../state';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
 /** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour (tests/unit/core/config-schema.test.ts keeps the two counts equal). */
 const PATTERNS = config.palette.length;
+
+/**
+ * The hourglass jar's badge (D96): a small hourglass glyph and the pours left until its next
+ * flip, in the empty `<b>`. Drawn for Strata; the glyph is two bulbs and a waist, nothing more.
+ */
+export const HOURGLASS_MARK =
+  '<span class="hourglass-mark" aria-hidden="true"><svg viewBox="0 0 10 14" focusable="false">' +
+  '<path class="hg-frame" d="M1.5 1h7M1.5 13h7M2.5 1c0 3.6 2.5 4.4 2.5 6S2.5 9.4 2.5 13M7.5 1c0 3.6-2.5 4.4-2.5 6s2.5 2.4 2.5 6"/>' +
+  '<path class="hg-sand" d="M3.3 12.4c.2-1.7 1.1-2.5 1.7-3 .6.5 1.5 1.3 1.7 3z"/></svg><b></b></span>';
 
 let tapHandler: (i: number) => void = () => {};
 
@@ -43,7 +53,8 @@ export function buildJars(): void {
     jar.innerHTML =
       '<span class="cork" aria-hidden="true"></span><span class="padlock" aria-hidden="true"></span><span class="funnel-mark" aria-hidden="true"></span>' +
       '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
-      '<span class="hint-badge" aria-hidden="true"></span>';
+      '<span class="hint-badge" aria-hidden="true"></span>' +
+      HOURGLASS_MARK;
     jar.addEventListener('click', () => tapHandler(i));
     rows.appendChild(jar);
     return jar;
@@ -99,6 +110,7 @@ export function updateJar(i: number, growFrom = Infinity): void {
     jar.frozen ? t.jarStates.frozen : '',
     jar.lock !== undefined ? t.jarStates.locked(config.palette[jar.lock].id) : '',
     jar.funnel ? t.jarStates.funnel : '',
+    jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
     sealed ? t.sealed : '',
   ].filter(Boolean);
   el.setAttribute('aria-label', t.jarLabel(i, states.length ? `${contents} (${states.join(', ')})` : contents));
@@ -112,6 +124,13 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   el.classList.toggle('funnel', jar.funnel === true);
   el.classList.toggle('frozen', jar.frozen === true);
   el.classList.toggle('locked', jar.lock !== undefined);
+  // The hourglass count is jar state, so every redraw (pour, Undo, Restart, Shuffle) refreshes it.
+  el.classList.toggle('hourglass', jar.hourglass !== undefined);
+  const left = jar.hourglass ? String(jar.hourglass.left) : '';
+  if (el.dataset.left !== left) {
+    el.dataset.left = left;
+    (el.querySelector('.hourglass-mark b') as HTMLElement).textContent = left;
+  }
   const glass = el.querySelector('.glass') as HTMLElement;
   if (jar.cap !== undefined) glass.style.height = `${state.unitHeight * jar.cap + Math.round(state.unitHeight * 0.45)}px`;
   else glass.style.removeProperty('height');
@@ -135,6 +154,40 @@ export function mechanicFx(el: HTMLElement, cls: string, label: string): void {
   audio.play('booster');
   const r = el.getBoundingClientRect();
   burst({ x: r.left + r.width / 2, y: r.top + r.height * 0.3, colors: ['#dff3ff', '#ffffff', '#b9e0f5'], count: 14, spread: r.width, size: 5, duration: 600, className: 'spark' });
+}
+
+/** Flip animations still playing or waiting, so a board change can stop them (Undo, Restart, Shuffle). */
+const flips = new Set<Animation>();
+
+/**
+ * The hourglass flip on jar `i` (D96). The jar already shows its new order. Its sand column
+ * turns over about its own middle (rotateX 180° → 0°), so it starts looking exactly like the old
+ * order and ends in the new one, and the badge's glyph turns half over. The old look is held for
+ * `delay` ms, while the pour around it finishes. Reduced motion: no motion, the new order is
+ * simply drawn. The `flip` sound plays either way.
+ */
+export function flipFx(i: number, delay: number): void {
+  const el = state.jarEls[i];
+  if (!el) return;
+  audio.play('flip', { delay: delay / 1000 });
+  if (reducedMotion()) return;
+  const timing: KeyframeAnimationOptions = { duration: FLIP_MS, delay, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'backwards' };
+  const sand = el.querySelector('.sand') as HTMLElement;
+  const glyph = el.querySelector('.hourglass-mark svg') as SVGElement | null;
+  const runs = [
+    sand.animate([{ transform: 'perspective(160px) rotateX(180deg)' }, { transform: 'perspective(160px) rotateX(0deg)' }], timing),
+    ...(glyph ? [glyph.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(180deg)' }], { ...timing, fill: 'none' })] : []),
+  ];
+  for (const a of runs) {
+    flips.add(a);
+    a.addEventListener('finish', () => flips.delete(a));
+    a.addEventListener('cancel', () => flips.delete(a));
+  }
+}
+
+/** Stops every flip animation: the board was redrawn by something other than a pour. */
+export function cancelFlips(): void {
+  for (const a of [...flips]) a.cancel();
 }
 
 export function setSelected(i: number | null): void {

@@ -24,6 +24,7 @@ export const SOUND_EVENTS = [
   'shell',
   'sceneBought',
   'playHere',
+  'flip',
 ] as const;
 
 /** One sound event (see {@link SOUND_EVENTS}). */
@@ -191,6 +192,19 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
   },
   sceneBought: { capDb: -12, voices: () => [...coinVoices(), ...[4, 6, 8].flatMap((n, i) => bell(note(n), 0.08 + i * 0.06, 0.055, 0.65))] },
   playHere: { capDb: -14, voices: () => [...bell(note(2), 0, 0.07, 0.35), ...bell(note(5), 0.1, 0.07, 0.45)] },
+  // The hourglass turning over (sprint 13 M1, D96): sand sliding to the other end, a light trickle
+  // of grains, and the glass settling with one low, soft note. Quieter than a pour.
+  flip: {
+    capDb: -16,
+    voices: () => {
+      const out: Voice[] = [
+        noise('bandpass', 3000, 1100, 0, 0.34, 0.07, 0.9, 0.09), // the slide
+        tone(note(1), 0.27, 0.12, 0.05, 'triangle'), // the settle
+      ];
+      for (let i = 0; i < 6; i++) out.push(noise('bandpass', 5400 - 900 * jitter(i + 11), 3600, 0.05 + i * 0.04 + 0.02 * jitter(i + 5), 0.02, 0.03 + 0.02 * jitter(i + 2), 1.6, 0.002));
+      return out;
+    },
+  },
 };
 
 /** A vibration pattern in milliseconds (navigator.vibrate), or `null` for an explicit none. */
@@ -217,6 +231,7 @@ export const HAPTICS: Record<SoundEvent, Haptic> = {
   shell: [8, 40, 16],
   sceneBought: [10, 40, 20],
   playHere: 10,
+  flip: [4, 24, 8], // a light tap and a settle, softer than the land
 };
 
 /** A voice's envelope level at `t` seconds: the same exponential ramps audio.ts schedules. */

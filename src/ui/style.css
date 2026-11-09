@@ -1536,6 +1536,54 @@ button {
   border-radius: 0 0 calc(var(--jar-w) * 0.2) calc(var(--jar-w) * 0.2);
 }
 
+/* Hourglass jar (sprint 13 M1, D96): a pill on the jar's base with an hourglass glyph and the pours
+   left until the flip (3, 2, 1). It sits below the sand, clear of the cork, padlock, funnel mark
+   and hint badge (all on the rim), in the scene's toast colours, sized in rem so it grows with text. */
+.hourglass-mark {
+  display: none;
+}
+:is(.jar, .mini-jar).hourglass .hourglass-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12em;
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 58%);
+  padding: 0.1em 0.42em 0.1em 0.3em;
+  border-radius: 999px;
+  border: 1.5px solid var(--card);
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.hourglass-mark svg {
+  flex: none;
+  width: 0.72em;
+  height: 1em;
+  overflow: visible;
+}
+.hourglass-mark .hg-frame {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.hourglass-mark .hg-sand {
+  fill: currentColor;
+}
+/* The next pour flips it: the pill takes the scene's accent, so the flip is never a surprise. */
+.jar.hourglass[data-left='1'] .hourglass-mark {
+  background: var(--accent-text);
+  color: var(--card);
+}
+
 /* Intro card and jar guide */
 .intro-card {
   width: min(380px, 100%);

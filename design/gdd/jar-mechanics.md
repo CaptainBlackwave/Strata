@@ -22,7 +22,7 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **Purpose**: Long-term variety. Every 20 levels a new kind of jar changes how the player plans.
 
-**Scope**: The four special jars, when they appear, how they are placed, which of their states make a board unwinnable, and how the player is told about them. Basic pouring is in `pour-rules.md`.
+**Scope**: The special jars (four from sprint 3, the hourglass from sprint 13), when they appear, how they are placed, which of their states make a board unwinnable, and how the player is told about them. Basic pouring is in `pour-rules.md`.
 
 **Current Implementation**: Optional per-jar fields on `Jar` (`cap`, `frozen`, `lock`, `funnel`) that the shared pour and seal rules respect, a schedule (`pickMechanics`), a placement step (`applyMechanics`) and UI for each.
 
@@ -47,6 +47,7 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 | **Frozen jar** | Level 41 | One filled jar (`count: 1`) starts iced: no pouring in or out. When *any* jar seals, every frozen jar thaws at once |
 | **Locked lid** | Level 61 | One filled jar gets a padlock in a colour that is **not** inside that jar. It is closed until a jar of the lock's colour is sealed |
 | **One-way funnel** | Level 81 | An *extra* empty jar you can pour into but never out of. It seals normally when full of one colour at normal capacity, so a funnel holding two colours is a dead end (below) |
+| **Hourglass jar** | Level 101 | One filled jar counts the pours on the board; every third successful pour (`every`) its stack turns over, bottom to top. Sprint 13 M1 (D96, D97), §2.4 |
 
 **Schedule** (`pickMechanics`, the *rolled* mechanics):
 - A level equal to a mechanic's `unlockAt` always gets exactly that mechanic (its debut).
@@ -78,9 +79,36 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - In colour patterns mode a padlock also shows the lock colour's pattern.
 - Screen readers hear each jar's state ("frozen", "locked until lagoon is sealed", "narrow", "one-way funnel"); the lock colour is spoken by its palette id.
 
+### 2.4 Hourglass jar (sprint 13 M1, D96, D97)
+
+*Designed for Strata; no rule, name or art is taken from another game.*
+
+**Rules**
+1. One filled jar on the board is an hourglass. It is poured into and out of like any jar and seals like any jar (full of one colour at normal capacity).
+2. **The count.** Every *successful* pour anywhere on the board (into or out of the hourglass, or between two other jars) counts the hourglass down by one. A refused pour does not count, and neither do Undo, Restart, Shuffle or the extra jar.
+3. **The flip.** The pour that brings the count to zero is applied first; right after it, before the next move, the hourglass's stack is reversed (its bottom unit becomes its top) and the count restarts at `every`. The flip shows the whole stack (nothing in it is buried).
+4. A flip never seals or unseals anything by itself: a one-colour stack reads the same both ways, so a sealed hourglass stays sealed and an unsealed one stays unsealed. The seal rules (thaw, unlock) run after the flip as after any pour and give the same answer.
+5. **Board state.** The count is stored on the jar (`Jar.hourglass = { every, left }`), so Undo restores both the count and the order, Restart returns the dealt count (`every`), and the solver, the hint plan and any saved board carry it.
+6. **Shuffle.** An unsealed hourglass is a free jar: Shuffle re-deals its sand like any other free jar and keeps its count (a shuffle is not a pour). A sealed hourglass keeps its sand, like every sealed jar.
+7. **Waiting.** While the hourglass holds two or more colours, *every* legal pour is useful, even one that only moves a one-colour jar into an empty jar: it brings the flip closer. So such a board is "stuck" only when no legal pour is left at all. While the hourglass is empty or one colour, a flip changes nothing, waiting can never create a useful pour, and the usual stuck rule applies unchanged.
+
+**Placement** (`applyMechanics`): one hourglass per level that rolls it, placed after the other mechanics from the same seeded placement stream, on a random filled jar that is not sealed, frozen, locked, narrow or a funnel. Its sand is shown when the level starts (`hidden: 0`). Reason: from level 75 every dealt jar buries 3 units, so a dealt jar "with no buried units" never exists; the chosen jar is revealed instead, because a flip would otherwise bring buried sand to the top. A deal where no jar qualifies is re-dealt. Levels that do not roll the hourglass draw nothing extra from the stream and keep exactly the board they had.
+
+**Schedule**: `{ "id": "hourglass", "unlockAt": 101, "every": 3 }` in `mechanics.list`. Level 101 is its debut and shows it alone (no spare-jar swap, D28). From 102 it is one of five unlocked mechanics in `pickMechanics`; it can combine with a second rolled mechanic and the spare swap (still at most 3 mechanics, D22). Tall-jar levels from 100 can roll it too.
+- **Levels that changed.** Adding a fifth mechanic to the list changes the draw for levels 101 and up. Of levels 101–160, 16 boards changed (101, 103, 107, 110, 114, 120, 122, 125, 129, 132, 141, 145, 146, 147, 156, 158); the other 44 are byte-identical. Levels 1–100 are byte-identical (fixture `tests/fixtures/boards-1-100.json`). Of levels 101–300, 16 roll the hourglass and 15 are built with it.
+- **Fallback.** A level that rolls the hourglass with another mechanic first falls back to the other mechanic alone (two spares), then to no mechanic, as before (`level-generation.md`). Level 170 (tall jars, frozen + hourglass) is built with frozen only: with the count in the state the solver needs more work, and long tall-jar plans go over the pour cap.
+
+**Daily and weekly**: not yet. The Saturday rotation cycles through the four card mechanics only, so every daily is unchanged (fixture `tests/fixtures/daily-saturdays.json`, 21 Saturdays from 2026-11-07, plus a test over 520 Saturdays); no weekly theme names the hourglass, and the weekly fixture is unchanged. Task W1 adds it to both from a start date (D98).
+
+**Player-facing (built in sprint 13 M1)**: `'hourglass'` is a `MechanicId` with its own strings, an intro card on level 101 and a Jar guide entry; the map shows its "new jar" badge at 101. `LevelSpec.mechanics` still holds only the four classic mechanics (the flag `LevelSpec.hourglass` keeps placement byte-identical) and `specMechanics(spec)` merges them for the UI. The jar wears a small pill on its base with an hourglass glyph and the pours left (3, 2, 1), in the scene's toast colours (accent at 1). A flip redraws the new order at once and turns the sand column over in 460 ms (Web Animations; none under reduced motion), plays the soft `flip` sound (haptic `[4, 24, 8]`) and announces "The hourglass flipped (jar N)". Screen readers hear "hourglass, flips in 2 pours". The "special jars" badge still counts the four classic mechanics (its text says "all four"). Evidence: `production/qa/evidence/sprint-13/hourglass/`.
+
+**Dead ends (D21)**: none added. A flip only reorders sand inside a jar that stays open, so it never puts a unit out of reach: no hourglass state is *certainly* unwinnable on its own. The funnel and lock checks stay exact with an hourglass on the board (they count units by jar, and an hourglass is an ordinary open jar to them).
+
 ### 2.2 State and Data
 
 - `Jar.cap?: number`, `Jar.frozen?: boolean`, `Jar.lock?: Color`, `Jar.funnel?: boolean`. A thawed or unlocked jar has the field removed, not set to false.
+- `Jar.hourglass?: { every: number; left: number }` (§2.4): flips every `every` pours, `left` pours from now (1 to `every`). Part of the jar's solver key (`jarKey`, `H{left}/{every}`), so boards that differ only in the count are different states. `pour()` returns `flipped` (indices of jars that flipped); the session's pour event carries it when non-empty.
+- `LevelSpec.hourglass?: boolean`: the level rolled the hourglass (kept apart from `mechanics` until its card lands).
 - `settle(board)`: collects the colours of all sealed jars; if any jar is sealed, drops `frozen` from all jars; drops `lock` from any jar whose lock colour is in that set. Returns the same object when nothing changes.
 - `seenMechanics` (save data) remembers which intro cards were shown.
 
@@ -105,6 +133,15 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 | Jars added | narrow +1, funnel +1, frozen 0, locked 0 | | A narrow level has `colours + spare + 1` jars |
 | Narrow capacity | 2 | `cap` | |
 | Frozen count | 1 jar | `count` | |
+| Hourglass count | after `n` successful pours from the deal, the hourglass has flipped `floor(n / every)` times and `left = every − (n mod every)` | `every` (default 3), `n` ≥ 0 | Pours 1, 2: `left` 2, 1; pour 3 flips it and `left` is 3 again |
+| Hourglass share | not a separate draw: one of the unlocked mechanics, uniform, like the others | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 16 of levels 101–300 roll it, 15 are built with it |
+
+**Tuning knobs (hourglass)**
+
+| Knob | Default | Safe range | Effect |
+|---|---|---|---|
+| `mechanics.list[hourglass].unlockAt` | 101 | ≥ 101 (lower would change levels ≤ 100) | Debut level |
+| `mechanics.list[hourglass].every` | 3 | 2–5 | Pours between flips. 1 flips after every pour (hard to read, longer solver plans); above 5 the jar rarely matters within a level |
 
 ---
 
@@ -121,6 +158,16 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 
 **Decided 2026-11-08, built in sprint 6**:
 - **A funnel filled with mixed colours** makes the level unwinnable for good. Before D21 the stuck message appeared only once no useful move was left, so a player could keep pouring on a lost board with no signal. With D21 the stuck banner shows "This board can't be won now: Undo or Restart" as soon as the funnel holds two colours. The same applies to a lock whose key colour is trapped in a mixed funnel.
+
+**Hourglass (sprint 13 M1)**:
+- ✅ A refused pour does not count; Undo restores the count and the order across a flip; Restart restores the dealt count.
+- ✅ A one-colour hourglass stays sealed (or unsealed) through a flip; the pour that seals the hourglass can also be the flipping pour, and the level is still won.
+- ✅ The winning pour can be a flipping pour: a flip never changes which jars are sealed or empty, so the win stands.
+- ✅ A buried stack that flips is shown whole (placement never buries the hourglass; this guards hand-built boards).
+- ✅ Waiting is legal: with a mixed hourglass any legal pour is useful, so the stuck banner appears only when no pour is left.
+- ✅ Shuffle keeps the count and re-deals an unsealed hourglass's sand; the solver proves the re-deal with the count.
+- ✅ The solver, the hint and every generated board use the same flip rule (`pour()`); hint plans key on the count.
+- ✅ No jar qualifies for placement: the deal is re-dealt; a level that never gets one falls back (§2.4).
 
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
@@ -139,7 +186,7 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 
 **Design Dependencies**: `pour-rules.md`, `level-generation.md`, `daily-puzzle.md`, `session-boosters.md`, `feel-audio-ui.md`, `save-data.md` (remembers which intro cards were shown).
 
-**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
+**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`, `every`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
 
 ---
 
@@ -152,6 +199,19 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - ✅ Levels without a mechanic keep their exact pre-mechanics boards (plain levels 1–59 fixture).
 - ✅ Mechanic levels are winnable by following hints.
 - ✅ Every Saturday for 8 weeks has exactly one mechanic, rotating through all four; other days are plain.
+
+**Hourglass (sprint 13 M1)**, covered in `tests/unit/core/hourglass.test.ts`:
+- ✅ Config lists the hourglass at 101 with `every: 3`.
+- ✅ Each successful pour counts down; the third flips the stack and restarts the count; a pour in or out of the hourglass counts, and the flip follows the pour.
+- ✅ A refused pour does not count; Undo restores count and order; Restart resets them.
+- ✅ A monochrome hourglass stays sealed through a flip.
+- ✅ Board keys differ by count; with a mixed hourglass, wait moves are useful and the board is not stuck.
+- ✅ No new dead end; Shuffle keeps the count.
+- ✅ The solver's path replays to a win with the flip; following hints on an hourglass level wins.
+- ✅ Level 101 debuts it alone with two spares; no level ≤ 100 rolls it; placement picks one plain, unsealed, filled jar and shows its sand; with another mechanic the fallback keeps that mechanic first.
+- ✅ Levels 101–160: every board with an hourglass is solver-proven and its solution replays to a win.
+- ✅ Levels 1–100 byte-identical; Saturday dailies byte-identical and never the hourglass; no weekly theme has it.
+- [ ] Intro card, art, sound and flip animation, with screenshots and owner art approval (the M1 UI task).
 
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.
@@ -180,3 +240,4 @@ None open: Saturday stays as built (D2), narrow jars never seal (D4), dead ends 
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; mechanic rules and pacing confirmed by the owner in sprint 3 |
 | 2026-11-08 | Claude (sprint 6, F9) | Mechanic chance is the D1 ramp, with the tested band (GA-JAR-1); D22 up to 3 mechanics from 101 with a per-band table (GA-JAR-2); D21 dead ends replace the overclaimed "mixed funnel leaves the board stuck" (GA-JAR-3); every-10th-level and fixture range updated (GA-JAR-4); timing figure left to level-generation (GA-JAR-5); "teal" → "lagoon" (GA-JAR-6); GA-LG-6 default noted on the intro card |
+| 2026-11-09 | Claude (sprint 13 M1) | Hourglass jar (D96, D97), §2.4: rules, placement (sand shown, since every dealt jar is buried from 75), schedule, the levels 101+ that changed, daily and weekly held back until W1, no new dead end (D21), formulas, tuning knobs, edge cases, acceptance criteria |

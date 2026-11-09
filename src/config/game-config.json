@@ -22,7 +22,7 @@
     "totalNodeBudget": 50000
   },
   "mechanics": {
-    "$comment": "Sprint 3 (S3-1..S3-3): unlock every 20 levels, easiest first; each debuts on its unlock level, then appears in about `chance` of levels; two can combine from `comboFrom`. Narrow and funnel add an extra jar; frozen and locked change existing filled jars.",
+    "$comment": "Sprint 3 (S3-1..S3-3): unlock every 20 levels, easiest first; each debuts on its unlock level, then appears in about `chance` of levels; two can combine from `comboFrom`. Narrow and funnel add an extra jar; frozen and locked change existing filled jars. Sprint 13 M1 (D96, D97): the hourglass turns one filled jar into an hourglass that flips its stack every `every` pours on the board; adding it to this list changed which mechanics levels 101+ roll (levels 1-100 unchanged). It stays out of the daily rotation and the weekly themes until W1.",
     "salt": 9137,
     "chance": 0.34,
     "comboFrom": 101,
@@ -31,7 +31,8 @@
       { "id": "narrow", "unlockAt": 21, "cap": 2 },
       { "id": "frozen", "unlockAt": 41, "count": 1 },
       { "id": "locked", "unlockAt": 61 },
-      { "id": "funnel", "unlockAt": 81 }
+      { "id": "funnel", "unlockAt": 81 },
+      { "id": "hourglass", "unlockAt": 101, "every": 3 }
     ]
   },
   "daily": {

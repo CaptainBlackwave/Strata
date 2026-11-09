@@ -111,6 +111,10 @@ describe('badgeProgressOf: the stat each badge reads (§3.2)', () => {
     expect(badgeProgressOf(input({ seenMechanics: ['frozen', 'unknown'] }), cfg).mechanicsSeen).toBe(1);
     expect(badgeProgressOf(input({ level: 200, seenMechanics: ['narrow'] }), cfg).mechanicsSeen).toBe(4);
   });
+  it('the hourglass is not one of "all four special jars" (sprint 13 M1, D96)', () => {
+    expect(badgeProgressOf(input({ level: 200, seenMechanics: ['hourglass'] }), cfg).mechanicsSeen).toBe(4);
+    expect(badgeProgressOf(input({ level: 22, seenMechanics: ['hourglass'] }), cfg).mechanicsSeen).toBe(1);
+  });
   it('reads the counters, shells, sets and best streak from the save', () => {
     const tidepool = cfg.collection.sets[0].shells.map((s) => s.id);
     const p = badgeProgressOf(input({ shells: tidepool, daily: { best: 7 }, stats: { ...emptyStats(), jarsSealed: 34, pours: 900, perfectClears: 3, dailiesSolved: 2 } }), cfg);

@@ -23,6 +23,18 @@ export interface Jar {
   readonly lock?: Color;
   /** One-way funnel: can be poured into, never out of. */
   readonly funnel?: boolean;
+  /**
+   * Hourglass jar (D96, design/gdd/jar-mechanics.md): every successful pour anywhere on the
+   * board counts down `left`; the pour that reaches zero flips this jar's stack and restarts
+   * the count at `every`. Part of the board, so undo, restart, the solver and hints see it.
+   */
+  readonly hourglass?: Hourglass;
+}
+
+/** An hourglass jar's count: it flips every `every` pours, `left` pours from now (1..every). */
+export interface Hourglass {
+  readonly every: number;
+  readonly left: number;
 }
 
 /** A whole puzzle. `capacity` is the normal jar size; narrow jars override it with `cap`. */
@@ -125,6 +137,8 @@ export interface PourResult {
   readonly board: Board;
   readonly moved: number;
   readonly color: Color;
+  /** Indices of hourglass jars that flipped right after this pour (D96); usually empty. */
+  readonly flipped: readonly number[];
 }
 
 /**
@@ -140,8 +154,39 @@ export function pour(board: Board, from: number, to: number): PourResult {
   const newSrcUnits = src.units.slice(0, src.units.length - moved);
   const newSrc: Jar = { ...src, units: newSrcUnits, hidden: clampHidden(src.hidden, newSrcUnits.length) };
   const newDst: Jar = { ...dst, units: [...dst.units, ...new Array<Color>(moved).fill(color)] };
-  const jars = board.jars.map((j, i) => (i === from ? newSrc : i === to ? newDst : j));
-  return { board: settle({ capacity: board.capacity, jars }), moved, color };
+  const poured = board.jars.map((j, i) => (i === from ? newSrc : i === to ? newDst : j));
+  const { jars, flipped } = tickHourglasses(poured);
+  return { board: settle({ capacity: board.capacity, jars }), moved, color, flipped };
+}
+
+/**
+ * The hourglass rule (D96), applied after every successful pour: each hourglass counts down
+ * one, and one that reaches zero reverses its stack (bottom becomes top) and restarts at
+ * `every`. A flip shows the whole stack (`hidden: 0`); a one-colour stack is unchanged by it,
+ * so a flip never seals or unseals a jar by itself. Returns the same array when there is none.
+ */
+function tickHourglasses(jars: readonly Jar[]): { jars: readonly Jar[]; flipped: number[] } {
+  const flipped: number[] = [];
+  if (!jars.some((j) => j.hourglass)) return { jars, flipped };
+  const next = jars.map((j, i) => {
+    if (!j.hourglass) return j;
+    const left = j.hourglass.left - 1;
+    if (left > 0) return { ...j, hourglass: { every: j.hourglass.every, left } };
+    flipped.push(i);
+    return { ...j, units: [...j.units].reverse(), hidden: 0, hourglass: { every: j.hourglass.every, left: j.hourglass.every } };
+  });
+  return { jars: next, flipped };
+}
+
+/**
+ * True when an hourglass holds two or more colours, so its next flip changes the board (D96).
+ * Only then can a pour that merely swaps two jars matter: it is a wait move that brings the
+ * flip closer. An empty or one-colour hourglass is unchanged by a flip, so while every
+ * hourglass is like that, waiting never creates a useful pour and the usual pruning is exact
+ * for `isStuck`.
+ */
+export function hasLiveHourglass(board: Board): boolean {
+  return board.jars.some((j) => j.hourglass !== undefined && j.units.length > 0 && !isMonochrome(j));
 }
 
 /**
@@ -196,6 +241,8 @@ export function legalMoves(board: Board): Move[] {
  * single-colour jar into an empty jar only swaps two jars, so it is excluded.
  */
 export function usefulMoves(board: Board): Move[] {
+  // With a live hourglass any pour moves its count, so even a swap can be the wait a plan needs (D96).
+  if (hasLiveHourglass(board)) return legalMoves(board);
   return legalMoves(board).filter(({ from, to }) => {
     const src = board.jars[from];
     const dst = board.jars[to];
@@ -275,7 +322,8 @@ export function lostReason(board: Board): LostReason | null {
 }
 
 /**
- * A canonical string for a board, ignoring jar order and burial. Two boards
+ * A canonical string for a board, ignoring jar order and burial. An hourglass's count is
+ * part of its jar's key, so states that differ only in the count are not merged (D96). Two boards
  * with the same key are equivalent for solving purposes.
  */
 export function boardKey(board: Board): string {
@@ -287,7 +335,8 @@ export function boardKey(board: Board): string {
 
 /** One jar's state and contents as a string (used by solver and plan keys). */
 export function jarKey(j: Jar): string {
-  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}`;
+  const glass = j.hourglass ? `H${j.hourglass.left}/${j.hourglass.every}` : '';
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}`;
   return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 
