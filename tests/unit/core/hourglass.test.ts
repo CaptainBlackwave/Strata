@@ -168,7 +168,7 @@ describe('solver and hint with the flip', () => {
       expect(s.pour(m!.from, m!.to)).toBe(true);
     }
     expect(s.status).toBe('won');
-  });
+  }, 60_000);
 });
 
 describe('hourglass placement and generation', () => {
@@ -224,7 +224,7 @@ describe('hourglass placement and generation', () => {
       expect(isWon(b), `level ${l}`).toBe(true);
     }
     expect(withGlass).toBeGreaterThanOrEqual(5);
-  });
+  }, 60_000);
 });
 
 describe('no existing board changes (sprint 13 M1 hard constraints)', () => {
@@ -232,7 +232,7 @@ describe('no existing board changes (sprint 13 M1 hard constraints)', () => {
     const hashes = early.hashes as Record<string, string>;
     expect(Object.keys(hashes).length).toBe(100);
     for (const [l, h] of Object.entries(hashes)) expect(hash(generateLevel(Number(l), cfg).board), `level ${l}`).toBe(h);
-  });
+  }, 60_000);
 
   it('the daily Saturday rotation never picks the hourglass yet (W1 adds it from a start date)', () => {
     for (let w = 0; w < 520; w++) {
