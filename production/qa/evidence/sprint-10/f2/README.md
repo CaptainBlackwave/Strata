@@ -122,3 +122,6 @@ fails three tests, and a walker that repeats its last phrase fails two. They che
   a one-line change in the table.
 - The music's overall level is unchanged from 0.9.1 (about -38.5 LUFS at full volume). If it should sit
   louder or quieter against the sound effects, that is one number (`musicBus` 0.5) or the F3 slider.
+
+## Where the clips are
+The audio clips (about 8 MB) are not kept in git. They are on the sprint 10 audio sign-off page (F7, D67), and the scripts in `scripts/` recreate them: `render-offline.cjs` for the offline renders, `capture-app.cjs` for the captures from the built game. The loudness tables above are their measurements.
