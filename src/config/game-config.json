@@ -54,6 +54,25 @@
       "maxPasses": 2
     }
   },
+  "weekly": {
+    "$comment": "The weekly set (design/gdd/weekly-set.md, D77, sprint 11 W1). Five boards a week, ISO weeks from Monday 00:00 UTC. Boards borrow the daily's Monday-to-Friday recipes; bandLevel picks the generator.pourBands row that caps each board's length. One theme a week, rotating: a mechanic on all five boards, or buriedBonus extra buried layers (capped at maxBuried). Pays nothing (the economy is untouched). NEVER change seedSalt once released: every player's boards for the current week would change.",
+    "seedSalt": 5309,
+    "maxBuried": 2,
+    "boards": [
+      { "colors": 5, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 1 },
+      { "colors": 6, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 21 },
+      { "colors": 7, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 21 },
+      { "colors": 8, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 41 },
+      { "colors": 9, "capacity": 4, "spare": 2, "buriedDepth": 2, "bandLevel": 41 }
+    ],
+    "themes": [
+      { "id": "narrow", "mechanic": "narrow" },
+      { "id": "frozen", "mechanic": "frozen" },
+      { "id": "locked", "mechanic": "locked" },
+      { "id": "funnel", "mechanic": "funnel" },
+      { "id": "deep", "buriedBonus": 1 }
+    ]
+  },
   "collection": {
     "everyLevels": 5,
     "coinsWhenComplete": 0,

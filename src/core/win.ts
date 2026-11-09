@@ -4,12 +4,14 @@
  * Rules: design/gdd/economy.md (M1 first clear only), daily-challenge GDD (D10, GA-DP-6),
  * collection GDD (shell milestones), player-profile.md (stats, D25), level-map.md (replays and
  * the per-level Perfect mark, D50, D52), badges.md (jars sealed, scenes played and the badges a win
- * earns; recognition only, D76).
+ * earns; recognition only, D76), weekly-set.md (a weekly win records the board and can earn the week's
+ * badge; it pays nothing, D77).
  */
 import { type BadgeSourceConfig, awardBadges, badgeProgressOf } from './badges';
 import { type CollectionConfig, type Shell, type ShellSet, grantShell, milestoneDue, setProgress } from './collection';
 import { type DailyConfig, type DailyShareRecord, type StreakState, recordDailySolve } from './daily';
 import { type EconomyConfig, type Wallet, addBoosters, addCoins, clearReward } from './economy';
+import { type WeeklyConfig, type WeeklyState, emptyWeekly, recordWeeklyClear } from './weekly';
 import { type ProfileConfig, type Progress, type SlotItem, type Stats, bumpStats, newlyUnlocked, progressOf } from './profile';
 
 /** The slice of the save a win reads and writes. `SaveData` satisfies it structurally. */
@@ -32,12 +34,14 @@ export interface WinState {
   readonly seenMechanics: readonly string[];
   /** Read by the scene badges; a win never changes it. */
   readonly themes: { readonly owned: readonly string[] };
+  /** The weekly set's progress (weekly-set.md §3.10). Optional so older callers need not carry it. */
+  readonly weekly?: WeeklyState;
 }
 
 /** The config a win needs. */
-export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig & BadgeSourceConfig;
+export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig & BadgeSourceConfig & WeeklyConfig;
 
-export type WinMode = 'tutorial' | 'daily' | 'level';
+export type WinMode = 'tutorial' | 'daily' | 'level' | 'weekly';
 
 /** The finished session and where it was played. */
 export interface WinResult {
@@ -54,6 +58,8 @@ export interface WinResult {
   readonly sealed: number;
   /** The scene active when the board was won (badges.md §3.2). */
   readonly scene: string;
+  /** The weekly board played (weekly mode): its week key and 0-based index (weekly-set.md §3.5). */
+  readonly weekly?: { readonly week: string; readonly index: number };
 }
 
 /** The shell row of the win card. */
@@ -84,8 +90,26 @@ export interface WinCard {
   readonly note: WinNote;
   readonly shell: ShellAward | null;
   readonly unlocks: SlotItem[];
-  /** Badge ids this win earned, in catalogue order (badges.md §3.6). They pay nothing (D76). */
+  /** Badge ids this win earned: the week's badge first, then catalogue order (badges.md §3.6). They pay nothing (D76). */
   readonly badges: string[];
+  /** What a weekly win did to the set (weekly mode only, weekly-set.md §3.8). */
+  readonly weekly?: WeeklyCard;
+}
+
+/** The weekly part of the win card (weekly-set.md §3.8). */
+export interface WeeklyCard {
+  /** The board played, 0-based. */
+  readonly index: number;
+  /** Boards cleared this week after this win, and the set's size. */
+  readonly cleared: number;
+  readonly total: number;
+  readonly firstClear: boolean;
+  readonly newBest: boolean;
+  readonly prevBest: number | undefined;
+  /** This win cleared the set's last board. */
+  readonly completedNow: boolean;
+  /** The board's week is older than the saved week: nothing was recorded (§3.6). */
+  readonly outOfDate: boolean;
 }
 
 /** The new state and the card. */
@@ -165,6 +189,23 @@ function winDaily(s: WinState, result: WinResult, config: WinConfig): WinOutcome
   return { state, card };
 }
 
+/**
+ * A weekly board (weekly-set.md §3.5–§3.7): records the clear and best pours, adds the week's badge
+ * when the set is complete, counts pours and sealed jars, and pays nothing.
+ */
+function winWeekly(s: WinState, result: WinResult, config: WinConfig): WinOutcome {
+  const before = progressOfState(s, config);
+  const played = result.weekly ?? { week: '', index: -1 };
+  const r = recordWeeklyClear(s.weekly ?? emptyWeekly(), played.week, played.index, result.moves, config);
+  const weeklyBadges = r.badge && !s.badges.includes(r.badge) ? [r.badge] : [];
+  let state: WinState = { ...s, weekly: r.state, badges: [...s.badges, ...weeklyBadges], stats: bumpStats(s.stats, { pours: result.moves }) };
+  const f = finishWin(state, result, config);
+  state = f.state;
+  const weekly: WeeklyCard = { index: played.index, cleared: r.state.cleared.length, total: config.weekly.boards.length, firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, completedNow: r.completedNow, outOfDate: r.outOfDate };
+  const card: WinCard = { ...emptyCard(result), badges: [...weeklyBadges, ...f.badges], weekly, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  return { state, card };
+}
+
 function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome {
   const { level, moves } = result;
   const before = progressOfState(s, config);
@@ -200,5 +241,6 @@ function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome
  */
 export function applyWin(state: WinState, result: WinResult, config: WinConfig): WinOutcome {
   if (result.mode === 'tutorial') return winTutorial(state, result);
+  if (result.mode === 'weekly') return winWeekly(state, result, config);
   return result.mode === 'daily' ? winDaily(state, result, config) : winLevel(state, result, config);
 }

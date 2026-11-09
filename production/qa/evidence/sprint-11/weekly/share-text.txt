@@ -1,0 +1,9 @@
+Mid-week (boards 1, 2 and 4 cleared):
+Strata Weekly 2026-W46 (Lock and Key)
+3 of 5 boards: 22 · 24 · – · 38 · –
+http://localhost:5530/
+
+Set complete:
+Strata Weekly 2026-W46 (Lock and Key)
+All 5 boards: 22 · 27 · 31 · 38 · 34 (152 pours)
+http://localhost:5530/

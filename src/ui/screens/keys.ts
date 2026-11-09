@@ -29,7 +29,7 @@ export function wireKeys(): void {
       else if (e.key === 'Enter' && e.target === $('name-input')) saveEditProfile();
       return;
     }
-    if (top === $('profile') || top === $('transfer') || top === $('cabinet')) {
+    if (top === $('profile') || top === $('transfer') || top === $('cabinet') || top === $('weekly')) {
       if (e.key === 'Escape') closeLayer(top);
       return;
     }

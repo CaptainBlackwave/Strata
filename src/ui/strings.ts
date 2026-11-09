@@ -108,9 +108,10 @@ const en = {
     title: "What's new",
     button: "What's new",
     lines: [
-      'The volume sliders now match the scene you are in.',
-      'Sealing a jar and clearing a level glow in each scene\'s own colours.',
-      'In the night scenes that glow is cool moonlight instead of warm sand.',
+      'A shelf of 28 badges on your profile, earned as you play.',
+      'A weekly set: five new boards every Monday, and a badge for clearing them all.',
+      'Share a daily and the link opens that puzzle directly.',
+      'Add Strata to your home screen to play it like an app, even offline.',
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
@@ -363,6 +364,36 @@ const en = {
     mapHint: 'Your path along the beach. Play the next level, or tap a cleared stone to replay it.',
     /** Above the boosters on level 1, the first board they work on (O2). */
     boosterHint: 'Stuck? Undo is free, and Shuffle, Jar and Hint help too.',
+  },
+  // sprint 11 weekly
+  /** The weekly set (design/gdd/weekly-set.md, D77): Home card, chooser, board label, win card and Share. */
+  weekly: {
+    title: 'Weekly set',
+    /** Theme names by `weekly.themes[].id` in game-config.json (§3.3). */
+    themes: { narrow: 'Narrow Necks', frozen: 'Cold Snap', locked: 'Lock and Key', funnel: 'Funnel Week', deep: 'Deep Sand' } as Readonly<Record<string, string>>,
+    progress: (cleared: number, total: number) => (cleared >= total ? 'Set complete \u2713' : `${cleared} of ${total} cleared`),
+    daysLeft: (n: number) => (n <= 1 ? 'Last day' : `${n} days left`),
+    /** The Home card's theme line, e.g. "Lock and Key · 6 days left". */
+    cardSub: (theme: string, left: string) => `${theme} \u00b7 ${left}`,
+    /** The chooser's line under its heading, e.g. "Week 46 · Lock and Key · 2 of 5 cleared". */
+    sheetSub: (week: number, theme: string, progress: string) => `Week ${week} \u00b7 ${theme} \u00b7 ${progress}`,
+    board: (n: number) => `Board ${n}`,
+    boardCleared: (pours: number) => `Cleared \u00b7 best ${pours} ${pours === 1 ? 'pour' : 'pours'}`,
+    boardOpen: 'Not cleared yet',
+    /** The board screen's label, e.g. "Week 46 · Board 2". */
+    label: (week: number, n: number) => `Week ${week} \u00b7 Board ${n}`,
+    winTitle: (n: number) => `Board ${n} cleared`,
+    completeTitle: 'Weekly set complete!',
+    winText: (pours: number, cleared: number, total: number) => `${pours} ${pours === 1 ? 'pour' : 'pours'} \u00b7 ${cleared} of ${total} cleared`,
+    replay: 'Already cleared this week',
+    outOfDate: 'This board\u2019s week is over, so it isn\u2019t counted',
+    /** Share (§3.9): each board's best pours this week in order, "–" for a board not cleared. */
+    shareText: (week: string, theme: string, pours: readonly (number | null)[], url: string) => {
+      const done = pours.filter((p): p is number => p !== null);
+      const list = pours.map((p) => (p === null ? '\u2013' : String(p))).join(' \u00b7 ');
+      const line = done.length === pours.length ? `All ${pours.length} boards: ${list} (${done.reduce((a, b) => a + b, 0)} pours)` : `${done.length} of ${pours.length} boards: ${list}`;
+      return `Strata Weekly ${week} (${theme})\n${line}\n${url}`;
+    },
   },
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most

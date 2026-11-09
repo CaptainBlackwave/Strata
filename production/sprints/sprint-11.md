@@ -1,6 +1,6 @@
 # Sprint 11: badges, the weekly set, and a smoother start
 
-> **Status: planned (2026-11-09).** Chosen in the owner interview after 0.10.0 (D72–D80 in `design/gdd/systems-index.md`). First comes the 0.10.1 quick-fix release, then this sprint as one PR per feature (D80). Target release: **0.11.0**.
+> **Status: built (2026-11-09).** 0.10.1 (PR #9), badges (PR #10), onboarding (PR #11) merged; the weekly set and the 0.11.0 release in the last PR; 864 tests pass. Evidence: `production/qa/evidence/sprint-11/README.md`. Open for the owner: the first-run recommendations R1–R5 (`production/qa/sprint-11/first-run-review.md`) and the weekly set's no-coins choice. Chosen in the owner interview after 0.10.0 (D72–D80 in `design/gdd/systems-index.md`). First comes the 0.10.1 quick-fix release, then this sprint as one PR per feature (D80). Target release: **0.11.0**.
 
 ## Before the sprint: 0.10.1 (D79): done
 Evidence: `production/qa/evidence/0.10.1/README.md`.
