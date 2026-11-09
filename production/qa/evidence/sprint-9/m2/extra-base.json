@@ -1,0 +1,488 @@
+{
+ "b0": {
+  "moves": "0",
+  "coins": "5000",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, 1 left:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty"
+  ]
+ },
+ "bHint1": {
+  "moves": "0",
+  "coins": "5000",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, 1 left:false:false",
+   "hint:Hint: tap again to buy for 60 coins:false:true"
+  ],
+  "toast": "Tap again to buy for 60 coins",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty"
+  ]
+ },
+ "bHint2": {
+  "moves": "0",
+  "coins": "4940",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, 1 left:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "Used 60 coins",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty"
+  ]
+ },
+ "bHintSave": {
+  "coins": 4940,
+  "boosters": {
+   "undo": 3,
+   "shuffle": 0,
+   "extraJar": 1,
+   "hint": 0
+  }
+ },
+ "bPour": {
+  "moves": "0",
+  "coins": "4940",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, 1 left:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "That jar is full",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty"
+  ]
+ },
+ "bUndo": {
+  "moves": "0",
+  "coins": "4940",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, 1 left:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "Nothing to undo yet.",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty"
+  ]
+ },
+ "bJar": {
+  "moves": "0",
+  "coins": "4940",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, costs 120 coins:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "Nothing to undo yet.",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty",
+   "Jar 7: empty"
+  ]
+ },
+ "bJar2": {
+  "moves": "0",
+  "coins": "4940",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar: tap again to buy for 120 coins:false:true",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "Tap again to buy for 120 coins",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty",
+   "Jar 7: empty"
+  ]
+ },
+ "bShuffle": {
+  "moves": "0",
+  "coins": "4860",
+  "tools": [
+   "undo:Undo, free:false:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, costs 120 coins:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "Used 80 coins",
+  "jars": "empty,empty,empty,lagoon,lagoon,lagoon,lagoon,saffron,saffron,saffron,saffron,sage,sage,sage,sage,terracotta,terracotta,terracotta,terracotta"
+ },
+ "bRestart1": {
+  "moves": "0",
+  "coins": "4860",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, costs 120 coins:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "Used 80 coins",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty",
+   "Jar 7: empty"
+  ]
+ },
+ "bRestart2": {
+  "moves": "0",
+  "coins": "4860",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, costs 120 coins:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "Used 80 coins",
+  "jars": [
+   "Jar 1: lagoon, sage, sage, terracotta",
+   "Jar 2: terracotta, lagoon, saffron, saffron",
+   "Jar 3: saffron, sage, sage, lagoon",
+   "Jar 4: lagoon, terracotta, terracotta, saffron",
+   "Jar 5: empty",
+   "Jar 6: empty",
+   "Jar 7: empty"
+  ]
+ },
+ "bSave": {
+  "level": 3,
+  "best": {},
+  "wallet": {
+   "coins": 4860,
+   "boosters": {
+    "undo": 3,
+    "shuffle": 0,
+    "extraJar": 0,
+    "hint": 0
+   }
+  },
+  "tutorialDone": true,
+  "settings": {
+   "sound": false,
+   "music": false,
+   "haptics": false,
+   "patterns": false,
+   "southern": false
+  },
+  "daily": {
+   "last": null,
+   "streak": 0,
+   "best": 0,
+   "passes": 0
+  },
+  "shells": [
+   "periwinkle"
+  ],
+  "seenMechanics": [
+   "narrow",
+   "frozen",
+   "locked",
+   "funnel"
+  ],
+  "themes": {
+   "owned": [
+    "midday"
+   ],
+   "selected": "midday",
+   "auto": false
+  },
+  "profile": {
+   "name": "Tester",
+   "avatar": "sand-jar",
+   "frame": "sand",
+   "plate": "cream"
+  },
+  "stats": {
+   "perfectClears": 0,
+   "dailiesSolved": 0,
+   "pours": 0,
+   "coinsEarned": 0,
+   "boostersUsed": 3
+  },
+  "dailyShare": null,
+  "seenWhatsNew": "0.8.0"
+ },
+ "shift1": 0,
+ "jars200": 7,
+ "shift1b": -1,
+ "shift2b": {
+  "moves": "0",
+  "coins": "5000",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, 2 left:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "",
+  "jars": [
+   "Jar 1: saffron, lagoon, terracotta, saffron, saffron, terracotta, sage, lagoon",
+   "Jar 2: lagoon, lagoon, coral, terracotta, lagoon, terracotta, sage, saffron",
+   "Jar 3: coral, lagoon, saffron, lagoon, terracotta, coral, saffron, sage",
+   "Jar 4: coral, lagoon, coral, terracotta, sage, sage, terracotta, terracotta",
+   "Jar 5: saffron, coral, coral, sage, sage, saffron, coral, sage",
+   "Jar 6: empty",
+   "Jar 7: empty"
+  ]
+ },
+ "k0": "board(inert),toast,whatsnew,home(inert)",
+ "k0tab": "BODY",
+ "k0esc": "board(inert),toast,home|0.8.0",
+ "set0": "board(inert),toast,settings,home(inert)",
+ "setSave": {
+  "sound": true,
+  "music": true,
+  "haptics": true,
+  "patterns": true,
+  "southern": true
+ },
+ "setTabs": [
+  "btn-tutorial",
+  "btn-guide",
+  "btn-scenes-2",
+  "btn-savecode",
+  "btn-whatsnew",
+  "btn-close-settings",
+  "BODY",
+  "set-sound",
+  "set-music",
+  "set-haptics",
+  "set-patterns",
+  "set-southern",
+  "btn-tutorial",
+  "btn-guide"
+ ],
+ "setShiftTabs": [
+  "btn-tutorial",
+  "set-southern",
+  "set-patterns",
+  "set-haptics"
+ ],
+ "sc0": [
+  "board(inert),toast,settings(inert),scenes,home(inert)",
+  "5000",
+  "Use Midday"
+ ],
+ "sceneIds": [
+  "midday",
+  "dawn",
+  "sunset",
+  "moonlit",
+  "seafog",
+  "highsummer",
+  "springblossom",
+  "autumnshore",
+  "rainbowafterrain",
+  "wintersnow",
+  "harvestmoon",
+  "softrain",
+  "winterlights",
+  "newyear",
+  "meteorshower",
+  "auroranight"
+ ],
+ "scPrev": [
+  "Previewing Dawn",
+  "Buy Dawn · 300",
+  "dawn",
+  "scene-card"
+ ],
+ "scBuy": [
+  "Use Dawn",
+  "4700",
+  {
+   "owned": [
+    "midday",
+    "dawn"
+   ],
+   "selected": "dawn",
+   "auto": false
+  },
+  "dawn"
+ ],
+ "scPrev2": "midday",
+ "scAuto": [
+  {
+   "owned": [
+    "midday",
+    "dawn"
+   ],
+   "selected": "dawn",
+   "auto": true
+  },
+  "dawn"
+ ],
+ "scClosed": [
+  "board(inert),toast,settings,home(inert)",
+  "dawn",
+  "btn-scenes-2"
+ ],
+ "tr0": [
+  "STRATA1:eyJsZXZlbCI6MywiYmVzdCI6e30sIndhbGxldCI6eyJjb2lucyI6NDcwMCwiYm9vc3RlcnMiOnsidW5kbyI6Mywic2h1ZmZsZSI6MCwiZXh0cmFKYXIiOjIsImhpbnQiOjB9fSwidHV0b3JpYWxEb25lIjp0cnVlLCJzZXR0aW5ncyI6eyJzb3VuZCI6dHJ1ZSwibXVzaWMiOnRydWUsImhhcHRpY3MiOnRydWUsInBhdHRlcm5zIjp0cnVlLCJzb3V0aGVybiI6dHJ1ZX0sImRhaWx5Ijp7Imxhc3QiOm51bGwsInN0cmVhayI6MCwiYmVzdCI6MCwicGFzc2VzIjowfSwic2hlbGxzIjpbInBlcml3aW5rbGUiXSwic2Vlbk1lY2hhbmljcyI6WyJuYXJyb3ciLCJmcm96ZW4iLCJsb2NrZWQiLCJmdW5uZWwiXSwidGhlbWVzIjp7Im93bmVkIjpbIm1pZGRheSIsImRhd24iXSwic2VsZWN0ZWQiOiJkYXduIiwiYXV0byI6dHJ1ZX0sInByb2ZpbGUiOnsibmFtZSI6IlRlc3RlciIsImF2YXRhciI6InNhbmQtamFyIiwiZnJhbWUiOiJzYW5kIiwicGxhdGUiOiJjcmVhbSJ9LCJzdGF0cyI6eyJwZXJmZWN0Q2xlYXJzIjowLCJkYWlsaWVzU29sdmVkIjowLCJwb3VycyI6MCwiY29pbnNFYXJuZWQiOjAsImJvb3N0ZXJzVXNlZCI6MH0sImRhaWx5U2hhcmUiOm51bGwsInNlZW5XaGF0c05ldyI6IjAuOC4wIn0=",
+  "Paste a code from your other device, then tap Restore."
+ ],
+ "trCopy": [
+  "Copied! Paste it into Strata on your other device.",
+  "STRATA1:eyJsZXZlbCI6MywiYmVzdCI6e30sIndhbGxldCI6eyJjb2lucyI6NDcwMCwiYm9vc3RlcnMiOnsidW5kbyI6Mywic2h1ZmZsZSI6MCwiZXh0cmFKYXIiOjIsImhpbnQiOjB9fSwidHV0b3JpYWxEb25lIjp0cnVlLCJzZXR0aW5ncyI6eyJzb3VuZCI6dHJ1ZSwibXVzaWMiOnRydWUsImhhcHRpY3MiOnRydWUsInBhdHRlcm5zIjp0cnVlLCJzb3V0aGVybiI6dHJ1ZX0sImRhaWx5Ijp7Imxhc3QiOm51bGwsInN0cmVhayI6MCwiYmVzdCI6MCwicGFzc2VzIjowfSwic2hlbGxzIjpbInBlcml3aW5rbGUiXSwic2Vlbk1lY2hhbmljcyI6WyJuYXJyb3ciLCJmcm96ZW4iLCJsb2NrZWQiLCJmdW5uZWwiXSwidGhlbWVzIjp7Im93bmVkIjpbIm1pZGRheSIsImRhd24iXSwic2VsZWN0ZWQiOiJkYXduIiwiYXV0byI6dHJ1ZX0sInByb2ZpbGUiOnsibmFtZSI6IlRlc3RlciIsImF2YXRhciI6InNhbmQtamFyIiwiZnJhbWUiOiJzYW5kIiwicGxhdGUiOiJjcmVhbSJ9LCJzdGF0cyI6eyJwZXJmZWN0Q2xlYXJzIjowLCJkYWlsaWVzU29sdmVkIjowLCJwb3VycyI6MCwiY29pbnNFYXJuZWQiOjAsImJvb3N0ZXJzVXNlZCI6MH0sImRhaWx5U2hhcmUiOm51bGwsInNlZW5XaGF0c05ldyI6IjAuOC4wIn0="
+ ],
+ "trBad": "That isn’t a Strata save code. Check you copied all of it.",
+ "trArm": [
+  "Tap again to replace my progress",
+  "This code is at level 3 with 4700 coins. Restoring replaces your progress on this device."
+ ],
+ "trDone": [
+  "board(inert),toast,home",
+  "Progress restored",
+  "{\"level\":3,\"best\":{},\"wallet\":{\"coins\":4700,\"boosters\":{\"undo\":3,\"shuffle\":0,\"extraJar\":2,\"hint\":0}},\"tutorialDone\":true,\"settings\":{\"sound\":true,\"music\":true,\"haptics\":true,\"patterns\":true,\"southern\":true},\"daily\":{\"last\":null,\"streak\":0,\"best\":0,\"passes\":0},\"shells\":[\"periwinkle\"],\"seenMechanics\":[\"narrow\",\"frozen\",\"locked\",\"funnel\"],\"themes\":{\"owned\":[\"midday\",\"dawn\"],\"selected\":\"dawn\",\"auto\":true},\"profile\":{\"name\":\"Tester\",\"avatar\":\"sand-jar\",\"frame\":\"sand\",\"plate\":\"cream\"},\"stats\":{\"perfectClears\":0,\"dailiesSolved\":0,\"pours\":0,\"coinsEarned\":0,\"boostersUsed\":0},\"dailyShare\":null,\"seenWhatsNew\":\"0.8.0\"}"
+ ],
+ "wn": [
+  "Undo is free now.Twelve new scenes to buy, from sea fog to aurora night.A banner tells you when you're stuck, and hints are clearer.Jars are easier to tap, and you can pinch to zoom.Sealed jars now show their sand.",
+  "board(inert),toast,settings(inert),whatsnew,home(inert)",
+  "btn-whatsnew-ok"
+ ],
+ "wnEsc": "board(inert),toast,home",
+ "guide": [
+  "Jar guide",
+  "Narrow jarHolds only 2 layers and never seals. Use it as extra space, and empty it before the end.Frozen jarIced shut: no pouring in or out. Seal any jar and every frozen jar thaws.Locked lidClosed until a jar of the lock’s colour is sealed.One-way funnelYou can pour in, but never out. Fill it with a single colour!",
+  "board(inert),toast,settings(inert),intro,home(inert)"
+ ],
+ "cab": [
+  "Next shell: clear 3 more levels, or solve today’s daily",
+  8,
+  1091,
+  "btn-close-cabinet"
+ ],
+ "cabToggle": "false",
+ "cabTabs": [
+  "shell-set-head",
+  "shell-set-head",
+  "shell-set-head",
+  "shell-set-head",
+  "shell-set-head",
+  "shell-set-head"
+ ],
+ "cabEsc": "board(inert),toast,home",
+ "prof": [
+  "3",
+  "Levels cleared2Perfect clears0Daily streak0Best streak0Dailies solved0Shells1/40Sets completed0/8Scenes2/16Total pours0Coins earned0Boosters used0",
+  "board(inert),toast,profile,home(inert)"
+ ],
+ "edit0": [
+  "board(inert),toast,profile(inert),edit-profile,home(inert)",
+  "tab-avatar"
+ ],
+ "editArrow": "tab-frame",
+ "editPick": [
+  "",
+  "rope"
+ ],
+ "editBad": [
+  "Use 2–16 letters or numbers",
+  "",
+  true
+ ],
+ "reroll": "Saffron Buoy 36",
+ "discard": [
+  "board(inert),toast,profile(inert),edit-profile(inert),discard,home(inert)",
+  "btn-keep-editing"
+ ],
+ "keep": [
+  "board(inert),toast,profile(inert),edit-profile,home(inert)",
+  "tab-plate"
+ ],
+ "editSaved": [
+  "{\"name\":\"Brisk Dune\",\"avatar\":\"sand-jar\",\"frame\":\"rope\",\"plate\":\"cream\"}",
+  "board(inert),toast,profile(inert),edit-profile,home(inert)",
+  "Brisk Dune"
+ ],
+ "profClosed": "board(inert),toast,home",
+ "afterPlay": "board,toast",
+ "hv": [
+  "f0",
+  "t4"
+ ],
+ "movesNow": "1",
+ "leave": "board(inert),toast,settings(inert),leave",
+ "leaveEsc": "board(inert),toast,settings",
+ "leaveDone": [
+  "board(inert),toast,home",
+  "Play · Level 3"
+ ],
+ "mech": [
+  "board,toast",
+  "",
+  0
+ ],
+ "mechPour": {
+  "moves": "0",
+  "coins": "5000",
+  "tools": [
+   "undo:Undo, free:true:false",
+   "shuffle:Shuffle, costs 80 coins:false:false",
+   "extraJar:Jar, 2 left:false:false",
+   "hint:Hint, costs 60 coins:false:false"
+  ],
+  "toast": "That jar is full",
+  "jars": [
+   "Jar 1: sage, terracotta, coral, saffron, lagoon, coral, sage, coral",
+   "Jar 2: terracotta, coral, terracotta, coral, saffron, sage, terracotta, saffron",
+   "Jar 3: lagoon, sage, lagoon, terracotta, saffron, lagoon, lagoon, sage",
+   "Jar 4: terracotta, saffron, lagoon, coral, saffron, coral, terracotta, coral",
+   "Jar 5: sage, terracotta, sage, lagoon, saffron, sage, saffron, lagoon",
+   "Jar 6: empty",
+   "Jar 7: empty"
+  ]
+ },
+ "errors": []
+}

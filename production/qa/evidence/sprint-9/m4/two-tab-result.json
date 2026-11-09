@@ -1,0 +1,266 @@
+[
+ [
+  "bc: A opened",
+  {
+   "shown": "board(inert),toast,home",
+   "overlay": false,
+   "focus": "btn-play",
+   "play": "Play · Level 1"
+  }
+ ],
+ [
+  "bc: A wins level 1",
+  true
+ ],
+ [
+  "bc: save after A's win",
+  {
+   "level": 2,
+   "coins": 120,
+   "hints": 50,
+   "best": {
+    "1": 10
+   },
+   "pours": 10,
+   "sound": false
+  }
+ ],
+ [
+  "bc: B opened; A shows",
+  {
+   "shown": "board(inert),toast,win(inert),other-tab",
+   "overlay": true,
+   "focus": "btn-play-here",
+   "play": "Play · Level 1"
+  }
+ ],
+ [
+  "bc: B shows",
+  {
+   "shown": "board(inert),toast,home",
+   "overlay": false,
+   "focus": "btn-play",
+   "play": "Play · Level 2"
+  }
+ ],
+ [
+  "bc: A after Escape and a tap",
+  {
+   "shown": "board(inert),toast,win(inert),other-tab",
+   "overlay": true,
+   "focus": "BODY",
+   "play": "Play · Level 1"
+  }
+ ],
+ [
+  "bc: B wins level 2",
+  true
+ ],
+ [
+  "bc: save after B's win",
+  {
+   "level": 3,
+   "coins": 140,
+   "hints": 39,
+   "best": {
+    "1": 10,
+    "2": 11
+   },
+   "pours": 21,
+   "sound": false
+  }
+ ],
+ [
+  "bc: save after A tried to write",
+  {
+   "level": 3,
+   "coins": 140,
+   "hints": 39,
+   "best": {
+    "1": 10,
+    "2": 11
+   },
+   "pours": 21,
+   "sound": false
+  }
+ ],
+ [
+  "bc: A did not overwrite B",
+  true
+ ],
+ [
+  "bc: A after Play here",
+  {
+   "shown": "board(inert),toast,home",
+   "overlay": false,
+   "focus": "btn-play",
+   "play": "Play · Level 3"
+  }
+ ],
+ [
+  "bc: B after A's Play here",
+  {
+   "shown": "board(inert),toast,win(inert),other-tab",
+   "overlay": true,
+   "focus": "btn-play-here",
+   "play": "Play · Level 2"
+  }
+ ],
+ [
+  "bc: A wins level 3",
+  true
+ ],
+ [
+  "bc: final save",
+  {
+   "level": 4,
+   "coins": 160,
+   "hints": 28,
+   "best": {
+    "1": 10,
+    "2": 11,
+    "3": 11
+   },
+   "pours": 32,
+   "sound": false
+  }
+ ],
+ [
+  "bc: no save lost (level 4, best has 1-3)",
+  true
+ ],
+ [
+  "fallback: A opened",
+  {
+   "shown": "board(inert),toast,home",
+   "overlay": false,
+   "focus": "btn-play",
+   "play": "Play · Level 1"
+  }
+ ],
+ [
+  "fallback: A wins level 1",
+  true
+ ],
+ [
+  "fallback: save after A's win",
+  {
+   "level": 2,
+   "coins": 120,
+   "hints": 50,
+   "best": {
+    "1": 10
+   },
+   "pours": 10,
+   "sound": false
+  }
+ ],
+ [
+  "fallback: B opened; A shows",
+  {
+   "shown": "board(inert),toast,win(inert),other-tab",
+   "overlay": true,
+   "focus": "btn-play-here",
+   "play": "Play · Level 1"
+  }
+ ],
+ [
+  "fallback: B shows",
+  {
+   "shown": "board(inert),toast,home",
+   "overlay": false,
+   "focus": "btn-play",
+   "play": "Play · Level 2"
+  }
+ ],
+ [
+  "fallback: A after Escape and a tap",
+  {
+   "shown": "board(inert),toast,win(inert),other-tab",
+   "overlay": true,
+   "focus": "BODY",
+   "play": "Play · Level 1"
+  }
+ ],
+ [
+  "fallback: B wins level 2",
+  true
+ ],
+ [
+  "fallback: save after B's win",
+  {
+   "level": 3,
+   "coins": 140,
+   "hints": 39,
+   "best": {
+    "1": 10,
+    "2": 11
+   },
+   "pours": 21,
+   "sound": false
+  }
+ ],
+ [
+  "fallback: save after A tried to write",
+  {
+   "level": 3,
+   "coins": 140,
+   "hints": 39,
+   "best": {
+    "1": 10,
+    "2": 11
+   },
+   "pours": 21,
+   "sound": false
+  }
+ ],
+ [
+  "fallback: A did not overwrite B",
+  true
+ ],
+ [
+  "fallback: A after Play here",
+  {
+   "shown": "board(inert),toast,home",
+   "overlay": false,
+   "focus": "btn-play",
+   "play": "Play · Level 3"
+  }
+ ],
+ [
+  "fallback: B after A's Play here",
+  {
+   "shown": "board(inert),toast,win(inert),other-tab",
+   "overlay": true,
+   "focus": "btn-play-here",
+   "play": "Play · Level 2"
+  }
+ ],
+ [
+  "fallback: A wins level 3",
+  true
+ ],
+ [
+  "fallback: final save",
+  {
+   "level": 4,
+   "coins": 160,
+   "hints": 28,
+   "best": {
+    "1": 10,
+    "2": 11,
+    "3": 11
+   },
+   "pours": 32,
+   "sound": false
+  }
+ ],
+ [
+  "fallback: no save lost (level 4, best has 1-3)",
+  true
+ ],
+ [
+  "errors",
+  []
+ ]
+]

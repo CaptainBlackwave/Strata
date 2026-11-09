@@ -1,0 +1,7 @@
+whats new card: What's new A beach path map shows every level, with what you earned on each. Replay any level to earn its Perfect mark or beat your best pours. Strata now plays in one tab at a time, so no progress is lost. Aurora night, Winter lights and Rainbow after rain look better. Got it
+seenWhatsNew: 0.9.0 | perfect: [] | level: 12 | perfectClears: 4
+map open: true | map play: Play · Level 12
+board label: Strata Tall jars Level 12 300 coins
+won level 12: true
+after win: level 13 | best[12] 28 | perfect []
+errors: []

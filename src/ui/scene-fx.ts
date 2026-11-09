@@ -42,6 +42,8 @@ const BANDS = [
 ] as const;
 /** Aurora night: slices per band (3 x 16 = 48 of the 60-particle budget; ripples use the rest). */
 const AURORA_COLS = 16;
+/** Aurora night: a full ripple lengthens a slice by this share of its thickness. */
+const RIPPLE_STRETCH = 0.2;
 const MAX_RIPPLES = 4;
 
 /** Winter lights: the bulb colours, cycled along the string. */
@@ -49,6 +51,14 @@ const BULBS = ['#ffd27a', '#ff9a85', '#a6e3c4', '#9cc4ff'] as const;
 /** Winter lights: how many swags the string hangs in, and how many bulbs in all. */
 const SWAGS = 3;
 const BULB_COUNT = 18;
+/**
+ * Winter lights (sprint 9 M1, D54): the string hangs just under the top HUD row, never behind
+ * it. A bulb's glow reaches 8 px above the wire, so the hooks sit this far below the HUD's
+ * bottom edge, and the swags dip at most {@link MAX_SAG} px, less if the jars start sooner.
+ */
+const HUD_CLEAR = 10;
+const MAX_SAG = 16;
+const MIN_SAG = 6;
 
 interface Particle {
   x: number;
@@ -60,7 +70,17 @@ interface Particle {
   /** Seconds left for burst sparks; Infinity for ambient particles. */
   life: number;
   color: string;
+  /** Meteor shower seal meteors: drawn wider, with a halo and a white core (sprint 9 M1). */
+  bold?: boolean;
 }
+
+/**
+ * Seal reactions (sprint 9 M1, D54: brighter, a little larger, still short).
+ * Meteor shower: one meteor per seal; speed px/s, tail px, life s, stroke width px.
+ */
+const SEAL_METEOR = { speed: 300, tail: 125, life: 0.9, width: 3 } as const;
+/** Aurora night: one ripple per seal; life s, ring speed px/s, peak gain, ring width (2 sigma squared, px squared), max alpha. */
+const SEAL_RIPPLE = { life: 1.6, speed: 260, gain: 2.2, spread: 16200, maxAlpha: 0.85 } as const;
 
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -79,6 +99,12 @@ const bulbSprites = new Map<string, HTMLCanvasElement>();
 const auroraSprites = new Map<string, HTMLCanvasElement>();
 let nextMeteor = 0;
 let wired = false;
+/** Winter lights: the wire's height at the hooks and its deepest dip below them, from {@link hangString}. */
+let hookY = 14;
+let sag = MAX_SAG;
+/** Aurora night: how far every band is moved down so the top band's glow starts below the HUD, from {@link hangString}. */
+let auroraShift = 0;
+let hudWatch: ResizeObserver | null = null;
 
 /**
  * Starts the layer for scene `id`, or stops the current one if the scene has none.
@@ -98,6 +124,7 @@ export function startSceneFx(id: string): void {
   mount();
   resize();
   seed();
+  if (hugsHud()) watchHud();
   resume();
 }
 
@@ -105,6 +132,8 @@ export function startSceneFx(id: string): void {
 export function stopSceneFx(): void {
   cancelAnimationFrame(raf);
   raf = 0;
+  hudWatch?.disconnect();
+  hudWatch = null;
   canvas?.remove();
   canvas = null;
   ctx = null;
@@ -120,18 +149,22 @@ export function sceneFxKind(): string | null {
 
 /**
  * The tier 3 reaction when a jar seals, queued for the next frame: New Year, a small burst
- * above the jar in its sand colour; Meteor shower, one meteor streaking over the jar in that
- * colour; Aurora night, a ripple of brightness spreading along the bands from the jar.
- * Nothing for other scenes or under reduced motion.
+ * above the jar in its sand colour; Meteor shower, one bold meteor (halo and white core)
+ * streaking just over the jar in that colour for 0.9 s; Aurora night, a bright ripple
+ * spreading along the bands from the jar for 1.6 s. Nothing for other scenes or under
+ * reduced motion. Each is one particle against the MAX_PARTICLES cap.
  */
 export function sceneSealBurst(jar: Element, color: string): void {
   if (reduced() || (kind !== 'fireworks' && kind !== 'meteors' && kind !== 'aurora')) return;
   const r = jar.getBoundingClientRect();
   const cx = r.left + r.width / 2;
   if (kind === 'fireworks') queueBurst(cx, r.top - 6, [color, '#fff6d8'], 14, 70);
-  else if (kind === 'meteors') queueMeteor(newMeteor(cx + 70, r.top - 90, color, 260, 70, 0.6));
-  else if (canvas && sparks.length < MAX_RIPPLES && ambient.length + sparks.length < MAX_PARTICLES)
-    sparks.push({ x: cx, y: 0, vx: 0, vy: 0, r: 0, phase: 1.4, life: 1.4, color: '' });
+  else if (kind === 'meteors') {
+    // Starts up and to the right so the head crosses just above the jar's mouth about halfway through.
+    const m = SEAL_METEOR;
+    queueMeteor({ ...newMeteor(cx + 115, r.top - 125, color, m.speed, m.tail, m.life), bold: true });
+  } else if (canvas && sparks.length < MAX_RIPPLES && ambient.length + sparks.length < MAX_PARTICLES)
+    sparks.push({ x: cx, y: 0, vx: 0, vy: 0, r: 0, phase: SEAL_RIPPLE.life, life: SEAL_RIPPLE.life, color: '' });
 }
 
 /**
@@ -334,6 +367,50 @@ function mount(): void {
   const home = document.getElementById('home');
   const parent = home && !home.hidden ? home : document.body;
   if (canvas.parentElement !== parent) parent.prepend(canvas);
+  if (hugsHud()) rehang();
+}
+
+/**
+ * Winter lights and Aurora night: measures the HUD's bottom edge. Aurora night moves its bands
+ * down by {@link auroraShift} so no glow sits behind the HUD text. Winter lights: measures where the string can hang. On Home it sits under the top row
+ * (profile chip and Settings); on the board, under the HUD ("Level N", Restart, coins,
+ * Settings, pours). The swag depth shrinks if the logo or the jars start close below.
+ */
+function hangString(): void {
+  const home = document.getElementById('home');
+  const onHome = !!home && !home.hidden;
+  const hud = document.querySelector(onHome ? '#home .home-top' : '.hud');
+  const below = document.querySelector(onHome ? '#home .logo-jars' : '#board');
+  const hudBottom = hud ? hud.getBoundingClientRect().bottom : 0;
+  hookY = Math.round(hudBottom + HUD_CLEAR);
+  // Aurora night: the top band's highest lit pixel (thickest slice at full ripple lift, at the top of its sway).
+  const top = BANDS[0];
+  const highest = top.at * h - (top.thick * (1 + RIPPLE_STRETCH)) / 2 - top.sway;
+  auroraShift = Math.max(0, Math.ceil(hookY - highest));
+  const room = below ? below.getBoundingClientRect().top - hookY - 16 : MAX_SAG;
+  sag = Math.max(MIN_SAG, Math.min(MAX_SAG, room));
+}
+
+/** Scenes whose top layer must sit under the HUD rather than behind it: Winter lights and Aurora night (D54). */
+function hugsHud(): boolean {
+  return kind === 'lights' || kind === 'aurora';
+}
+
+/** Re-measures the string and, under reduced motion, redraws the one still frame in place. */
+function rehang(): void {
+  if (!hugsHud() || !canvas) return;
+  hangString();
+  if (reduced()) still();
+}
+
+/** Winter lights and Aurora night: re-measure when the HUD or the top row changes size (large text, wrapping, a tag). */
+function watchHud(): void {
+  if (typeof ResizeObserver === 'undefined') return;
+  hudWatch = new ResizeObserver(() => rehang());
+  for (const sel of ['.hud', '#home .home-top', '#board']) {
+    const el = document.querySelector(sel);
+    if (el) hudWatch.observe(el);
+  }
 }
 
 function resize(): void {
@@ -347,6 +424,7 @@ function resize(): void {
   canvas.height = Math.round(h * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (oldW && oldW !== w) for (const p of ambient) p.x = (p.x / oldW) * w;
+  if (hugsHud()) hangString();
 }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -374,16 +452,16 @@ function seed(): void {
       for (let k = 0; k < AURORA_COLS; k++)
         ambient.push({ x: ((k + 0.5) / AURORA_COLS) * w, y: band.at * h, vx: 0, vy: band.sway, r: band.thick, phase: band.at * 20, life: Infinity, color: band.rgb });
   } else if (kind === 'lights') {
-    // A string of bulbs hanging in swags along the very top; each bulb sits just under the wire.
+    // A string of bulbs hanging in swags just under the top HUD row; each bulb sits just under the wire.
     for (let i = 0; i < BULB_COUNT; i++) ambient.push({ x: ((i + 0.5) / BULB_COUNT) * w, y: 0, vx: 0, vy: 0, r: 1, phase: rand(0, 6.3), life: Infinity, color: BULBS[i % BULBS.length] });
   }
 }
 
-/** Winter lights: the wire's height at `x` (three quadratic swags, 14 px at the hooks, 30 px at the dips). */
+/** Winter lights: the wire's height at `x` (three quadratic swags, `hookY` at the hooks, `hookY + sag` at the dips). */
 function wireY(x: number): number {
   const span = w / SWAGS;
   const u = (x % span) / span;
-  return 14 + 64 * u * (1 - u);
+  return hookY + 4 * sag * u * (1 - u);
 }
 
 /** Lanterns rise along the sides, away from the home screen's centred text. */
@@ -402,7 +480,11 @@ function queueMeteor(m: Particle): void {
   sparks.push(m);
 }
 
-/** A meteor's streak: a fading tail behind a bright head, eased in and out over its life. */
+/**
+ * A meteor's streak: a fading tail behind a bright head, eased in and out over its life.
+ * A `bold` meteor (a seal reaction) adds a soft halo along the tail and around the head, and a
+ * short white core, so it reads clearly in the jar's colour against the night sky.
+ */
 function drawMeteor(g: CanvasRenderingContext2D, m: Particle, width: number): void {
   const a = Math.sin(Math.PI * Math.max(0, Math.min(1, 1 - m.life / m.phase)));
   const tx = m.x - METEOR_DIR.x * m.r;
@@ -410,14 +492,39 @@ function drawMeteor(g: CanvasRenderingContext2D, m: Particle, width: number): vo
   const grad = g.createLinearGradient(m.x, m.y, tx, ty);
   grad.addColorStop(0, m.color);
   grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  g.globalAlpha = a;
   g.strokeStyle = grad;
-  g.lineWidth = width;
   g.lineCap = 'round';
+  if (m.bold) {
+    g.globalAlpha = a * 0.3;
+    g.lineWidth = width * 3.2;
+    g.beginPath();
+    g.moveTo(m.x, m.y);
+    g.lineTo(tx, ty);
+    g.stroke();
+    g.fillStyle = m.color;
+    g.beginPath();
+    g.arc(m.x, m.y, width * 2.6, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.globalAlpha = a;
+  g.lineWidth = width;
   g.beginPath();
   g.moveTo(m.x, m.y);
   g.lineTo(tx, ty);
   g.stroke();
+  if (m.bold) {
+    const cx = m.x - METEOR_DIR.x * m.r * 0.45;
+    const cy = m.y - METEOR_DIR.y * m.r * 0.45;
+    const core = g.createLinearGradient(m.x, m.y, cx, cy);
+    core.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+    core.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    g.strokeStyle = core;
+    g.lineWidth = width * 0.5;
+    g.beginPath();
+    g.moveTo(m.x, m.y);
+    g.lineTo(cx, cy);
+    g.stroke();
+  }
   g.fillStyle = '#ffffff';
   g.beginPath();
   g.arc(m.x, m.y, width * 0.75, 0, Math.PI * 2);
@@ -552,8 +659,8 @@ function draw(): void {
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     for (let k = 0; k < SWAGS; k++) {
-      ctx.moveTo(k * span, 14);
-      ctx.quadraticCurveTo(k * span + span / 2, 46, (k + 1) * span, 14);
+      ctx.moveTo(k * span, hookY);
+      ctx.quadraticCurveTo(k * span + span / 2, hookY + 2 * sag, (k + 1) * span, hookY);
     }
     ctx.stroke();
     for (const p of ambient) {
@@ -570,7 +677,7 @@ function draw(): void {
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
     }
-    for (const m of sparks) drawMeteor(ctx, m, 1.8);
+    for (const m of sparks) drawMeteor(ctx, m, m.bold ? SEAL_METEOR.width : 1.8);
     ctx.globalAlpha = 1;
   } else if (kind === 'aurora') {
     const colW = (w / AURORA_COLS) * 1.7;
@@ -578,12 +685,15 @@ function draw(): void {
       const sway = Math.sin((p.x / w) * 4.2 + clock * 0.35 + p.phase) * p.vy;
       let gain = 0;
       for (const s of sparks) {
-        // A ring of brightness moving out from the sealed jar at 300 px/s, fading over its life.
-        const d = Math.abs(p.x - s.x) - 300 * (s.phase - s.life);
-        gain += 1.1 * Math.exp(-(d * d) / 9800) * (s.life / s.phase);
+        // A ring of brightness moving out from the sealed jar, fading over its life (SEAL_RIPPLE).
+        const d = Math.abs(p.x - s.x) - SEAL_RIPPLE.speed * (s.phase - s.life);
+        gain += SEAL_RIPPLE.gain * Math.exp(-(d * d) / SEAL_RIPPLE.spread) * (s.life / s.phase);
       }
-      ctx.globalAlpha = Math.min(0.5, (0.22 + 0.08 * Math.sin(clock * 0.6 + p.x * 0.01 + p.phase)) * (1 + gain));
-      ctx.drawImage(auroraSprite(p.color), p.x - colW / 2, p.y + sway - p.r / 2, colW, p.r);
+      // Ambient slices stay capped at 0.5; the ripple lifts the cap and lengthens the slice a little.
+      const lift = Math.min(1, gain);
+      ctx.globalAlpha = Math.min(0.5 + (SEAL_RIPPLE.maxAlpha - 0.5) * lift, (0.22 + 0.08 * Math.sin(clock * 0.6 + p.x * 0.01 + p.phase)) * (1 + gain));
+      const tall = p.r * (1 + RIPPLE_STRETCH * lift);
+      ctx.drawImage(auroraSprite(p.color), p.x - colW / 2, p.y + auroraShift + sway - tall / 2, colW, tall);
     }
     ctx.globalAlpha = 1;
   } else if (kind === 'fireworks') {

@@ -4,7 +4,7 @@
  * code the main thread uses for its synchronous fallback, so the boards are identical.
  *
  * Protocol: receives a `GenRequest`, posts back one `GenResponse` with the same `id`.
- * Started from `src/ui/main.ts` via
+ * Started from `src/ui/screens/board.ts` via
  * `new Worker(new URL('./gen-worker.ts', import.meta.url), { type: 'module' })`.
  */
 import { type GenRequest, type GenResponse, prepareLevel } from '../core/prefetch';

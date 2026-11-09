@@ -1,0 +1,242 @@
+{
+  "map3": {
+    "mapShown": true,
+    "stonesInDom": 9,
+    "bandsInDom": 1,
+    "play": "Play · Level 3",
+    "nextCentreOffset": 0,
+    "minStonePx": 48,
+    "labels": [
+      "Level 1, cleared",
+      "Level 2, cleared",
+      "Level 3, next level",
+      "Level 4, locked"
+    ],
+    "bands": [
+      "Rock pools"
+    ],
+    "trackPx": 3271,
+    "focus": "btn-map-play"
+  },
+  "map60": {
+    "mapShown": true,
+    "stonesInDom": 13,
+    "bandsInDom": 2,
+    "play": "Play · Level 60",
+    "nextCentreOffset": 0,
+    "minStonePx": 48,
+    "labels": [
+      "Level 54, cleared, perfect",
+      "Level 55, cleared, shell milestone",
+      "Level 56, cleared",
+      "Level 57, cleared, perfect"
+    ],
+    "bands": [
+      "The pier",
+      "Lighthouse point"
+    ],
+    "trackPx": 9931,
+    "focus": "btn-map-play"
+  },
+  "keysFirst": "Level 60, next level, tall jars, shell milestone",
+  "keysAt41": "Level 41, cleared, perfect, new jar: frozen",
+  "card41": {
+    "shown": true,
+    "title": "Level 41",
+    "text": "Best 22 pours · Perfect ✓\nBest 22 pours, Perfect: yes",
+    "specials": "New jar: frozen",
+    "replay": true,
+    "focus": "btn-stone-replay"
+  },
+  "afterCardEscape": "Level 41, cleared, perfect, new jar: frozen",
+  "keysAt61": "Level 61, locked, new jar: locked lid",
+  "card61": {
+    "title": "Level 61",
+    "text": "Unlocks after level 60",
+    "specials": "New jar: locked lid",
+    "replayHidden": true
+  },
+  "escapeToHome": {
+    "map": false,
+    "home": true,
+    "focus": "btn-play"
+  },
+  "map201": {
+    "mapShown": true,
+    "stonesInDom": 13,
+    "bandsInDom": 2,
+    "play": "Play · Level 201",
+    "nextCentreOffset": 0,
+    "minStonePx": 48,
+    "labels": [
+      "Level 195, cleared, perfect, shell milestone",
+      "Level 196, cleared",
+      "Level 197, cleared",
+      "Level 198, cleared, perfect"
+    ],
+    "bands": [
+      "The cove",
+      "Rock pools"
+    ],
+    "trackPx": 26404,
+    "focus": "btn-map-play"
+  },
+  "map1234": {
+    "mapShown": true,
+    "stonesInDom": 13,
+    "bandsInDom": 1,
+    "play": "Play · Level 1234",
+    "nextCentreOffset": 0,
+    "minStonePx": 48,
+    "labels": [
+      "Level 1228, cleared",
+      "Level 1229, cleared",
+      "Level 1230, cleared, tall jars, shell milestone",
+      "Level 1231, cleared"
+    ],
+    "bands": [
+      "Dunes"
+    ],
+    "trackPx": 147093
+  },
+  "map1234Top": {
+    "mapShown": true,
+    "stonesInDom": 7,
+    "bandsInDom": 1,
+    "play": "Play · Level 1234",
+    "nextCentreOffset": null,
+    "minStonePx": 48,
+    "labels": [
+      "Level 1248, locked",
+      "Level 1249, locked",
+      "Level 1250, locked, tall jars, shell milestone",
+      "Level 1251, locked"
+    ],
+    "bands": [
+      "The pier"
+    ],
+    "trackPx": 147093
+  },
+  "se150": {
+    "mapShown": true,
+    "stonesInDom": 11,
+    "bandsInDom": 2,
+    "play": "Play · Level 60",
+    "nextCentreOffset": 0,
+    "minStonePx": 72,
+    "labels": [
+      "Level 55, cleared, shell milestone",
+      "Level 56, cleared",
+      "Level 57, cleared, perfect",
+      "Level 58, cleared"
+    ],
+    "bands": [
+      "The pier",
+      "Lighthouse point"
+    ],
+    "trackPx": 9402
+  },
+  "se150card": {
+    "w": 288,
+    "h": 274,
+    "vw": 320,
+    "vh": 568,
+    "scrollable": 274
+  },
+  "reduced": {
+    "mapShown": true,
+    "stonesInDom": 13,
+    "bandsInDom": 2,
+    "play": "Play · Level 60",
+    "nextCentreOffset": 0,
+    "minStonePx": 48,
+    "labels": [
+      "Level 54, cleared",
+      "Level 55, cleared, shell milestone",
+      "Level 56, cleared",
+      "Level 57, cleared"
+    ],
+    "bands": [
+      "The pier",
+      "Lighthouse point"
+    ],
+    "trackPx": 9931,
+    "pulse": "none"
+  },
+  "normalPulse": "stone-pulse",
+  "boardFromMap": {
+    "level": "Level 60",
+    "tag": false,
+    "jars": [
+      "Jar 1: sage, saffron, lagoon, coral, lagoon, saffron, lagoon, saffron@56,159,68x256",
+      "Jar 2: coral, terracotta, coral, sage, coral, terracotta, lagoon, saffron@133,159,68x256",
+      "Jar 3: terracotta, coral, sage, sage, terracotta, lagoon, terracotta, sage@211,159,68x256",
+      "Jar 4: terracotta, lagoon, sage, saffron, saffron, sage, coral, coral@288,159,68x256",
+      "Jar 5: sage, terracotta, coral, saffron, saffron, lagoon, terracotta, lagoon@95,442,68x256",
+      "Jar 6: empty@172,442,68x256",
+      "Jar 7: empty@250,442,68x256"
+    ]
+  },
+  "boardFromQuery": {
+    "level": "Level 60",
+    "tag": false,
+    "jars": [
+      "Jar 1: sage, saffron, lagoon, coral, lagoon, saffron, lagoon, saffron@56,159,68x256",
+      "Jar 2: coral, terracotta, coral, sage, coral, terracotta, lagoon, saffron@133,159,68x256",
+      "Jar 3: terracotta, coral, sage, sage, terracotta, lagoon, terracotta, sage@211,159,68x256",
+      "Jar 4: terracotta, lagoon, sage, saffron, saffron, sage, coral, coral@288,159,68x256",
+      "Jar 5: sage, terracotta, coral, saffron, saffron, lagoon, terracotta, lagoon@95,442,68x256",
+      "Jar 6: empty@172,442,68x256",
+      "Jar 7: empty@250,442,68x256"
+    ]
+  },
+  "boardSame": true,
+  "tutorial": {
+    "map": false,
+    "home": false,
+    "label": "Level 1",
+    "coach": true
+  },
+  "level1": {
+    "map": false,
+    "home": false,
+    "label": "Level 1"
+  },
+  "replayWin": {
+    "title": "Perfect!",
+    "text": "11 pours · new best",
+    "note": "Perfect earned",
+    "rewardHidden": true,
+    "next": "Back to map",
+    "unlocks": "New frame: Driftwood"
+  },
+  "replaySave": {
+    "level": 5,
+    "coins": 640,
+    "perfect": [
+      3
+    ],
+    "perfectClears": 10,
+    "best3": 11
+  },
+  "afterReplayContinue": {
+    "mapShown": true,
+    "stonesInDom": 9,
+    "bandsInDom": 1,
+    "play": "Play · Level 5",
+    "nextCentreOffset": -233,
+    "minStonePx": 48,
+    "labels": [
+      "Level 1, cleared",
+      "Level 2, cleared",
+      "Level 3, cleared, perfect",
+      "Level 4, cleared"
+    ],
+    "bands": [
+      "Rock pools"
+    ],
+    "trackPx": 3505,
+    "stone3": "Level 3, cleared, perfect"
+  },
+  "errors": []
+}

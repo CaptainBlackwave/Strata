@@ -40,6 +40,7 @@
         <button id="btn-stuck-restart" data-s="restart" class="secondary stuck-restart" type="button">Restart</button>
       </div>
       <nav class="toolbar" aria-label="Boosters">
+        <p id="tools-note" class="tools-note" data-s="toolsLocked" hidden>Boosters and Restart unlock after the tutorial</p>
         <button id="btn-undo" class="tool" type="button" data-booster="undo" title="Undo (Z)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
           <span class="tool-name">Undo</span><b class="badge"></b>
@@ -205,6 +206,13 @@
           </div>
         </div>
       </div>
+      <div id="other-tab" class="cabinet other-tab-layer" hidden>
+        <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="other-tab-title" aria-describedby="other-tab-text">
+          <h2 id="other-tab-title" data-s="otherTabTitle">Strata is open in another tab</h2>
+          <p id="other-tab-text" data-s="otherTabText" class="leave-text">Your progress is kept in that tab.</p>
+          <button id="btn-play-here" data-s="playHere" class="primary" type="button">Play here</button>
+        </div>
+      </div>
       <div id="home" class="home" hidden>
         <div class="home-top">
           <button id="btn-profile" class="profile-chip" type="button" hidden aria-label="Profile">
@@ -223,11 +231,35 @@
           <button id="btn-play" class="primary play" type="button">Play</button>
           <button id="btn-daily" class="daily-card" type="button">
             <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
-            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
+            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
           </button>
           <div class="home-row">
             <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
             <button id="btn-scenes" class="secondary shells-btn" type="button"><span class="scene-ico" aria-hidden="true"></span><span id="scenes-label" data-s="scenes">Scenes</span></button>
+          </div>
+        </div>
+      </div>
+      <div id="map" class="map" hidden>
+        <div class="map-top">
+          <button id="btn-map-home" data-s-title="home" data-s-label="home" class="icon-btn" type="button" title="Home" aria-label="Home">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <h2 id="map-title" data-s="map.title" class="map-title">Beach path</h2>
+          <div class="coins"><i class="coin" aria-hidden="true"></i><span id="map-coins">0</span><span class="sr-only coins-sr"> coins</span></div>
+        </div>
+        <div id="map-scroll" class="map-scroll" role="group" aria-labelledby="map-title">
+          <div id="map-track" class="map-track"><div class="map-sea" aria-hidden="true"></div></div>
+        </div>
+        <div class="map-foot"><button id="btn-map-play" class="primary map-play" type="button">Play</button></div>
+      </div>
+      <div id="stone-card" class="cabinet" hidden>
+        <div class="cabinet-card stone-card" role="dialog" aria-modal="true" aria-labelledby="stone-title" aria-describedby="stone-text stone-specials">
+          <h2 id="stone-title" class="stone-title">Level 1</h2>
+          <p id="stone-text" class="stone-text"></p>
+          <ul id="stone-specials" class="stone-specials"></ul>
+          <div class="sheet-row">
+            <button id="btn-stone-close" data-s="close" class="secondary" type="button">Close</button>
+            <button id="btn-stone-replay" data-s="map.replay" class="primary stone-replay" type="button">Replay</button>
           </div>
         </div>
       </div>

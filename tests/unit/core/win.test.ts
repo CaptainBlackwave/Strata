@@ -12,7 +12,7 @@ const E = cfg.economy;
 const TIDEPOOL = cfg.collection.sets[0].shells.map((s) => s.id);
 
 function state(over: Partial<WinState> = {}): WinState {
-  return { level: 1, best: {}, wallet: newWallet(cfg), tutorialDone: false, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], stats: emptyStats(), dailyShare: null, ...over };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(cfg), tutorialDone: false, daily: { last: null, streak: 0, best: 0, passes: 0 }, shells: [], stats: emptyStats(), dailyShare: null, ...over };
 }
 function level(n: number, over: Partial<WinResult> = {}): WinResult {
   return { mode: 'level', level: n, challenge: false, dailyDate: '', moves: 12, assists: 1, ...over };
@@ -54,13 +54,16 @@ describe('level win', () => {
     expect(better.card.prevBest).toBe(10);
   });
 
-  it('a perfect first clear adds the bonus and counts a perfect clear; a perfect replay does not', () => {
+  // D52 (level-map.md) changed this rule on purpose: a perfect replay now counts once when the level
+  // has no Perfect mark yet. Before M3 a perfect replay never counted. The replay below starts from a
+  // save that already marks level 2 Perfect, so it still counts nothing; tests/unit/map covers the rest.
+  it('a perfect first clear adds the bonus and counts a perfect clear; a perfect replay of a Perfect level does not', () => {
     const first = applyWin(state({ level: 2 }), level(2, { assists: 0 }), cfg);
     expect(first.card.perfect).toBe(true);
     expect(first.card.note).toBe('perfect');
     expect(first.card.reward).toBe(E.coinsPerLevel + E.perfectBonus);
     expect(first.state.stats.perfectClears).toBe(1);
-    const replay = applyWin(state({ level: 5 }), level(2, { assists: 0 }), cfg);
+    const replay = applyWin(state({ level: 5, perfect: [2] }), level(2, { assists: 0 }), cfg);
     expect(replay.card.perfect).toBe(true);
     expect(replay.card.note).toBe('replay');
     expect(replay.card.reward).toBe(0);

@@ -102,12 +102,19 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D44 | Pinch zoom (AX-17) | **Allow pinch zoom**; double-tap zoom stays off on the board and buttons (`touch-action: manipulation`) so fast tapping never zooms | feel-audio-ui, accessibility-requirements | built in sprint 8 |
 | D45 | 43 px jars at level 120 on 320 px (AX-19) | **Widen the hit area** to at least 44 px using the gap between jars; the drawn jar keeps its size | feel-audio-ui | built in sprint 8 |
 | D46 | Polish depth | **Code review + tech-debt register**, **the top 15–20 backlog findings**, **background generation** of the next level so slow levels feel instant, and a **"What's new" card** after updates | feel-audio-ui, level-generation | built in sprint 8 |
-| D47 | Level map timing | **Design in sprint 8, build in sprint 9** | level-map | sprint 8 (design) |
-| D48 | Level map style | **A winding beach path**: level stones on a vertical scrolling shoreline, with scenery changing every 20 levels; opens at your next level | level-map | design |
-| D49 | Level map markers | **All four**: Perfect mark, best pours (on tap), special-level icons (tall jars, shell milestones, new-jar debuts), locked levels ahead shown dimmed | level-map | design |
-| D50 | Replays from the map | **No coins (M1); a replay can earn a missing Perfect mark and beat the best pours.** A level's first Perfect counts once for the Perfect stat and unlocks | level-map, player-profile, economy | design |
-| D51 | Where the map lives | **It replaces Play**: Play opens the map at your next level, with a big "Play · Level N" button on it | level-map, feel-audio-ui | design |
-| D52 | Level map drafts and the "What's new" tone | **Signed off**: about 6 stones per screen, scenery every 20 levels; Perfect counted once per level from the update onwards; the daily stays on Home, not on the map; "What's new" is 3–5 short lines, shown once per version, reopenable from Settings | level-map, feel-audio-ui | design |
+| D47 | Level map timing | **Design in sprint 8, build in sprint 9** | level-map | built (sprint 9 M3) |
+| D48 | Level map style | **A winding beach path**: level stones on a vertical scrolling shoreline, with scenery changing every 20 levels; opens at your next level | level-map | built (sprint 9 M3) |
+| D49 | Level map markers | **All four**: Perfect mark, best pours (on tap), special-level icons (tall jars, shell milestones, new-jar debuts), locked levels ahead shown dimmed | level-map | built (sprint 9 M3) |
+| D50 | Replays from the map | **No coins (M1); a replay can earn a missing Perfect mark and beat the best pours.** A level's first Perfect counts once for the Perfect stat and unlocks | level-map, player-profile, economy | built (sprint 9 M3) |
+| D51 | Where the map lives | **It replaces Play**: Play opens the map at your next level, with a big "Play · Level N" button on it | level-map, feel-audio-ui | built (sprint 9 M3) |
+| D52 | Level map drafts and the "What's new" tone | **Signed off**: about 6 stones per screen, scenery every 20 levels; Perfect counted once per level from the update onwards; the daily stays on Home, not on the map; "What's new" is 3–5 short lines, shown once per version, reopenable from Settings | level-map, feel-audio-ui | built (sprint 9 M3, M7) |
+| D53 | Sprint 7 owner playtest | **Skipped**: the solver sweep and band targets (D36) stand as the difficulty evidence | level-generation | recorded |
+| D54 | Scene art flags from sprint 8 | **Fix all three**: the rainbow arc clears the Home title, the Winter lights glow stays out of the HUD, and the meteor and aurora seal effects get brighter | scenes | built (sprint 9 M1) |
+| D55 | Sprint 9 scope | **The level map** (D47–D52) plus **splitting main.ts by screen (TD-1)**, **one active tab (TD-14)** and **the remaining 11 player-facing backlog findings** | level-map, feel-audio-ui | built (sprint 9) |
+| D56 | Version numbers and releases | **One version** in `package.json` (0.8.0 for sprint 8, 0.9.0 with the map), read by What's new; a CHANGELOG entry and a `vX.Y.Z` git tag per merge to main, with player-facing notes from `/patch-notes` for a GitHub release | feel-audio-ui | built (sprint 9 M6; tags by the owner) |
+| D57 | Strata open in two tabs | **One active tab**: the newest tab takes over, and older tabs show "Strata is open in another tab" with **Play here**, so saves never overwrite each other | save-data | built (sprint 9 M4) |
+| D58 | Real-device checks | **A short checklist for the owner** (`production/qa/device-checklist.md`) | feel-audio-ui | owner |
+| D59 | Sprint 9 order | **Art fixes, then the main.ts split** (checked with a before/after browser comparison), **then the level map** as its own module, then one active tab and the backlog | — | followed (sprint 9) |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

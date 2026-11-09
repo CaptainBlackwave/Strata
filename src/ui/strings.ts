@@ -3,12 +3,14 @@
  * hardcoded UI text). Only English ships for now. Add a locale by adding a table.
  */
 
+import { version } from '../../package.json';
+
 /**
- * The release the "What's new" card describes (D46, D52). Bump it together with
+ * The release the "What's new" card describes (D46, D52): the game's version from
+ * package.json, the single source (D56). Bump package.json together with
  * `whatsNew.lines`; a save whose `seenWhatsNew` differs sees the card once on Home.
- * A constant here rather than package.json, whose version is not kept up to date.
  */
-export const WHATS_NEW_VERSION = '0.8.0';
+export const WHATS_NEW_VERSION: string = version;
 
 const en = {
   brand: 'Strata',
@@ -40,9 +42,14 @@ const en = {
   winTitle: 'Level cleared',
   perfectTitle: 'Perfect!',
   winText: (moves: number, best: number | undefined) =>
-    best !== undefined && best < moves ? `${moves} pours · best ${best}` : `${moves} pours${best === undefined || best === moves ? ' · new best' : ''}`,
+    best !== undefined && best <= moves ? `${moves} pours · best ${best}` : `${moves} pours${best === undefined ? ' · new best' : ''}`,
   perfectNote: 'No hint, shuffle or extra jar used',
-  replayNote: 'Already cleared: no coins this time',
+  /** The win card after a replay that changed nothing (level-map.md D50). */
+  replayNote: 'Replay: no coins',
+  /** The win card when this clear gave the level its first Perfect mark (D50, D52). */
+  perfectEarned: 'Perfect earned',
+  /** The win card when a replay beat the level's best pours (D50). */
+  newBest: (n: number) => `New best: ${n} ${n === 1 ? 'pour' : 'pours'}`,
   next: 'Continue',
   reward: (n: number) => `+${n}`,
   daily: 'Daily puzzle',
@@ -98,14 +105,40 @@ const en = {
     title: "What's new",
     button: "What's new",
     lines: [
-      'Undo is free now.',
-      'Twelve new scenes to buy, from sea fog to aurora night.',
-      "A banner tells you when you're stuck, and hints are clearer.",
-      'Jars are easier to tap, and you can pinch to zoom.',
-      'Sealed jars now show their sand.',
+      'A beach path map shows every level, with what you earned on each.',
+      'Replay any level to earn its Perfect mark or beat your best pours.',
+      'Strata now plays in one tab at a time, so no progress is lost.',
+      'Aurora night, Winter lights and Rainbow after rain look better.',
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
+  /** The level map (design/gdd/level-map.md). */
+  map: {
+    title: 'Beach path',
+    /** Words of a stone's screen-reader name: "Level 41, cleared, perfect, new jar: frozen". */
+    stone: {
+      cleared: 'cleared',
+      next: 'next level',
+      locked: 'locked',
+      perfect: 'perfect',
+      tall: 'tall jars',
+      shell: 'shell milestone',
+      newJar: (jar: string) => `new jar: ${jar}`,
+    },
+    /** Short jar names for the debut badge. */
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel' },
+    best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
+    perfectYes: 'Perfect ✓',
+    perfectNo: 'Perfect –',
+    perfectYesSr: 'Perfect: yes',
+    perfectNoSr: 'Perfect: not yet',
+    unlocksAfter: (n: number) => `Unlocks after level ${n}`,
+    special: { tall: 'Tall jars', shell: 'Shell milestone', newJar: (jar: string) => `New jar: ${jar}` },
+    replay: 'Replay',
+    backToMap: 'Back to map',
+    /** One name per `map.scenery` id in game-config.json (tests/unit/map/map-ui.test.ts). */
+    scenery: { rockpools: 'Rock pools', dunes: 'Dunes', pier: 'The pier', lighthouse: 'Lighthouse point', cove: 'The cove' } as Record<string, string>,
+  },
   thawed: 'Thawed!',
   unlocked: 'Unlocked!',
   jarStates: { narrow: 'narrow', frozen: 'frozen', locked: (c: string) => `locked until ${c} is sealed`, funnel: 'one-way funnel' },
@@ -195,7 +228,7 @@ const en = {
     coinsEarned: 'Coins earned',
     boostersUsed: 'Boosters used',
   },
-  statsFootnote: 'Some totals count from this update onwards.',
+  statsFootnote: '* These totals count from this update onwards.',
   tabs: { avatar: 'Avatar', frame: 'Frame', plate: 'Name' },
   nameLabel: 'Your name',
   reroll: 'New random name',
@@ -222,6 +255,22 @@ const en = {
     frame: (name: string) => `New frame: ${name}`,
     plate: (name: string) => `New name plate: ${name}`,
   },
+  // One active tab (sprint 9 M4, D57, TD-14)
+  otherTabTitle: 'Strata is open in another tab',
+  otherTabText: 'Your progress is kept in that tab. Play here to continue on this one.',
+  playHere: 'Play here',
+  /** Once per session, when the browser refuses a save (storage full or blocked). */
+  saveFailed: "Progress can't be saved: this browser's storage is full or blocked",
+  // Sprint 9 M5: the remaining backlog findings
+  /** Read after "Daily puzzle" by a screen reader; the calendar is hidden from it (UX-home-3). */
+  dailyDate: (weekday: string, day: number) => `, ${weekday} ${day}`,
+  /** Above the disabled toolbar in the tutorial (UX-board-9). */
+  toolsLocked: 'Boosters and Restart unlock after the tutorial',
+  /** Marks the counters that start at 0 from the profile update (UX-profile-2). */
+  statNewMark: '*',
+  statNewSr: ', counted from this update',
+  /** On shells earned since the cabinet was last opened (UX-cab-4). */
+  shellNew: 'New',
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most
    * 7 letters and nouns at most 5, so every name fits the 16-character limit (unit-tested).
