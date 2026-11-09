@@ -104,7 +104,7 @@ function sparkle(arm: number, alpha: number, w: number, h: number, x: number, y:
   return [
     { kind: 'dot', rgb: WHITE, alpha, rx: arm, ry: 0.45, inner: 0.15, w, h, x, y },
     { kind: 'dot', rgb: WHITE, alpha, rx: 0.45, ry: arm, inner: 0.15, w, h, x, y },
-    { kind: 'dot', rgb: WHITE, alpha, rx: 0.9, ry: 0.9, inner: 0.45, w, h, x, y },
+    { kind: 'dot', rgb: WHITE, alpha, rx: 1.1, ry: 1.1, inner: 0.5, w, h, x, y },
   ];
 }
 
@@ -121,8 +121,8 @@ export const SAND_TEXTURES: Readonly<Record<SandId, readonly SandLayer[]>> = {
   ],
   /** A few tiny still sparkles over today's grain: two sparse, offset sets so they do not line up. */
   glint: [
-    ...sparkle(2.4, 0.25, 26, 22, 0, 0),
-    ...sparkle(1.8, 0.22, 34, 29, 13, 15),
+    ...sparkle(3.2, 0.25, 26, 22, 0, 0),
+    ...sparkle(2.4, 0.25, 34, 29, 13, 15),
     ...PLAIN_GRAIN,
   ],
   /** Faint strata within each unit: a light, a dark and a light band, over today's grain. */

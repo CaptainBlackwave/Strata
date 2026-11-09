@@ -3440,7 +3440,7 @@ body[data-theme='harvestmoon']::before {
 }
 /* Sea glass is frosted: a fine white speckle on the empty glass above the sand (the funnel keeps its stripes). */
 [data-glass='seaglass'] .jar:not(.funnel) > .glass {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.4) 0.6px, transparent 1px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 0.6px, transparent 1px);
   background-size: 3px 3px;
 }
 /* Home art: the outline and a highlight streak (the art has no rim). */
@@ -3561,12 +3561,12 @@ body[data-theme='harvestmoon']::before {
 [data-sand='glint'] .unit:not(.buried)::before,
 [data-sand='glint'] .logo-jars i::after {
   background-image:
+    radial-gradient(3.2px 0.45px, rgba(255, 255, 255, 0.25) 15%, transparent),
+    radial-gradient(0.45px 3.2px, rgba(255, 255, 255, 0.25) 15%, transparent),
+    radial-gradient(1.1px 1.1px, rgba(255, 255, 255, 0.25) 50%, transparent),
     radial-gradient(2.4px 0.45px, rgba(255, 255, 255, 0.25) 15%, transparent),
     radial-gradient(0.45px 2.4px, rgba(255, 255, 255, 0.25) 15%, transparent),
-    radial-gradient(0.9px 0.9px, rgba(255, 255, 255, 0.25) 45%, transparent),
-    radial-gradient(1.8px 0.45px, rgba(255, 255, 255, 0.22) 15%, transparent),
-    radial-gradient(0.45px 1.8px, rgba(255, 255, 255, 0.22) 15%, transparent),
-    radial-gradient(0.9px 0.9px, rgba(255, 255, 255, 0.22) 45%, transparent),
+    radial-gradient(1.1px 1.1px, rgba(255, 255, 255, 0.25) 50%, transparent),
     radial-gradient(rgba(255, 255, 255, 0.22) 0.8px, transparent 1.2px),
     radial-gradient(rgba(0, 0, 0, 0.14) 0.8px, transparent 1.2px);
   background-size: 26px 22px, 26px 22px, 26px 22px, 34px 29px, 34px 29px, 34px 29px, 6px 6px, 7px 5px;
