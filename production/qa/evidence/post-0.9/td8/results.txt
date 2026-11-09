@@ -1,0 +1,7 @@
+PASS (a) offline boot, level starts, no errors jars=8 errors=0
+PASS (c) changed manifest and icon served fresh online {"name":"Strata CHANGED","icon":4741}
+PASS (c) offline falls back to the last cached manifest Strata CHANGED
+PASS (b) new page loads (its script is the new build) ./assets/index-ColrfqOh.js
+PASS (b) old hashed files gone from every cache replaced=1 stale=0 cacheKeys=strata-04f9bf24
+PASS (b) new assets cached 3/3
+PASS (b) offline still works after the deploy errors=0
