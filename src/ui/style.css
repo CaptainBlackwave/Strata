@@ -556,6 +556,29 @@ button {
   /* At large text the price's coin dot and number wrapped onto two lines, and the number fell onto the tool's name. */
   white-space: nowrap;
 }
+/*
+ * Large text (F9, device pass 0.9.1): a tool narrower than 4.5 of its own ems has no room for a
+ * corner badge beside its icon (at 200% text the badge covered the icon and the tool's name). The
+ * badge then takes the icon's place, at full text size, and that icon is hidden: the name and the
+ * count say what the tool is. The toolbar keeps its height, so the board keeps its room (a taller
+ * toolbar shrank level 141's jars to 9 px on a 320 px screen).
+ */
+.tool {
+  container-type: inline-size;
+}
+@container (max-width: 4.5em) {
+  .tool .badge {
+    top: 7px;
+    left: 50%;
+    right: auto;
+    height: 1.3em;
+    line-height: 1.3em;
+    transform: translateX(-50%);
+  }
+  .tool:has(> .badge:not([hidden])) > svg {
+    visibility: hidden;
+  }
+}
 
 /* ---- Toast ---- */
 .toast {
