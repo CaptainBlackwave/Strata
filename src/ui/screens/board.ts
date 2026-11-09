@@ -1,11 +1,11 @@
 /** The board screen: starting levels, session events, input, Restart, the stuck banner, boosters and hints. */
-import { type Board, canPour, isClosed, isSealed } from '../../core/board';
+import { type Board, canPour, isClosed, isSealed, pourRefusal } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { generateWeekly, parseWeek } from '../../core/weekly';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
 import { tutorialBoard } from '../../core/generator';
-import { type MechanicId, specMechanics } from '../../core/levels';
+import { specMechanics } from '../../core/levels';
 import { type AssistJob, type AssistPort, type AssistRequest, type AssistResponse, type AssistResult, AssistClient, runAssist } from '../../core/assist';
 import { type GenPort, type GenRequest, type GenResponse, type PreparedLevel, Prefetcher } from '../../core/prefetch';
 import { type HintResult, type SessionEvent, GameSession, sessionOptions } from '../../core/session';
@@ -19,6 +19,7 @@ import { screenOut } from '../fx';
 import { coach, updateHud } from './hud';
 import { buildJars, cancelFlips, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { flipDelay, grownFrom } from '../logic/flip';
+import { refusalNote, tapMechanic } from '../logic/refusal';
 import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
 import { openMap } from './map';
@@ -313,12 +314,13 @@ export function isLiftable(i: number): boolean {
   return !!jar && jar.units.length > 0 && !isSealed(jar, state.session.board.capacity) && !isClosed(jar) && !jar.funnel;
 }
 
-/** Explains why a mechanic jar refused a tap. */
+/** Explains why a mechanic jar refused a tap. A sieve names its band colour (D96). */
 export function explain(i: number): void {
   const jar = state.session.board.jars[i];
   if (!jar) return;
-  const id: MechanicId | null = jar.frozen ? 'frozen' : jar.lock !== undefined ? 'locked' : jar.funnel ? 'funnel' : jar.cap !== undefined ? 'narrow' : null;
-  if (id) showToast(t.mechanics[id].tap);
+  const id = tapMechanic(jar, isSealed(jar, state.session.board.capacity));
+  if (id === 'sieve') showToast(t.sieveRefused(config.palette[jar.sieve!].id));
+  else if (id) showToast(t.mechanics[id].tap);
 }
 
 export function onJarTap(i: number): void {
@@ -348,19 +350,25 @@ export function onJarTap(i: number): void {
     animatePour(from, i).catch(() => recoverPour(from));
   } else {
     nope(i);
-    explainRefusal(i);
+    explainRefusal(from, i);
     setSelected(isLiftable(i) ? i : null);
   }
 }
 
-/** Says why a pour into jar `i` was refused, so it isn't shown by motion and sound only (AX-5). */
-export function explainRefusal(i: number): void {
+/**
+ * Says why the pour from jar `from` into jar `i` was refused, so it isn't shown by motion and
+ * sound only (AX-5). A sieve refusing a wrong colour names its band colour (D96).
+ */
+export function explainRefusal(from: number, i: number): void {
   const board = state.session.board;
   const jar = board.jars[i];
   if (!jar) return;
-  if (isClosed(jar)) return explain(i);
-  if (jar.units.length >= (jar.cap ?? board.capacity)) return showToast(isSealed(jar, board.capacity) ? t.jarSealedFull : t.jarFull);
-  showToast(t.coloursDontMatch);
+  const note = refusalNote(pourRefusal(board, from, i), isSealed(jar, board.capacity));
+  if (note === 'mechanic') explain(i);
+  else if (note === 'sieve') showToast(t.sieveRefused(config.palette[jar.sieve!].id));
+  else if (note === 'sealed') showToast(t.jarSealedFull);
+  else if (note === 'full') showToast(t.jarFull);
+  else if (note === 'colour') showToast(t.coloursDontMatch);
 }
 
 /** Cancels a booster purchase waiting for its second tap (time out, a board change, another action). */
