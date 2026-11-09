@@ -3,6 +3,7 @@ import { writeSave } from '../../storage';
 import { $, closeLayer, homeEl, layers, openLayer, settingsEl } from '../../dom';
 import { renderAllJars } from '../jars';
 import { audio, state } from '../../state';
+import { needsLeaveConfirm } from '../../logic/leave';
 import { applyTheme, currentTheme } from '../../theme';
 
 let leaveAction: (() => void) | null = null;
@@ -18,8 +19,8 @@ export function openSettings(): void {
  * played, asks "Leave this board?" first, because the board isn't kept.
  */
 export function leaveBoard(action: () => void): void {
-  const partWay = !layers.has(homeEl) && state.session.moves > 0 && state.session.status !== 'won';
-  if (!partWay) {
+  // Home itself, no pours made or a won board: nothing is lost, so act at once (TD-12).
+  if (!needsLeaveConfirm({ onHome: layers.has(homeEl), moves: state.session?.moves ?? 0, won: state.session?.status === 'won' })) {
     closeLayer(settingsEl, false);
     action();
     return;
