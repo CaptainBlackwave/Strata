@@ -250,7 +250,7 @@ describe('sieve placement and generation', () => {
   it('draws from the placement stream only after every other mechanic, so the rest of the board is unchanged', () => {
     const dealt = makeBoard(4, [[0, 1, 2, 3], [3, 2, 1, 0], [2, 3, 0, 1], [1, 0, 3, 2], [], []], [3, 3, 3, 3, 0, 0]);
     for (let seed = 1; seed <= 20; seed++) {
-      const spec: LevelSpec = { ...levelSpec(UNLOCK, cfg), colors: 4, mechanics: ['frozen', 'locked'], hourglass: true };
+      const spec: LevelSpec = { ...levelSpec(UNLOCK, cfg), colors: 4, mechanics: ['frozen', 'locked'], hourglass: true, sieve: false };
       const without = applyMechanics(dealt, spec, createRng(seed), cfg);
       const withIt = applyMechanics(dealt, { ...spec, sieve: true }, createRng(seed), cfg);
       expect(withIt.jars.map(({ sieve: _s, ...rest }) => rest)).toEqual(without.jars);

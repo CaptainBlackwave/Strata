@@ -82,7 +82,8 @@ describe('specials (D49: tall jars, shell milestones, new-jar debuts)', () => {
   });
   it('a mechanic debut names its jar, from the config schedule', () => {
     // The hourglass (D96) included: level 101's stone shows "New jar: hourglass" (sprint 13 M1).
-    for (const m of cfg.mechanics.list) expect(specialsOf(m.unlockAt, cfg).debut).toBe(m.id);
+    // The sieve (D96, sprint 13 M2) has no card yet, so its debut stone shows no badge until its UI lands.
+    for (const m of cfg.mechanics.list) expect(specialsOf(m.unlockAt, cfg).debut).toBe(m.id === 'sieve' ? null : m.id);
     expect(specialsOf(101, cfg).debut).toBe('hourglass');
     expect(specialsOf(debutOf('frozen') + 1, cfg).debut).toBeNull();
   });

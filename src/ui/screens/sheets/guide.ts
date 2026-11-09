@@ -1,5 +1,5 @@
 /** The intro card for new jar mechanics, and the Jar guide. */
-import { type MechanicId } from '../../../core/levels';
+import { type MechanicId, hasMechanicCard } from '../../../core/levels';
 import { type FocusTarget } from '../../layers';
 import { writeSave } from '../../storage';
 import { t } from '../../strings';
@@ -7,8 +7,8 @@ import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
 import { HOURGLASS_MARK } from '../jars';
 
-/** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
-export const MECHANICS: readonly MechanicId[] = config.mechanics.list.map((m) => m.id);
+/** The Jar guide's entries: every configured mechanic with a card, in config (unlock) order. */
+export const MECHANICS: readonly MechanicId[] = config.mechanics.list.map((m) => m.id).filter(hasMechanicCard);
 
 /** A tiny static jar illustrating a mechanic, built from the same classes as the board. */
 export function miniJar(id: MechanicId): string {
