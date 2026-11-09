@@ -6,7 +6,7 @@ import { type Board, isSealed, isWon } from '../../../src/core/board';
 import { type DailyConfig, dailySpec, dayNumber, generateDaily } from '../../../src/core/daily';
 import { generateLevel } from '../../../src/core/generator';
 import { solve } from '../../../src/core/solver';
-import { type GameConfig, isCardMechanic, levelSpec, mechanicChance, pickMechanics } from '../../../src/core/levels';
+import { type GameConfig, isClassicMechanic, levelSpec, mechanicChance, pickMechanics } from '../../../src/core/levels';
 import { GameSession } from '../../../src/core/session';
 
 const cfg = config as unknown as GameConfig & DailyConfig;
@@ -201,8 +201,8 @@ describe('spare-jar swap and generation fallback (D1 revised, sweep regressions)
 
 describe('a debut level shows its new mechanic alone (D28, GA-LG-7)', () => {
   // production/sprints/sprint-7.md B1; design/gdd/jar-mechanics.md. No spare-jar swap on an unlockAt level.
-  // Card mechanics; the hourglass debut (level 101, LevelSpec.hourglass) is pinned in hourglass.test.ts.
-  const debuts = cfg.mechanics.list.filter((m) => isCardMechanic(m.id)).map((m) => ({ id: m.id, level: m.unlockAt }));
+  // Classic mechanics; the hourglass debut (level 101, LevelSpec.hourglass) is pinned in hourglass.test.ts.
+  const debuts = cfg.mechanics.list.filter((m) => isClassicMechanic(m.id)).map((m) => ({ id: m.id, level: m.unlockAt }));
   /** The ramp always swaps a spare from level 1, so the old code would swap on every debut level. */
   const alwaysSwap = { ...cfg, ramp: { ...cfg.ramp, spareOne: { ...cfg.ramp.spareOne, from: 1, chanceFrom: 1, chanceTo: 1 } } } as typeof cfg;
   it('with the swap forced on, every debut level keeps 2 spares and only its debut mechanic', () => {

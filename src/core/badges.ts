@@ -5,7 +5,7 @@
  * Implements design/gdd/badges.md (sprint 11 A1, A2).
  */
 import { type CollectionConfig, setProgress } from './collection';
-import { type GameConfig, isCardMechanic, levelSpec } from './levels';
+import { type GameConfig, isClassicMechanic, levelSpec } from './levels';
 import type { Stats } from './profile';
 import { type ThemeConfig, isOwned } from './themes';
 
@@ -73,8 +73,9 @@ export function badgeProgressOf(s: BadgeInput, config: BadgeSourceConfig): Badge
     scenesPlayed: played.size,
     ownedScenesPlayed: owned.filter((id) => played.has(id)).length,
     // The Jar guide's "known" rule: its intro card was shown, or its debut level is behind the player.
-    // Card mechanics only: the hourglass (D96) counts once its card lands (sprint 13 M1 UI task).
-    mechanicsSeen: config.mechanics.list.filter((m) => isCardMechanic(m.id) && (s.seenMechanics.includes(m.id) || s.level > m.unlockAt)).length,
+    // The four classic mechanics only: "Odd Jars Out" says "Meet all four special jars", so the
+    // hourglass (D96, level 101) is not counted and the stat's need stays 4 (sprint 13 M1).
+    mechanicsSeen: config.mechanics.list.filter((m) => isClassicMechanic(m.id) && (s.seenMechanics.includes(m.id) || s.level > m.unlockAt)).length,
     dailiesSolved: s.stats.dailiesSolved,
     bestStreak: s.daily.best,
   };

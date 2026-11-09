@@ -109,6 +109,7 @@ const en = {
     frozen: { name: 'Frozen jar', rule: 'Iced shut: no pouring in or out. Seal any jar and every frozen jar thaws.', tap: 'Frozen: seal any jar to thaw it.' },
     locked: { name: 'Locked lid', rule: 'Closed until a jar of the lock\u2019s colour is sealed.', tap: 'Locked: seal a jar of the lock\u2019s colour to open it.' },
     funnel: { name: 'One-way funnel', rule: 'You can pour in, but never out. Fill it with a single colour!', tap: 'Funnel: pour in only. Nothing comes out.' },
+    hourglass: { name: 'Hourglass jar', rule: 'Every third pour on the board, the hourglass flips: its sand turns upside down. The number on it counts the pours left.', tap: 'Hourglass: it flips after every third pour.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -223,7 +224,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',
@@ -238,7 +239,14 @@ const en = {
   },
   thawed: 'Thawed!',
   unlocked: 'Unlocked!',
-  jarStates: { narrow: 'narrow', frozen: 'frozen', locked: (c: string) => `locked until ${c} is sealed`, funnel: 'one-way funnel' },
+  jarStates: {
+    narrow: 'narrow',
+    frozen: 'frozen',
+    locked: (c: string) => `locked until ${c} is sealed`,
+    funnel: 'one-way funnel',
+    /** An hourglass jar's state (D96): `left` is the pours until its next flip (1..every). */
+    hourglass: (left: number) => (left === 1 ? 'hourglass, flips after the next pour' : `hourglass, flips in ${left} pours`),
+  },
   scenes: 'Scenes',
   sceneOwned: 'Owned',
   sceneInUse: 'In use',
@@ -301,6 +309,8 @@ const en = {
   /** Screen-reader summary of a pour (UX-board-5). `jar` is 1-based. */
   pourAnnounce: (n: number, colour: string, jar: number) => `Poured ${n} ${colour} into jar ${jar}.`,
   sealAnnounce: (jar: number) => `Jar ${jar} sealed.`,
+  /** Said after the pour that flipped an hourglass (D96). `jar` is 1-based. */
+  flipAnnounce: (jar: number) => `The hourglass flipped (jar ${jar}).`,
   jarEmpty: 'empty',
   buried: 'buried',
   sealed: 'sealed',

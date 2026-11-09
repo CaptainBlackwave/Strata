@@ -8,8 +8,8 @@ describe('map strings follow the config', () => {
     for (const id of config.map.scenery) expect(typeof t.map.scenery[id], `t.map.scenery.${id}`).toBe('string');
   });
   it('each jar mechanic has a short name for the debut badge', () => {
-    // Card mechanics only until the hourglass's strings land (sprint 13 M1 UI task, D96).
-    for (const m of config.mechanics.list.filter((x) => x.id !== 'hourglass')) expect(typeof (t.map.jars as Record<string, string>)[m.id], `t.map.jars.${m.id}`).toBe('string');
+    // The hourglass included since sprint 13 M1 (D96).
+    for (const m of config.mechanics.list) expect(typeof (t.map.jars as Record<string, string>)[m.id], `t.map.jars.${m.id}`).toBe('string');
   });
   it('the win card words for replays (D50)', () => {
     expect(t.replayNote).toBe('Replay: no coins');

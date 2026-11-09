@@ -81,26 +81,44 @@ export interface PourBand {
 }
 
 /**
- * The jar mechanics with an intro card and player-facing strings: the four sprint-3 ones.
- * The UI's lookup tables are keyed by this type. `LevelSpec.mechanics` holds only these.
+ * Every jar mechanic. Each one has an intro card, a Jar guide entry and player-facing strings,
+ * so the UI's lookup tables are keyed by this type. The hourglass (D96) joined in sprint 13 M1.
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass';
 
 /**
- * Every jar mechanic the core can place: the card mechanics plus the hourglass (D96, sprint 13
- * M1). The hourglass rides in `LevelSpec.hourglass` until its intro card and strings land (the
- * sprint 13 M1 UI task), which then folds it into `MechanicId` and `LevelSpec.mechanics`.
+ * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass
+ * rides in its own flag, `LevelSpec.hourglass`, so the generator's placement stream and every
+ * board from before the hourglass stay byte-identical. They are also the daily's Saturday
+ * rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type BoardMechanicId = MechanicId | 'hourglass';
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass'>;
 
-/** True for the mechanics that have a card (`MechanicId`), false for the hourglass. */
-export function isCardMechanic(id: BoardMechanicId): id is MechanicId {
+/** @deprecated Since sprint 13 M1 every mechanic is a `MechanicId`; kept as an alias for older branches. */
+export type BoardMechanicId = MechanicId;
+
+/**
+ * True for the four original mechanics (`ClassicMechanicId`), false for the hourglass.
+ * Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
+ */
+export function isClassicMechanic(id: MechanicId): id is ClassicMechanicId {
   return id !== 'hourglass';
+}
+
+/** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
+export const isCardMechanic = isClassicMechanic;
+
+/**
+ * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
+ * the hourglass when it has one. Example: level 101 gives `['hourglass']`.
+ */
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass'>): MechanicId[] {
+  return spec.hourglass ? [...spec.mechanics, 'hourglass'] : [...spec.mechanics];
 }
 
 /** One mechanic's schedule and tuning in game-config.json. */
 export interface MechanicConfig {
-  readonly id: BoardMechanicId;
+  readonly id: MechanicId;
   readonly unlockAt: number;
   /** Narrow jar capacity. */
   readonly cap?: number;
@@ -118,15 +136,15 @@ export interface LevelSpec {
   readonly spare: number;
   readonly buriedDepth: number;
   readonly challenge: boolean;
-  /** Jar mechanics placed on this board (empty for a plain level). */
-  readonly mechanics: readonly MechanicId[];
-  /** One filled jar is an hourglass (D96). Absent or false: none. See `BoardMechanicId`. */
+  /** Classic jar mechanics placed on this board (empty for a plain level). See `specMechanics`. */
+  readonly mechanics: readonly ClassicMechanicId[];
+  /** One filled jar is an hourglass (D96). Absent or false: none. See `ClassicMechanicId`. */
   readonly hourglass?: boolean;
 }
 
-/** Splits rolled mechanics into the card mechanics and the hourglass flag of a `LevelSpec`. */
-function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: MechanicId[]; hourglass?: true } {
-  return { mechanics: ids.filter(isCardMechanic), ...(ids.includes('hourglass') ? { hourglass: true as const } : {}) };
+/** Splits rolled mechanics into the classic mechanics and the hourglass flag of a `LevelSpec`. */
+function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true } {
+  return { mechanics: ids.filter(isClassicMechanic), ...(ids.includes('hourglass') ? { hourglass: true as const } : {}) };
 }
 
 /**
@@ -216,7 +234,7 @@ export function mechanicChance(level: number, config: GameConfig): number {
  * possible from `comboFrom`. Deterministic per level. Tall-jar levels only call this
  * from `challenge.mechanicsFrom` (decision D8).
  */
-export function pickMechanics(level: number, config: GameConfig): BoardMechanicId[] {
+export function pickMechanics(level: number, config: GameConfig): MechanicId[] {
   const m = config.mechanics;
   const debut = m.list.find((x) => x.unlockAt === level);
   if (debut) return [debut.id];

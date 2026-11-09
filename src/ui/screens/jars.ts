@@ -12,6 +12,15 @@ const NOPE_MS = 700;
 /** Colour-blind patterns defined in style.css (.pat-0 … .pat-13), one per palette colour (tests/unit/core/config-schema.test.ts keeps the two counts equal). */
 const PATTERNS = config.palette.length;
 
+/**
+ * The hourglass jar's badge (D96): a small hourglass glyph and the pours left until its next
+ * flip, in the empty `<b>`. Drawn for Strata; the glyph is two bulbs and a waist, nothing more.
+ */
+export const HOURGLASS_MARK =
+  '<span class="hourglass-mark" aria-hidden="true"><svg viewBox="0 0 10 14" focusable="false">' +
+  '<path class="hg-frame" d="M1.5 1h7M1.5 13h7M2.5 1c0 3.6 2.5 4.4 2.5 6S2.5 9.4 2.5 13M7.5 1c0 3.6-2.5 4.4-2.5 6s2.5 2.4 2.5 6"/>' +
+  '<path class="hg-sand" d="M3.3 12.4c.2-1.7 1.1-2.5 1.7-3 .6.5 1.5 1.3 1.7 3z"/></svg><b></b></span>';
+
 let tapHandler: (i: number) => void = () => {};
 
 /** Registers what a tap on jar `i` does. The board sets it at boot, so this file need not import the board. */
@@ -43,7 +52,8 @@ export function buildJars(): void {
     jar.innerHTML =
       '<span class="cork" aria-hidden="true"></span><span class="padlock" aria-hidden="true"></span><span class="funnel-mark" aria-hidden="true"></span>' +
       '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
-      '<span class="hint-badge" aria-hidden="true"></span>';
+      '<span class="hint-badge" aria-hidden="true"></span>' +
+      HOURGLASS_MARK;
     jar.addEventListener('click', () => tapHandler(i));
     rows.appendChild(jar);
     return jar;
@@ -99,6 +109,7 @@ export function updateJar(i: number, growFrom = Infinity): void {
     jar.frozen ? t.jarStates.frozen : '',
     jar.lock !== undefined ? t.jarStates.locked(config.palette[jar.lock].id) : '',
     jar.funnel ? t.jarStates.funnel : '',
+    jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
     sealed ? t.sealed : '',
   ].filter(Boolean);
   el.setAttribute('aria-label', t.jarLabel(i, states.length ? `${contents} (${states.join(', ')})` : contents));
@@ -112,6 +123,13 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   el.classList.toggle('funnel', jar.funnel === true);
   el.classList.toggle('frozen', jar.frozen === true);
   el.classList.toggle('locked', jar.lock !== undefined);
+  // The hourglass count is jar state, so every redraw (pour, Undo, Restart, Shuffle) refreshes it.
+  el.classList.toggle('hourglass', jar.hourglass !== undefined);
+  const left = jar.hourglass ? String(jar.hourglass.left) : '';
+  if (el.dataset.left !== left) {
+    el.dataset.left = left;
+    (el.querySelector('.hourglass-mark b') as HTMLElement).textContent = left;
+  }
   const glass = el.querySelector('.glass') as HTMLElement;
   if (jar.cap !== undefined) glass.style.height = `${state.unitHeight * jar.cap + Math.round(state.unitHeight * 0.45)}px`;
   else glass.style.removeProperty('height');

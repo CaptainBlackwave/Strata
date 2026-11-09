@@ -5,7 +5,7 @@ import { generateWeekly, parseWeek } from '../../core/weekly';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
 import { tutorialBoard } from '../../core/generator';
-import { type MechanicId } from '../../core/levels';
+import { type MechanicId, specMechanics } from '../../core/levels';
 import { type AssistJob, type AssistPort, type AssistRequest, type AssistResponse, type AssistResult, AssistClient, runAssist } from '../../core/assist';
 import { type GenPort, type GenRequest, type GenResponse, type PreparedLevel, Prefetcher } from '../../core/prefetch';
 import { type HintResult, type SessionEvent, GameSession, sessionOptions } from '../../core/session';
@@ -63,7 +63,7 @@ export function startDaily(): void {
   challengeTag.textContent = t.dailyTag(state.dailyName);
   challengeTag.hidden = false;
   coach(null);
-  introduce(gen.spec.mechanics);
+  introduce(specMechanics(gen.spec));
 }
 
 /**
@@ -84,7 +84,7 @@ export function startWeekly(week: string, index: number): void {
   challengeTag.textContent = weeklyThemeName(week);
   challengeTag.hidden = false;
   coach(null);
-  introduce(gen.spec.mechanics);
+  introduce(specMechanics(gen.spec));
 }
 
 /** Home's Play: the tutorial until it is done, then level 1, then the level map from level 2 (D51). */
@@ -143,7 +143,7 @@ export function showLevel(gen: PreparedLevel): void {
   coach(null);
   boosterHintOnStart(n, state.replay); // level 1's first play names the boosters once (O2)
   updateHud();
-  introduce(gen.spec.mechanics);
+  introduce(specMechanics(gen.spec));
   // Next (n + 1, also after a replay) and Play from home (save.level).
   prefetcher.request([n + 1, state.save.level].filter((l) => l !== n));
 }
@@ -196,7 +196,11 @@ export function onSessionEvent(e: SessionEvent): void {
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
-      announce(t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) + (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : ''));
+      announce(
+        t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
+          (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
+          (e.flipped ?? []).map((i) => ` ${t.flipAnnounce(i + 1)}`).join(''),
+      );
       break;
     case 'extraJar':
       buildJars();
