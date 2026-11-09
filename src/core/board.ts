@@ -29,6 +29,13 @@ export interface Jar {
    * the count at `every`. Part of the board, so undo, restart, the solver and hints see it.
    */
   readonly hourglass?: Hourglass;
+  /**
+   * Sieve jar (D96, design/gdd/jar-mechanics.md §2.5): banded in this colour. Only units of
+   * this colour may be poured in (`pourRefusal` gives `'sieve'` otherwise); anything may be
+   * poured out, and it seals like any jar. Part of the board, so undo, restart, the solver and
+   * hints see it.
+   */
+  readonly sieve?: Color;
 }
 
 /** An hourglass jar's count: it flips every `every` pours, `left` pours from now (1..every). */
@@ -106,22 +113,42 @@ export function isMonochrome(jar: Jar): boolean {
 }
 
 /**
+ * Why a pour is refused, so the UI can explain it (sprint 13 M2):
+ * `'same'` source is the target; `'missing'` no such jar; `'closed'` either jar is frozen or
+ * locked; `'funnel'` the source is a funnel; `'sealed'` the source is sealed; `'empty'` the
+ * source is empty; `'sieve'` the target is a sieve and the poured colour is not its band (D96);
+ * `'full'` the target has no room; `'colour'` the target's top is another colour.
+ */
+export type PourRefusal = 'same' | 'missing' | 'closed' | 'funnel' | 'sealed' | 'empty' | 'sieve' | 'full' | 'colour';
+
+/**
  * Teardown rule R5: a pour is legal when the source is non-empty, the target has
  * room, and the target is empty or its top colour matches. A sealed jar is done and
  * can't be poured from (decision D-b, production/qa/sprint-6-findings.md GA-PR-1), which
- * matches the UI and the solver, so `usefulMoves` and `isStuck` follow too.
+ * matches the UI and the solver, so `usefulMoves` and `isStuck` follow too. A sieve takes
+ * only its own colour (D96). Returns `null` for a legal pour, otherwise the first reason in
+ * the order of `PourRefusal`. Example: `pourRefusal(board, 2, 0) // 'sieve'`
  */
-export function canPour(board: Board, from: number, to: number): boolean {
-  if (from === to) return false;
+export function pourRefusal(board: Board, from: number, to: number): PourRefusal | null {
+  if (from === to) return 'same';
   const src = board.jars[from];
   const dst = board.jars[to];
-  if (!src || !dst) return false;
-  if (isClosed(src) || isClosed(dst) || src.funnel || isSealed(src, board.capacity)) return false;
+  if (!src || !dst) return 'missing';
+  if (isClosed(src) || isClosed(dst)) return 'closed';
+  if (src.funnel) return 'funnel';
+  if (isSealed(src, board.capacity)) return 'sealed';
   const run = topRun(src);
-  if (!run) return false;
-  if (dst.units.length >= (dst.cap ?? board.capacity)) return false;
+  if (!run) return 'empty';
+  // The sieve's band is checked before room and top colour: it is the jar's own rule.
+  if (dst.sieve !== undefined && run.color !== dst.sieve) return 'sieve';
+  if (dst.units.length >= (dst.cap ?? board.capacity)) return 'full';
   const dstTop = topRun(dst);
-  return dstTop === null || dstTop.color === run.color;
+  return dstTop === null || dstTop.color === run.color ? null : 'colour';
+}
+
+/** True when `pourRefusal` finds no reason to refuse the pour (teardown rule R5, D96). */
+export function canPour(board: Board, from: number, to: number): boolean {
+  return pourRefusal(board, from, to) === null;
 }
 
 /** How many units a pour would move (rule R6): `min(run, free space)`. 0 if illegal. */
@@ -247,7 +274,8 @@ export function usefulMoves(board: Board): Move[] {
     const src = board.jars[from];
     const dst = board.jars[to];
     // Moving a whole one-colour jar into an empty jar of the same kind only swaps them.
-    const sameKind = jarCapacity(board, from) === jarCapacity(board, to) && !dst.funnel;
+    // A sieve is its own kind (D96): filling an empty sieve frees an ordinary jar, which is progress.
+    const sameKind = jarCapacity(board, from) === jarCapacity(board, to) && !dst.funnel && src.sieve === dst.sieve;
     return !(dst.units.length === 0 && isMonochrome(src) && sameKind);
   });
 }
@@ -322,8 +350,8 @@ export function lostReason(board: Board): LostReason | null {
 }
 
 /**
- * A canonical string for a board, ignoring jar order and burial. An hourglass's count is
- * part of its jar's key, so states that differ only in the count are not merged (D96). Two boards
+ * A canonical string for a board, ignoring jar order and burial. An hourglass's count and a
+ * sieve's band are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
  * with the same key are equivalent for solving purposes.
  */
 export function boardKey(board: Board): string {
@@ -336,7 +364,8 @@ export function boardKey(board: Board): string {
 /** One jar's state and contents as a string (used by solver and plan keys). */
 export function jarKey(j: Jar): string {
   const glass = j.hourglass ? `H${j.hourglass.left}/${j.hourglass.every}` : '';
-  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}`;
+  const sieve = j.sieve !== undefined ? `S${j.sieve}` : '';
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}`;
   return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 
