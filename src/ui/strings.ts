@@ -3,12 +3,14 @@
  * hardcoded UI text). Only English ships for now. Add a locale by adding a table.
  */
 
+import { version } from '../../package.json';
+
 /**
- * The release the "What's new" card describes (D46, D52). Bump it together with
+ * The release the "What's new" card describes (D46, D52): the game's version from
+ * package.json, the single source (D56). Bump package.json together with
  * `whatsNew.lines`; a save whose `seenWhatsNew` differs sees the card once on Home.
- * A constant here rather than package.json, whose version is not kept up to date.
  */
-export const WHATS_NEW_VERSION = '0.8.0';
+export const WHATS_NEW_VERSION: string = version;
 
 const en = {
   brand: 'Strata',
