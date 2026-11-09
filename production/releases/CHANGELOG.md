@@ -19,6 +19,20 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.9.1 | `4cdd71f` (fixes after 0.9.0, PR #6) |
 | v0.10.0 | `1ad5c4c` (sprint 10, PR #8) |
 | v0.10.1 | `22d66e6` (look fixes, PR #9) |
+| v0.11.0 | `6537631` (sprint 11, PR #12) |
+
+## 0.11.1 (2026-11-09): a smoother first run, and a weekly bonus
+**For players**
+- Clearing all five weekly boards pays a 100-coin bonus, once a week. Single boards still pay nothing (D83).
+- Share the weekly set and the link opens it directly. A daily or weekly link a friend sends before you have played the tutorial now waits for it, and is offered as soon as the tutorial ends.
+- Level 3's win card mentions, once, that today's daily puzzle is on Home.
+- Scenes shows a quiet "New" mark the first time you can afford one.
+- Level 10, the first tall-jar level, has four colours instead of five, so it is a gentler step after level 9 (about 32 pours instead of 42).
+- The Add to Home Screen card fits on small phones at large text, and the offline notice no longer covers it.
+
+**Under the hood**
+- The first-run review's recommendations R1–R5 are all resolved (D81, D82; `production/qa/sprint-11/first-run-review.md`).
+- Tall-jar levels can now have their own shape rows (`challenge.curve`); only level 10 uses one.
 
 ## 0.11.0 (2026-11-09): sprint 11, badges, the weekly set and a smoother start
 **For players**

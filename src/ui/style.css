@@ -3338,3 +3338,39 @@ body[data-theme='harvestmoon']::before {
 .weekly-sheet p.share-status:empty {
   margin: 0;
 }
+
+/* The quiet "New" mark on Scenes the first time one is affordable (D82 R4) */
+.new-mark {
+  margin-left: 2px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-text);
+  color: var(--accent-ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.new-mark[hidden] {
+  display: none;
+}
+
+/* The install card on a small phone at large text (D82 R5): a smaller title and tighter steps, so
+   the whole card fits without scrolling at 150% text on 320 x 568. */
+@media (max-width: 380px) {
+  .install-card .whatsnew-title {
+    font-size: 1.0625rem;
+    margin-bottom: 6px;
+  }
+  .install-card .install-text,
+  .install-card .install-steps {
+    font-size: 0.875rem;
+    margin-bottom: 8px;
+  }
+  .install-card .install-steps li + li {
+    margin-top: 2px;
+  }
+  .install-card .install-note {
+    margin: -2px 0 8px;
+    font-size: 0.75rem;
+  }
+}

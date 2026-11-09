@@ -1,7 +1,8 @@
 /** The Home screen and the What's new card. */
 import { allShells } from '../../core/collection';
 import { streakStatus, weekday } from '../../core/daily';
-import { byIdOr } from '../../core/themes';
+import { byIdOr, isOwned } from '../../core/themes';
+import { scenesNewDue } from '../logic/onboarding';
 import { type FocusTarget } from '../layers';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
@@ -38,10 +39,20 @@ export function showHome(): void {
   $('shell-ico').innerHTML = shellSvg(last, state.save.shells.length === 0);
   $('btn-shells').hidden = !state.save.tutorialDone;
   $('btn-scenes').hidden = !state.save.tutorialDone;
+  renderScenesMark();
   renderProfileChip();
   openLayer(homeEl, $('btn-play'), null);
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
   maybeShowInstall(); // once, after a few levels, never on the first visit (O1, D78)
+}
+
+/**
+ * The quiet "New" mark on Scenes (D82 R4): shown from the first Home where the cheapest scene not
+ * owned is affordable, until the player opens Scenes once.
+ */
+export function renderScenesMark(): void {
+  const unowned = config.themes.list.filter((th) => !isOwned(th, state.save.themes.owned)).map((th) => th.price);
+  $('scenes-new').hidden = !scenesNewDue(state.save.onboarding, state.save.wallet.coins, unowned);
 }
 
 /**

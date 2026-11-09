@@ -1,7 +1,7 @@
 // Story: production/sprints/sprint-11.md O4 (D78): the one-time offline-ready notice, DOM-free.
 import { describe, expect, it } from 'vitest';
 import swSource from '../../../../public/sw.js?raw';
-import { OFFLINE_READY, freshOnboarding, isOfflineReady, offlineNoticeDue } from '../../../../src/ui/logic/onboarding';
+import { OFFLINE_READY, freshOnboarding, isOfflineReady, offlineNotice, offlineNoticeDue } from '../../../../src/ui/logic/onboarding';
 import { type KeyValueStore, saveStored } from '../../../../src/ui/storage';
 
 const mod = { exports: {} as unknown };
@@ -15,6 +15,19 @@ describe('offlineNoticeDue (O4)', () => {
   });
   it('never shows when storage is blocked, because it could not be remembered', () => {
     expect(offlineNoticeDue(freshOnboarding(), false)).toBe(false);
+  });
+});
+
+describe('offlineNotice with the install card (0.11.1)', () => {
+  it('is a toast when nothing covers it', () => {
+    expect(offlineNotice(freshOnboarding(), true, false)).toBe('toast');
+  });
+  it('is remembered without a toast while the install card is open: the card already says it plays offline', () => {
+    expect(offlineNotice(freshOnboarding(), true, true)).toBe('covered');
+  });
+  it('is nothing once noticed or when storage is blocked', () => {
+    expect(offlineNotice({ ...freshOnboarding(), offlineNoticed: true }, true, false)).toBe('none');
+    expect(offlineNotice(freshOnboarding(), false, true)).toBe('none');
   });
 });
 

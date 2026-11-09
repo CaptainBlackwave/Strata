@@ -191,7 +191,8 @@ function winDaily(s: WinState, result: WinResult, config: WinConfig): WinOutcome
 
 /**
  * A weekly board (weekly-set.md §3.5–§3.7): records the clear and best pours, adds the week's badge
- * when the set is complete, counts pours and sealed jars, and pays nothing.
+ * when the set is complete, counts pours and sealed jars. Single boards pay nothing; the win that
+ * completes the set pays `weekly.completeBonus` (D83), once a week because `completedNow` is.
  */
 function winWeekly(s: WinState, result: WinResult, config: WinConfig): WinOutcome {
   const before = progressOfState(s, config);
@@ -199,10 +200,12 @@ function winWeekly(s: WinState, result: WinResult, config: WinConfig): WinOutcom
   const r = recordWeeklyClear(s.weekly ?? emptyWeekly(), played.week, played.index, result.moves, config);
   const weeklyBadges = r.badge && !s.badges.includes(r.badge) ? [r.badge] : [];
   let state: WinState = { ...s, weekly: r.state, badges: [...s.badges, ...weeklyBadges], stats: bumpStats(s.stats, { pours: result.moves }) };
+  const bonus = r.completedNow ? config.weekly.completeBonus : 0;
+  if (bonus > 0) state = earn(state, bonus);
   const f = finishWin(state, result, config);
   state = f.state;
   const weekly: WeeklyCard = { index: played.index, cleared: r.state.cleared.length, total: config.weekly.boards.length, firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, completedNow: r.completedNow, outOfDate: r.outOfDate };
-  const card: WinCard = { ...emptyCard(result), badges: [...weeklyBadges, ...f.badges], weekly, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  const card: WinCard = { ...emptyCard(result), rewardShown: bonus > 0, reward: bonus, badges: [...weeklyBadges, ...f.badges], weekly, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
   return { state, card };
 }
 

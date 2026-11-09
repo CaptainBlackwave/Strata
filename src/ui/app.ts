@@ -4,14 +4,14 @@ import { type BoosterId } from '../core/economy';
 import { launchLevel } from '../core/levels';
 import { DICE_SVG } from './avatars';
 import { whatsNewDue, writeSave } from './storage';
-import { dailyLaunch, parseLaunch } from './logic/launch';
-import { dailyKey } from './clock';
+import { parseLaunch } from './logic/launch';
+import { keepShare } from './logic/onboarding';
 import { t } from './strings';
 import { $, toolButtons } from './dom';
-import { assistsOnMainThread, prefetcher, startDaily, startLevel, startTutorial, wireBoard } from './screens/board';
+import { assistsOnMainThread, prefetcher, startLevel, startTutorial, wireBoard } from './screens/board';
 import { openWhatsNew, showHome, wireHome } from './screens/home';
 import { wireOtherTab } from './screens/other-tab';
-import { countThisVisit, listenForOffline, openDailyOver, wireOnboarding } from './screens/onboarding';
+import { countThisVisit, listenForOffline, openShared, wireOnboarding } from './screens/onboarding';
 import { wireKeys } from './screens/keys';
 import { wireMap } from './screens/map';
 import { wireCabinet } from './screens/sheets/cabinet';
@@ -48,11 +48,12 @@ function applyStrings(): void {
 
 /** Starts Strata: fills the labels, repairs the save, wires every screen, then shows Home (or the QA level). */
 export function boot(): void {
-  const launch = parseLaunch(location.search); // ?level=N (QA, D3), ?daily=YYYY-MM-DD (O3), ?weekly= (parsed only, D77)
+  const launch = parseLaunch(location.search); // ?level=N (QA, D3), ?daily=YYYY-MM-DD (O3), ?weekly=YYYY-Www (D82)
   applyStrings();
   state.save.shells = knownShells(state.save.shells, config); // D26: before the profile repair counts them
   repairSaveProfile();
   countThisVisit(); // O1: the install card never shows on the first visit
+  state.save.onboarding = keepShare(state.save.onboarding, launch, state.save.tutorialDone); // D82 R2: a link before the tutorial waits for it
   writeSave(state.save);
   applyTheme(currentTheme());
   window.setInterval(() => {
@@ -70,18 +71,13 @@ export function boot(): void {
     startLevel(state.level, true);
     showHome();
     if (launch.kind !== 'none') history.replaceState(history.state, '', location.pathname + location.hash); // a reload or the installed app opens Home
-    if (launch.kind === 'daily' && state.save.tutorialDone) openSharedDaily(launch.date);
+    const shared = launch.kind === 'daily' ? { daily: launch.date } : launch.kind === 'weekly' ? { weekly: launch.week } : null;
+    if (shared && state.save.tutorialDone) openShared(shared);
     else if (whatsNewDue(state.save)) openWhatsNew($('btn-play')); // once per version, never on a first install (D52)
-    // A new player's daily link opens Home: the tutorial comes first, and the daily card appears after it.
-    // A weekly link opens Home until the weekly set (D77, W2) is built.
+    // A new player's shared link opens Home: the tutorial comes first, and keepShare (above) offers the
+    // link on the tutorial's win card (D82 R2).
   }
   registerServiceWorker();
-}
-
-/** A shared `?daily=` link (O3): today's daily at once, or a note first when the link's day is over. */
-function openSharedDaily(date: string): void {
-  if (dailyLaunch(date, dailyKey(state.clock)).over) openDailyOver(date);
-  else startDaily();
 }
 
 /** Each screen wires its own buttons. */

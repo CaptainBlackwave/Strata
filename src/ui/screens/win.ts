@@ -1,7 +1,9 @@
 /** The win card for a level, the daily and the tutorial. The rules are the pure core/win.ts; this shows them. */
 import { isSealed } from '../../core/board';
 import { sharePours } from '../../core/daily';
-import { shareLink } from '../logic/launch';
+import { type ShareKey, shareLink } from '../logic/launch';
+import { homeHintDue, takeShare } from '../logic/onboarding';
+import { openShared } from './onboarding';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
 import { type SlotItem } from '../../core/profile';
 import { celebrate, flyCoins, mapFx, winBloom } from '../fx';
@@ -11,7 +13,7 @@ import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
 import { currentTheme } from '../theme';
 import { t } from '../strings';
-import { $, btnNext, hideToast, openLayer, reducedMotion, winEl } from '../dom';
+import { $, btnNext, closeLayer, hideToast, openLayer, reducedMotion, winEl } from '../dom';
 import { showHome } from './home';
 import { coach, updateHud } from './hud';
 import { plateEl, portraitOf } from './sheets/profile';
@@ -58,11 +60,6 @@ export function showUnlocks(items: SlotItem[], badges: readonly string[] = []): 
     }),
     ...(badgeEl ? [badgeEl] : []),
   );
-}
-
-/** The page's address without query or hash, as Share posts it (D18). */
-export function shareUrl(): string {
-  return location.href.split('?')[0].split('#')[0];
 }
 
 export async function shareDaily(): Promise<void> {
@@ -112,6 +109,7 @@ export function openWin(): void {
   $('win-unlocks').replaceChildren();
   $('share-status').textContent = '';
   $('btn-win-home').hidden = state.mode !== 'level'; // a level card can stop here (UX-win-2); the daily's Continue is already Home
+  $('btn-win-shared').hidden = true; // only the tutorial's card, with a link kept (D82 R2)
   $('win-avatar').hidden = state.mode === 'tutorial';
   if (state.mode !== 'tutorial') $('win-avatar').innerHTML = portraitOf(state.save.profile);
 }
@@ -136,6 +134,9 @@ export function renderRewards(card: WinCard): void {
   $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;
 }
 
+/** The link kept from before the tutorial, handed to the card's shared button (D82 R2). */
+let sharedOffer: ShareKey | null = null;
+
 export function winTutorial(): void {
   applyWinToSave();
   $('win-title').textContent = t.tutorialDoneTitle;
@@ -143,6 +144,18 @@ export function winTutorial(): void {
   $('win-reward').hidden = true;
   $('win-note').textContent = '';
   btnNext.textContent = t.tutorialStart;
+  // A shared link opened before the tutorial is offered here, once (D82 R2).
+  const taken = takeShare(state.save.onboarding);
+  sharedOffer = taken.share;
+  if (sharedOffer) {
+    state.save.onboarding = taken.onboarding;
+    writeSave(state.save);
+    const daily = 'daily' in sharedOffer;
+    $('win-note').textContent = daily ? t.onboarding.sharedDailyReady : t.onboarding.sharedWeeklyReady;
+    const btn = $('btn-win-shared');
+    btn.textContent = daily ? t.onboarding.playSharedDaily : t.onboarding.playSharedWeekly;
+    btn.hidden = false;
+  }
 }
 
 export function winDaily(): void {
@@ -159,7 +172,7 @@ export function winDaily(): void {
 /**
  * A weekly board's win card (weekly-set.md §3.8): which board, the pours and the set's progress, a
  * note for a replay or an out-of-date week, the week's badge when the set completes, and Share.
- * No reward row: weekly boards pay nothing (§3.7).
+ * The reward row shows only on the win that completes the set (its bonus, D83); single boards pay nothing.
  */
 export function winWeekly(): void {
   const card = applyWinToSave();
@@ -183,6 +196,12 @@ export function winLevel(): void {
   $('win-title').textContent = card.perfect ? t.perfectTitle : t.winTitle;
   $('win-text').textContent = t.winText(card.moves, card.prevBest);
   $('win-note').textContent = card.note === 'replay' ? replayNote(card) : card.note === 'perfect' ? t.perfectNote : '';
+  // Once, on the first clear of the hint level: point a player who chains levels to Home (D81 R1).
+  if (homeHintDue(state.save.onboarding, { mode: state.mode, level: state.level, firstClear: card.rewardShown }, config.onboarding.homeHintLevel)) {
+    state.save.onboarding.homeHintSeen = true;
+    writeSave(state.save);
+    $('win-note').textContent = [$('win-note').textContent, t.onboarding.homeHint].filter(Boolean).join(' \u00b7 ');
+  }
   btnNext.textContent = state.replay ? t.map.backToMap : t.next;
   renderRewards(card);
   // What the map shows when it next opens (sprint 10 F5): the new stretch, or a replay's Perfect mark.
@@ -253,5 +272,11 @@ export function countUp(el: HTMLElement, total: number, delay = 0): void {
 /** Wires the win card's Home and Share buttons (Continue is wired by the board, which starts the next level). */
 export function wireWin(): void {
   $('btn-win-home').addEventListener('click', showHome); // showHome closes the card
+  $('btn-win-shared').addEventListener('click', () => {
+    const share = sharedOffer;
+    sharedOffer = null;
+    closeLayer(winEl, false);
+    if (share) openShared(share);
+  });
   $('btn-share').addEventListener('click', () => void (state.mode === 'weekly' ? shareWeekly($('share-status')) : shareDaily()));
 }

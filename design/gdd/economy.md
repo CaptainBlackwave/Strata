@@ -54,6 +54,7 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 | Shell from a daily | a shell | every counted daily solve (not replays, not out-of-order) | after 40 shells, see below |
 | Set reward | 150 coins + 1 Shuffle, 1 Jar, 1 Hint charge (D19 removes the Undo charge) | the shell that completes a set: 8 sets in total | yes: 1,200 coins and 8 charges of each booster, lifetime |
 | Post-collection bonus | 50 coins | every 5th-level first clear **and** every counted daily solve once all 40 shells are owned | **no: it recurs forever** |
+| Weekly set bonus (D83) | 100 coins (`weekly.completeBonus`) | once per ISO week, on the win that completes all five boards (`weekly-set.md` §3.7); single boards pay nothing | no |
 | Starting wallet | 100 coins, 3 / 3 / 3 charges | once | yes |
 
 A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It pays no level reward, Perfect bonus or tall-jar bonus, even on the tall-jar Sunday (`challenge: true`).

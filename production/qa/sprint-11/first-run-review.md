@@ -18,7 +18,7 @@
 | Levels 1–4 | 10–12 pours each, +20 or +30 coins, Perfect on every win | Gentle ramp |
 | Level 5 | 18 pours, first shell (Periwinkle) on the win card | Shell row explains itself |
 | Levels 6–9 | 19, 20, 22, 25 pours | Steady |
-| Level 10 | **42 pours** (7 jars), second shell (Limpet) and the first frame (Driftwood) | A jump: see R3 |
+| Level 10 | **42 pours** (7 jars), second shell (Limpet) and the first frame (Driftwood) | A jump: see R3 (now 32 pours, 6 jars) |
 | Win card, each level | Continue goes straight to the next level; Home is a secondary button | The player can play 10 levels without seeing Home again |
 | Home after level 10 | Profile chip, Play · Level 11, the Daily card, Shells 2/40, Scenes | **Daily, shells, scenes and profile all appear at once, unexplained** (R1) |
 | First map open | The beach path, cleared stones with Perfect marks, a shell badge and a new-jar badge, locked stones | **Before: nothing says what the path is or that stones can be replayed.** After: a one-time line above Play (fix 1) |
@@ -43,27 +43,45 @@ for a new player. Levels 1–4 may be a little easy for anyone who knows the gen
    *Found while building it:* boot quietly prepares level 1 under Home, so a "once when level 1
    starts" flag was used up before the player saw it. The rule is "until level 1 is cleared" instead.
 
-## Recommendations for the owner (larger; not built)
+## Recommendations for the owner (all resolved in 0.11.1: D81, D82)
 
 - **R1. Home's features arrive all at once, after an unknown number of levels.** Continue chains
   level to level, so a new player may never see Home, the daily, shells or scenes until a later
   visit, and then sees all of them together. Options: (a) after level 3's win, Continue goes to
   Home once, with the daily card pulsing; or (b) a one-time line on the win card at level 3:
   "Today's daily puzzle is on Home". (b) is smaller. Needs a UX decision.
+  **Resolved (D81, option b):** the first clear of level `onboarding.homeHintLevel` (3) adds
+  "Today's daily puzzle is on Home." to the win card's note, once (`homeHintDue`). Evidence:
+  `production/qa/evidence/0.11.1/r1-level3-win-home-hint.png`.
 - **R2. A new player's daily share link opens Home** (O3), because the daily card only appears
   after the tutorial. Better: remember the link and offer the daily straight after the tutorial
   ("Your friend's daily is ready"). That is a natural follow-up for the weekly set (W2), which
   will have the same question.
+  **Resolved (D82):** a `?daily=` or `?weekly=` link opened before the tutorial is kept in
+  `save.onboarding.pendingShare`; the tutorial's win card says "Your friend's daily puzzle is ready"
+  (or weekly set) with a button that opens it, once. A returning player's `?weekly=` link opens the
+  chooser, and the weekly Share now carries that link. Evidence: `production/qa/evidence/0.11.1/r2-*.png`.
 - **R3. Level 10 is a jump** (42 solver pours against 25 at level 9, with 7 jars). The solver does
   not find the shortest path, so this overstates it, but it is the biggest step in the first ten,
   and it lands with the first frame unlock. Worth a look by `level-designer` in the difficulty
   bands (D36). It may be intended as the first "mini boss".
+  **Resolved (D82, R3):** not a documented peak. The cause is the first tall-jar shape (5 × 8 = 40
+  units against 24); shortest paths were 28 against 17, so the jump was real, not solver noise, and
+  no pour cap could fix it (no 5 × 8 deal under 36). Level 10 is now 4 × 8 (6 jars): 32 solver pours,
+  24 shortest. Tall jars from 20 stay 5 × 8; levels 1–9, the daily and the weekly are unchanged
+  (`challenge.curve`, `design/gdd/level-generation.md` §2.1).
 - **R4. Scenes are never introduced.** The Scenes button shows on Home with no hint that coins buy
   them. A "New: scenes" mark on the first Home after the player can afford one would fit the
   quiet style.
+  **Resolved (D82):** a small "New" mark on Scenes from the first Home where the cheapest scene not
+  owned is affordable, until Scenes is opened once (`scenesNewDue`). Evidence: `production/qa/evidence/0.11.1/r4-*.png`.
 - **R5. The install card at 150% text on a 320 px phone scrolls a little inside itself** (the title
   partly scrolls off when focus lands on its button). Every element is reachable, but a shorter iOS
   text or a smaller title at that size would avoid the scroll.
+  **Resolved (D82):** below 380 px wide the card uses a smaller title and tighter steps, and the
+  iPhone note is shorter. At 150% text on 320 x 568 the card is 454 px with no scroll (was 595 px in
+  520). The offline-ready toast is also cleared when the card opens, so it no longer covers the
+  card. Evidence: `production/qa/evidence/0.11.1/r5-install-320-150.png`.
 
 ## Not changed
 
