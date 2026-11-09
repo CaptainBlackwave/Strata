@@ -56,7 +56,7 @@ function orderedMoves(board: Board): Move[] {
   const firstEmptyOfKind = new Map<string, number>();
   board.jars.forEach((j, i) => {
     if (j.units.length) return;
-    const kind = `${jarCapacity(board, i)}${j.funnel ? 'U' : ''}${j.frozen ? 'F' : ''}${j.lock ?? ''}`;
+    const kind = `${jarCapacity(board, i)}${j.funnel ? 'U' : ''}${j.frozen ? 'F' : ''}${j.lock ?? ''}${j.hourglass ? `H${j.hourglass.left}` : ''}`;
     if (!firstEmptyOfKind.has(kind)) firstEmptyOfKind.set(kind, i);
   });
   const firstEmpties = new Set(firstEmptyOfKind.values());

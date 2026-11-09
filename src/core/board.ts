@@ -178,9 +178,15 @@ function tickHourglasses(jars: readonly Jar[]): { jars: readonly Jar[]; flipped:
   return { jars: next, flipped };
 }
 
-/** True when the board has an unsealed hourglass, so the pour count still matters (D96). */
+/**
+ * True when an hourglass holds two or more colours, so its next flip changes the board (D96).
+ * Only then can a pour that merely swaps two jars matter: it is a wait move that brings the
+ * flip closer. An empty or one-colour hourglass is unchanged by a flip, so while every
+ * hourglass is like that, waiting never creates a useful pour and the usual pruning is exact
+ * for `isStuck`.
+ */
 export function hasLiveHourglass(board: Board): boolean {
-  return board.jars.some((j) => j.hourglass !== undefined && !isSealed(j, board.capacity));
+  return board.jars.some((j) => j.hourglass !== undefined && j.units.length > 0 && !isMonochrome(j));
 }
 
 /**
