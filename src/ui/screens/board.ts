@@ -2,6 +2,7 @@
 import { type Board, canPour, isClosed, isSealed } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
+import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
 import { tutorialBoard } from '../../core/generator';
 import { type MechanicId } from '../../core/levels';
 import { type AssistJob, type AssistPort, type AssistRequest, type AssistResponse, type AssistResult, AssistClient, runAssist } from '../../core/assist';
@@ -13,6 +14,7 @@ import { writeSave } from '../storage';
 import { t } from '../strings';
 import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, showToast, toastEl, toolButtons, winEl } from '../dom';
 import { showHome } from './home';
+import { screenOut } from '../fx';
 import { coach, updateHud } from './hud';
 import { buildJars, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { animatePour, recoverPour } from './pour';
@@ -28,6 +30,8 @@ const THINKING_CUE_MS = 150;
 let hintTimer = 0;
 let restartTimer = 0; // Restart's second-tap window (F6)
 let boosterTimer = 0;
+let restartArm: RestartArm = RESTART_IDLE; // TD-12: the pure state behind the armed Restart button
+let boosterArm: BoosterArm = BOOSTER_IDLE; // TD-12: the pure state behind `state.armedBooster`
 let startToken = 0; // the latest startLevel call; an older one still waiting gives way
 let thinkingTimer = 0;
 let thinkingHadFocus = false;
@@ -45,6 +49,7 @@ export function assistsOnMainThread(): void {
 
 export function startDaily(): void {
   audio.unlock();
+  screenOut(homeEl); // sprint 10 F5: Home fades off the board
   closeLayer(homeEl, false);
   state.mode = 'daily';
   state.dailyDate = utcDateKey(state.clock()); // TD-16: the app clock
@@ -62,6 +67,7 @@ export function startDaily(): void {
 export function play(): void {
   audio.unlock();
   if (mapAvailable(state.save)) return openMap();
+  screenOut(homeEl); // sprint 10 F5: Home fades off the board
   closeLayer(homeEl, false);
   if (!state.save.tutorialDone) startTutorial();
   else startLevel(state.save.level);
@@ -201,14 +207,16 @@ export function onSessionEvent(e: SessionEvent): void {
  * RESTART_CONFIRM_MS restarts.
  */
 export function requestRestart(): void {
-  if (state.busy || state.returning.size || state.mode === 'tutorial') return;
+  const step = stepRestart(restartArm, { type: 'tap', now: performance.now(), windowMs: RESTART_CONFIRM_MS, blocked: !!(state.busy || state.returning.size || state.mode === 'tutorial'), moves: state.session?.moves ?? 0 });
+  if (step.effect === 'ignore') return;
   const btn = $('btn-restart');
-  if (state.session.moves === 0 || btn.classList.contains('armed')) {
+  if (step.effect === 'restart') {
     disarmRestart();
     state.session.restart();
     return;
   }
   disarmBooster();
+  restartArm = step.next;
   btn.classList.add('armed');
   btn.setAttribute('aria-label', t.restartArmedLabel);
   showToast(t.restartConfirm);
@@ -217,6 +225,7 @@ export function requestRestart(): void {
 
 export function disarmRestart(): void {
   window.clearTimeout(restartTimer);
+  restartArm = RESTART_IDLE;
   const btn = $('btn-restart');
   btn.classList.remove('armed');
   btn.removeAttribute('aria-label');
@@ -316,6 +325,7 @@ export function disarmBooster(): void {
   window.clearTimeout(boosterTimer);
   if (state.armedBooster === null) return;
   toolButtons.find((b) => b.dataset.booster === state.armedBooster)?.classList.remove('armed');
+  boosterArm = BOOSTER_IDLE;
   state.armedBooster = null;
   updateHud(); // puts the button's normal label back
 }
@@ -323,15 +333,21 @@ export function disarmBooster(): void {
 /** Spends a charge (or coins) and applies the booster; refunds if it couldn't apply. */
 export function useBooster(id: BoosterId): void {
   audio.unlock();
-  if (state.busy || state.returning.size || state.mode === 'tutorial' || state.session.status === 'won') return;
-  if ((id === 'hint' || id === 'shuffle') && state.thinking) return; // one assist at a time (TD-13)
-  if (id === 'undo' && !state.session.canUndo) return showToast(t.noUndo);
   // With no charges left, the first tap only names the price and a second tap within the
   // window buys, like Restart's arm (UX-board-7). Too few coins skips this: the spend is refused anyway.
+  // One assist at a time (TD-13). The rules are the pure `stepBooster` (TD-12).
   const price = config.boosters[id].price;
-  if (state.save.wallet.boosters[id] === 0 && !isFreeBooster(id, config) && state.save.wallet.coins >= price && state.armedBooster !== id) {
+  const blocked = !!(state.busy || state.returning.size || state.mode === 'tutorial' || state.session.status === 'won');
+  const step = stepBooster(boosterArm, {
+    type: 'tap', id, now: performance.now(), windowMs: RESTART_CONFIRM_MS, blocked, assistBusy: state.thinking !== null,
+    canUndo: state.session?.canUndo ?? false, charges: state.save.wallet.boosters[id], coins: state.save.wallet.coins, price, free: isFreeBooster(id, config),
+  });
+  if (step.effect === 'ignore') return;
+  if (step.effect === 'noUndo') return showToast(t.noUndo);
+  if (step.effect === 'confirm') {
     disarmBooster();
     disarmRestart();
+    boosterArm = step.next;
     state.armedBooster = id;
     toolButtons.find((b) => b.dataset.booster === id)?.classList.add('armed');
     updateHud();
@@ -340,7 +356,7 @@ export function useBooster(id: BoosterId): void {
     return;
   }
   disarmBooster();
-  if (!spendBooster(state.save.wallet, id, config).ok) {
+  if (step.effect === 'refuse') {
     audio.play('nope');
     return showToast(t.notEnoughCoins(config.boosters[id].price));
   }

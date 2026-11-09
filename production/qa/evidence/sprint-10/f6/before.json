@@ -1,0 +1,1973 @@
+{
+  "firstPour": [
+    0,
+    5
+  ],
+  "boosterArmThenBuy": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Hint (arms)",
+      "toast": "Tap again to buy for 60 coins",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [
+        "hint"
+      ],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Hint again (buys)",
+      "toast": "Used 60 coins",
+      "coins": "440",
+      "savedCoins": 440,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          0,
+          "jar hint-from"
+        ],
+        [
+          5,
+          "jar hint-to"
+        ]
+      ]
+    }
+  ],
+  "boosterArmThenPour": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Hint (arms)",
+      "toast": "Tap again to buy for 60 coins",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [
+        "hint"
+      ],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "pour (disarms)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    }
+  ],
+  "boosterArmThenWait": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Shuffle (arms)",
+      "toast": "Tap again to buy for 80 coins",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [
+        "shuffle"
+      ],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "wait 3500 ms (expires)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Shuffle (arms again)",
+      "toast": "Tap again to buy for 80 coins",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [
+        "shuffle"
+      ],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    }
+  ],
+  "boosterNotEnoughCoins": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "10",
+      "savedCoins": 10,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Hint with 10 coins (refused)",
+      "toast": "Needs 60 coins. Clear levels to earn more.",
+      "coins": "10",
+      "savedCoins": 10,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    }
+  ],
+  "freeUndo": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "Z with nothing to undo (button is disabled)",
+      "toast": "Nothing to undo yet.",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "pour",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Undo (free, at once)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    }
+  ],
+  "restart": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Restart with no pours (acts at once)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "pour",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Restart once (arms)",
+      "toast": "Tap Restart again to start this board over",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": true,
+      "restartLabel": "Restart: tap again to confirm",
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Restart twice (restarts)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "pour",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Restart once (arms)",
+      "toast": "Tap Restart again to start this board over",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": true,
+      "restartLabel": "Restart: tap again to confirm",
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "wait 3500 ms (expires)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "tap Restart (arms again)",
+      "toast": "Tap Restart again to start this board over",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": true,
+      "restartLabel": "Restart: tap again to confirm",
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    }
+  ],
+  "leaveWithMoves": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "pour",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "Settings, Home (asks)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": true,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "Leave",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": true,
+      "jarClasses": []
+    }
+  ],
+  "leaveWithNone": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": []
+    },
+    {
+      "step": "Settings, Home (goes at once)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": true,
+      "jarClasses": []
+    }
+  ],
+  "level141Jars": 17,
+  "keysLevel141": [
+    {
+      "step": "start",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit1",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          0,
+          "jar selected"
+        ],
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit2",
+      "toast": "Locked: seal a jar of the lock’s colour to open it.",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit3",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          2,
+          "jar selected"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit4",
+      "toast": "Frozen: seal any jar to thaw it.",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit5",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          4,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit6",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          5,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit7",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          6,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit8",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          7,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit9",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          8,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Digit0",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          9,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit1",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          10,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit2",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          11,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit3",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          12,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit4",
+      "toast": "That jar is full",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          13,
+          "jar selected"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit5",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit6",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit7",
+      "toast": "Narrow jar: holds 2 layers, never seals.",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit8",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit9",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Shift+Digit0",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Control+Digit1 (ignored)",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "1",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "z",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "s",
+      "toast": "Tap again to buy for 80 coins",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [
+        "shuffle"
+      ],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "j",
+      "toast": "Tap again to buy for 120 coins",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [
+        "extraJar"
+      ],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "h",
+      "toast": "Tap again to buy for 60 coins",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [
+        "hint"
+      ],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "r",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "r",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    },
+    {
+      "step": "Escape",
+      "toast": "",
+      "coins": "500",
+      "savedCoins": 500,
+      "charges": {
+        "undo": 0,
+        "shuffle": 0,
+        "extraJar": 0,
+        "hint": 0
+      },
+      "badges": {
+        "undo": "0",
+        "shuffle": "80",
+        "extraJar": "120",
+        "hint": "60"
+      },
+      "armed": [],
+      "restartArmed": false,
+      "restartLabel": null,
+      "moves": "0",
+      "leaveOpen": false,
+      "homeOpen": false,
+      "jarClasses": [
+        [
+          1,
+          "jar locked"
+        ],
+        [
+          3,
+          "jar frozen"
+        ],
+        [
+          16,
+          "jar narrow"
+        ]
+      ]
+    }
+  ]
+}

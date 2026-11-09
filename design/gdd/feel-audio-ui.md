@@ -77,9 +77,9 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 
 **Touch targets** (F5, *decided 2026-11-08, built in sprint 6*): every control is at least 44 × 44 px, including icon buttons, Edit tabs, secondary buttons and cabinet set headers. Restart sits further from Settings.
 
-**Sound** (`GameAudio`, all synthesised): select, deselect, nope, pour, land, seal, win, coin, booster, shuffle; ambient music (a slow pentatonic loop over an ocean-noise swell). Audio starts only after the first tap (browsers require it).
+**Sound** (`GameAudio`, all synthesised; recipes and caps in `src/ui/sfx.ts`, sprint 10 D64): the events are select, deselect, nope, pour, land, seal, win, coin, booster, shuffle, mapStone, locked, unlock, shell, sceneBought and playHere. Each event has its own peak cap, and every one stays under −1 dBFS. Effects go through a sound-volume bus. **Music** (`src/ui/music.ts`, D65): one calm generative style, varied per scene (key, tempo, timbre, an optional layer), crossfading over 2 s when the scene changes and silent while the page is hidden. It goes through a music-volume level. **Volume** (D66): Settings has sliders for sound and music (default 80%), and the switches mute. Audio starts only after the first tap (browsers require it).
 
-**Vibration**: select 8 ms, nope [12,40,12], land 10, seal [18,30,28], win [30,50,30,50,60], booster 14.
+**Vibration** (`HAPTICS` in `src/ui/sfx.ts`): every event has a pattern or an explicit none, checked by a test. The patterns are short and soft, with seal and win distinct. Android only: iPhone browsers ignore `navigator.vibrate`.
 
 **Layout** (`computeLayout`): jars wrap into up to 4 rows; jar width between 26 and 68 px; an extra row is used only if it makes jars more than 10% larger; tall jars use a smaller unit height so 8 units fit.
 
@@ -179,3 +179,4 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude (sprint 6, F9) | Profile, Edit Profile, Discard and Save code screens, win-card avatar and unlock rows, Save code in Settings, per-layer keyboard table (GB-FA-1); 14 colours and patterns (GB-FA-2, GX-9); text scaling moved to Handled (GB-FA-3); jars 11+ by Tab (GB-FA-4); full reduced-motion list (GB-FA-5); screen check with a pass condition (GB-FA-6); depends on player-profile (GX-10); decided sprint 6 items recorded: stuck banner naming Restart (GX-1), refused-pour toast, visible and announced hint, dialogs holding focus, 44 px targets, Settings on Home, leave-level confirmation |
 | 2026-11-08 | Claude (sprint 7, B6) | Presentation timings recorded as exempt from the config rule (D31, GB-FA-8) |
+| 2026-11-09 | Claude (sprint 10, F8) | Sound, music, volume and vibration lines updated for sprint 10 (D64–D66, D68): new events, per-scene music, sliders, the haptics table |

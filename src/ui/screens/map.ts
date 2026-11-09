@@ -9,6 +9,8 @@ import { type MechanicId } from '../../core/levels';
 import { type Stone, type StoneWords, mapWindow, sceneryAt, stoneAt, stoneName } from '../../core/map';
 import { t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, reducedMotion } from '../dom';
+import { FX_MS, revealStretch, stretchDots } from '../fx-plan';
+import { mapFx, popIn, revealStretchFx, screenHold, screenIn, screenOut, settle } from '../fx';
 import { startLevel } from './board';
 import { showHome } from './home';
 import { audio, config, state } from '../state';
@@ -41,6 +43,9 @@ const bands = new Map<number, HTMLElement>();
 const pathSvg = document.createElementNS(SVG_NS, 'svg');
 pathSvg.classList.add('map-path');
 pathSvg.setAttribute('aria-hidden', 'true');
+/** The stretch fading in after a first clear (sprint 10 F5); the path below draws the old state until it ends. */
+let revealing: { from: number; to: number } | null = null;
+let revealSvg: SVGSVGElement | null = null;
 
 const WORDS: StoneWords = {
   level: t.level,
@@ -175,29 +180,66 @@ function makeBand(band: number): HTMLElement {
   return el;
 }
 
+/** The SVG path data through stones `a..b` (empty when `b <= a`). */
+function segD(a: number, b: number, width: number): string {
+  if (b <= a) return '';
+  const pt = (lv: number) => [pathX(lv) * width, yOf(lv)] as const;
+  let d = `M${pt(a).join(' ')}`;
+  for (let lv = a + 1; lv <= b; lv++) {
+    const [x0, y0] = pt(lv - 1);
+    const [x1, y1] = pt(lv);
+    const my = (y0 + y1) / 2;
+    d += `C${x0} ${my} ${x1} ${my} ${x1} ${y1}`;
+  }
+  return d;
+}
+
 /** Draws the path through `lo..hi`: solid to the next stone, dashed beyond it. */
 function drawPath(lo: number, hi: number): void {
   const width = trackEl.clientWidth;
   const from = Math.max(geo.first, lo - 1);
   const to = Math.min(geo.last, hi + 1);
-  const pt = (lv: number) => [pathX(lv) * width, yOf(lv)] as const;
-  const seg = (a: number, b: number) => {
-    if (b <= a) return '';
-    let d = `M${pt(a).join(' ')}`;
-    for (let lv = a + 1; lv <= b; lv++) {
-      const [x0, y0] = pt(lv - 1);
-      const [x1, y1] = pt(lv);
-      const my = (y0 + y1) / 2;
-      d += `C${x0} ${my} ${x1} ${my} ${x1} ${y1}`;
-    }
-    return d;
-  };
-  const next = state.save.level;
-  const done = seg(from, Math.min(to, next));
-  const ahead = seg(Math.max(from, next), to);
+  const next = revealing ? revealing.from : state.save.level; // while the new stretch fades in, it is drawn as before
+  const done = segD(from, Math.min(to, next), width);
+  const ahead = segD(Math.max(from, next), to, width);
   pathSvg.setAttribute('width', String(width));
   pathSvg.setAttribute('height', String(geo.height));
   pathSvg.innerHTML = `<path class="path-edge" d="${done}${ahead}"/><path class="path-done" d="${done}"/><path class="path-ahead" d="${ahead}"/>`;
+}
+
+/**
+ * The map's arrival touches (sprint 10 F5): a replay's new Perfect mark pops in, and the
+ * stretch unlocked since the last visit fades in as dots, then solid path. Pending touches
+ * are used up here even without motion, so they never play late.
+ */
+function arrivalFx(): void {
+  const perfect = mapFx.perfect;
+  const stretch = revealStretch(mapFx.reveal, state.save.level);
+  mapFx.perfect = 0;
+  mapFx.reveal = null;
+  const mark = perfect ? stones.get(perfect)?.querySelector('.stone-mark') : null;
+  if (mark) popIn(mark);
+  if (!stretch || stretch.from < geo.first) return;
+  const width = trackEl.clientWidth;
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.classList.add('map-path', 'map-path-reveal');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('width', String(width));
+  svg.setAttribute('height', String(geo.height));
+  const dots = stretchDots(stretch.from, stretch.to, (lv) => [pathX(lv) * width, yOf(lv)]);
+  svg.innerHTML = `<path class="path-done" d="${segD(stretch.from, stretch.to, width)}"/>` + dots.map(([x, y]) => `<circle class="path-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5"/>`).join('');
+  revealing = stretch;
+  revealSvg = svg;
+  render();
+  pathSvg.after(svg);
+  const end = () => {
+    if (revealSvg !== svg) return;
+    revealing = null;
+    revealSvg = null;
+    svg.remove();
+    render();
+  };
+  if (!revealStretchFx(svg.querySelector('.path-done')!, [...svg.querySelectorAll('.path-dot')], end)) end();
 }
 
 /** Puts the stones and bands near the viewport in the DOM and removes the rest (virtualised, §3). */
@@ -273,19 +315,26 @@ function focusStone(level: number): void {
  * underneath, so Escape and the back button return to it. A restored save re-centres here (§3).
  */
 export function openMap(level: number = state.save.level): void {
-  if (!layers.has(homeEl)) showHome();
+  if (!layers.has(homeEl)) {
+    showHome();
+    settle(homeEl);
+    screenHold(homeEl); // the map fades in over the board; Home under it waits out of sight
+  }
   playBtn.textContent = t.play(state.save.level);
   $('map-coins').textContent = String(state.save.wallet.coins);
   focusLevel = level;
   clearTrack();
   openLayer(mapEl, playBtn, $('btn-play'));
+  screenIn(mapEl, FX_MS.mapRise); // sprint 10 F5: a short fade and rise
   measure();
   centre(level);
   render();
+  arrivalFx();
 }
 
 /** Back to Home (Escape or the back button). */
 export function closeMap(): void {
+  screenOut(mapEl); // sprint 10 F5: the map fades off Home
   closeLayer(mapEl, false);
   showHome();
 }
@@ -294,6 +343,7 @@ export function closeMap(): void {
 function playFromMap(level: number, replay: boolean): void {
   audio.unlock();
   closeLayer(cardEl, false);
+  screenOut(mapEl); // sprint 10 F5: the map fades off the board
   closeLayer(mapEl, false);
   closeLayer(homeEl, false);
   startLevel(level, false, replay);
@@ -340,8 +390,10 @@ function onStone(el: HTMLButtonElement): void {
   focusLevel = level;
   el.tabIndex = 0;
   const s = stoneAt(level, state.save, config);
-  if (s.state === 'next') playFromMap(level, false);
-  else openCard(s, el);
+  if (s.state === 'next') return playFromMap(level, false);
+  audio.unlock();
+  audio.play(s.state === 'locked' ? 'locked' : 'mapStone');
+  openCard(s, el);
 }
 
 /**
