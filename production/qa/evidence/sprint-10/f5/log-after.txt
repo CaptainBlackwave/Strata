@@ -1,0 +1,20 @@
+trans-home-to-map: trans-home-to-map-after-01-69ms.png, trans-home-to-map-after-02-130ms.png, trans-home-to-map-after-03-176ms.png, trans-home-to-map-after-04-255ms.png
+trans-map-to-board: trans-map-to-board-after-01-16ms.png, trans-map-to-board-after-02-75ms.png, trans-map-to-board-after-03-128ms.png, trans-map-to-board-after-04-267ms.png
+seal: seal-after-01--6ms.png, seal-after-02-204ms.png, seal-after-03-327ms.png, seal-after-04-510ms.png, seal-after-05-706ms.png
+win: win-after-01--650ms.png, win-after-02--17ms.png, win-after-03-207ms.png, win-after-04-476ms.png, win-after-05-939ms.png
+coins: coins-after-01-612ms.png, coins-after-02-748ms.png, coins-after-03-873ms.png, coins-after-04-1005ms.png, coins-after-05-1137ms.png
+A: won level 5: true | moves: 18
+trans-board-to-home: trans-board-to-home-after-01-10ms.png, trans-board-to-home-after-02-51ms.png, trans-board-to-home-after-03-151ms.png, trans-board-to-home-after-04-273ms.png
+map-after-first-clear: map-after-first-clear-after-01-15ms.png, map-after-first-clear-after-02-154ms.png, map-after-first-clear-after-03-284ms.png, map-after-first-clear-after-04-437ms.png, map-after-first-clear-after-05-601ms.png, map-after-first-clear-after-06-1016ms.png
+trans-map-to-home: trans-map-to-home-after-01-6ms.png, trans-map-to-home-after-02-94ms.png, trans-map-to-home-after-03-140ms.png, trans-map-to-home-after-04-265ms.png
+A errors: []
+B: win note: Perfect earned · New best: 18 pours | title: Perfect!
+map-perfect-pop: map-perfect-pop-after-01-15ms.png, map-perfect-pop-after-02-181ms.png, map-perfect-pop-after-03-265ms.png, map-perfect-pop-after-04-372ms.png, map-perfect-pop-after-05-506ms.png, map-perfect-pop-after-06-810ms.png
+B errors: []
+C: map open, frames 150 ms apart identical: true
+C: seal, frames 200 ms apart identical: false
+C: win card, frames 400 ms apart identical: false | fx nodes: 0
+C: map after a first clear, frames 300 ms apart identical: true | reveal overlay: 0
+C errors: []
+D (4x CPU throttle): longest frame during the seal 23.7 ms, during the win 41.2 ms (frames recorded 2255)
+D errors: []
