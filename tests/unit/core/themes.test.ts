@@ -249,6 +249,10 @@ describe('readability (WCAG contrast) in every scene', () => {
       expect(contrastRatio(k.inkSoft, k.surface2)).toBeGreaterThanOrEqual(3);
       expect(contrastRatio(k.inkSoft, k.bgBottom)).toBeGreaterThanOrEqual(3);
     });
+    it(`${theme.id}: the volume slider's filled track and thumb (accent) and unfilled track (soft ink) reach 3:1 on the card (D72)`, () => {
+      expect(contrastRatio(k.accent, k.card)).toBeGreaterThanOrEqual(3);
+      expect(contrastRatio(k.inkSoft, k.card)).toBeGreaterThanOrEqual(3);
+    });
     it(`${theme.id}: the focus ring reaches 3:1 on every surface it sits on`, () => {
       for (const bg of [k.card, k.surface2, k.bgTop, k.bgBottom]) expect(contrastRatio(k.focus!, bg)).toBeGreaterThanOrEqual(3);
     });

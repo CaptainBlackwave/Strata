@@ -997,8 +997,49 @@ button {
   min-width: 0;
   height: 44px; /* F5 touch target */
   margin: 0;
-  accent-color: var(--accent);
   cursor: pointer;
+  /*
+   * D72: drawn from the scene's tokens instead of the browser's grey. The filled part and the
+   * thumb are the accent, the rest is soft ink; both reach 3:1 on the card (themes.test.ts).
+   * --fill is the slider's position, set by settings.ts (WebKit has no native fill part).
+   */
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  --fill: 80%;
+}
+.volume input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--accent) 0 var(--fill), var(--ink-soft) var(--fill) 100%);
+}
+.volume input::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ink-soft);
+}
+.volume input::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.volume input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -9px; /* centres the thumb on the 6 px track */
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 1.5px var(--accent), 0 2px 4px rgba(0, 0, 0, 0.18);
+}
+.volume input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 1.5px var(--accent), 0 2px 4px rgba(0, 0, 0, 0.18);
 }
 .volume input:disabled {
   opacity: 0.4;
