@@ -2,7 +2,12 @@
 
 The game's release history. The repository's root `CHANGELOG.md` belongs to the Claude Code Game Studios framework, not the game. Versions come from `package.json` (D56). Each release is tagged `vX.Y.Z` on `main`.
 
-**Tags to create.** This project's Claude sessions can't push tags (their GitHub access covers only the working branch). The owner creates each one, either from GitHub (Releases → *Draft a new release* → type the tag → *Target*: the commit below; the notes under each version can go in the release body) or from a local clone (`git tag -a v0.8.0 05d5be5 -m "Strata 0.8.0" && git push origin --tags`).
+**Tags and releases (D60).** The `Release` workflow (`.github/workflows/release.yml`, logic in `tools/release/release.sh`) does this:
+- When a push to `main` changes `package.json`'s version, it tags that commit `vX.Y.Z` and publishes a GitHub release. The release notes are that version's section below.
+- Running the workflow by hand with `mode: backfill` tags every row of the table below that is not tagged yet.
+- An existing tag is never moved.
+
+When a release merges, add its row here so a backfill can recreate it.
 
 | Tag | Commit on `main` |
 |---|---|
