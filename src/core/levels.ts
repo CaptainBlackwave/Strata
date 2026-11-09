@@ -23,6 +23,13 @@ export interface ChallengeConfig {
   readonly buriedDepth: number;
   /** Tall-jar levels from this level on can get mechanics (decision D8). */
   readonly mechanicsFrom?: number;
+  /**
+   * Optional tall-jar shape rows (decision D82, R3). Like the main `curve`: a row applies from
+   * `fromLevel` until the next row, omitted fields inherit from the previous row, and the first
+   * row inherits from the fields above. Absent: every tall-jar level uses the fields above.
+   * Example: `[{ fromLevel: 10, colors: 4 }, { fromLevel: 20, colors: 5 }]` makes level 10 a 4 × 8 board.
+   */
+  readonly curve?: readonly CurveRow[];
 }
 
 /** Difficulty ramp past level 45 (decision D1). */
@@ -107,12 +114,21 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
   const maxColors = config.palette.length;
   const ch = config.challenge;
   if (ch.every > 0 && level % ch.every === 0) {
+    // Optional per-level shape rows (D82, R3), applied over the base tall-jar shape.
+    let { colors: tc, capacity: tcap, spare: ts, buriedDepth: tb } = ch;
+    for (const row of [...(ch.curve ?? [])].sort((a, b) => a.fromLevel - b.fromLevel)) {
+      if (row.fromLevel > level) break;
+      tc = row.colors ?? tc;
+      tcap = row.capacity ?? tcap;
+      ts = row.spare ?? ts;
+      tb = row.buriedDepth ?? tb;
+    }
     return {
       level,
-      colors: Math.min(ch.colors, maxColors),
-      capacity: ch.capacity,
-      spare: ch.spare,
-      buriedDepth: ch.buriedDepth,
+      colors: Math.min(tc, maxColors),
+      capacity: tcap,
+      spare: ts,
+      buriedDepth: tb,
       challenge: true,
       mechanics: ch.mechanicsFrom !== undefined && level >= ch.mechanicsFrom ? pickMechanics(level, config) : [],
     };

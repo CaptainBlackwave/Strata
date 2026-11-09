@@ -740,7 +740,9 @@
     "capacity": 8,
     "spare": 2,
     "buriedDepth": 0,
-    "mechanicsFrom": 100
+    "mechanicsFrom": 100,
+    "$commentCurve": "Tall-jar shape rows (D82, R3), same rules as the main curve: a row applies from fromLevel, omitted fields inherit. Level 10, the first tall-jar level, is 4 x 8 so it is a smooth step after level 9 (5 x 8 needed 42 solver pours against 25); from level 20 tall jars are 5 x 8 again, as before. Rationale: design/gdd/level-generation.md 2.1.",
+    "curve": [{ "fromLevel": 10, "colors": 4 }, { "fromLevel": 20, "colors": 5 }]
   },
   "generator": {
     "maxAttempts": 60,
