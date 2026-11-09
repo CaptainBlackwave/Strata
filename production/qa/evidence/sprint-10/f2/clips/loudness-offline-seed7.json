@@ -1,0 +1,128 @@
+[
+ {
+  "clip": "before-midday",
+  "I": -38.8,
+  "LRA": 1.5,
+  "TP": -28.5,
+  "speed": 235
+ },
+ {
+  "clip": "midday",
+  "I": -38.8,
+  "LRA": 1.9,
+  "TP": -27,
+  "speed": 158
+ },
+ {
+  "clip": "dawn",
+  "I": -38.6,
+  "LRA": 2,
+  "TP": -27.3,
+  "speed": 120
+ },
+ {
+  "clip": "sunset",
+  "I": -38.6,
+  "LRA": 2.1,
+  "TP": -27.1,
+  "speed": 127
+ },
+ {
+  "clip": "moonlit",
+  "I": -38.6,
+  "LRA": 2.1,
+  "TP": -28.2,
+  "speed": 125
+ },
+ {
+  "clip": "seafog",
+  "I": -38.4,
+  "LRA": 2.2,
+  "TP": -27.2,
+  "speed": 127
+ },
+ {
+  "clip": "wintersnow",
+  "I": -38.3,
+  "LRA": 1.8,
+  "TP": -27.2,
+  "speed": 152
+ },
+ {
+  "clip": "harvestmoon",
+  "I": -38.6,
+  "LRA": 2.1,
+  "TP": -27.4,
+  "speed": 120
+ },
+ {
+  "clip": "newyear",
+  "I": -39.1,
+  "LRA": 1.8,
+  "TP": -27.6,
+  "speed": 109
+ },
+ {
+  "clip": "highsummer",
+  "I": -38.7,
+  "LRA": 2.2,
+  "TP": -26.6,
+  "speed": 99
+ },
+ {
+  "clip": "springblossom",
+  "I": -38.8,
+  "LRA": 1.8,
+  "TP": -26.6,
+  "speed": 156
+ },
+ {
+  "clip": "autumnshore",
+  "I": -38.5,
+  "LRA": 2.2,
+  "TP": -27.1,
+  "speed": 100
+ },
+ {
+  "clip": "rainbowafterrain",
+  "I": -38.2,
+  "LRA": 1.8,
+  "TP": -27.1,
+  "speed": 143
+ },
+ {
+  "clip": "softrain",
+  "I": -38.5,
+  "LRA": 0.9,
+  "TP": -28,
+  "speed": 84
+ },
+ {
+  "clip": "winterlights",
+  "I": -38.7,
+  "LRA": 2,
+  "TP": -26.9,
+  "speed": 137
+ },
+ {
+  "clip": "meteorshower",
+  "I": -38.5,
+  "LRA": 2.3,
+  "TP": -28.1,
+  "speed": 169
+ },
+ {
+  "clip": "auroranight",
+  "I": -38.2,
+  "LRA": 1.9,
+  "TP": -27.2,
+  "speed": 163
+ },
+ {
+  "clip": "crossfade-midday-to-softrain",
+  "I": -38.5,
+  "LRA": 1.5,
+  "TP": -28.1,
+  "speed": 135
+ }
+]
