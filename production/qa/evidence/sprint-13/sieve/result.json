@@ -1,0 +1,76 @@
+{
+  "introShown": true,
+  "introText": "Sieve jarA sieve jar only lets its own colour in: the colour of its band. Anything can be poured out.",
+  "seenAfterIntro": [
+    "narrow",
+    "frozen",
+    "locked",
+    "funnel",
+    "hourglass",
+    "sieve"
+  ],
+  "sieve": {
+    "index": 3,
+    "units": 4,
+    "top": "#8fae6b",
+    "sieve": true,
+    "band": "#f2a541",
+    "bandClass": "sieve-band",
+    "label": "Jar 4: buried, buried, buried, sage (sieve, saffron only)",
+    "liftable": true
+  },
+  "clearanceMidday": {
+    "band": {
+      "w": 60,
+      "h": 14
+    },
+    "jarW": 52,
+    "overlapsMarks": false,
+    "overlapsOtherJars": false
+  },
+  "refused": {
+    "from": 0,
+    "to": 3,
+    "toast": "Only saffron sand can go in this sieve.",
+    "unitsAfter": 4
+  },
+  "pouredIn": {
+    "from": 7,
+    "before": 3,
+    "after": 4,
+    "label": "Jar 4: buried, buried, saffron, saffron (sieve, saffron only)",
+    "announce": "Poured 1 saffron into jar 4."
+  },
+  "errors": [],
+  "guideHasSieve": true,
+  "errorsGuide": [],
+  "clearanceMoonlit": {
+    "band": {
+      "w": 60,
+      "h": 14
+    },
+    "jarW": 52,
+    "overlapsMarks": false,
+    "overlapsOtherJars": false
+  },
+  "errorsMoonlit": [],
+  "patternBand": "sieve-band pat-1",
+  "errorsPatterns": [],
+  "clearance320": {
+    "band": {
+      "w": 35,
+      "h": 11
+    },
+    "jarW": 27,
+    "overlapsMarks": false,
+    "overlapsOtherJars": false
+  },
+  "pageOverflow320": false,
+  "errors320": [],
+  "win": {
+    "pours": 54,
+    "shown": true,
+    "sealedSieve": true,
+    "errors": []
+  }
+}
