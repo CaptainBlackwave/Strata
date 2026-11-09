@@ -53,13 +53,13 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 | Shell from a level | a shell (no coins by itself) | first clear of every 5th level | after 40 shells, see below |
 | Shell from a daily | a shell | every counted daily solve (not replays, not out-of-order) | after 40 shells, see below |
 | Set reward | 150 coins + 1 Shuffle, 1 Jar, 1 Hint charge (D19 removes the Undo charge) | the shell that completes a set: 8 sets in total | yes: 1,200 coins and 8 charges of each booster, lifetime |
-| Post-collection bonus | 50 coins | every 5th-level first clear **and** every counted daily solve once all 40 shells are owned | **no: it recurs forever** |
+| Post-collection bonus | **none** (removed by D38, `collection.coinsWhenComplete: 0`) | — | — |
 | Weekly set bonus (D83) | 100 coins (`weekly.completeBonus`) | once per ISO week, on the win that completes all five boards (`weekly-set.md` §3.7); single boards pay nothing | no |
 | Starting wallet | 100 coins, 3 / 3 / 3 charges | once | yes |
 
-A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It pays no level reward, Perfect bonus or tall-jar bonus, even on the tall-jar Sunday (`challenge: true`).
+A daily pays **only** its streak coins (and its shell). It pays no level reward, Perfect bonus or tall-jar bonus, even on the tall-jar Sunday (`challenge: true`).
 
-**Coin sinks**: Shuffle 80, Jar 120, Hint 60 at zero charges (repeatable); scenes 300 / 500 / 800 (one-time). Undo is not a sink (D19).
+**Coin sinks**: Shuffle 80, Jar 120, Hint 60 at zero charges (repeatable); scenes 300 / 500 / 800 and the ladder 2,500–11,650 (one-time); jar styles from level 60, 12 pieces from 1,700 to 3,350, 29,250 in total (one-time, D85, `jar-styles.md`). Undo is not a sink (D19).
 
 **Player-facing**: a coin counter in the HUD and on the home screen, a coin count-up on the win card, a price shown on a booster's badge when its charges run out, toasts such as "Used 60 coins" and "Needs 80 coins. Clear levels to earn more."
 
@@ -102,7 +102,8 @@ A daily pays **only** its streak coins (and its shell, or the 50-coin bonus). It
 - **Undo costs nothing** (D19), so a player with 0 coins and 0 charges can always undo. Restart was the free substitute for a paid Undo; that workaround is gone.
 
 **Not Yet Handled**:
-- ⚠️ Once a player owns every scene, coins again have only one repeatable sink (boosters). The scene ladder (D32) pushes that point far out, but a long-term sink after it is still open (GX-11; D23, D75).
+- ⚠️ Once a player owns every scene and every jar style, coins again have only one repeatable sink (boosters). Jar styles (D85) add about 80 days of goals for a regular player; a repeatable sink is still open (GX-11).
+- ⚠️ The scene ladder's top rungs take 3–5 weeks each for a regular player since D38 removed the 50-coin bonus (`production/qa/sprint-12/balance.md`); repricing is left to a later pass.
 
 **Unclear**:
 - ✅ Decided 2026-11-08: no shop for now (D7). `buyBooster` stays unexposed.

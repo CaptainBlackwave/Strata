@@ -94,10 +94,19 @@ Ids are stable (they are saved). Names live in `strings.ts`; ids and prices in `
 | Formula | Expression | Notes |
 |---|---|---|
 | Can buy | `level ≥ unlockLevel ∧ ¬owned(slot:id) ∧ coins ≥ price` | defaults are never bought |
-| Price | set by the balance pass (S5), one ladder across the 12 pieces | target: a regular player affords a new scene or style about every 7–14 days from level 60 (D86), with the scene ladder counted |
+| Price | `round50(1700 × 1.0636^(i−1))`, i = 1…12, in ladder order glass, cork, sand | the first piece costs 7 days and the last 14 days of a regular player's mean net income from level 60 (240 a day: 326 without buying boosters, 154 with) (D86) |
 | Sand overlay cap | each texture layer's alpha ≤ 0.25, and the mean change in a unit's colour ≤ 6% in relative luminance against plain sand | checked by a unit test on the texture table |
 
-The price table and the model's day-by-day results are recorded here after S5.
+Prices (S5, `production/qa/sprint-12/balance.md`):
+
+| Rank | Glass | Cork | Sand |
+|---|---|---|---|
+| 1 | Sea glass 1,700 | Driftwood 1,800 | Fine grain 1,900 |
+| 2 | Amber bottle 2,050 | Rope knot 2,200 | Glint 2,300 |
+| 3 | Cobalt rim 2,450 | Scallop cap 2,600 | Layered 2,800 |
+| 4 | Pearl 2,950 | Brass lid 3,150 | Ripple 3,350 |
+
+29,250 coins in total: about 80 days of a regular player's income without booster spending.
 
 ## 5. Edge Cases
 
@@ -124,7 +133,7 @@ All in `styles` in `game-config.json`.
 | Knob | Value | Safe range | Affects |
 |---|---|---|---|
 | `unlockLevel` | 60 | 30–120 | when the sink opens |
-| piece `price` | from S5 | 1,500–8,000 | the late-game pace |
+| piece `price` | 1,700–3,350 (§4) | 1,000–8,000 | the late-game pace; keep the ladder rising so the slots interleave |
 
 ## 8. Acceptance Criteria
 
@@ -134,8 +143,7 @@ All in `styles` in `game-config.json`.
   sand style; reduced motion has no animation; the sand overlay cap test passes.
 - [ ] Sheet: keyboard and screen reader operable; preview before buying; 150% text at 320 px without
   sideways scroll.
-- [ ] Balance: the model shows a new scene or style about every 7–14 days for a regular player from level
-  60; prices recorded in §4 and `economy.md`.
+- [x] Balance: each piece costs 7–14 days of a regular player's mean income from level 60; prices recorded in §4 and `economy.md`; `tests/unit/balance/style-prices.test.ts` (S5).
 - [ ] The owner approves the art before the merge (D92).
 
 ## Version History

@@ -30,8 +30,8 @@ export const DAYS = 90;
 const LADDER_SIZE = 12;
 
 /** A simulated player. */
-interface Profile { readonly name: string; readonly levelsPerDay: number; readonly playsDaily: (dayIndex: number) => boolean }
-const PROFILES: Profile[] = [
+export interface Profile { readonly name: string; readonly levelsPerDay: number; readonly playsDaily: (dayIndex: number) => boolean }
+export const PROFILES: Profile[] = [
   // Daily on Mon-Thu, so the 3-day gap each weekend breaks the streak (a 2-day gap could be saved by a pass).
   { name: 'light', levelsPerDay: 3, playsDaily: (d) => d % 7 < 4 },
   { name: 'regular', levelsPerDay: 8, playsDaily: () => true },
@@ -55,11 +55,15 @@ interface SimResult {
   purchases: { id: string; price: number; day: number }[];
 }
 
+/** Something the simulated player buys: a scene, or (sprint 12) a jar style that opens at `fromLevel`. */
+export interface ShopItem { readonly id: string; readonly price: number; readonly fromLevel?: number }
+
 /**
- * Runs one profile for DAYS days. `shop` is the list of scene prices to buy in order as
- * soon as the balance covers the next one (after the day's play); empty = never buy.
+ * Runs one profile for `days` days (DAYS by default). `shop` is the list of prices to buy in
+ * order as soon as the balance covers the next one (after the day's play) and the player's next
+ * level has reached its `fromLevel`; empty = never buy.
  */
-export function simulate(p: Profile, spend: boolean, shop: { id: string; price: number }[] = []): SimResult {
+export function simulate(p: Profile, spend: boolean, shop: readonly ShopItem[] = [], days_ = DAYS): SimResult {
   let wallet: Wallet = newWallet(config);
   let streak: StreakState = { last: null, streak: 0, best: 0, passes: 0 };
   let shells: string[] = [];
@@ -97,7 +101,7 @@ export function simulate(p: Profile, spend: boolean, shop: { id: string; price: 
     }
   };
 
-  for (let d = 0; d < DAYS; d++) {
+  for (let d = 0; d < days_; d++) {
     for (let k = 0; k < p.levelsPerDay; k++) {
       const spec = levelSpec(level, config);
       perfectAcc += PERFECT_RATE;
@@ -133,7 +137,7 @@ export function simulate(p: Profile, spend: boolean, shop: { id: string; price: 
       earn('daily', r.reward);
       award();
     }
-    while (shop.length > purchases.length && wallet.coins >= shop[purchases.length].price) {
+    while (shop.length > purchases.length && wallet.coins >= shop[purchases.length].price && level >= (shop[purchases.length].fromLevel ?? 0)) {
       const s = shop[purchases.length];
       wallet = { ...wallet, coins: wallet.coins - s.price };
       spent += s.price;
@@ -180,6 +184,10 @@ function searchLadder() {
   return best!;
 }
 
+// The report runs unless STRATA_MODEL_LIB=1, which the sprint 12 styles model sets before importing simulate.
+if (process.env.STRATA_MODEL_LIB !== '1') main();
+
+function main(): void {
 const report: Record<string, unknown> = { assumptions: { PERFECT_RATE, PAID_PER_10, start: utcDateKey(new Date(START)), DAYS, scenes } };
 const checkpoints = [7, 14, 30, 60, 90];
 for (const spend of [false, true]) {
@@ -210,3 +218,4 @@ for (const spend of [false, true]) {
 }
 console.log(JSON.stringify(report, null, 1));
 console.error(`shells in catalog: ${allShells(config).length}`);
+}

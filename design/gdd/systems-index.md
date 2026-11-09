@@ -145,7 +145,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D84 | Sprint 12 | **The late-game economy** (D23): give coins a purpose once the scenes are bought. Scope by interview before the sprint starts | economy | scoped (D85–D88) |
 | D85 | Late-game coin sink | **Jar and sand styles**: cosmetic jar glass, cork and sand-texture styles bought with coins and chosen in their own sheet; visual only, in every scene | economy, new GDD | sprint 12 |
 | D86 | Late-game pace | **Keep 1–2 weeks**: a regular player (8 levels and the daily a day) can afford something new about every 7–14 days; new prices follow the sprint 7 model | economy | sprint 12 |
-| D87 | Post-collection shell bonus | **Keep it** (50 coins, recurring); new prices count it | economy, shell-collection | recorded |
+| D87 | Post-collection shell bonus | **Keep it as it is.** Correction (sprint 12 S5): the question was asked from a stale line in `economy.md`; D38 had already removed the bonus (`coinsWhenComplete: 0`), so "keep it" keeps no bonus. The stale lines are corrected (`production/qa/sprint-12/balance.md`) | economy, shell-collection | recorded |
 | D88 | Sprint 12 extras | **A balance pass** on income against prices with the new targets (`economy.md`, the economy model); nothing else | economy | sprint 12 |
 | D89 | Sand styles | **Grain and sheen only**: a sand style never changes a colour; with Colour patterns on, the patterns stay visible on top | jar-styles, scenes, feel-audio-ui | sprint 12 |
 | D90 | Style slots | **Mix and match**: three slots (glass, cork, sand), each with its own small ladder; any owned pieces combine | jar-styles | sprint 12 |
