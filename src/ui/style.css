@@ -3155,3 +3155,17 @@ body[data-theme='harvestmoon']::before {
 .install-actions {
   justify-content: flex-end;
 }
+
+/* First-run hints (sprint 11 O2, D78) */
+.map-hint {
+  max-width: 420px;
+  margin: 0 auto 8px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+.map-hint[hidden] {
+  display: none;
+}

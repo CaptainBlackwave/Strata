@@ -118,6 +118,43 @@ export function listenForOffline(container: ServiceWorkerContainer): void {
   if (container.controller) noticeOffline();
 }
 
+/** Whether the booster line shows on this board: level 1, the first time it is played (O2). */
+let boosterHintOn = false;
+
+/**
+ * The first time the map opens, a line above Play says what the path is (O2). It stays while
+ * the map is open and Play is described by it; later opens do not show it.
+ */
+export function mapHintOnOpen(): void {
+  const hint = $('map-hint');
+  const show = !state.save.onboarding.mapHintSeen;
+  hint.hidden = !show;
+  if (show) {
+    $('btn-map-play').setAttribute('aria-describedby', 'map-hint');
+    state.save.onboarding.mapHintSeen = true;
+    writeSave(state.save);
+  } else $('btn-map-play').removeAttribute('aria-describedby');
+}
+
+/**
+ * Called as a numbered level starts. Level 1 shows the booster line until it is cleared (O2):
+ * boot quietly prepares level 1 under Home, so a once-on-start flag would be spent unseen.
+ * The flag is recorded once the player is past level 1.
+ */
+export function boosterHintOnStart(level: number, replay: boolean): void {
+  const o = state.save.onboarding;
+  boosterHintOn = level === 1 && !replay && state.save.level === 1 && !o.boosterHintSeen;
+  if (state.save.level > 1 && !o.boosterHintSeen) {
+    o.boosterHintSeen = true;
+    writeSave(state.save);
+  }
+}
+
+/** Whether the board's note above the tools shows the booster line now (read by the HUD). */
+export function boosterHintShown(): boolean {
+  return boosterHintOn && state.mode === 'level';
+}
+
 /** Captures the install prompt and wires the card's buttons. */
 export function wireOnboarding(): void {
   window.addEventListener('beforeinstallprompt', (e) => {

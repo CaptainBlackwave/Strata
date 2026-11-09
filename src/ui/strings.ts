@@ -299,6 +299,10 @@ const en = {
     playToday: 'Play today\u2019s',
     /** Once, when the service worker has cached everything (O4). */
     offlineReady: 'Strata is ready to play offline',
+    /** Above the map's Play button the first time the map opens (O2). */
+    mapHint: 'Your path along the beach. Play the next level, or tap a cleared stone to replay it.',
+    /** Above the boosters on level 1, the first board they work on (O2). */
+    boosterHint: 'Stuck? Undo is free, and Shuffle, Jar and Hint help too.',
   },
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most
