@@ -1,0 +1,177 @@
+{
+  "introShown": true,
+  "introText": "3Hourglass jarEvery third pour on the board, the hourglass flips: its sand turns upside down. The number on it counts the pours left.",
+  "seenAfterIntro": [
+    "narrow",
+    "frozen",
+    "locked",
+    "funnel",
+    "hourglass"
+  ],
+  "start": {
+    "index": 3,
+    "badge": "3",
+    "label": "Jar 4: coral, cocoa, lavender, lavender (hourglass, flips in 3 pours)",
+    "units": [
+      "#f28482",
+      "#7a5038",
+      "#b39ddb",
+      "#b39ddb"
+    ]
+  },
+  "clearanceMidday": {
+    "badge": {
+      "w": 27,
+      "h": 18
+    },
+    "jarW": 63,
+    "overlapsMarks": false,
+    "overlapsOtherJars": false,
+    "overlapsToolbar": false,
+    "fontPx": "12px"
+  },
+  "pour1": {
+    "move": {
+      "from": 0,
+      "to": 13
+    },
+    "glass": {
+      "index": 3,
+      "badge": "2",
+      "label": "Jar 4: coral, cocoa, lavender, lavender (hourglass, flips in 2 pours)",
+      "units": [
+        "#f28482",
+        "#7a5038",
+        "#b39ddb",
+        "#b39ddb"
+      ]
+    }
+  },
+  "pour2": {
+    "move": {
+      "from": 5,
+      "to": 0
+    },
+    "glass": {
+      "index": 3,
+      "badge": "1",
+      "label": "Jar 4: coral, cocoa, lavender, lavender (hourglass, flips after the next pour)",
+      "units": [
+        "#f28482",
+        "#7a5038",
+        "#b39ddb",
+        "#b39ddb"
+      ]
+    }
+  },
+  "pour3": {
+    "move": {
+      "from": 8,
+      "to": 13
+    },
+    "midFlipAnimations": 2,
+    "glass": {
+      "index": 3,
+      "badge": "3",
+      "label": "Jar 4: lavender, lavender, cocoa, coral (hourglass, flips in 3 pours)",
+      "units": [
+        "#b39ddb",
+        "#b39ddb",
+        "#7a5038",
+        "#f28482"
+      ]
+    },
+    "announce": "Poured 1 sage into jar 14. The hourglass flipped (jar 4)."
+  },
+  "afterUndo": {
+    "index": 3,
+    "badge": "1",
+    "label": "Jar 4: coral, cocoa, lavender, lavender (hourglass, flips after the next pour)",
+    "units": [
+      "#f28482",
+      "#7a5038",
+      "#b39ddb",
+      "#b39ddb"
+    ]
+  },
+  "afterRestart": {
+    "index": 3,
+    "badge": "3",
+    "label": "Jar 4: coral, cocoa, lavender, lavender (hourglass, flips in 3 pours)",
+    "units": [
+      "#f28482",
+      "#7a5038",
+      "#b39ddb",
+      "#b39ddb"
+    ]
+  },
+  "errors": [],
+  "guideHasHourglass": true,
+  "errorsGuide": [],
+  "clearanceMoonlit": {
+    "badge": {
+      "w": 27,
+      "h": 18
+    },
+    "jarW": 63,
+    "overlapsMarks": false,
+    "overlapsOtherJars": false,
+    "overlapsToolbar": false,
+    "fontPx": "12px"
+  },
+  "moonlitBadge1": {
+    "index": 3,
+    "badge": "1",
+    "label": "Jar 4: coral, cocoa, lavender, lavender (hourglass, flips after the next pour)",
+    "units": [
+      "#f28482",
+      "#7a5038",
+      "#b39ddb",
+      "#b39ddb"
+    ]
+  },
+  "errorsMoonlit": [],
+  "clearance320": {
+    "badge": {
+      "w": 40,
+      "h": 26
+    },
+    "jarW": 27,
+    "overlapsMarks": false,
+    "overlapsOtherJars": false,
+    "overlapsToolbar": false,
+    "fontPx": "18px"
+  },
+  "pageOverflow320": false,
+  "errors320": [],
+  "reducedBefore": {
+    "index": 3,
+    "badge": "1",
+    "label": "Jar 4: coral, cocoa, lavender, lavender (hourglass, flips after the next pour)",
+    "units": [
+      "#f28482",
+      "#7a5038",
+      "#b39ddb",
+      "#b39ddb"
+    ]
+  },
+  "reducedRunningFlips": 0,
+  "reducedAfter": {
+    "index": 3,
+    "badge": "3",
+    "label": "Jar 4: lavender, lavender, cocoa, coral (hourglass, flips in 3 pours)",
+    "units": [
+      "#b39ddb",
+      "#b39ddb",
+      "#7a5038",
+      "#f28482"
+    ]
+  },
+  "reducedAnnounce": "Poured 1 sage into jar 14. The hourglass flipped (jar 4).",
+  "errorsReduced": [],
+  "win": {
+    "pours": 60,
+    "shown": true,
+    "errors": []
+  }
+}
