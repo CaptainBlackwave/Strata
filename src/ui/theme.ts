@@ -3,7 +3,7 @@ import { type ThemeTokens, activeTheme, themeById } from '../core/themes';
 import { sceneDay } from './clock';
 import { startSceneFx } from './scene-fx';
 import { type UiThemeTokens, UI_TOKEN_VARS } from './theme-tokens';
-import { config, state } from './state';
+import { audio, config, state } from './state';
 
 const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
   bgTop: '--bg-top', bgBottom: '--bg-bottom', sea: '--sea', ink: '--ink', inkSoft: '--ink-soft', glass: '--glass',
@@ -29,5 +29,6 @@ export function applyTheme(id: string): void {
   }
   document.body.dataset.theme = theme.id;
   startSceneFx(theme.id); // the scene's animated layer, if it has one (scene-fx.ts)
+  audio.setScene(theme.id); // and its music (music.ts, D65): clock changes, previews and Use all come through here
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.themeColor);
 }

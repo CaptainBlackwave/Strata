@@ -5,6 +5,7 @@
  *
  * Example: `audio.play('pour', { units: 2 })` after `audio.unlock()` inside a tap handler.
  */
+import { SceneMusic } from './music';
 
 /** Every sound the game can make. */
 export type SoundEvent = 'select' | 'deselect' | 'nope' | 'pour' | 'land' | 'seal' | 'win' | 'coin' | 'booster' | 'shuffle';
@@ -35,9 +36,9 @@ export class GameAudio {
   private master: GainNode | null = null;
   private musicBus: GainNode | null = null;
   private noise: AudioBuffer | null = null;
-  private musicTimer = 0;
-  private musicStep = 0;
-  private waves: AudioBufferSourceNode | null = null;
+  private music: SceneMusic | null = null;
+  private scene = 'midday';
+  private watchingVisibility = false;
 
   constructor(private options: AudioOptions) {}
 
@@ -182,61 +183,36 @@ export class GameAudio {
     this.tone(620, at, 0.09, 'sine', 0.25, 260);
   }
 
-  /** Gentle generative music: soft pentatonic notes over a slow ocean swell. */
+  /** Starts the scene music (music.ts, D65) into the music bus. It waits while the page is hidden. */
   private startMusic(): void {
-    if (!this.ctx || !this.musicBus || this.musicTimer) return;
-    const ctx = this.ctx;
-    this.musicBus.gain.cancelScheduledValues(ctx.currentTime);
-    this.musicBus.gain.setTargetAtTime(0.5, ctx.currentTime, 1.5);
-    // Ocean: looped low-passed noise with a slow LFO on the volume.
-    const waves = ctx.createBufferSource();
-    waves.buffer = this.noise;
-    waves.loop = true;
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.value = 420;
-    const swell = ctx.createGain();
-    swell.gain.value = 0.05;
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = 0.09;
-    const lfoDepth = ctx.createGain();
-    lfoDepth.gain.value = 0.04;
-    lfo.connect(lfoDepth).connect(swell.gain);
-    waves.connect(lp).connect(swell).connect(this.musicBus);
-    waves.start();
-    lfo.start();
-    this.waves = waves;
-    const pattern = [0, 2, 4, 2, 5, 4, 2, 1, 0, 2, 4, 7, 5, 4, 2, 4];
-    const tick = () => {
-      if (!this.ctx || !this.musicBus || !this.options.music) return;
-      const t = this.ctx.currentTime + 0.05;
-      const n = pattern[this.musicStep % pattern.length];
-      if (this.musicStep % 4 !== 3) {
-        const o = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        o.type = 'sine';
-        o.frequency.value = SCALE[n] / 2;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.09, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
-        o.connect(g).connect(this.musicBus);
-        o.start(t);
-        o.stop(t + 1.7);
-      }
-      this.musicStep++;
-    };
-    this.musicTimer = window.setInterval(tick, 620);
+    if (!this.ctx || !this.musicBus || !this.noise) return;
+    this.watchVisibility();
+    if (document.hidden) return;
+    this.music ??= new SceneMusic(this.ctx, this.musicBus, this.noise);
+    if (this.music.playing) return;
+    this.musicBus.gain.cancelScheduledValues(this.ctx.currentTime);
+    this.musicBus.gain.setTargetAtTime(0.5, this.ctx.currentTime, 1.5);
+    this.music.start(this.scene);
   }
 
   private stopMusic(): void {
-    window.clearInterval(this.musicTimer);
-    this.musicTimer = 0;
+    this.music?.stop();
     if (this.ctx && this.musicBus) this.musicBus.gain.setTargetAtTime(0, this.ctx.currentTime, 0.3);
-    try {
-      this.waves?.stop();
-    } catch {
-      /* already stopped */
-    }
-    this.waves = null;
+  }
+
+  /** Music pauses while the page is hidden and resumes when it is shown, if the switch is on. */
+  private watchVisibility(): void {
+    if (this.watchingVisibility) return;
+    this.watchingVisibility = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.stopMusic();
+      else if (this.options.music) this.startMusic();
+    });
+  }
+
+  /** Follows the scene shown: the music crossfades to its variation (D65). Safe before unlock. */
+  setScene(id: string): void {
+    this.scene = id;
+    this.music?.setScene(id);
   }
 }
