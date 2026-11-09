@@ -1,0 +1,106 @@
+{
+  "settingsPixel7": {
+    "open": true,
+    "versions": [
+      "Version 0.11.1 Latest",
+      "Version 0.11.0",
+      "Version 0.10.1",
+      "Version 0.10.0",
+      "Version 0.9.1",
+      "Version 0.9.0",
+      "Version 0.8.0"
+    ],
+    "names": [
+      "A smoother first run, and a weekly bonus",
+      "Badges and the weekly set",
+      "Look fixes",
+      "Music and feel",
+      "Fixes",
+      "The beach path",
+      "Free undo and new scenes"
+    ],
+    "lines": 27,
+    "logScrolls": true,
+    "cardScrolls": false,
+    "okVisible": true,
+    "sideScroll": false,
+    "focus": "btn-whatsnew-ok",
+    "afterClose": {
+      "closed": true,
+      "focus": "btn-whatsnew"
+    },
+    "errors": []
+  },
+  "small150": {
+    "open": true,
+    "versions": [
+      "Version 0.11.1 Latest",
+      "Version 0.11.0",
+      "Version 0.10.1",
+      "Version 0.10.0",
+      "Version 0.9.1",
+      "Version 0.9.0",
+      "Version 0.8.0"
+    ],
+    "names": [
+      "A smoother first run, and a weekly bonus",
+      "Badges and the weekly set",
+      "Look fixes",
+      "Music and feel",
+      "Fixes",
+      "The beach path",
+      "Free undo and new scenes"
+    ],
+    "lines": 27,
+    "logScrolls": true,
+    "cardScrolls": false,
+    "okVisible": true,
+    "sideScroll": false,
+    "focus": "btn-whatsnew-ok",
+    "errors": []
+  },
+  "moonlit": {
+    "open": true,
+    "versions": [
+      "Version 0.11.1 Latest",
+      "Version 0.11.0",
+      "Version 0.10.1",
+      "Version 0.10.0",
+      "Version 0.9.1",
+      "Version 0.9.0",
+      "Version 0.8.0"
+    ],
+    "names": [
+      "A smoother first run, and a weekly bonus",
+      "Badges and the weekly set",
+      "Look fixes",
+      "Music and feel",
+      "Fixes",
+      "The beach path",
+      "Free undo and new scenes"
+    ],
+    "lines": 27,
+    "logScrolls": true,
+    "cardScrolls": false,
+    "okVisible": true,
+    "sideScroll": false,
+    "focus": "btn-whatsnew-ok",
+    "errors": []
+  },
+  "updateCard": {
+    "open": true,
+    "versions": [
+      "Version 0.11.1 Latest"
+    ],
+    "names": [
+      "A smoother first run, and a weekly bonus"
+    ],
+    "lines": 3,
+    "logScrolls": false,
+    "cardScrolls": false,
+    "okVisible": true,
+    "sideScroll": false,
+    "focus": "btn-whatsnew-ok",
+    "errors": []
+  }
+}
