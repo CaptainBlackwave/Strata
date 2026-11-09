@@ -140,12 +140,12 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
       const u = clampInt(units, 1, 6, 1);
       const dur = 0.3 + 0.05 * u;
       const out: Voice[] = [
-        noise('bandpass', 4200, 1500, 0, dur, 0.09, 0.8, dur * 0.25), // the hiss of the stream
+        noise('bandpass', 4200, 1500, 0, dur, 0.15, 0.8, dur * 0.25), // the hiss of the stream
         noise('lowpass', 900, 450, 0.03, dur * 0.9, 0.03 + 0.01 * u, 0.7, dur * 0.3), // body: more sand, more weight
       ];
       const grains = 4 + 3 * u; // the grains: more sand, more of them
       for (let i = 0; i < grains; i++) {
-        out.push(noise('bandpass', 6500 - 1500 * jitter(i + 7), 4000, (dur * 0.85 * (i + jitter(i))) / grains, 0.022, 0.04 + 0.03 * jitter(i + 3), 1.6, 0.002));
+        out.push(noise('bandpass', 6500 - 1500 * jitter(i + 7), 4000, (dur * 0.85 * (i + jitter(i))) / grains, 0.022, 0.07 + 0.04 * jitter(i + 3), 1.6, 0.002));
       }
       return out;
     },
@@ -169,7 +169,7 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
     capDb: -6,
     voices: () => [
       ...[0, 2, 4].map((n) => tone(note(n), 0, 1.6, 0.035, 'sine', { attack: 0.35 })), // the bloom: a chord that swells in
-      ...[0, 2, 4, 5, 7, 9].flatMap((n, i) => bell(note(n), i * 0.1, 0.075, 0.6)),
+      ...[0, 2, 4, 5, 7, 9].flatMap((n, i) => bell(note(n), i * 0.1, 0.09, 0.6)),
       tone(note(9) * 2, 0.66, 0.9, 0.035, 'sine', { attack: 0.02 }),
     ],
   },
@@ -178,7 +178,7 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
     capDb: -14,
     voices: () => [tone(note(3), 0, 0.09, 0.12, 'triangle'), tone(note(6), 0.07, 0.16, 0.12, 'triangle'), noise('bandpass', 1500, 4500, 0, 0.16, 0.04, 0.8, 0.06)],
   },
-  shuffle: { capDb: -16, voices: () => Array.from({ length: 6 }, (_, i) => noise('bandpass', 2500 + 600 * i, 1800, i * 0.05, 0.09, 0.08, 1, 0.02)) },
+  shuffle: { capDb: -16, voices: () => Array.from({ length: 6 }, (_, i) => noise('bandpass', 2500 + 600 * i, 1800, i * 0.05, 0.09, 0.14, 1, 0.02)) },
   mapStone: {
     capDb: -18,
     voices: () => [tone(note(6), 0, 0.06, 0.08, 'sine', { endFreq: note(6) * 0.85 }), tone(note(8), 0, 0.14, 0.04, 'triangle'), noise('bandpass', 2400, 1600, 0, 0.03, 0.04, 1.2, 0.002)],
