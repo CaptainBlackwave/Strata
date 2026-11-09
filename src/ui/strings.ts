@@ -285,11 +285,18 @@ const en = {
     installTitle: 'Keep Strata on your home screen',
     installText: 'It opens full screen, like an app, and plays offline.',
     installButton: 'Add to Home Screen',
-    installLater: 'Not now',
+    notNow: 'Not now',
     /** iPhone and iPad: Safari has no install prompt, so the steps are shown. The share icon is drawn after step 1. */
     iosSteps: ['Tap Share', 'Choose \u201cAdd to Home Screen\u201d', 'Tap Add'],
     /** Under the steps: newer Safari hides Share behind the ··· button. */
     iosNote: 'No Share button? Tap \u00b7\u00b7\u00b7 first. You may need to scroll to find Add to Home Screen.',
+    /** A `?daily=` link from an earlier day (O3). `date` is that day's key. */
+    dailyOverTitle: 'That daily is over',
+    dailyOverText: (date: string) => {
+      const [y, m, d] = date.split('-').map(Number);
+      return `The puzzle for ${new Date(y, m - 1, d).toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })} has ended. Today\u2019s is ready.`;
+    },
+    playToday: 'Play today\u2019s',
   },
   /**
    * Generated names: `Adjective Noun NN` (player-profile.md §3.5). Adjectives are at most

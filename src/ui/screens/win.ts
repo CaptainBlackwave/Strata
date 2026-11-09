@@ -1,5 +1,6 @@
 /** The win card for a level, the daily and the tutorial. The rules are the pure core/win.ts; this shows them. */
 import { sharePours } from '../../core/daily';
+import { shareLink } from '../logic/launch';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
 import { type SlotItem } from '../../core/profile';
 import { celebrate, flyCoins, mapFx, winBloom } from '../fx';
@@ -54,7 +55,7 @@ export function showUnlocks(items: SlotItem[]): void {
 }
 
 export async function shareDaily(): Promise<void> {
-  const url = location.href.split('?')[0].split('#')[0];
+  const url = shareLink(location.href, { daily: state.dailyDate }); // opens this daily directly; no save data (O3)
   const text = t.shareText(state.dailyDate, state.dailyName, sharePours(state.save.dailyShare, state.dailyDate, state.session.moves), state.save.daily.streak, url);
   // The outcome shows inside the card, not as a toast under the overlay (UX-win-4).
   const status = $('share-status');

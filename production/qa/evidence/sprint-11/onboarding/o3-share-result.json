@@ -1,0 +1,57 @@
+{
+ "today": "2026-11-09",
+ "todayLink": {
+  "url": "",
+  "top": "board",
+  "label": "Mon, Nov 9",
+  "tag": "Daily · easy"
+ },
+ "shareText": "Strata Daily 2026-11-09 (easy)\nSolved in 18 pours · 1-day streak\nhttp://localhost:5520/?daily=2026-11-09",
+ "shareLinkKeys": [
+  "daily"
+ ],
+ "sharedLinkOpens": {
+  "url": "",
+  "top": "board",
+  "label": "Mon, Nov 9",
+  "tag": "Daily · easy"
+ },
+ "pastLink": {
+  "url": "",
+  "top": "daily-over",
+  "label": "Level 5",
+  "tag": ""
+ },
+ "pastText": "The puzzle for Monday, November 2 has ended. Today’s is ready.",
+ "pastThenPlay": {
+  "url": "",
+  "top": "board",
+  "label": "Mon, Nov 9",
+  "tag": "Daily · easy"
+ },
+ "pastEscape": {
+  "url": "",
+  "top": "home",
+  "label": "Level 5",
+  "tag": ""
+ },
+ "levelRoute": {
+  "url": "?level=3",
+  "top": "board",
+  "label": "Level 3",
+  "tag": ""
+ },
+ "newPlayerDaily": {
+  "url": "",
+  "top": "home",
+  "label": "Level 1",
+  "tag": ""
+ },
+ "weeklyLink": {
+  "url": "",
+  "top": "home",
+  "label": "Level 5",
+  "tag": ""
+ },
+ "errors": []
+}

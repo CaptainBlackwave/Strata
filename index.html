@@ -145,8 +145,18 @@
           <ol id="install-steps" class="install-steps" hidden></ol>
           <p id="install-note" data-s="onboarding.iosNote" class="install-note" hidden>No Share button? Tap ··· first.</p>
           <div class="sheet-row install-actions">
-            <button id="btn-install-later" data-s="onboarding.installLater" class="secondary" type="button">Not now</button>
+            <button id="btn-install-later" data-s="onboarding.notNow" class="secondary" type="button">Not now</button>
             <button id="btn-install" class="primary" type="button">Add to Home Screen</button>
+          </div>
+        </div>
+      </div>
+      <div id="daily-over" class="cabinet" hidden>
+        <div class="cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="daily-over-title" aria-describedby="daily-over-text">
+          <h2 id="daily-over-title" data-s="onboarding.dailyOverTitle" class="whatsnew-title">That daily is over</h2>
+          <p id="daily-over-text" class="install-text"></p>
+          <div class="sheet-row install-actions">
+            <button id="btn-daily-over-later" data-s="onboarding.notNow" class="secondary" type="button">Not now</button>
+            <button id="btn-daily-over-play" data-s="onboarding.playToday" class="primary" type="button">Play today's</button>
           </div>
         </div>
       </div>

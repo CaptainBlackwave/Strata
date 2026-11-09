@@ -7,6 +7,7 @@ import { whatsNewDue, writeSave } from '../storage';
 import { t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer } from '../dom';
 import { config, state } from '../state';
+import { startDaily } from './board';
 
 /** How long Home settles before the card may open over it (ms): presentation only (D31). */
 const INSTALL_ARRIVE_MS = 700;
@@ -87,6 +88,15 @@ async function install(): Promise<void> {
   }
 }
 
+/**
+ * A `?daily=` link from an earlier day (O3): over Home, a gentle note that it has ended, with
+ * today's daily one tap away.
+ */
+export function openDailyOver(date: string): void {
+  $('daily-over-text').textContent = t.onboarding.dailyOverText(date);
+  openLayer($('daily-over'), $('btn-daily-over-play'), $('btn-daily'));
+}
+
 /** Captures the install prompt and wires the card's buttons. */
 export function wireOnboarding(): void {
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -102,4 +112,9 @@ export function wireOnboarding(): void {
   });
   $('btn-install').addEventListener('click', () => void install());
   $('btn-install-later').addEventListener('click', () => closeLayer($('install')));
+  $('btn-daily-over-later').addEventListener('click', () => closeLayer($('daily-over')));
+  $('btn-daily-over-play').addEventListener('click', () => {
+    closeLayer($('daily-over'), false);
+    startDaily();
+  });
 }
