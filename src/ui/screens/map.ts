@@ -168,7 +168,9 @@ function makeBand(band: number): HTMLElement {
   let html = '';
   for (const at of art.landAt ?? []) if (bottom - at * full - top > -40) html += `<span class="motif motif-land" style="${place(at)}">${art.land}</span>`;
   for (const at of art.seaAt ?? []) if (bottom - at * full - top > -40) html += `<span class="motif motif-sea" style="${place(at)}">${art.sea}</span>`;
-  html += `<span class="band-name">${t.map.scenery[b.id] ?? ''}</span>`;
+  // The band's first stone sits just above the band line, beside the label: put the label on the other side.
+  const side = pathX(lo) < 0.5 ? ' band-name-right' : '';
+  html += `<span class="band-name${side}">${t.map.scenery[b.id] ?? ''}</span>`;
   el.innerHTML = html;
   return el;
 }

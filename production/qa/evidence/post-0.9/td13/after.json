@@ -1,0 +1,161 @@
+{
+  "label": "after",
+  "cpuThrottle": 4,
+  "frozenNow": 1767225600000,
+  "l141hint": {
+    "longestMs": 0,
+    "longTasks": 0,
+    "totalBlockedMs": 0,
+    "wallMs": 122,
+    "thinking": null,
+    "result": {
+      "hint": "from0,to14",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "db4edda6"
+    }
+  },
+  "l141shuffle": {
+    "longestMs": 0,
+    "longTasks": 0,
+    "totalBlockedMs": 0,
+    "wallMs": 96,
+    "thinking": null,
+    "result": {
+      "hint": "",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "dc47c464"
+    }
+  },
+  "l152hint": {
+    "longestMs": 0,
+    "longTasks": 0,
+    "totalBlockedMs": 0,
+    "wallMs": 189,
+    "thinking": null,
+    "result": {
+      "hint": "from0,to14",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "e85b5ab6"
+    }
+  },
+  "l152hintAfterPour": {
+    "longestMs": 0,
+    "longTasks": 0,
+    "totalBlockedMs": 0,
+    "wallMs": 625,
+    "thinking": {
+      "disabled": false,
+      "ariaBusy": null,
+      "cls": "tool",
+      "text": "Hint",
+      "label": "Hint, 997 left"
+    },
+    "result": {
+      "hint": "from0,to14",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "bf31aa1f"
+    }
+  },
+  "l152shuffle": {
+    "longestMs": 0,
+    "longTasks": 0,
+    "totalBlockedMs": 0,
+    "wallMs": 1843,
+    "thinking": {
+      "disabled": false,
+      "ariaBusy": null,
+      "cls": "tool",
+      "text": "Shuffle",
+      "label": "Shuffle, 98 left"
+    },
+    "result": {
+      "hint": "",
+      "toast": "Tap Restart again to start this board over",
+      "jarsHash": "50086151"
+    }
+  },
+  "staleShuffle": {
+    "shuffleChargesBefore": 98,
+    "after": 98,
+    "movesBefore": 2,
+    "movesAfter": 1,
+    "toast": "Tap Restart again to start this board over"
+  },
+  "cue": {
+    "hint": [
+      {
+        "id": "undo",
+        "disabled": true,
+        "ariaBusy": null,
+        "cls": "tool",
+        "text": "Undo",
+        "label": "Undo, free"
+      },
+      {
+        "id": "shuffle",
+        "disabled": true,
+        "ariaBusy": null,
+        "cls": "tool",
+        "text": "Shuffle",
+        "label": "Shuffle, 99 left"
+      },
+      {
+        "id": "extraJar",
+        "disabled": false,
+        "ariaBusy": null,
+        "cls": "tool",
+        "text": "Jar",
+        "label": "Jar, 3 left"
+      },
+      {
+        "id": "hint",
+        "disabled": true,
+        "ariaBusy": "true",
+        "cls": "tool thinking",
+        "text": "Thinking…",
+        "label": "Hint, thinking…"
+      }
+    ],
+    "shuffle": [
+      {
+        "id": "undo",
+        "disabled": true,
+        "ariaBusy": null,
+        "cls": "tool",
+        "text": "Undo",
+        "label": "Undo, free"
+      },
+      {
+        "id": "shuffle",
+        "disabled": true,
+        "ariaBusy": "true",
+        "cls": "tool thinking",
+        "text": "Thinking…",
+        "label": "Shuffle, thinking…"
+      },
+      {
+        "id": "extraJar",
+        "disabled": false,
+        "ariaBusy": null,
+        "cls": "tool",
+        "text": "Jar",
+        "label": "Jar, 3 left"
+      },
+      {
+        "id": "hint",
+        "disabled": true,
+        "ariaBusy": null,
+        "cls": "tool",
+        "text": "Hint",
+        "label": "Hint, 998 left"
+      }
+    ]
+  },
+  "winWithHints": {
+    "hints": 62,
+    "won": true,
+    "longestHintMs": 0,
+    "moves": 62
+  },
+  "errors": []
+}

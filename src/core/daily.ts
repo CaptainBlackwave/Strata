@@ -4,7 +4,7 @@
  * be saved by a banked "tide pass". Pure functions only.
  * Implements design/competitive-roadmap.md item C6 (sprint 2 decisions S2-1, S2-2).
  */
-import { type GeneratedLevel, generateFromSpec, lastResort, shorterDeal, stepBudgets } from './generator';
+import { type FallbackStep, type GeneratedLevel, runFallbackSteps, stepBudgets } from './generator';
 import type { GameConfig, LevelSpec } from './levels';
 
 /** One weekday's board recipe. */
@@ -109,25 +109,23 @@ export function dailySeed(key: string, config: DailyConfig): number {
  */
 export function generateDaily(key: string, config: GameConfig & DailyConfig): GeneratedLevel & { spec: DailySpec } {
   const spec = dailySpec(key, config);
-  const seed = dailySeed(key, config);
-  // Length cap (D36): each failed step may carry its shortest over-cap deal; keep the shortest
-  // of them for the last resort, as numbered levels do.
-  let shortest: GeneratedLevel | undefined;
-  try {
-    return { ...generateFromSpec(spec, seed, config), spec };
-  } catch (e) {
-    shortest = shorterDeal(shortest, e); // fall through to the easier steps
-  }
+  return runFallbackSteps(dailySteps(spec, config), dailySeed(key, config), config, spec);
+}
+
+/**
+ * The daily's fallback chain (TD-5): the full recipe with the plain generator caps (it is
+ * not capped by step work, unlike a level's first step), then, when the day has a mechanic,
+ * the same recipe without it, capped by `generator.stepNodeBudget`.
+ * Example: `dailySteps(dailySpec('2026-11-08', config), config).length // 1 or 2`
+ */
+export function dailySteps(spec: DailySpec, config: GameConfig): FallbackStep<DailySpec>[] {
+  const g = config.generator;
+  const steps: FallbackStep<DailySpec>[] = [{ spec, maxAttempts: g.maxAttempts, totalNodeBudget: Infinity, attemptNodeBudget: g.solverNodeBudget }];
   if (spec.mechanics.length) {
-    const plain: DailySpec = { ...spec, mechanics: [] };
     const { cap, perAttempt } = stepBudgets(config);
-    try {
-      return { ...generateFromSpec(plain, seed, config, config.generator.maxAttempts, cap, perAttempt), spec: plain };
-    } catch (e) {
-      shortest = shorterDeal(shortest, e); // fall through to the last resort
-    }
+    steps.push({ spec: { ...spec, mechanics: [] }, maxAttempts: g.maxAttempts, totalNodeBudget: cap, attemptNodeBudget: perAttempt });
   }
-  return lastResort(spec, seed, config, shortest);
+  return steps;
 }
 
 /** Coins for solving on day `streak` of a streak. */

@@ -1,0 +1,52 @@
+{
+ "lateWrite": {
+  "bPlay": "Play · Level 3",
+  "aOverlay": true,
+  "afterBStarts": {
+   "level": 4,
+   "best3": 12,
+   "coins": 525,
+   "hud": "Strata Tall jars Level 3 500 c"
+  },
+  "ok": false
+ },
+ "newMark": {
+  "firstOpen": 0,
+  "afterReopenAndReload": 0
+ },
+ "big": {
+  "title": {
+   "text": "Beach path",
+   "lines": 2,
+   "px": "30px"
+  },
+  "badges": [
+   {
+    "text": "80",
+    "lines": 1,
+    "textOverName": false
+   },
+   {
+    "text": "120",
+    "lines": 1,
+    "textOverName": true
+   },
+   {
+    "text": "60",
+    "lines": 1,
+    "textOverName": false
+   }
+  ],
+  "labelOnTop": [
+   {
+    "text": "The pier",
+    "onTop": false
+   },
+   {
+    "text": "Lighthouse point",
+    "onTop": false
+   }
+  ]
+ },
+ "errors": []
+}

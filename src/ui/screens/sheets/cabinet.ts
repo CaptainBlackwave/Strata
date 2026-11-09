@@ -1,24 +1,27 @@
 /** The shell cabinet sheet. */
 import { allShells, setProgress } from '../../../core/collection';
-import { streakStatus, utcDateKey } from '../../../core/daily';
+import { streakStatus } from '../../../core/daily';
 import { shellSvg } from '../../shells';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
+import { writeSave } from '../../storage';
+import { dailyKey } from '../../clock';
 import { audio, config, state } from '../../state';
 
-/** How many shells the player had when the cabinet was last opened (or at boot). Later ones are "New" (UX-cab-4). */
-let seenShells = 0;
-
+/** Opens the cabinet. Shells earned since it was last opened are marked "New" once; the count is saved, so a reload keeps the mark (UX-cab-4). */
 export function openCabinet(): void {
   const owned = new Set(state.save.shells);
-  const fresh = new Set(state.save.shells.slice(seenShells));
-  seenShells = state.save.shells.length;
+  const fresh = new Set(state.save.shells.slice(Math.min(state.save.seenShells, state.save.shells.length)));
+  if (state.save.seenShells !== state.save.shells.length) {
+    state.save.seenShells = state.save.shells.length;
+    writeSave(state.save);
+  }
   const cleared = state.save.level - 1;
   const every = config.collection.everyLevels;
   const remaining = every - (cleared % every);
   $('cabinet-title').textContent = t.cabinetTitle;
   // Today's unsolved daily also grants a shell, and the complete line is a standing rule, not a payout (UX-cab-3).
-  const dailyOpen = state.save.tutorialDone && !streakStatus(state.save.daily, utcDateKey(new Date())).solvedToday;
+  const dailyOpen = state.save.tutorialDone && !streakStatus(state.save.daily, dailyKey(state.clock)).solvedToday;
   $('cabinet-next').textContent = state.save.shells.length < allShells(config).length ? t.nextShell(remaining, dailyOpen) : t.collectionDone(config.collection.coinsWhenComplete);
   const sets = $('cabinet-sets');
   sets.replaceChildren(
@@ -86,7 +89,6 @@ export function openCabinet(): void {
 
 /** Wires the shell cabinet's buttons. */
 export function wireCabinet(): void {
-  seenShells = state.save.shells.length; // shells owned at boot are not new
   $('btn-shells').addEventListener('click', openCabinet);
   $('btn-close-cabinet').addEventListener('click', () => closeLayer($('cabinet')));
 }

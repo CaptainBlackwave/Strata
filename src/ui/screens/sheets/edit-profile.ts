@@ -163,7 +163,7 @@ export function wireEditProfile(): void {
     renderEdit();
   });
   $('btn-reroll').addEventListener('click', () => {
-    draft = { ...draft, name: generateName(Math.random, t.nameWords) };
+    draft = { ...draft, name: generateName(state.rng, t.nameWords) };
     $<HTMLInputElement>('name-input').value = draft.name;
     audio.play('shuffle');
     renderEdit();

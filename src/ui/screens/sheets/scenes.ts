@@ -1,10 +1,11 @@
 /** The Scenes sheet: preview, buy and use (sprint 4). */
-import { buyTheme, inSeason, isOwned, localDateKey, themeById } from '../../../core/themes';
+import { buyTheme, isOwned, themeById } from '../../../core/themes';
 import { type FocusTarget } from '../../layers';
 import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer, showToast } from '../../dom';
 import { updateHud } from '../hud';
+import { seasonBadge } from '../../clock';
 import { audio, config, state } from '../../state';
 import { applyTheme, currentTheme } from '../../theme';
 
@@ -21,7 +22,6 @@ export function renderScenes(): void {
   // Use or Buy turns clock-matching off, so the switch re-syncs on every render (UX-scenes-1).
   $<HTMLInputElement>('set-auto').checked = state.save.themes.auto;
   const grid = $('scene-grid');
-  const today = localDateKey(new Date());
   grid.replaceChildren(
     ...[...config.themes.list].sort((a, b) => a.price - b.price).map((theme) => {
       const owned = isOwned(theme, state.save.themes.owned);
@@ -34,7 +34,7 @@ export function renderScenes(): void {
       card.innerHTML = `<span class="scene-swatch" style="--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})"><i></i><i></i><i></i></span><span class="scene-name"></span><span class="scene-status"></span>`;
       card.querySelector('.scene-swatch')!.setAttribute('data-scene', theme.id);
       card.querySelector('.scene-name')!.textContent = theme.name;
-      const badges = [inSeason(theme, today, { southern: state.save.settings.southern }) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
+      const badges = [seasonBadge(theme, state.clock, { southern: state.save.settings.southern }) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
       if (badges.length) {
         const row = document.createElement('span');
         row.className = 'scene-badges';

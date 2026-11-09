@@ -10,7 +10,19 @@ The game's release history. The repository's root `CHANGELOG.md` belongs to the 
 | v0.6.0 | `43c1420` (sprint 6, PR #2) |
 | v0.7.0 | `ab56334` (sprint 7, PR #3) |
 | v0.8.0 | `05d5be5` (sprint 8, PR #4) |
-| v0.9.0 | the sprint 9 squash commit on `main`, once its PR is merged |
+| v0.9.0 | `4a35afb` (sprint 9, PR #5) |
+| v0.9.1 | the post-0.9.0 fixes squash commit on `main`, once its PR is merged |
+
+## 0.9.1 (2026-11-09): fixes after 0.9.0
+**For players**
+- Hint and Shuffle think in the background, so the game no longer freezes on the biggest boards; the button shows "Thinking…" meanwhile.
+- A shell you have not looked at yet stays marked "New" in the cabinet, even after closing the game.
+- At large text sizes the booster prices, the map title and the map's scenery names no longer overlap anything.
+- With two tabs open, a win in the older tab in the moment the new tab opens is no longer lost.
+- Updates download cleanly: old game files are cleared from the phone, and a new icon or name shows without reinstalling.
+
+**Under the hood**
+- One fallback-step runner for levels and the daily (TD-5), boards byte-identical; clock and randomness injected in the UI (TD-16); the default scene comes from the config (TD-3).
 
 ## 0.9.0 (2026-11-09): sprint 9
 **For players**

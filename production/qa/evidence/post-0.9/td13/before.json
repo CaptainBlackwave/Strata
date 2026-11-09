@@ -1,0 +1,91 @@
+{
+  "label": "before",
+  "cpuThrottle": 4,
+  "frozenNow": 1767225600000,
+  "l141hint": {
+    "longestMs": 52,
+    "longTasks": 1,
+    "totalBlockedMs": 52,
+    "wallMs": 113,
+    "thinking": null,
+    "result": {
+      "hint": "from0,to14",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "db4edda6"
+    }
+  },
+  "l141shuffle": {
+    "longestMs": 0,
+    "longTasks": 0,
+    "totalBlockedMs": 0,
+    "wallMs": 101,
+    "thinking": null,
+    "result": {
+      "hint": "",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "dc47c464"
+    }
+  },
+  "l152hint": {
+    "longestMs": 527,
+    "longTasks": 1,
+    "totalBlockedMs": 527,
+    "wallMs": 574,
+    "thinking": null,
+    "result": {
+      "hint": "from0,to14",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "e85b5ab6"
+    }
+  },
+  "l152hintAfterPour": {
+    "longestMs": 1032,
+    "longTasks": 1,
+    "totalBlockedMs": 1032,
+    "wallMs": 1770,
+    "thinking": {
+      "disabled": false,
+      "ariaBusy": null,
+      "cls": "tool",
+      "text": "Hint",
+      "label": "Hint, 997 left"
+    },
+    "result": {
+      "hint": "from0,to14",
+      "toast": "Hint: pour jar 1 into jar 15",
+      "jarsHash": "bf31aa1f"
+    }
+  },
+  "l152shuffle": {
+    "longestMs": 60,
+    "longTasks": 1,
+    "totalBlockedMs": 60,
+    "wallMs": 727,
+    "thinking": {
+      "disabled": false,
+      "ariaBusy": null,
+      "cls": "tool",
+      "text": "Shuffle",
+      "label": "Shuffle, 98 left"
+    },
+    "result": {
+      "hint": "",
+      "toast": "Tap Restart again to start this board over",
+      "jarsHash": "50086151"
+    }
+  },
+  "staleShuffle": {
+    "shuffleChargesBefore": 98,
+    "after": 97,
+    "movesBefore": 2,
+    "movesAfter": 1,
+    "toast": "Tap Restart again to start this board over"
+  },
+  "winWithHints": {
+    "hints": 62,
+    "won": true,
+    "longestHintMs": 53,
+    "moves": 62
+  },
+  "errors": []
+}

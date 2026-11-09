@@ -105,10 +105,10 @@ const en = {
     title: "What's new",
     button: "What's new",
     lines: [
-      'A beach path map shows every level, with what you earned on each.',
-      'Replay any level to earn its Perfect mark or beat your best pours.',
-      'Strata now plays in one tab at a time, so no progress is lost.',
-      'Aurora night, Winter lights and Rainbow after rain look better.',
+      'Hints and shuffles no longer freeze the game on big boards.',
+      'A shell you have not looked at yet stays marked "New" until you do.',
+      'Large text fits better on the map and the booster prices.',
+      'Updates download cleanly, and old files are cleared out.',
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
@@ -192,6 +192,9 @@ const en = {
   hintTo: 'To',
   noUndo: 'Nothing to undo yet.',
   noShuffle: 'Couldn’t find a better shuffle.',
+  /** On a Hint or Shuffle button while the worker searches (TD-13). */
+  thinking: 'Thinking…',
+  boosterThinkingLabel: (name: string) => `${name}, thinking…`,
   notEnoughCoins: (price: number) => `Needs ${price} coins. Clear levels to earn more.`,
   boughtWith: (price: number) => `Used ${price} coins`,
   /** First tap on a booster with no charges: nothing is spent yet (UX-board-7). */

@@ -9,10 +9,10 @@ import type { BoosterId, EconomyConfig } from '../core/economy';
 import type { GameConfig } from '../core/levels';
 import type { MapConfig } from '../core/map';
 import type { ProfileConfig } from '../core/profile';
-import { createRng } from '../core/rng';
 import type { GameSession } from '../core/session';
 import type { ThemeConfig } from '../core/themes';
 import { GameAudio } from './audio';
+import { type Clock, type Random, systemClock } from './clock';
 import { type SaveData, loadSave } from './storage';
 import { t } from './strings';
 
@@ -45,6 +45,14 @@ export interface UiState {
   returning: Set<number>;
   /** A coin purchase waiting for its second tap (UX-board-7). */
   armedBooster: BoosterId | null;
+  /** The clock every UI date read goes through (TD-16); the real one by default. Animation timing is exempt. */
+  clock: Clock;
+  /** Randomness for UI choices such as a re-rolled name (TD-16); `Math.random` by default. */
+  rng: Random;
+  /** Hint or Shuffle waiting for the worker (TD-13): its button is disabled and `aria-busy`. */
+  thinking: 'hint' | 'shuffle' | null;
+  /** The thinking cue is visible (after a short delay, so a fast answer doesn't flicker). */
+  thinkingShown: boolean;
 }
 
 const initialSave = loadSave(config);
@@ -65,6 +73,14 @@ export const state: UiState = {
   unitHeight: 0,
   returning: new Set<number>(),
   armedBooster: null,
+  clock: systemClock,
+  rng: Math.random,
+  thinking: null,
+  thinkingShown: false,
 };
 export const audio = new GameAudio(initialSave.settings);
-export const shuffleRng = createRng(Date.now() >>> 0);
+/**
+ * The seed for one Shuffle, read from the app clock (TD-16) so `src/core` never reads it.
+ * The seed travels with the job, so the worker and the main thread deal the same (TD-13).
+ */
+export const shuffleSeed = (): number => state.clock().getTime() >>> 0;
