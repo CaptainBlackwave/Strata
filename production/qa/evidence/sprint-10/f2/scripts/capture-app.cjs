@@ -105,7 +105,7 @@ const init = ({ version, owned }) => {
     await save(scene, b64);
     const theme = await page.evaluate(() => document.body.dataset.theme);
     console.log(JSON.stringify({ scene, theme, scriptMsPerS: +(((m1.ScriptDuration - m0.ScriptDuration) * 1000) / (RECORD_MS / 1000)).toFixed(1), taskMsPerS: +(((m1.TaskDuration - m0.TaskDuration) * 1000) / (RECORD_MS / 1000)).toFixed(1), nodes: m1.AudioHandlers }));
-    if (i === 0) await page.screenshot({ path: path.join(SHOTS, `${label}-scenes-sheet.png`) });
+    if (i === 0) await page.screenshot({ path: path.join(SHOTS, `${label}-first-scene.png`) });
   }
   console.log('peak RMS while playing (dBFS):', await page.evaluate((ms) => window.__peakRms(ms), 4000));
   // Hidden page: music should stop. Fake the visibility state, record 4 s, then show it again.
@@ -123,7 +123,7 @@ const init = ({ version, owned }) => {
   });
   await page.waitForTimeout(3000);
   console.log('peak RMS when shown again (dBFS):', await page.evaluate((ms) => window.__peakRms(ms), 4000));
-  await page.screenshot({ path: path.join(SHOTS, `${label}-after-switching.png`) });
+  await page.screenshot({ path: path.join(SHOTS, `${label}-end.png`) });
   console.log('page errors:', errors.length ? errors : 'none');
   await browser.close();
 })();
