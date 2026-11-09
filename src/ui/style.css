@@ -2591,6 +2591,7 @@ body[data-theme='harvestmoon']::before {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 900;
+  line-height: 1.1;
 }
 .map-scroll {
   position: relative;
@@ -2621,12 +2622,12 @@ body[data-theme='harvestmoon']::before {
   bottom: 0;
 }
 .map-sea::before {
-  left: -9px;
+  left: -17px;
   width: 18px;
-  background: radial-gradient(circle at 100% 50%, var(--sea) 8px, transparent 8.5px) 0 0 / 18px 26px repeat-y;
+  background: radial-gradient(circle at 100% 50%, color-mix(in srgb, var(--card) 65%, var(--sea)) 6px, transparent 6.5px) 0 0 / 18px 20px repeat-y;
 }
 .map-sea::after {
-  left: -22px;
+  left: -30px;
   width: 14px;
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--sea) 30%, transparent));
 }
@@ -2638,7 +2639,7 @@ body[data-theme='harvestmoon']::before {
   border-bottom: 2px dashed color-mix(in srgb, var(--ink-soft) 22%, transparent);
 }
 .band-odd {
-  background: color-mix(in srgb, var(--bg-bottom) 55%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--bg-bottom) 55%, transparent) 0 87%, transparent 87%);
 }
 .band-name {
   position: absolute;
@@ -2755,9 +2756,19 @@ body[data-theme='harvestmoon']::before {
 }
 .stone-locked {
   border-style: dashed;
-  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 45%, var(--bg-bottom));
   color: var(--ink-soft);
   box-shadow: none;
+}
+.stone-mark {
+  background: var(--accent) !important;
+}
+.stone-mark .i-shell {
+  fill: #ffffff;
+  stroke: #ffffff;
+}
+.stone-mark .i-rib {
+  stroke: var(--accent);
 }
 .stone-mark,
 .stone-lock {

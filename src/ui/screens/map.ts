@@ -64,24 +64,33 @@ const ICON = {
 
 /**
  * Scenery art per band (D48): simple CSS-classed SVG shapes coloured by the scene tokens.
- * `land` sits by the left edge, `sea` over the water on the right. An id with no art shows the plain shore.
+ * `land` sits by the left edge, `sea` over the water on the right; `at` lists where each piece
+ * stands as fractions of the band's height (bottom = 1). An id with no art shows the plain shore.
  */
-const SCENERY: Record<string, { land?: string; sea?: string }> = {
+const SCENERY: Record<string, { land?: string; sea?: string; landAt?: number[]; seaAt?: number[] }> = {
   rockpools: {
     land: '<svg viewBox="0 0 80 70"><ellipse class="m-rock" cx="30" cy="40" rx="27" ry="17"/><ellipse class="m-pool" cx="30" cy="40" rx="15" ry="7.5"/><ellipse class="m-rock" cx="62" cy="58" rx="12" ry="8"/><circle class="m-shine" cx="25" cy="38" r="2"/></svg>',
     sea: '<svg viewBox="0 0 60 50"><ellipse class="m-rock" cx="30" cy="30" rx="20" ry="11"/><path class="m-foam" d="M8 34q6 5 12 0t12 0 12 0 10 0"/></svg>',
+    landAt: [0.08, 0.38, 0.68],
+    seaAt: [0.22, 0.52, 0.84],
   },
   dunes: {
     land: '<svg viewBox="0 0 80 70"><path class="m-dune" d="M0 70V40q22-24 46-6t34 8v28Z"/><path class="m-dune2" d="M0 70V54q20-12 40 0t40 4v12Z"/><path class="m-grass" d="M22 34l-3-12M25 33l1-13M28 33l4-10M54 40l-2-10M57 40l2-11"/></svg>',
+    landAt: [0.05, 0.22, 0.4, 0.58, 0.76, 0.93],
   },
   pier: {
     sea: '<svg viewBox="0 0 120 50"><rect class="m-wood" x="0" y="18" width="120" height="8" rx="2"/><path class="m-post" d="M14 26v20M44 26v20M74 26v20M104 26v20"/><path class="m-plank" d="M10 18v8M25 18v8M40 18v8M55 18v8M70 18v8M85 18v8M100 18v8"/></svg>',
+    seaAt: [0.12, 0.42, 0.72],
   },
   lighthouse: {
     land: '<svg viewBox="0 0 80 110"><ellipse class="m-rock" cx="36" cy="100" rx="34" ry="12"/><path class="m-white" d="M26 92l4-62h12l4 62Z"/><path class="m-red" d="M28.5 70l1-15h13l1 15ZM27.3 90l.6-9h16.2l.6 9Z"/><rect class="m-lamp" x="29" y="20" width="14" height="10" rx="2"/><path class="m-red" d="M27 20l9-8 9 8Z"/></svg>',
+    sea: '<svg viewBox="0 0 60 50"><ellipse class="m-rock" cx="30" cy="30" rx="20" ry="11"/><path class="m-foam" d="M8 34q6 5 12 0t12 0 12 0 10 0"/></svg>',
+    landAt: [0.45],
+    seaAt: [0.15, 0.75],
   },
   cove: {
     land: '<svg viewBox="0 0 80 90"><path class="m-pool" d="M0 5q46 10 46 40T0 85Z"/><path class="m-foam" d="M0 12q38 9 38 33T0 78"/><path class="m-rock" d="M0 0q30 2 34 10Q10 8 0 14ZM0 90q30-2 34-10Q10 82 0 76Z"/></svg>',
+    landAt: [0.15, 0.5, 0.85],
   },
 };
 
@@ -153,11 +162,12 @@ function makeBand(band: number): HTMLElement {
   el.style.top = `${top}px`;
   el.style.height = `${bottom - top}px`;
   const art = SCENERY[b.id] ?? {};
+  // Positions are fractions of a full band, so a band cut short at the track's top keeps its art in place.
+  const full = config.map.bandSize * geo.pitch;
+  const place = (at: number) => `top:${bottom - at * full - top}px`;
   let html = '';
-  for (const at of [0.18, 0.5, 0.82]) {
-    if (art.land) html += `<span class="motif motif-land" style="top:${at * 100}%">${art.land}</span>`;
-    if (art.sea) html += `<span class="motif motif-sea" style="top:${(at + 0.14) * 100}%">${art.sea}</span>`;
-  }
+  for (const at of art.landAt ?? []) if (bottom - at * full - top > -40) html += `<span class="motif motif-land" style="${place(at)}">${art.land}</span>`;
+  for (const at of art.seaAt ?? []) if (bottom - at * full - top > -40) html += `<span class="motif motif-sea" style="${place(at)}">${art.sea}</span>`;
   html += `<span class="band-name">${t.map.scenery[b.id] ?? ''}</span>`;
   el.innerHTML = html;
   return el;
