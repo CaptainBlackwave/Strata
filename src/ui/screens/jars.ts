@@ -22,6 +22,13 @@ export const HOURGLASS_MARK =
   '<path class="hg-frame" d="M1.5 1h7M1.5 13h7M2.5 1c0 3.6 2.5 4.4 2.5 6S2.5 9.4 2.5 13M7.5 1c0 3.6-2.5 4.4-2.5 6s2.5 2.4 2.5 6"/>' +
   '<path class="hg-sand" d="M3.3 12.4c.2-1.7 1.1-2.5 1.7-3 .6.5 1.5 1.3 1.7 3z"/></svg><b></b></span>';
 
+/**
+ * The sieve jar's band (D96): a collar round the jar's neck in its band colour (`--band`), with a
+ * mesh drawn over it so it never reads as sand. With colour patterns on it carries its colour's
+ * pattern too. Drawn for Strata.
+ */
+export const SIEVE_BAND = '<span class="sieve-band" aria-hidden="true"><span class="sieve-mesh"></span></span>';
+
 let tapHandler: (i: number) => void = () => {};
 
 /** Registers what a tap on jar `i` does. The board sets it at boot, so this file need not import the board. */
@@ -54,7 +61,8 @@ export function buildJars(): void {
       '<span class="cork" aria-hidden="true"></span><span class="padlock" aria-hidden="true"></span><span class="funnel-mark" aria-hidden="true"></span>' +
       '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
       '<span class="hint-badge" aria-hidden="true"></span>' +
-      HOURGLASS_MARK;
+      HOURGLASS_MARK +
+      SIEVE_BAND;
     jar.addEventListener('click', () => tapHandler(i));
     rows.appendChild(jar);
     return jar;
@@ -111,6 +119,7 @@ export function updateJar(i: number, growFrom = Infinity): void {
     jar.lock !== undefined ? t.jarStates.locked(config.palette[jar.lock].id) : '',
     jar.funnel ? t.jarStates.funnel : '',
     jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
+    jar.sieve !== undefined ? t.jarStates.sieve(config.palette[jar.sieve].id) : '',
     sealed ? t.sealed : '',
   ].filter(Boolean);
   el.setAttribute('aria-label', t.jarLabel(i, states.length ? `${contents} (${states.join(', ')})` : contents));
@@ -130,6 +139,13 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   if (el.dataset.left !== left) {
     el.dataset.left = left;
     (el.querySelector('.hourglass-mark b') as HTMLElement).textContent = left;
+  }
+  // The sieve's band is jar state too (it never changes in play, but a rebuilt board may differ).
+  el.classList.toggle('sieve', jar.sieve !== undefined);
+  if (jar.sieve !== undefined) {
+    const band = el.querySelector('.sieve-band') as HTMLElement;
+    band.style.setProperty('--band', config.palette[jar.sieve].hex);
+    band.className = `sieve-band${state.save.settings.patterns ? ` pat-${jar.sieve % PATTERNS}` : ''}`;
   }
   const glass = el.querySelector('.glass') as HTMLElement;
   if (jar.cap !== undefined) glass.style.height = `${state.unitHeight * jar.cap + Math.round(state.unitHeight * 0.45)}px`;
