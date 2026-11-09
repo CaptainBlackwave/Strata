@@ -3,8 +3,10 @@
  * Pure and DOM-free: `src/ui/main.ts` applies the returned state and renders the card.
  * Rules: design/gdd/economy.md (M1 first clear only), daily-challenge GDD (D10, GA-DP-6),
  * collection GDD (shell milestones), player-profile.md (stats, D25), level-map.md (replays and
- * the per-level Perfect mark, D50, D52).
+ * the per-level Perfect mark, D50, D52), badges.md (jars sealed, scenes played and the badges a win
+ * earns; recognition only, D76).
  */
+import { type BadgeSourceConfig, awardBadges, badgeProgressOf } from './badges';
 import { type CollectionConfig, type Shell, type ShellSet, grantShell, milestoneDue, setProgress } from './collection';
 import { type DailyConfig, type DailyShareRecord, type StreakState, recordDailySolve } from './daily';
 import { type EconomyConfig, type Wallet, addBoosters, addCoins, clearReward } from './economy';
@@ -22,10 +24,18 @@ export interface WinState {
   readonly shells: readonly string[];
   readonly stats: Stats;
   readonly dailyShare: DailyShareRecord | null;
+  /** Earned badge ids, in the order earned (badges.md §3.3). */
+  readonly badges: readonly string[];
+  /** Scenes won in, each once (badges.md §3.2). */
+  readonly scenesPlayed: readonly string[];
+  /** Read by the special-jar badges; a win never changes it. */
+  readonly seenMechanics: readonly string[];
+  /** Read by the scene badges; a win never changes it. */
+  readonly themes: { readonly owned: readonly string[] };
 }
 
 /** The config a win needs. */
-export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig;
+export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig & BadgeSourceConfig;
 
 export type WinMode = 'tutorial' | 'daily' | 'level';
 
@@ -40,6 +50,10 @@ export interface WinResult {
   readonly moves: number;
   /** Boosters that count against Perfect; free Undo is not one. */
   readonly assists: number;
+  /** Jars sealed on the winning board (badges.md §3.2). */
+  readonly sealed: number;
+  /** The scene active when the board was won (badges.md §3.2). */
+  readonly scene: string;
 }
 
 /** The shell row of the win card. */
@@ -70,6 +84,8 @@ export interface WinCard {
   readonly note: WinNote;
   readonly shell: ShellAward | null;
   readonly unlocks: SlotItem[];
+  /** Badge ids this win earned, in catalogue order (badges.md §3.6). They pay nothing (D76). */
+  readonly badges: string[];
 }
 
 /** The new state and the card. */
@@ -112,7 +128,18 @@ function awardShell(s: WinState, config: WinConfig): { state: WinState; award: S
 }
 
 function emptyCard(result: WinResult): WinCard {
-  return { mode: result.mode, perfect: false, rewardShown: false, reward: 0, prevBest: undefined, perfectEarned: false, newBest: false, moves: result.moves, streak: 0, note: 'none', shell: null, unlocks: [] };
+  return { mode: result.mode, perfect: false, rewardShown: false, reward: 0, prevBest: undefined, perfectEarned: false, newBest: false, moves: result.moves, streak: 0, note: 'none', shell: null, unlocks: [], badges: [] };
+}
+
+/**
+ * What every counted win (level or daily, replays included) adds for the badges: the jars sealed,
+ * the scene, then any badge now met (badges.md §3.2, §3.4). Credits nothing (D76).
+ */
+function finishWin(s: WinState, result: WinResult, config: WinConfig): { state: WinState; badges: string[] } {
+  const scenesPlayed = result.scene && !s.scenesPlayed.includes(result.scene) ? [...s.scenesPlayed, result.scene] : s.scenesPlayed;
+  const state: WinState = { ...s, scenesPlayed, stats: bumpStats(s.stats, { jarsSealed: result.sealed }) };
+  const r = awardBadges(state.badges, badgeProgressOf(state, config), config);
+  return { state: { ...state, badges: r.badges }, badges: r.fresh };
 }
 
 function winTutorial(s: WinState, result: WinResult): WinOutcome {
@@ -132,7 +159,9 @@ function winDaily(s: WinState, result: WinResult, config: WinConfig): WinOutcome
     shell = a.award;
   }
   const note: WinNote = r.outOfOrder ? 'outOfOrder' : r.alreadySolved ? 'dailyReplay' : r.usedPass ? 'usedPass' : r.earnedPass ? 'earnedPass' : 'none';
-  const card: WinCard = { ...emptyCard(result), rewardShown: counts, reward: r.reward, streak: r.state.streak, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  const f = finishWin(state, result, config);
+  state = f.state;
+  const card: WinCard = { ...emptyCard(result), badges: f.badges, rewardShown: counts, reward: r.reward, streak: r.state.streak, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
   return { state, card };
 }
 
@@ -159,7 +188,9 @@ function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome
     shell = a.award;
   }
   const note: WinNote = !firstClear ? 'replay' : perfect ? 'perfect' : 'none';
-  const card: WinCard = { ...emptyCard(result), perfect, rewardShown: firstClear, reward, prevBest, perfectEarned, newBest, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  const f = finishWin(state, result, config);
+  state = f.state;
+  const card: WinCard = { ...emptyCard(result), badges: f.badges, perfect, rewardShown: firstClear, reward, prevBest, perfectEarned, newBest, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
   return { state, card };
 }
 

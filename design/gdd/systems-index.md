@@ -14,7 +14,7 @@
 
 ## Overview
 
-Strata is a phone-first sort puzzle: the player pours layers of sand between jars until every jar is empty or sealed. Around that loop sit a generator that guarantees winnable levels, four jar mechanics, boosters and an economy of coins earned only by playing, a daily puzzle with a streak, a shell collection and four time-of-day scenes. There are eleven systems, all implemented (the player profile was added on 2026-11-08).
+Strata is a phone-first sort puzzle: the player pours layers of sand between jars until every jar is empty or sealed. Around that loop sit a generator that guarantees winnable levels, four jar mechanics, boosters and an economy of coins earned only by playing, a daily puzzle with a streak, a shell collection and four time-of-day scenes. There are eleven systems, all implemented (the player profile was added on 2026-11-08), plus the level map and the badge shelf (sprint 11, D76).
 
 ---
 
@@ -34,6 +34,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 10 | Save data | Persistence | MVP | Implemented | [save-data.md](save-data.md) | 5 |
 | 11 | Player profile | Meta | Full Vision | Implemented (PP-1 to PP-10) | [player-profile.md](player-profile.md) | 4–8, 10 |
 | 12 | Level map | UI | Full Vision | Designed and signed off (D47–D52), building in sprint 9 | [level-map.md](level-map.md) | 4, 7, 9, 11 |
+| 13 | Badges | Meta | Full Vision | Implemented (sprint 11 A1, A2, D76) | [badges.md](badges.md) | 3, 4, 6, 7, 8, 10, 11 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -131,7 +132,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D73 | Seal shimmer and win glow colour | **Tinted per scene** (e.g. cool for Winter snow, violet for Aurora night) instead of one warm sand colour; calm, contrast-checked | feel-audio-ui, scenes | built (0.10.1) |
 | D74 | Real-phone checks | **A phone checklist page** the owner opens on the phone; it stores the answers so Claude can read them back and fix issues | feel-audio-ui | built (0.10.1): https://claude.ai/artifact/P5gNC7P6YJoL15C4SZ8cKn |
 | D75 | Sprint 11 scope | **Achievements, a weekly challenge, and install and onboarding** (the late-game economy, D23, and new puzzle variety stay open) | — | sprint 11 |
-| D76 | Achievements | **A badge shelf with no rewards**: about 20–30 earned badges shown on the profile; recognition only, the economy untouched | player-profile | sprint 11 |
+| D76 | Achievements | **A badge shelf with no rewards**: about 20–30 earned badges shown on the profile; recognition only, the economy untouched | player-profile, badges | sprint 11 |
 | D77 | Weekly challenge | **A five-board weekly set**: every Monday (UTC), five themed seeded boards, the same for everyone, playable all week; clearing all five earns a weekly badge; Share shows the pours | daily-puzzle | sprint 11 |
 | D78 | Install and onboarding | **All four**: a one-time Add to Home Screen card after a few levels (iPhone steps and the Android prompt), a review of the first run and first ten levels, a share link that opens the daily or weekly set, and a one-time offline-ready notice | feel-audio-ui | sprint 11 |
 | D79 | Order of work | **Quick fixes first as 0.10.1** (D72–D74 and the cleanup), then sprint 11 | — | recorded |

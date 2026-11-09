@@ -61,6 +61,8 @@ verified-by: owner interview 2026-11-08
 - **Stats grid**: two columns of tiles. Each tile has a small icon, a label and a value. A value of 0 shows "0", not "–", because every stat here has a meaning at 0.
 - At 150% text the grid drops to one column. Nothing overflows horizontally at 320 px.
 
+- **Badge shelf** (sprint 11, D76): under the stats grid, the earned and not-yet-earned badges with their progress. Rules and layout: `badges.md`.
+
 ### 3.3 Edit Profile sheet
 
 - It opens over Profile. At the top is a **preview card** (avatar in its frame, name on its plate) that shows the *draft*, not the saved profile.
@@ -90,6 +92,7 @@ verified-by: owner interview 2026-11-08
 | Total pours | the sum of `moves` of every solved level or daily, replays included | `stats.pours` | **yes** |
 | Coins earned | all coins credited by play: level rewards, daily rewards, set bonuses, the all-shells bonus | `stats.coinsEarned` | **yes** |
 | Boosters used | Shuffle, Extra Jar and Hint applied (from a charge or bought with coins). Free Undo doesn't count (D25), and refunded attempts don't either | `stats.boostersUsed` | **yes** |
+| Jars sealed | jars sealed on the winning board of every solved level or daily, replays included, counted at the win (`badges.md` §3.2, sprint 11) | `stats.jarsSealed` | **yes** |
 
 - New counters start at **0** for every save, including existing players, because the past was never recorded. This is stated once in a footnote under the grid: "Some totals count from this update onwards."
 - The tutorial adds nothing to any counter.
@@ -232,7 +235,7 @@ All three lists live in `game-config.json` under `profile`. Ids are fixed once s
   - `daily-puzzle.md` (streak, counted solves)
   - `shell-collection.md` (shells and sets as unlock progress)
   - `scenes.md` (scenes owned, and plates must read in every scene)
-- **Depended on by**: `feel-audio-ui.md`, which presents its home chip, Profile screen, Edit sheet and win-card rows (`systems-index.md` row 9 lists system 11). This system does not depend on feel-audio-ui.
+- **Depended on by**: `feel-audio-ui.md`, which presents its home chip, Profile screen, Edit sheet and win-card rows (`systems-index.md` row 9 lists system 11), and `badges.md`, whose shelf sits in the Profile sheet and reads these stats. This system does not depend on feel-audio-ui.
 - **Technical**:
   - `collection.ts` (`setProgress`)
   - `daily.ts` (`streakStatus`)
@@ -299,3 +302,4 @@ None open: the owner answered every interview question.
 | 2026-11-08 | Claude | Designed from the owner interview (PP-1 to PP-10) |
 | 2026-11-08 | Claude | Built; word lists shortened to fit the 16-character limit; scenes count corrected to 4; chip shown after the tutorial |
 | 2026-11-08 | Claude (sprint 6, F9) | Perfect clears use M2's rule `assists === 0` (GX-2, GB-PP-1); roadmap decisions cited as R4/R5 (GX-8, GB-PP-2); hyphen note on PP-5; play-rate assumption stated and the daily-player set line added (GB-PP-6); coins-earned example fixed (GB-PP-8); totals read from config (GB-PP-9); Escape on "Discard changes?" (GB-PP-10); depended on by feel-audio-ui (GX-10); unlock-count range reworded (GB-PP-7) |
+| 2026-11-09 | Claude (sprint 11 A1) | Jars sealed stat and the badge shelf added under the stats (D76, `badges.md`) |

@@ -176,7 +176,7 @@ describe('repairProfile', () => {
 describe('stats', () => {
   it('start at zero and only grow', () => {
     const s = bumpStats(emptyStats(), { pours: 31, coinsEarned: 25, boostersUsed: -3, perfectClears: 1.5 });
-    expect(s).toEqual({ perfectClears: 0, dailiesSolved: 0, pours: 31, coinsEarned: 25, boostersUsed: 0 });
+    expect(s).toEqual({ perfectClears: 0, dailiesSolved: 0, pours: 31, coinsEarned: 25, boostersUsed: 0, jarsSealed: 0 });
     expect(bumpStats(s, { pours: 4 }).pours).toBe(35);
   });
 });

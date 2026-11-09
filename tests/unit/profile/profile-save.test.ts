@@ -36,7 +36,7 @@ describe('profile in the save', () => {
   it('repairs bad counters to 0 and keeps good ones', () => {
     const raw = { ...OLD_SAVE, stats: { perfectClears: 4, dailiesSolved: -1, pours: 'many', coinsEarned: 2.5, boostersUsed: 7 } };
     const save = loadSave(econ, memoryStore({ [KEY]: JSON.stringify(raw) }));
-    expect(save.stats).toEqual({ perfectClears: 4, dailiesSolved: 0, pours: 0, coinsEarned: 0, boostersUsed: 7 });
+    expect(save.stats).toEqual({ perfectClears: 4, dailiesSolved: 0, pours: 0, coinsEarned: 0, boostersUsed: 7, jarsSealed: 0 }); // jarsSealed: sprint 11, badges.md
   });
   it('ignores non-string profile fields', () => {
     const raw = { ...OLD_SAVE, profile: { name: 42, avatar: 'beach-hut', frame: null, plate: ['x'] } };
