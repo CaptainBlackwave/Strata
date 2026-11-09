@@ -4,6 +4,7 @@
  * Implements design/game-brief.md MVP 6 and design/competitive-roadmap.md C2/C5.
  */
 import gameConfig from '../config/game-config.json';
+import { type BadgeConfig, repairBadges } from '../core/badges';
 import type { DailyShareRecord, StreakState } from '../core/daily';
 import type { ThemeState } from '../core/themes';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
@@ -12,6 +13,8 @@ import { WHATS_NEW_VERSION } from './strings';
 
 /** The scene every save owns and falls back to: `themes.default` in the config (TD-3). */
 const DEFAULT_THEME: string = (gameConfig as unknown as { themes: { default: string } }).themes.default;
+/** Every scene id, for repairing `scenesPlayed`. */
+const SCENE_IDS: ReadonlySet<string> = new Set((gameConfig as unknown as { themes: { list: { id: string }[] } }).themes.list.map((x) => x.id));
 
 /** The localStorage key of the save. Other tabs' writes to it arrive as `storage` events (D57). */
 export const SAVE_KEY = 'strata.save.v2';
@@ -75,6 +78,13 @@ export interface SaveData {
    * (UX-cab-4). An older save without it counts every owned shell as seen.
    */
   seenShells: number;
+  /**
+   * Earned badge ids, in the order earned (design/gdd/badges.md §3.3, D76). Repaired on load:
+   * unknown ids and duplicates are dropped. An older save loads `[]`, and boot back-fills it quietly.
+   */
+  badges: string[];
+  /** Scenes the player has won a level or daily in, each once (badges.md §3.2). */
+  scenesPlayed: string[];
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -150,7 +160,7 @@ const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filt
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0 };
+  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [] };
 }
 
 /**
@@ -220,6 +230,8 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
         : null,
     seenWhatsNew: typeof v2.seenWhatsNew === 'string' ? v2.seenWhatsNew : '',
     seenShells: Math.min(nonNegInt(v2.seenShells, shells.length), shells.length),
+    badges: repairBadges(v2.badges, gameConfig as unknown as BadgeConfig),
+    scenesPlayed: strings(v2.scenesPlayed).filter((id) => SCENE_IDS.has(id)),
   };
 }
 
