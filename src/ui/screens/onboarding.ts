@@ -2,12 +2,16 @@
  * Install and onboarding on screen (sprint 11, D78): the one-time Add to Home Screen card (O1).
  * The rules are the DOM-free src/ui/logic/onboarding.ts; this reads the browser and shows them.
  */
-import { type InstallPlatform, countVisit, installCardDue, installPlatform, isOfflineReady, offlineNoticeDue } from '../logic/onboarding';
+import { type InstallPlatform, countVisit, installCardDue, installPlatform, isOfflineReady, offlineNotice } from '../logic/onboarding';
+import { type ShareKey, dailyLaunch } from '../logic/launch';
+import { dailyKey } from '../clock';
 import { saveStored, whatsNewDue, writeSave } from '../storage';
 import { t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, showToast } from '../dom';
 import { config, state } from '../state';
 import { startDaily } from './board';
+import { showHome } from './home';
+import { openWeekly } from './sheets/weekly';
 
 /** How long Home settles before the card may open over it (ms): presentation only (D31). */
 const INSTALL_ARRIVE_MS = 700;
@@ -97,12 +101,33 @@ export function openDailyOver(date: string): void {
   openLayer($('daily-over'), $('btn-daily-over-play'), $('btn-daily'));
 }
 
-/** The one-time "ready to play offline" toast (O4), unless already shown or storage is blocked. */
+/**
+ * Opens what a shared link asks for (O3, D82 R2): today's daily, or a note first when the link's
+ * day is over; or the weekly set's chooser over Home. The chooser shows the current week (a set is
+ * playable only in its own week, weekly-set.md §3.6).
+ */
+export function openShared(share: ShareKey): void {
+  if ('daily' in share) {
+    if (dailyLaunch(share.daily, dailyKey(state.clock)).over) {
+      if (!layers.has(homeEl)) showHome(); // at boot Home is already open
+      openDailyOver(share.daily);
+    } else startDaily();
+  } else {
+    if (!layers.has(homeEl)) showHome();
+    openWeekly($('btn-weekly'));
+  }
+}
+
+/**
+ * The one-time "ready to play offline" toast (O4), unless already shown or storage is blocked.
+ * While the install card is open it is remembered without a toast (the card says it already).
+ */
 export function noticeOffline(): void {
-  if (!offlineNoticeDue(state.save.onboarding, saveStored())) return;
+  const what = offlineNotice(state.save.onboarding, saveStored(), !$('install').hidden);
+  if (what === 'none') return;
   state.save.onboarding.offlineNoticed = true;
   writeSave(state.save);
-  showToast(t.onboarding.offlineReady);
+  if (what === 'toast') showToast(t.onboarding.offlineReady);
 }
 
 /**

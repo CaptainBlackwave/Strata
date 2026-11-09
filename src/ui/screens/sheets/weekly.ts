@@ -8,7 +8,8 @@ import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { type FocusTarget } from '../../layers';
 import { startWeekly } from '../board';
-import { shareTo, shareUrl } from '../win';
+import { shareTo } from '../win';
+import { shareLink } from '../../logic/launch';
 import { audio, config, state } from '../../state';
 
 /** The current week by the app clock (TD-16), on the UTC calendar like the daily (§3.1). */
@@ -89,10 +90,10 @@ export function openWeekly(opener: FocusTarget | null = document.activeElement a
   openLayer($('weekly'), items[Math.max(0, first)].querySelector('button'), opener);
 }
 
-/** Shares this set's pours (§3.9), reporting the outcome in `status`. */
+/** Shares this set's pours (§3.9) with a link that opens the weekly set (D82), reporting the outcome in `status`. */
 export function shareWeekly(status: HTMLElement): Promise<void> {
   const week = state.mode === 'weekly' && state.weeklyWeek ? state.weeklyWeek : currentWeek();
-  return shareTo(t.weekly.shareText(week, weeklyThemeName(week), weeklyPours(state.save.weekly, week, config), shareUrl()), status);
+  return shareTo(t.weekly.shareText(week, weeklyThemeName(week), weeklyPours(state.save.weekly, week, config), shareLink(location.href, { weekly: week })), status);
 }
 
 /** Wires the Home card, the chooser's Close and its Share. */
@@ -104,6 +105,6 @@ export function wireWeekly(): void {
   $('btn-close-weekly').addEventListener('click', () => closeLayer($('weekly')));
   $('btn-weekly-share').addEventListener('click', () => {
     const week = currentWeek();
-    void shareTo(t.weekly.shareText(week, weeklyThemeName(week), weeklyPours(state.save.weekly, week, config), shareUrl()), $('weekly-share-status'));
+    void shareTo(t.weekly.shareText(week, weeklyThemeName(week), weeklyPours(state.save.weekly, week, config), shareLink(location.href, { weekly: week })), $('weekly-share-status'));
   });
 }

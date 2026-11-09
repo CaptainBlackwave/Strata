@@ -138,6 +138,10 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D78 | Install and onboarding | **All four**: a one-time Add to Home Screen card after a few levels (iPhone steps and the Android prompt), a review of the first run and first ten levels, a share link that opens the daily or weekly set, and a one-time offline-ready notice | feel-audio-ui | built (sprint 11 O1–O4, PR #11) |
 | D79 | Order of work | **Quick fixes first as 0.10.1** (D72–D74 and the cleanup), then sprint 11 | — | recorded |
 | D80 | Pull requests | **One PR per feature** from now on, so each review stays small; each still merges under D61 | — | standing |
+| D81 | First run: finding Home (R1) | **A one-time line on the level 3 win card**: "Today's daily puzzle is on Home". Continue still goes to the next level | feel-audio-ui | 0.11.1 |
+| D82 | First run: the other review findings (R2–R5) | **All four**: a shared daily or weekly link opened before the tutorial is kept and offered right after it; level 10's jump is checked and smoothed if it is not deliberate; a quiet "New" mark on Scenes the first time one is affordable; the iPhone install card fits at 150% text on 320 px | feel-audio-ui, level-generation, scenes | 0.11.1 |
+| D83 | Weekly coins | **A coin bonus for clearing all five**, paid once per week; single boards still pay nothing | weekly-set, economy | 0.11.1 |
+| D84 | Sprint 12 | **The late-game economy** (D23): give coins a purpose once the scenes are bought. Scope by interview before the sprint starts | economy | open |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

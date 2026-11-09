@@ -108,7 +108,14 @@ export function closeScenes(): void {
 
 /** Wires the Scenes sheet (opened from Home and from Settings). */
 export function wireScenes(): void {
-  $('btn-scenes').addEventListener('click', () => openScenes());
+  $('btn-scenes').addEventListener('click', () => {
+    if (!$('scenes-new').hidden) {
+      state.save.onboarding.scenesNewSeen = true; // the mark has done its job (D82 R4)
+      writeSave(state.save);
+      $('scenes-new').hidden = true;
+    }
+    openScenes();
+  });
   // Sub-screens open over Settings, so closing one returns to it with focus on its button (UX-settings-4).
   $('btn-scenes-2').addEventListener('click', () => openScenes());
   $('btn-scene-buy').addEventListener('click', confirmScene);

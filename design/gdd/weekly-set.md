@@ -145,14 +145,17 @@ P4). The measured cost (above) is well inside the per-step solver budgets the da
   started, and its wins are ignored as above; the saved, later week is not overwritten. Moving the
   clock forward again shows the saved progress.
 
-### 3.7 What a weekly board pays: nothing
+### 3.7 What a weekly board pays: a bonus for the whole set (D83)
 
-- A weekly win pays **no coins, no shell and no Perfect bonus**. The reward is the week's badge,
-  which is recognition only (D76), and Share.
-- Why: the sprint plan keeps the economy untouched ("Out of scope: the late-game economy (D23)").
-  Paying the daily's rule would mean either a streak (the weekly has none) or a flat clear reward;
-  five more paying boards a week would add income the economy was not tuned for
-  (`economy.md`). Paying nothing keeps every economy number valid.
+- A single weekly board pays **no coins, no shell and no Perfect bonus**.
+- The win that **completes the set** (the fifth distinct board cleared that week, in any order) pays
+  `weekly.completeBonus` coins (100), once per week, and the win card's reward row shows it. A
+  replay of any board, or a win for an older week (§3.6), pays nothing. The week's badge (D76) is
+  earned on the same win and Share is unchanged.
+- Why (D83, 2026-11-09): the owner chose a bonus at five over no coins or a payout per board. One
+  payment a week rewards finishing the set without making single boards a coin farm. 100 coins is
+  about five level clears (20 each, `economy.md`), matching the five boards' effort, and adds at
+  most 100 coins a week, under one Jar's price (120).
 - Boosters cost what they cost in a level (a charge, or coins), so the economy's sinks are
   unchanged.
 - A weekly win still counts what every win counts for the profile and badges: its pours and
@@ -279,6 +282,7 @@ All in `weekly` in `src/config/game-config.json`.
 | `seedSalt` | 5309 | any 32-bit integer, but **never change it once released**: every player's boards for the current week would change mid-week | which boards are dealt |
 | `boards[]` | 5 rows (§3.4) | 3–7 rows; `colors` 4–10, `capacity` 4, `spare` 2, `buriedDepth` 0–2, `bandLevel` ≥ 1 | the ramp and the length caps; more rows means a longer set and a later badge |
 | `themes[]` | 5 themes | 1 or more; `mechanic` one of the four ids or absent; `buriedBonus` 0–1 | the weekly variety; a count that is not a multiple of 4 keeps it out of step with the daily Saturday |
+| `completeBonus` | 100 | 0–150 (0 restores "pays nothing"; above a Jar's 120 it starts to outpace levels for a weekly-only player) | the coins for completing the set, once a week (§3.7) |
 | `maxBuried` | 2 | 0–2 (3 buries all but the top unit of a 4-jar) | how hard Deep Sand gets |
 
 ---
@@ -296,8 +300,10 @@ All in `weekly` in `src/config/game-config.json`.
 - [x] Clearing boards in any order records each once, with the best pours kept; the fifth distinct
   clear returns the week's badge once; a new week resets; an older week's win is ignored.
 - [x] Repair: a damaged `weekly` field is repaired field by field; a save code round-trips it.
-- [x] A weekly win pays no coins and no shell, adds the badge to `save.badges`, and counts pours and
-  sealed jars.
+- [x] A single weekly win pays no coins and no shell, adds the badge to `save.badges`, and counts
+  pours and sealed jars.
+- [x] The win that completes the set pays `completeBonus` once per week, in any order, and shows it
+  on the win card; replays pay nothing; a new week pays again (D83, `tests/unit/weekly/weekly-win.test.ts`).
 - [x] Home card, chooser, a weekly board, the mid-week win card, the completing win card with the
   badge, the Share text and 150% text at 320 px are captured in
   `production/qa/evidence/sprint-11/weekly/`.
@@ -310,3 +316,4 @@ All in `weekly` in `src/config/game-config.json`.
 |------|--------|---------|
 | 2026-11-09 | Claude (sprint 11 W1) | Designed from D77: ISO week key, seeds, five themes, the five-board ramp, the week boundary, no coins, Share |
 | 2026-11-09 | Claude (sprint 11 W2) | Built; acceptance criteria ticked. Tests: `tests/unit/weekly/`; evidence: `production/qa/evidence/sprint-11/weekly/` |
+| 2026-11-09 | Claude (0.11.1) | D83: completing the set pays `completeBonus` (100) once a week; single boards still pay nothing (§3.7, §7, §8) |

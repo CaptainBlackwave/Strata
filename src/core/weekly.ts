@@ -29,6 +29,8 @@ export interface WeeklyTheme {
 export interface WeeklyConfig {
   readonly weekly: {
     readonly seedSalt: number;
+    /** Coins paid once a week, on the win that completes the set (D83). Single boards pay nothing. */
+    readonly completeBonus: number;
     readonly maxBuried: number;
     readonly boards: readonly WeeklyBoard[];
     readonly themes: readonly WeeklyTheme[];

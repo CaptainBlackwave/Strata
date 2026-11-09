@@ -350,7 +350,7 @@ const en = {
     /** iPhone and iPad: Safari has no install prompt, so the steps are shown. The share icon is drawn after step 1. */
     iosSteps: ['Tap Share', 'Choose \u201cAdd to Home Screen\u201d', 'Tap Add'],
     /** Under the steps: newer Safari hides Share behind the ··· button. */
-    iosNote: 'No Share button? Tap \u00b7\u00b7\u00b7 first. You may need to scroll to find Add to Home Screen.',
+    iosNote: 'No Share button? Tap \u00b7\u00b7\u00b7 first, then scroll to Add to Home Screen.',
     /** A `?daily=` link from an earlier day (O3). `date` is that day's key. */
     dailyOverTitle: 'That daily is over',
     dailyOverText: (date: string) => {
@@ -364,6 +364,15 @@ const en = {
     mapHint: 'Your path along the beach. Play the next level, or tap a cleared stone to replay it.',
     /** Above the boosters on level 1, the first board they work on (O2). */
     boosterHint: 'Stuck? Undo is free, and Shuffle, Jar and Hint help too.',
+    /** Once, on the first clear of level `onboarding.homeHintLevel` (R1, D81). */
+    homeHint: 'Today\u2019s daily puzzle is on Home.',
+    /** The tutorial's win card when a shared link arrived before it (R2, D82). */
+    sharedDailyReady: 'Your friend\u2019s daily puzzle is ready.',
+    sharedWeeklyReady: 'Your friend\u2019s weekly set is ready.',
+    playSharedDaily: 'Play the daily',
+    playSharedWeekly: 'See the weekly set',
+    /** The quiet mark on Scenes the first time one is affordable (R4, D82). */
+    newMark: 'New',
   },
   // sprint 11 weekly
   /** The weekly set (design/gdd/weekly-set.md, D77): Home card, chooser, board label, win card and Share. */

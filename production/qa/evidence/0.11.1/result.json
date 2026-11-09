@@ -1,0 +1,97 @@
+{
+  "r1Level3": {
+    "title": "Perfect!",
+    "note": "No hint, shuffle or extra jar used Today’s daily puzzle is on Home.",
+    "reward": "+30",
+    "shared": null,
+    "describedBy": "win-text win-reward-sr win-note win-unlocks"
+  },
+  "r1Saved": true,
+  "r1Level4": {
+    "title": "Perfect!",
+    "note": "No hint, shuffle or extra jar used",
+    "reward": "+30",
+    "shared": null,
+    "describedBy": "win-text win-reward-sr win-note"
+  },
+  "r1Errors": [],
+  "r2dailyHome": {
+    "play": "Play",
+    "kept": {
+      "daily": "2026-11-12"
+    },
+    "url": "http://localhost:5520/"
+  },
+  "r2dailyCard": {
+    "title": "Nice pour!",
+    "note": "Your friend’s daily puzzle is ready.",
+    "reward": null,
+    "shared": "Play the daily",
+    "describedBy": "win-text win-note"
+  },
+  "r2dailyAfter": {
+    "label": "Thu, Nov 12",
+    "weeklyOpen": false,
+    "homeOpen": false
+  },
+  "r2dailyCleared": null,
+  "r2dailyErrors": [],
+  "r2weeklyHome": {
+    "play": "Play",
+    "kept": {
+      "weekly": "2026-W46"
+    },
+    "url": "http://localhost:5520/"
+  },
+  "r2weeklyCard": {
+    "title": "Nice pour!",
+    "note": "Your friend’s weekly set is ready.",
+    "reward": null,
+    "shared": "See the weekly set",
+    "describedBy": "win-text win-note"
+  },
+  "r2weeklyAfter": {
+    "label": "Level 1",
+    "weeklyOpen": true,
+    "homeOpen": true
+  },
+  "r2weeklyCleared": null,
+  "r2weeklyErrors": [],
+  "r2ReturningWeekly": true,
+  "r2WeeklyShareText": "Strata Weekly 2026-W46 (Lock and Key)\n1 of 5 boards: 22 · – · – · – · –\nhttp://localhost:5520/?weekly=2026-W46",
+  "r2ReturningErrors": [],
+  "r4Below": false,
+  "r4Shown": true,
+  "r4Name": "ScenesNew",
+  "r4AfterOpen": false,
+  "r4AfterReload": false,
+  "r4Errors": [],
+  "r4Overflow320": false,
+  "r5320": {
+    "shown": true,
+    "scroll": 595,
+    "client": 520,
+    "scrolls": true,
+    "wide": false
+  },
+  "r5se": {
+    "shown": true,
+    "scroll": 595,
+    "client": 520,
+    "scrolls": true,
+    "wide": false
+  },
+  "d83Card": {
+    "title": "Weekly set complete!",
+    "note": "",
+    "reward": "+100",
+    "shared": null,
+    "describedBy": "win-text win-reward-sr win-unlocks"
+  },
+  "d83Coins": {
+    "before": 100,
+    "after": 200,
+    "hud": "200"
+  },
+  "d83Errors": []
+}
