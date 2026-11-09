@@ -2317,18 +2317,25 @@ body[data-theme='autumnshore'] .home::before {
   opacity: 0.8;
 }
 
-/* Rainbow after rain (tier 1): a soft static arc over the home sea, behind the content */
-body[data-theme='rainbowafterrain'] .home::before {
+/* Rainbow after rain (tier 1): a soft static arc over the logo jars (sprint 9 M1, D54).
+   It hangs from the logo, not the screen, so its feet land on the jars' base, above the
+   title, at every width and text size: it never crosses the title or tagline. The jars sit
+   in front of it; z-index -1 keeps it above the home background (.home is the stacking context). */
+body[data-theme='rainbowafterrain'] .logo-jars {
+  position: relative;
+}
+body[data-theme='rainbowafterrain'] .logo-jars::before {
   content: '';
   position: absolute;
   z-index: -1;
-  left: 0;
-  right: 0;
-  bottom: 21%;
-  height: 92vw;
+  left: 50%;
+  bottom: 0;
+  width: 280px;
+  height: 140px;
+  transform: translateX(-50%);
   pointer-events: none;
-  background: radial-gradient(circle 88vw at 50% 100%, transparent 0 76%, rgba(232, 92, 80, 0.5) 77% 80%, rgba(240, 168, 60, 0.5) 80% 83%, rgba(236, 214, 90, 0.5) 83% 86%, rgba(110, 190, 120, 0.5) 86% 89%, rgba(90, 140, 220, 0.5) 89% 92%, rgba(150, 110, 200, 0.5) 92% 95%, transparent 96%);
-  opacity: 0.55;
+  background: radial-gradient(circle 140px at 50% 100%, transparent 0 81%, rgba(232, 92, 80, 0.5) 82% 85%, rgba(240, 168, 60, 0.5) 85% 88%, rgba(236, 214, 90, 0.5) 88% 91%, rgba(110, 190, 120, 0.5) 91% 94%, rgba(90, 140, 220, 0.5) 94% 97%, rgba(150, 110, 200, 0.5) 97% 99.5%, transparent 100%);
+  opacity: 0.6;
 }
 
 /* ---- Sprint 8 P1, tier 2 and 3 (layers are scene-fx.ts) ---- */
