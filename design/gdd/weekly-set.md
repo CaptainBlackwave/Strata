@@ -189,7 +189,7 @@ UX-win-4):
 ```
 Strata Weekly 2026-W46 (Lock and Key)
 3 of 5 boards: 23 · 31 · – · 40 · –
-https://<the game's address>
+https://<the game's address>/?weekly=2026-W46
 ```
 
 and when all five are cleared:
@@ -197,12 +197,13 @@ and when all five are cleared:
 ```
 Strata Weekly 2026-W46 (Lock and Key)
 All 5 boards: 23 · 31 · 35 · 40 · 44 (173 pours)
-https://<the game's address>
+https://<the game's address>/?weekly=2026-W46
 ```
 
 The numbers are each board's **best pours this week**, in board order; `–` marks a board not
-cleared. No board layout is shared (no spoilers). The address is the page without query or hash,
-as the daily.
+cleared. No board layout is shared (no spoilers). The address is the page with one key,
+`?weekly=YYYY-Www` (0.11.1, D82), which opens the chooser for the current week; a link that arrives
+before the tutorial is kept and offered on the tutorial's win card (`first-run-review.md` R2).
 
 ### 3.10 State and data
 
@@ -317,3 +318,4 @@ All in `weekly` in `src/config/game-config.json`.
 | 2026-11-09 | Claude (sprint 11 W1) | Designed from D77: ISO week key, seeds, five themes, the five-board ramp, the week boundary, no coins, Share |
 | 2026-11-09 | Claude (sprint 11 W2) | Built; acceptance criteria ticked. Tests: `tests/unit/weekly/`; evidence: `production/qa/evidence/sprint-11/weekly/` |
 | 2026-11-09 | Claude (0.11.1) | D83: completing the set pays `completeBonus` (100) once a week; single boards still pay nothing (§3.7, §7, §8) |
+| 2026-11-09 | Claude (0.11.1) | D82: Share carries `?weekly=`, which opens the chooser (§3.9) |

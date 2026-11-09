@@ -7,7 +7,7 @@ import { type ShareKey, dailyLaunch } from '../logic/launch';
 import { dailyKey } from '../clock';
 import { saveStored, whatsNewDue, writeSave } from '../storage';
 import { t } from '../strings';
-import { $, closeLayer, homeEl, layers, openLayer, showToast } from '../dom';
+import { $, closeLayer, hideToast, homeEl, layers, openLayer, showToast } from '../dom';
 import { config, state } from '../state';
 import { startDaily } from './board';
 import { showHome } from './home';
@@ -60,6 +60,7 @@ export function maybeShowInstall(): void {
 
 /** Fills and opens the card for `platform`, and remembers that it was shown. */
 export function openInstall(platform: 'ios' | 'prompt'): void {
+  hideToast(); // a toast (e.g. the offline notice) must not sit over the card; the card says it plays offline
   const steps = $('install-steps');
   steps.hidden = platform !== 'ios';
   steps.replaceChildren(

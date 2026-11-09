@@ -1,7 +1,7 @@
 {
   "r1Level3": {
     "title": "Perfect!",
-    "note": "No hint, shuffle or extra jar used Today’s daily puzzle is on Home.",
+    "note": "No hint, shuffle or extra jar used · Today’s daily puzzle is on Home.",
     "reward": "+30",
     "shared": null,
     "describedBy": "win-text win-reward-sr win-note win-unlocks"
@@ -20,7 +20,7 @@
     "kept": {
       "daily": "2026-11-12"
     },
-    "url": "http://localhost:5520/"
+    "url": "http://localhost:5521/"
   },
   "r2dailyCard": {
     "title": "Nice pour!",
@@ -41,7 +41,7 @@
     "kept": {
       "weekly": "2026-W46"
     },
-    "url": "http://localhost:5520/"
+    "url": "http://localhost:5521/"
   },
   "r2weeklyCard": {
     "title": "Nice pour!",
@@ -58,27 +58,27 @@
   "r2weeklyCleared": null,
   "r2weeklyErrors": [],
   "r2ReturningWeekly": true,
-  "r2WeeklyShareText": "Strata Weekly 2026-W46 (Lock and Key)\n1 of 5 boards: 22 · – · – · – · –\nhttp://localhost:5520/?weekly=2026-W46",
+  "r2WeeklyShareText": "Strata Weekly 2026-W46 (Lock and Key)\n1 of 5 boards: 22 · – · – · – · –\nhttp://localhost:5521/?weekly=2026-W46",
   "r2ReturningErrors": [],
   "r4Below": false,
   "r4Shown": true,
-  "r4Name": "ScenesNew",
+  "r4Name": "Scenes, New",
   "r4AfterOpen": false,
   "r4AfterReload": false,
   "r4Errors": [],
   "r4Overflow320": false,
   "r5320": {
     "shown": true,
-    "scroll": 595,
-    "client": 520,
-    "scrolls": true,
+    "scroll": 454,
+    "client": 454,
+    "scrolls": false,
     "wide": false
   },
   "r5se": {
     "shown": true,
-    "scroll": 595,
-    "client": 520,
-    "scrolls": true,
+    "scroll": 454,
+    "client": 454,
+    "scrolls": false,
     "wide": false
   },
   "d83Card": {
@@ -93,5 +93,10 @@
     "after": 200,
     "hud": "200"
   },
-  "d83Errors": []
+  "d83Errors": [],
+  "r3Level10": {
+    "label": "Level 10",
+    "jars": 6
+  },
+  "r3Errors": []
 }

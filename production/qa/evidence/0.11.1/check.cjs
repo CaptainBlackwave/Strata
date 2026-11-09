@@ -148,6 +148,14 @@ async function playTutorial(p) {
     R.d83Coins = { before: coinsBefore, after: s.wallet.coins, hud: (await p.textContent('#coins')).trim?.() ?? null };
     R.d83Errors = p.errors; await ctx.close();
   }
+  // R3 (D82): level 10, the first tall-jar level, is now 4 colours x 8 (was 5 x 8).
+  {
+    const { ctx, p } = await page(b, { ...base0, tutorialDone: true, level: 11 }, px, { url: `${base}?level=10` });
+    await w(p, 600);
+    R.r3Level10 = await p.evaluate(() => ({ label: document.getElementById('level-label').textContent, jars: document.querySelectorAll('#board .jar').length }));
+    await shot(p, 'r3-level10-board');
+    R.r3Errors = p.errors; await ctx.close();
+  }
   await b.close();
   fs.writeFileSync(path.join(out, 'result.json'), JSON.stringify(R, null, 2));
   console.log(JSON.stringify(R, null, 2));

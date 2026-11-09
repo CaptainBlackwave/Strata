@@ -108,10 +108,9 @@ const en = {
     title: "What's new",
     button: "What's new",
     lines: [
-      'A shelf of 28 badges on your profile, earned as you play.',
-      'A weekly set: five new boards every Monday, and a badge for clearing them all.',
-      'Share a daily and the link opens that puzzle directly.',
-      'Add Strata to your home screen to play it like an app, even offline.',
+      'Clear all five weekly boards for a coin bonus, once a week.',
+      'Share the weekly set and the link opens it directly.',
+      'Level 10, the first tall-jar level, is a gentler step.',
     ],
   },
   unlocksAt: (n: number) => `Unlocks at level ${n}`,
