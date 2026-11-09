@@ -1,0 +1,89 @@
+{
+ "$comment": "The rotate-mechanic Saturday dailies from 2026-11-07 for 21 weeks, as built before the hourglass jar (sprint 13 M1, commit 84adfc5): the mechanic and the FNV-1a hash of the board. The hourglass joins the daily only from a start date (task W1), so these must not change.",
+ "days": {
+  "2026-11-07": {
+   "mechanic": "locked",
+   "hash": "d7a9ab20"
+  },
+  "2026-11-14": {
+   "mechanic": "funnel",
+   "hash": "f3650aa4"
+  },
+  "2026-11-21": {
+   "mechanic": "narrow",
+   "hash": "3e36648"
+  },
+  "2026-11-28": {
+   "mechanic": "frozen",
+   "hash": "9876d605"
+  },
+  "2026-12-05": {
+   "mechanic": "locked",
+   "hash": "ae45c67"
+  },
+  "2026-12-12": {
+   "mechanic": "funnel",
+   "hash": "17f85d4a"
+  },
+  "2026-12-19": {
+   "mechanic": "narrow",
+   "hash": "b72c2c24"
+  },
+  "2026-12-26": {
+   "mechanic": "frozen",
+   "hash": "d6f6833b"
+  },
+  "2027-01-02": {
+   "mechanic": "locked",
+   "hash": "aa9dc17a"
+  },
+  "2027-01-09": {
+   "mechanic": "funnel",
+   "hash": "a1e0b3ee"
+  },
+  "2027-01-16": {
+   "mechanic": "narrow",
+   "hash": "87eaa97a"
+  },
+  "2027-01-23": {
+   "mechanic": "frozen",
+   "hash": "725d3d39"
+  },
+  "2027-01-30": {
+   "mechanic": "locked",
+   "hash": "23df68b0"
+  },
+  "2027-02-06": {
+   "mechanic": "funnel",
+   "hash": "4ff3813e"
+  },
+  "2027-02-13": {
+   "mechanic": "narrow",
+   "hash": "faa9d952"
+  },
+  "2027-02-20": {
+   "mechanic": "frozen",
+   "hash": "7381e06d"
+  },
+  "2027-02-27": {
+   "mechanic": "locked",
+   "hash": "c4f2bc93"
+  },
+  "2027-03-06": {
+   "mechanic": "funnel",
+   "hash": "d7b8e368"
+  },
+  "2027-03-13": {
+   "mechanic": "narrow",
+   "hash": "44023aa6"
+  },
+  "2027-03-20": {
+   "mechanic": "frozen",
+   "hash": "582363df"
+  },
+  "2027-03-27": {
+   "mechanic": "locked",
+   "hash": "af457541"
+  }
+ }
+}
