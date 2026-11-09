@@ -13,7 +13,7 @@ const OLD = { level: 12, best: { 3: 14, 7: 20 }, wallet: { coins: 300, boosters:
   await p.goto(base); await p.waitForTimeout(800);
   const card = await p.evaluate(() => { const el = [...document.querySelectorAll('[role=dialog],[role=alertdialog]')].find((e) => e.offsetParent && /new/i.test(e.textContent)); return el ? el.innerText.replace(/\s+/g, ' ') : null; });
   console.log('whats new card:', card);
-  await p.screenshot({ path: path.join(out, 'whats-new-0.9.0.png') });
+  await p.screenshot({ path: path.join(out, 'whats-new-card.png') });
   await p.getByRole('button', { name: 'Got it' }).click();
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('strata.save.v2')));
   console.log('seenWhatsNew:', saved.seenWhatsNew, '| perfect:', JSON.stringify(saved.perfect), '| level:', saved.level, '| perfectClears:', saved.stats.perfectClears);
