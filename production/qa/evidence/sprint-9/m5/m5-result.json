@@ -1,0 +1,168 @@
+[
+ [
+  "UX-home-3 daily card aria snapshot",
+  "- 'button \"Daily puzzle , Monday 9 Today: easy Start a streak today\"':\n  - strong: Daily puzzle\n  - text: \", Monday 9 Today: easy Start a streak today\""
+ ],
+ [
+  "AX-17 viewport meta",
+  "width=device-width, initial-scale=1, viewport-fit=cover"
+ ],
+ [
+  "UX-profile-2 stat labels (as read)",
+  [
+   "Levels cleared",
+   "Perfect clears*, counted from this update",
+   "Daily streak",
+   "Best streak",
+   "Dailies solved*, counted from this update",
+   "Shells",
+   "Sets completed",
+   "Scenes",
+   "Total pours*, counted from this update",
+   "Coins earned*, counted from this update",
+   "Boosters used*, counted from this update"
+  ]
+ ],
+ [
+  "UX-profile-2 footnote",
+  "* These totals count from this update onwards."
+ ],
+ [
+  "UX-cab-2 headings in cabinet",
+  [
+   "H3>BUTTON.shell-set-head:Tide Pool1/5",
+   "H3>BUTTON.shell-set-head:Dune Coast0/5",
+   "H3>BUTTON.shell-set-head:Coral Reef0/5",
+   "H3>BUTTON.shell-set-head:Deep Blue0/5",
+   "H3>BUTTON.shell-set-head:Night Shore0/5",
+   "H3>BUTTON.shell-set-head:Cold North0/5",
+   "H3>BUTTON.shell-set-head:Volcanic Sands0/5",
+   "H3>BUTTON.shell-set-head:Ancient Cliffs0/5"
+  ]
+ ],
+ [
+  "UX-cab-2 heading roles",
+  [
+   "- heading \"Tide Pool 1/5\" [level=3]:",
+   "- heading \"Dune Coast 0/5\" [level=3]:",
+   "- heading \"Coral Reef 0/5\" [level=3]:"
+  ]
+ ],
+ [
+  "UX-cab-2 header heights",
+  [
+   44,
+   44,
+   44,
+   44,
+   44,
+   44,
+   44,
+   44
+  ]
+ ],
+ [
+  "AX-14 jar guide dialog name",
+  "Jar guide"
+ ],
+ [
+  "AX-14 by role",
+  1
+ ],
+ [
+  "UX-cab-4 win level 5",
+  true
+ ],
+ [
+  "UX-cab-4 shells after win",
+  [
+   "periwinkle",
+   "limpet"
+  ]
+ ],
+ [
+  "UX-cab-4 New marks (first open)",
+  [
+   "Limpet"
+  ]
+ ],
+ [
+  "UX-cab-4 New marks (reopened)",
+  0
+ ],
+ [
+  "UX-board-9/10 tutorial pixel7",
+  {
+   "note": "Boosters and Restart unlock after the tutorial",
+   "described": [
+    "true:tools-note",
+    "true:tools-note",
+    "true:tools-note",
+    "true:tools-note",
+    "true:tools-note"
+   ],
+   "caption": {
+    "left": 91,
+    "right": 243,
+    "height": 38,
+    "vw": 412
+   },
+   "coachShown": true
+  }
+ ],
+ [
+  "UX-board-10 second caption pixel7",
+  {
+   "text": "Now tap the other jar to pour",
+   "left": 118,
+   "right": 371,
+   "height": 38
+  }
+ ],
+ [
+  "UX-board-9/10 tutorial se-150",
+  {
+   "note": "Boosters and Restart unlock after the tutorial",
+   "described": [
+    "true:tools-note",
+    "true:tools-note",
+    "true:tools-note",
+    "true:tools-note",
+    "true:tools-note"
+   ],
+   "caption": {
+    "left": 15,
+    "right": 230,
+    "height": 47,
+    "vw": 320
+   },
+   "coachShown": true
+  }
+ ],
+ [
+  "UX-board-10 second caption se-150",
+  {
+   "text": "Now tap the other jar to pour",
+   "left": 24,
+   "right": 312,
+   "height": 76
+  }
+ ],
+ [
+  "AX-19 jar draw width / hit width (px)",
+  [
+   "34.0/45.0",
+   "34.0/45.0",
+   "34.0/45.0",
+   "34.0/45.0",
+   "34.0/45.0",
+   "34.0/45.0",
+   "34.0/45.0",
+   "34.0/45.0"
+  ]
+ ],
+ [
+  "errors",
+  []
+ ]
+]

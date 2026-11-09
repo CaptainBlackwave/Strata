@@ -47,8 +47,11 @@ export function coach(i: number | null, text = ''): void {
   coachText.textContent = text;
   coachEl.hidden = false;
   // Keep the wrapped caption 8 px inside the screen when the jar sits near an edge (UX-board-10).
-  coachEl.style.setProperty('--coach-shift', '0px');
-  const box = coachText.getBoundingClientRect();
-  const shift = box.left < 8 ? 8 - box.left : box.right > window.innerWidth - 8 ? window.innerWidth - 8 - box.right : 0;
+  // Computed from the jar's centre and the caption's layout width, not its drawn box, which can be stale.
+  const centre = r.left + r.width / 2;
+  const half = coachText.offsetWidth / 2;
+  const left = centre - half;
+  const right = centre + half;
+  const shift = left < 8 ? 8 - left : right > window.innerWidth - 8 ? window.innerWidth - 8 - right : 0;
   coachEl.style.setProperty('--coach-shift', `${shift}px`);
 }
