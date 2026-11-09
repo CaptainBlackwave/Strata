@@ -7,6 +7,7 @@ import { type MechanicId } from '../../core/levels';
 import { type GenPort, type PreparedLevel, Prefetcher } from '../../core/prefetch';
 import { type SessionEvent, GameSession, sessionOptions } from '../../core/session';
 import { bumpStats } from '../../core/profile';
+import { mapAvailable } from '../../core/map';
 import { writeSave } from '../storage';
 import { t } from '../strings';
 import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, levelLabel, showToast, toastEl, toolButtons, winEl } from '../dom';
@@ -15,6 +16,7 @@ import { coach, updateHud } from './hud';
 import { buildJars, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
+import { openMap } from './map';
 import { audio, config, shuffleRng, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
@@ -42,8 +44,10 @@ export function startDaily(): void {
   introduce(gen.spec.mechanics);
 }
 
+/** Home's Play: the tutorial until it is done, then level 1, then the level map from level 2 (D51). */
 export function play(): void {
   audio.unlock();
+  if (mapAvailable(state.save)) return openMap();
   closeLayer(homeEl, false);
   if (!state.save.tutorialDone) startTutorial();
   else startLevel(state.save.level);
@@ -61,9 +65,11 @@ export function startTutorial(): void {
  * Starts numbered level `n` (P4): instantly from the prefetch cache when the worker already
  * made it; by waiting for the worker when it is making it now (a "Preparing" toast only after
  * 150 ms, `quiet` skips it); otherwise by generating synchronously, as before P4.
+ * `replay` marks a replay started from the map (D50), so Continue returns to the map.
  */
-export function startLevel(n: number, quiet = false): void {
+export function startLevel(n: number, quiet = false, replay = false): void {
   state.mode = 'level';
+  state.replay = replay;
   state.level = n;
   const token = ++startToken;
   const ready = prefetcher.get(n);
@@ -379,6 +385,7 @@ export function wireBoard(): void {
   btnNext.addEventListener('click', () => {
     closeLayer(winEl, false);
     if (state.mode === 'daily') showHome();
+    else if (state.mode === 'level' && state.replay) openMap(state.level);
     else startLevel(state.mode === 'tutorial' ? 1 : state.level + 1);
   });
   // Re-lay out the jars whenever the board's own size changes, not only on a window resize:

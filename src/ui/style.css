@@ -2552,3 +2552,330 @@ body[data-theme='harvestmoon']::before {
   border-style: dashed;
   border-color: var(--ink-soft);
 }
+
+/* ==== Level map (design/gdd/level-map.md D48, D49, D52) ====
+   A vertical beach path: sand on the left, the sea along the right edge, stones winding up
+   in level order. Everything is coloured by the scene tokens; no image files. */
+.map {
+  position: fixed;
+  inset: 0;
+  z-index: 22;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+  animation: fade 180ms ease-out;
+}
+.map[hidden] {
+  display: none;
+}
+.map-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) 12px 8px;
+  background: color-mix(in srgb, var(--bg-top) 88%, transparent);
+  box-shadow: 0 1px 0 rgba(90, 70, 50, 0.12);
+  z-index: 1;
+}
+.map-top .icon-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.map-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+.map-scroll {
+  position: relative;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.map-track {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.map-sea {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 13%;
+  background: var(--sea);
+}
+/* the foam line: scallops along the water's edge, then a band of wet sand */
+.map-sea::before,
+.map-sea::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.map-sea::before {
+  left: -9px;
+  width: 18px;
+  background: radial-gradient(circle at 100% 50%, var(--sea) 8px, transparent 8.5px) 0 0 / 18px 26px repeat-y;
+}
+.map-sea::after {
+  left: -22px;
+  width: 14px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--sea) 30%, transparent));
+}
+.band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  border-bottom: 2px dashed color-mix(in srgb, var(--ink-soft) 22%, transparent);
+}
+.band-odd {
+  background: color-mix(in srgb, var(--bg-bottom) 55%, transparent);
+}
+.band-name {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.motif {
+  position: absolute;
+  width: 19%;
+  max-width: 96px;
+  line-height: 0;
+  opacity: 0.85;
+}
+.motif svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.motif-land {
+  left: 0;
+}
+.motif-sea {
+  right: 0;
+}
+.band-pier .motif-sea {
+  width: 34%;
+  max-width: 170px;
+}
+.m-rock { fill: color-mix(in srgb, var(--ink-soft) 45%, var(--bg-bottom)); }
+.m-pool { fill: var(--sea); }
+.m-shine { fill: var(--card); }
+.m-foam,
+.m-grass,
+.m-post,
+.m-plank {
+  fill: none;
+  stroke-linecap: round;
+}
+.m-foam { stroke: var(--card); stroke-width: 2.5; }
+.m-grass { stroke: #7f9a5c; stroke-width: 2.2; }
+.m-dune { fill: color-mix(in srgb, var(--bg-bottom) 70%, var(--ink-soft)); }
+.m-dune2 { fill: color-mix(in srgb, var(--bg-bottom) 85%, var(--ink-soft)); }
+.m-wood { fill: color-mix(in srgb, var(--ink-soft) 70%, var(--bg-bottom)); }
+.m-post { stroke: color-mix(in srgb, var(--ink-soft) 85%, var(--bg-bottom)); stroke-width: 5; }
+.m-plank { stroke: color-mix(in srgb, var(--ink-soft) 40%, var(--bg-bottom)); stroke-width: 1.2; }
+.m-white { fill: var(--card); stroke: var(--glass-edge); stroke-width: 1; }
+.m-red { fill: #c8553d; }
+.m-lamp { fill: #f4e04d; stroke: var(--glass-edge); stroke-width: 1; }
+.map-path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.map-path path {
+  fill: none;
+  stroke-linecap: round;
+}
+.path-edge {
+  stroke: color-mix(in srgb, var(--ink-soft) 25%, transparent);
+  stroke-width: 22;
+}
+.path-done {
+  stroke: color-mix(in srgb, var(--bg-top) 70%, var(--card));
+  stroke-width: 16;
+}
+.path-ahead {
+  stroke: color-mix(in srgb, var(--bg-top) 70%, var(--card));
+  stroke-width: 8;
+  stroke-dasharray: 2 14;
+}
+
+/* Stones: 44 px or more at any text size (D45 rule); rem sizes scale with text (§3). */
+.stone {
+  position: absolute;
+  z-index: 1;
+  width: 3rem;
+  height: 3rem;
+  min-width: 46px;
+  min-height: 46px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid var(--glass-edge);
+  border-radius: 48% 52% 46% 54% / 54% 46% 54% 46%;
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.45) 0 18%, transparent 46%), var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  box-shadow: 0 3px 0 rgba(90, 70, 50, 0.28);
+  cursor: pointer;
+}
+.stone:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.stone-next {
+  width: 3.75rem;
+  height: 3.75rem;
+  border-color: transparent;
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.35) 0 18%, transparent 46%), var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.25rem;
+  box-shadow: 0 4px 0 #1f776c, 0 0 0 5px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.stone-locked {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+  color: var(--ink-soft);
+  box-shadow: none;
+}
+.stone-mark,
+.stone-lock {
+  position: absolute;
+  top: -0.45rem;
+  right: -0.45rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  line-height: 0;
+}
+.stone-mark svg,
+.stone-lock svg,
+.stone-tags svg,
+.stone-specials svg {
+  width: 100%;
+  height: 100%;
+}
+.stone-tags {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  line-height: 0;
+}
+.stone-tags svg {
+  width: 1rem;
+  height: 1rem;
+}
+.i-shell { fill: #f2a541; stroke: #a5601a; stroke-width: 1.2; stroke-linejoin: round; }
+.i-rib { fill: none; stroke: #a5601a; stroke-width: 1; stroke-linecap: round; }
+.i-lock { fill: var(--ink-soft); }
+.i-shackle { fill: none; stroke: var(--ink-soft); stroke-width: 2; }
+.i-jar { fill: rgba(255, 255, 255, 0.6); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+.i-sand { fill: #c8553d; }
+.i-star { fill: #2a9d8f; }
+/* The next stone breathes (D49); reduced motion keeps it still (§3). */
+@media (prefers-reduced-motion: no-preference) {
+  .stone-next::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: inherit;
+    border: 3px solid var(--accent);
+    animation: stone-pulse 1.8s ease-out infinite;
+    pointer-events: none;
+  }
+}
+@keyframes stone-pulse {
+  from {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+.map-foot {
+  padding: 10px 16px max(12px, env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--bg-bottom) 88%, transparent);
+  box-shadow: 0 -1px 0 rgba(90, 70, 50, 0.12);
+  z-index: 1;
+}
+.map-play {
+  display: block;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 15px;
+  font-size: 1.25rem;
+}
+/* The tap card (D49) */
+.stone-card {
+  width: min(340px, 100%);
+  padding: 18px 18px 6px;
+  text-align: center;
+}
+.stone-title {
+  margin: 0 0 6px;
+  font-size: 1.375rem;
+}
+.stone-text {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+.stone-specials {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+.stone-specials[hidden],
+.stone-replay[hidden] {
+  display: none;
+}
+.stone-specials li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stone-specials svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.stone-card .sheet-row .primary {
+  flex: 1 1 8rem;
+  width: auto;
+}
