@@ -1,5 +1,5 @@
 ---
-status: designed 2026-11-09 (sprint 11 A1, A2; owner decision D76)
+status: designed and built 2026-11-09 (sprint 11 A1, A2; owner decision D76)
 source: src/core/badges.ts, src/core/win.ts, src/ui/storage.ts, src/ui/screens/sheets/badges.ts, src/ui/badge-art.ts, src/ui/strings.ts, src/config/game-config.json
 date: 2026-11-09
 verified-by: owner plan approval 2026-11-09 (sprint 11)
@@ -266,16 +266,16 @@ scene prices (`scenes.md`): 4 scenes is the four time-of-day scenes, 8 is a long
 ## 8. Acceptance Criteria
 
 **Logic** (unit tests in `tests/unit/badges/`, written first and seen failing):
-- [ ] Every badge in the catalogue: not earned at count − 1, earned at count (every-shore: owning `min` with one unplayed scene → no; all played → yes; fewer than `min` owned → no).
-- [ ] `newlyEarned` returns only ids not already saved, in catalogue order; `awardBadges` appends them after the saved ones.
-- [ ] Back-fill: an old save (no `badges`, no `scenesPlayed`, no `jarsSealed`) on level 60 with shells and a streak gets exactly the badges its existing stats meet, and a second pass adds nothing.
-- [ ] `applyWin` counts `jarsSealed` and `scenesPlayed` (not in the tutorial) and lists the new badges on the card; the wallet after a badge-earning win equals the wallet with an empty badge catalogue.
-- [ ] Save repair drops unknown ids and duplicates, keeps the saved order and well-formed weekly ids; `scenesPlayed` keeps known scenes; the save code round-trips all three.
-- [ ] Catalogue: 20–30 badges, unique ids, every family used, every name key in `t.badges`, no reward fields, counts within the config totals.
+- [x] Every badge in the catalogue: not earned at count − 1, earned at count (every-shore: owning `min` with one unplayed scene → no; all played → yes; fewer than `min` owned → no).
+- [x] `newlyEarned` returns only ids not already saved, in catalogue order; `awardBadges` appends them after the saved ones.
+- [x] Back-fill: an old save (no `badges`, no `scenesPlayed`, no `jarsSealed`) on level 60 with shells and a streak gets exactly the badges its existing stats meet, and a second pass adds nothing.
+- [x] `applyWin` counts `jarsSealed` and `scenesPlayed` (not in the tutorial) and lists the new badges on the card; the wallet after a badge-earning win equals the wallet with an empty badge catalogue.
+- [x] Save repair drops unknown ids and duplicates, keeps the saved order and well-formed weekly ids; `scenesPlayed` keeps known scenes; the save code round-trips all three.
+- [x] Catalogue: 20–30 badges, unique ids, every family used, every name key in `t.badges`, no reward fields, counts within the config totals.
 
 **UI** (screenshots in `production/qa/evidence/sprint-11/badges/`):
-- [ ] The shelf on a fresh save (none earned), part-earned, and at 150% text on 320 px.
-- [ ] A badge earned on the win card.
+- [x] The shelf on a fresh save (none earned), part-earned, and at 150% text on 320 px.
+- [x] A badge earned on the win card.
 
 ---
 
@@ -284,3 +284,4 @@ scene prices (`scenes.md`): 4 scenes is the four time-of-day scenes, 8 is a long
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-09 | Claude (sprint 11 A1) | Designed from D76: 28 badges in five families, the weekly family reserved, `jarsSealed` and `scenesPlayed` added, back-fill at load |
+| 2026-11-09 | Claude (sprint 11 A2) | Built; tests in `tests/unit/badges/` (4 files, 66 tests); medallion rank dots capped at 4; evidence in `production/qa/evidence/sprint-11/badges/` |
