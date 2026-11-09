@@ -12,6 +12,9 @@ import { version } from '../../package.json';
  */
 export const WHATS_NEW_VERSION: string = version;
 
+/** A count with thousands separators, as the stats grid shows it: 1200 → "1,200". */
+const n0 = (n: number) => n.toLocaleString('en');
+
 const en = {
   brand: 'Strata',
   tagline: 'Sort the sand. Seal the jars.',
@@ -229,6 +232,7 @@ const en = {
     pours: 'Total pours',
     coinsEarned: 'Coins earned',
     boostersUsed: 'Boosters used',
+    jarsSealed: 'Jars sealed',
   },
   statsFootnote: '* These totals count from this update onwards.',
   tabs: { avatar: 'Avatar', frame: 'Frame', plate: 'Name' },
@@ -257,6 +261,62 @@ const en = {
     frame: (name: string) => `New frame: ${name}`,
     plate: (name: string) => `New name plate: ${name}`,
   },
+  // Badge shelf (sprint 11, D76, design/gdd/badges.md). Keys match `name` in game-config.json `badges.list`.
+  badges: {
+    firstSeal: { name: 'First Seal', desc: 'Seal your first jar' },
+    jarStacker: { name: 'Jar Stacker', desc: 'Seal 100 jars' },
+    jarHarbour: { name: 'Jar Harbour', desc: 'Seal 1,000 jars' },
+    paddler: { name: 'Paddler', desc: 'Clear 10 levels' },
+    rockPooler: { name: 'Rock Pooler', desc: 'Clear 50 levels' },
+    harbourHand: { name: 'Harbour Hand', desc: 'Clear 100 levels' },
+    oldSalt: { name: 'Old Salt', desc: 'Clear 250 levels' },
+    steadyHand: { name: 'Steady Hand', desc: 'Make 1,000 pours' },
+    sandRiver: { name: 'Sand River', desc: 'Make 10,000 pours' },
+    smoothSand: { name: 'Smooth Sand', desc: 'Clear a level Perfect' },
+    stillWater: { name: 'Still Water', desc: 'Get 25 perfect clears' },
+    glassCalm: { name: 'Glass Calm', desc: 'Get 100 perfect clears' },
+    tallOrder: { name: 'Tall Order', desc: 'Perfect a tall-jar level' },
+    highTide: { name: 'High Tide', desc: 'Perfect 10 tall-jar levels' },
+    beachcomber: { name: 'Beachcomber', desc: 'Find your first shell' },
+    fullPockets: { name: 'Full Pockets', desc: 'Collect 20 shells' },
+    matchedSet: { name: 'Matched Set', desc: 'Complete a shell set' },
+    cabinetComplete: { name: 'Cabinet Complete', desc: 'Complete all 8 shell sets' },
+    changeOfSky: { name: 'Change of Sky', desc: 'Own 4 scenes' },
+    paintedSkies: { name: 'Painted Skies', desc: 'Own 8 scenes' },
+    narrowEscape: { name: 'Narrow Escape', desc: 'Meet your first special jar' },
+    oddJarsOut: { name: 'Odd Jars Out', desc: 'Meet all four special jars' },
+    dayTripper: { name: 'Day Tripper', desc: 'Win in 2 different scenes' },
+    everyShore: { name: 'Every Shore', desc: 'Win in every scene you own (4 or more)' },
+    morningDip: { name: 'Morning Dip', desc: 'Solve a daily puzzle' },
+    tideTable: { name: 'Tide Table', desc: 'Solve 30 daily puzzles' },
+    sevenTides: { name: 'Seven Tides', desc: 'Reach a 7-day daily streak' },
+    fullMoon: { name: 'Full Moon', desc: 'Reach a 30-day daily streak' },
+  },
+  /** A not-yet badge's progress line, by the stat its rule reads, e.g. "34/100 jars". `everyOwnedScene` is every-shore's. */
+  badgeCount: {
+    levels: (have: number, need: number) => `${n0(have)}/${n0(need)} levels`,
+    jarsSealed: (have: number, need: number) => `${n0(have)}/${n0(need)} jars`,
+    pours: (have: number, need: number) => `${n0(have)}/${n0(need)} pours`,
+    perfectClears: (have: number, need: number) => `${n0(have)}/${n0(need)} perfect`,
+    tallPerfect: (have: number, need: number) => `${n0(have)}/${n0(need)} tall-jar Perfect`,
+    shells: (have: number, need: number) => `${n0(have)}/${n0(need)} shells`,
+    sets: (have: number, need: number) => `${n0(have)}/${n0(need)} sets`,
+    scenesOwned: (have: number, need: number) => `${n0(have)}/${n0(need)} scenes`,
+    scenesPlayed: (have: number, need: number) => `${n0(have)}/${n0(need)} scenes`,
+    mechanicsSeen: (have: number, need: number) => `${n0(have)}/${n0(need)} special jars`,
+    dailiesSolved: (have: number, need: number) => `${n0(have)}/${n0(need)} dailies`,
+    bestStreak: (have: number, need: number) => `${n0(have)}/${n0(need)} days`,
+    everyOwnedScene: (have: number, need: number) => `${n0(have)}/${n0(need)} scenes`,
+  },
+  badgesTitle: 'Badges',
+  badgesCount: (earned: number, total: number) => `${earned} of ${total} earned`,
+  /** Read by a screen reader after a not-yet badge's name (the tile is dimmed for sighted players). */
+  badgeLockedSr: 'not earned yet',
+  /** A weekly-set badge on the shelf (badges.md §3.9), e.g. "Week 46, 2026". */
+  badgeWeekly: (year: number, week: number) => `Week ${week}, ${year}`,
+  badgeWeeklyDesc: 'Cleared the weekly set',
+  /** The win card row and the toast: one combined line (badges.md §3.6). */
+  newBadges: (names: readonly string[]) => (names.length === 1 ? `New badge: ${names[0]}` : `New badges: ${names.join(', ')}`),
   // One active tab (sprint 9 M4, D57, TD-14)
   otherTabTitle: 'Strata is open in another tab',
   otherTabText: 'Your progress is kept in that tab. Play here to continue on this one.',

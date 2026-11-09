@@ -68,10 +68,12 @@ export interface Stats {
   readonly pours: number;
   readonly coinsEarned: number;
   readonly boostersUsed: number;
+  /** Jars sealed on the winning board of every solved level or daily, counted at the win (badges.md §3.2). */
+  readonly jarsSealed: number;
 }
 
 /** Every counter key. */
-export const STAT_KEYS: readonly (keyof Stats)[] = ['perfectClears', 'dailiesSolved', 'pours', 'coinsEarned', 'boostersUsed'];
+export const STAT_KEYS: readonly (keyof Stats)[] = ['perfectClears', 'dailiesSolved', 'pours', 'coinsEarned', 'boostersUsed', 'jarsSealed'];
 
 /** Progress values the unlocks are measured against. */
 export type Progress = Readonly<Record<UnlockKind, number>>;
@@ -84,7 +86,7 @@ export interface NameWords {
 
 /** All counters at zero. */
 export function emptyStats(): Stats {
-  return { perfectClears: 0, dailiesSolved: 0, pours: 0, coinsEarned: 0, boostersUsed: 0 };
+  return { perfectClears: 0, dailiesSolved: 0, pours: 0, coinsEarned: 0, boostersUsed: 0, jarsSealed: 0 };
 }
 
 /** Adds to counters. Negative or non-integer deltas are ignored: counters only grow. */

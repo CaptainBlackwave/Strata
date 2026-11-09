@@ -101,4 +101,5 @@ export const STAT_ICONS: Record<string, string> = {
   pours: '<path d="M5 4h9l-1 4H6z"/><path d="M13 8c3 1 4 4 4 7"/><path d="M15 21h5l-1-6h-3z"/>',
   coinsEarned: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/>',
   boostersUsed: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+  jarsSealed: '<path d="M7 3.5h10M8 3.5v2h8v-2"/><rect x="6" y="5.5" width="12" height="15" rx="2.5"/><path d="M6 12h12"/>',
 };

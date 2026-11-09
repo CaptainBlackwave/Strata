@@ -8,6 +8,7 @@ import { updateHud } from '../hud';
 import { seasonBadge } from '../../clock';
 import { audio, config, state } from '../../state';
 import { applyTheme, currentTheme } from '../../theme';
+import { awardBadgesNow } from './badges';
 
 let previewing: string | null = null;
 
@@ -87,7 +88,8 @@ export function confirmScene(): void {
     state.save.wallet = r.wallet;
     state.save.themes = { ...state.save.themes, owned: r.owned };
     audio.play('sceneBought');
-    showToast(t.sceneBought(theme.name));
+    const badges = awardBadgesNow(); // owning more scenes can earn a badge (badges.md §3.7); saved just below
+    showToast(badges.length ? `${t.sceneBought(theme.name)} · ${t.newBadges(badges)}` : t.sceneBought(theme.name));
   }
   // Choosing a scene by hand pins it (turns clock-matching off).
   state.save.themes = { ...state.save.themes, selected: theme.id, auto: false };

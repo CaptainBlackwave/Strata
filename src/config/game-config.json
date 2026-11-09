@@ -649,6 +649,39 @@
       { "id": "gold-leaf", "name": "Gold Leaf", "bg": "#f4d57e", "bg2": "#e2b552", "edge": "#a87a22", "ink": "#3f2b0e", "unlock": { "kind": "sets", "count": 4 } }
     ]
   },
+  "badges": {
+    "$comment": "Badge shelf (sprint 11, D76, design/gdd/badges.md). Recognition only: no badge pays anything. Listed in shelf order. `name` is a key into t.badges in src/ui/strings.ts. A rule is {kind: count, of, count} (met when progress[of] >= count) or {kind: everyOwnedScene, min} (own at least min scenes and have won in each). Ids are stored in saves: never rename one. Weekly badges (weekly-YYYY-Www) are made by the weekly set, not listed here.",
+    "list": [
+      { "id": "first-seal", "family": "play", "name": "firstSeal", "rule": { "kind": "count", "of": "jarsSealed", "count": 1 } },
+      { "id": "jars-100", "family": "play", "name": "jarStacker", "rule": { "kind": "count", "of": "jarsSealed", "count": 100 } },
+      { "id": "jars-1000", "family": "play", "name": "jarHarbour", "rule": { "kind": "count", "of": "jarsSealed", "count": 1000 } },
+      { "id": "levels-10", "family": "play", "name": "paddler", "rule": { "kind": "count", "of": "levels", "count": 10 } },
+      { "id": "levels-50", "family": "play", "name": "rockPooler", "rule": { "kind": "count", "of": "levels", "count": 50 } },
+      { "id": "levels-100", "family": "play", "name": "harbourHand", "rule": { "kind": "count", "of": "levels", "count": 100 } },
+      { "id": "levels-250", "family": "play", "name": "oldSalt", "rule": { "kind": "count", "of": "levels", "count": 250 } },
+      { "id": "pours-1000", "family": "play", "name": "steadyHand", "rule": { "kind": "count", "of": "pours", "count": 1000 } },
+      { "id": "pours-10000", "family": "play", "name": "sandRiver", "rule": { "kind": "count", "of": "pours", "count": 10000 } },
+      { "id": "perfect-1", "family": "mastery", "name": "smoothSand", "rule": { "kind": "count", "of": "perfectClears", "count": 1 } },
+      { "id": "perfect-25", "family": "mastery", "name": "stillWater", "rule": { "kind": "count", "of": "perfectClears", "count": 25 } },
+      { "id": "perfect-100", "family": "mastery", "name": "glassCalm", "rule": { "kind": "count", "of": "perfectClears", "count": 100 } },
+      { "id": "tall-perfect-1", "family": "mastery", "name": "tallOrder", "rule": { "kind": "count", "of": "tallPerfect", "count": 1 } },
+      { "id": "tall-perfect-10", "family": "mastery", "name": "highTide", "rule": { "kind": "count", "of": "tallPerfect", "count": 10 } },
+      { "id": "shells-1", "family": "collection", "name": "beachcomber", "rule": { "kind": "count", "of": "shells", "count": 1 } },
+      { "id": "shells-20", "family": "collection", "name": "fullPockets", "rule": { "kind": "count", "of": "shells", "count": 20 } },
+      { "id": "sets-1", "family": "collection", "name": "matchedSet", "rule": { "kind": "count", "of": "sets", "count": 1 } },
+      { "id": "sets-8", "family": "collection", "name": "cabinetComplete", "rule": { "kind": "count", "of": "sets", "count": 8 } },
+      { "id": "scenes-4", "family": "collection", "name": "changeOfSky", "rule": { "kind": "count", "of": "scenesOwned", "count": 4 } },
+      { "id": "scenes-8", "family": "collection", "name": "paintedSkies", "rule": { "kind": "count", "of": "scenesOwned", "count": 8 } },
+      { "id": "mechanics-1", "family": "exploration", "name": "narrowEscape", "rule": { "kind": "count", "of": "mechanicsSeen", "count": 1 } },
+      { "id": "mechanics-4", "family": "exploration", "name": "oddJarsOut", "rule": { "kind": "count", "of": "mechanicsSeen", "count": 4 } },
+      { "id": "scenes-played-2", "family": "exploration", "name": "dayTripper", "rule": { "kind": "count", "of": "scenesPlayed", "count": 2 } },
+      { "id": "every-shore", "family": "exploration", "name": "everyShore", "rule": { "kind": "everyOwnedScene", "min": 4 } },
+      { "id": "daily-1", "family": "daily", "name": "morningDip", "rule": { "kind": "count", "of": "dailiesSolved", "count": 1 } },
+      { "id": "daily-30", "family": "daily", "name": "tideTable", "rule": { "kind": "count", "of": "dailiesSolved", "count": 30 } },
+      { "id": "streak-7", "family": "daily", "name": "sevenTides", "rule": { "kind": "count", "of": "bestStreak", "count": 7 } },
+      { "id": "streak-30", "family": "daily", "name": "fullMoon", "rule": { "kind": "count", "of": "bestStreak", "count": 30 } }
+    ]
+  },
   "tutorial": {
     "$comment": "First-launch lesson: one pour seals a jar.",
     "capacity": 4,
