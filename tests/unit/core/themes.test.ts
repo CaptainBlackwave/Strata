@@ -253,10 +253,23 @@ describe('readability (WCAG contrast) in every scene', () => {
       expect(contrastRatio(k.accent, k.card)).toBeGreaterThanOrEqual(3);
       expect(contrastRatio(k.inkSoft, k.card)).toBeGreaterThanOrEqual(3);
     });
+    it(`${theme.id}: sets its seal-shimmer and win-glow tint as r, g, b triplets (D73)`, () => {
+      const rgb = /^(\d{1,3}), (\d{1,3}), (\d{1,3})$/;
+      for (const v of [k.glow, k.glowCore]) {
+        const m = rgb.exec(v ?? '');
+        expect(m, `${theme.id} ${v}`).not.toBeNull();
+        expect(m!.slice(1).every((n) => Number(n) <= 255)).toBe(true);
+      }
+    });
     it(`${theme.id}: the focus ring reaches 3:1 on every surface it sits on`, () => {
       for (const bg of [k.card, k.surface2, k.bgTop, k.bgBottom]) expect(contrastRatio(k.focus!, bg)).toBeGreaterThanOrEqual(3);
     });
   }
+
+  it('the glow is tinted per scene, not one colour for all (D73)', () => {
+    const glows = new Set(cfg.themes.list.map((t) => (t.tokens as ThemeTokens & UiThemeTokens).glow));
+    expect(glows.size).toBeGreaterThanOrEqual(12);
+  });
 
   /**
    * Fixed colours in style.css that don't follow the scene, with the fixed tint they sit on

@@ -124,7 +124,9 @@
           "toastBg": "#4a3b2c",
           "toastFg": "#ffffff",
           "sky": "#fff6d8",
-          "themeColor": "#f6ecd9"
+          "themeColor": "#f6ecd9",
+          "glow": "255, 236, 170",
+          "glowCore": "255, 246, 216"
         }
       },
       {
@@ -154,7 +156,9 @@
           "toastBg": "#4a3340",
           "toastFg": "#ffffff",
           "sky": "#ffd6d0",
-          "themeColor": "#fbe3df"
+          "themeColor": "#fbe3df",
+          "glow": "255, 214, 190",
+          "glowCore": "255, 236, 222"
         }
       },
       {
@@ -184,7 +188,9 @@
           "toastBg": "#3e2a2a",
           "toastFg": "#ffffff",
           "sky": "#ffb36b",
-          "themeColor": "#ffd3a3"
+          "themeColor": "#ffd3a3",
+          "glow": "255, 190, 140",
+          "glowCore": "255, 226, 196"
         }
       },
       {
@@ -214,7 +220,9 @@
           "toastBg": "#f1ead9",
           "toastFg": "#1b2a44",
           "sky": "#2b4570",
-          "themeColor": "#0e1a30"
+          "themeColor": "#0e1a30",
+          "glow": "190, 210, 255",
+          "glowCore": "232, 240, 255"
         }
       },
       {
@@ -242,7 +250,9 @@
           "toastBg": "#2f3a36",
           "toastFg": "#ffffff",
           "sky": "#f6f8f2",
-          "themeColor": "#e8eeea"
+          "themeColor": "#e8eeea",
+          "glow": "214, 230, 236",
+          "glowCore": "240, 247, 249"
         }
       },
       {
@@ -274,7 +284,9 @@
           "toastBg": "#23344a",
           "toastFg": "#ffffff",
           "sky": "#ffffff",
-          "themeColor": "#eef4fb"
+          "themeColor": "#eef4fb",
+          "glow": "200, 230, 255",
+          "glowCore": "236, 247, 255"
         }
       },
       {
@@ -306,7 +318,9 @@
           "toastBg": "#fbefdc",
           "toastFg": "#33264a",
           "sky": "#6e3f55",
-          "themeColor": "#291e3c"
+          "themeColor": "#291e3c",
+          "glow": "255, 200, 120",
+          "glowCore": "255, 232, 186"
         }
       },
       {
@@ -338,7 +352,9 @@
           "toastBg": "#f4f0ff",
           "toastFg": "#171c3c",
           "sky": "#3a2f6b",
-          "themeColor": "#0a0f24"
+          "themeColor": "#0a0f24",
+          "glow": "255, 222, 150",
+          "glowCore": "255, 243, 214"
         }
       },
       {
@@ -370,7 +386,9 @@
           "toastBg": "#1f313d",
           "toastFg": "#ffffff",
           "sky": "#fff1b8",
-          "themeColor": "#e4f5fd"
+          "themeColor": "#e4f5fd",
+          "glow": "255, 240, 150",
+          "glowCore": "255, 250, 214"
         }
       },
       {
@@ -402,7 +420,9 @@
           "toastBg": "#3a2a33",
           "toastFg": "#ffffff",
           "sky": "#ffffff",
-          "themeColor": "#fcf0f3"
+          "themeColor": "#fcf0f3",
+          "glow": "255, 200, 222",
+          "glowCore": "255, 232, 242"
         }
       },
       {
@@ -434,7 +454,9 @@
           "toastBg": "#3b2a1c",
           "toastFg": "#ffffff",
           "sky": "#ffd9a0",
-          "themeColor": "#f6e7d2"
+          "themeColor": "#f6e7d2",
+          "glow": "255, 186, 140",
+          "glowCore": "255, 222, 196"
         }
       },
       {
@@ -462,7 +484,9 @@
           "toastBg": "#243442",
           "toastFg": "#ffffff",
           "sky": "#fffbe8",
-          "themeColor": "#e8f0f6"
+          "themeColor": "#e8f0f6",
+          "glow": "204, 240, 226",
+          "glowCore": "236, 250, 244"
         }
       },
       {
@@ -490,7 +514,9 @@
           "toastBg": "#1d2934",
           "toastFg": "#ffffff",
           "sky": "#e8edf0",
-          "themeColor": "#d9e1e7"
+          "themeColor": "#d9e1e7",
+          "glow": "196, 218, 232",
+          "glowCore": "230, 240, 247"
         }
       },
       {
@@ -522,7 +548,9 @@
           "toastBg": "#f3ecdc",
           "toastFg": "#1c2640",
           "sky": "#3a3560",
-          "themeColor": "#121a2e"
+          "themeColor": "#121a2e",
+          "glow": "255, 216, 160",
+          "glowCore": "255, 240, 214"
         }
       },
       {
@@ -554,7 +582,9 @@
           "toastBg": "#eef1ff",
           "toastFg": "#131a35",
           "sky": "#26305e",
-          "themeColor": "#070c1c"
+          "themeColor": "#070c1c",
+          "glow": "214, 220, 255",
+          "glowCore": "240, 243, 255"
         }
       },
       {
@@ -582,7 +612,9 @@
           "toastBg": "#eafaf4",
           "toastFg": "#0f1f2c",
           "sky": "#163f4a",
-          "themeColor": "#06121c"
+          "themeColor": "#06121c",
+          "glow": "196, 172, 255",
+          "glowCore": "234, 224, 255"
         }
       }
     ]
