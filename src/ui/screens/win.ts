@@ -13,6 +13,11 @@ import { coach, updateHud } from './hud';
 import { plateEl, portraitOf } from './sheets/profile';
 import { ANIM, audio, config, state } from '../state';
 
+/** Seconds after the win chime that a shell row's sound starts, so the two don't blur (F1, D68). */
+const SHELL_SOUND_DELAY = 0.8;
+/** Seconds after the win chime that a cosmetic unlock's sound starts, after any shell's. */
+const UNLOCK_SOUND_DELAY = 1.2;
+
 /** Fills the win card's shell row from the award `applyWin` made. */
 export function renderShell(award: ShellAward): void {
   if (award.kind === 'complete') {
@@ -23,12 +28,14 @@ export function renderShell(award: ShellAward): void {
     let text = t.newShell(award.shell.name);
     if (award.completedSet) text += `\n${t.setComplete(award.completedSet.name, award.setCoins)}`;
     $('win-shell-text').textContent = text;
+    audio.play('shell', { delay: SHELL_SOUND_DELAY });
   }
   $('win-shell').hidden = false;
 }
 
 /** Win card rows for cosmetics unlocked by this win (§3.7). */
 export function showUnlocks(items: SlotItem[]): void {
+  if (items.length) audio.play('unlock', { delay: UNLOCK_SOUND_DELAY });
   $('win-unlocks').replaceChildren(
     ...items.map(({ slot, item }) => {
       const row = document.createElement('div');

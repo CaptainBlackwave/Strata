@@ -1,0 +1,363 @@
+{
+ "rows": [
+  {
+   "event": "select",
+   "detail": {},
+   "cap": -16,
+   "before": {
+    "peakDb": -18.62289167050658,
+    "rmsDb": -32.519702411823246,
+    "ms": 44
+   },
+   "after": {
+    "peakDb": -20.21103365216234,
+    "rmsDb": -33.84542099473752,
+    "ms": 43
+   },
+   "afterDefault": {
+    "peakDb": -22.149233912323467,
+    "rmsDb": -35.55011370025769,
+    "ms": 41
+   }
+  },
+  {
+   "event": "deselect",
+   "detail": {},
+   "cap": -18,
+   "before": {
+    "peakDb": -22.006715904850502,
+    "rmsDb": -35.61214604741724,
+    "ms": 37
+   },
+   "after": {
+    "peakDb": -22.757643188033036,
+    "rmsDb": -36.1453544628128,
+    "ms": 35
+   },
+   "afterDefault": {
+    "peakDb": -24.695843225951933,
+    "rmsDb": -37.87934912810914,
+    "ms": 34
+   }
+  },
+  {
+   "event": "nope",
+   "detail": {},
+   "cap": -12,
+   "before": {
+    "peakDb": -14.194517189825719,
+    "rmsDb": -26.56414047761175,
+    "ms": 77
+   },
+   "after": {
+    "peakDb": -16.577243772818605,
+    "rmsDb": -29.070696740346,
+    "ms": 85
+   },
+   "afterDefault": {
+    "peakDb": -18.51544337840708,
+    "rmsDb": -30.780558220459376,
+    "ms": 80
+   }
+  },
+  {
+   "event": "pour",
+   "detail": {
+    "units": 1
+   },
+   "cap": -12,
+   "before": {
+    "peakDb": -19.698179654875844,
+    "rmsDb": -37.24415746719097,
+    "ms": 235
+   },
+   "after": {
+    "peakDb": -22.277592255749195,
+    "rmsDb": -41.6431951257003,
+    "ms": 293
+   },
+   "afterDefault": {
+    "peakDb": -24.2157923056177,
+    "rmsDb": -43.57894156064974,
+    "ms": 292
+   }
+  },
+  {
+   "event": "pour",
+   "detail": {
+    "units": 4
+   },
+   "cap": -12,
+   "before": {
+    "peakDb": -19.90990154731389,
+    "rmsDb": -37.43065954955627,
+    "ms": 445
+   },
+   "after": {
+    "peakDb": -22.519419664764445,
+    "rmsDb": -41.27928929724121,
+    "ms": 428
+   },
+   "afterDefault": {
+    "peakDb": -24.457620033040442,
+    "rmsDb": -43.21728114422642,
+    "ms": 428
+   }
+  },
+  {
+   "event": "land",
+   "detail": {
+    "pitch": 0
+   },
+   "cap": -14,
+   "before": {
+    "peakDb": -20.3938291646821,
+    "rmsDb": -32.74293896758647,
+    "ms": 56
+   },
+   "after": {
+    "peakDb": -22.320164591210876,
+    "rmsDb": -34.54601684897843,
+    "ms": 75
+   },
+   "afterDefault": {
+    "peakDb": -24.25836453438321,
+    "rmsDb": -36.19917018904919,
+    "ms": 70
+   }
+  },
+  {
+   "event": "land",
+   "detail": {
+    "pitch": 7
+   },
+   "cap": -14,
+   "before": {
+    "peakDb": -20.363243972110887,
+    "rmsDb": -32.773867974940444,
+    "ms": 56
+   },
+   "after": {
+    "peakDb": -22.345233550143302,
+    "rmsDb": -34.59612817820887,
+    "ms": 75
+   },
+   "afterDefault": {
+    "peakDb": -24.28343381030443,
+    "rmsDb": -36.28053071764097,
+    "ms": 71
+   }
+  },
+  {
+   "event": "seal",
+   "detail": {},
+   "cap": -8,
+   "before": {
+    "peakDb": -12.053969956325819,
+    "rmsDb": -30.14246737582649,
+    "ms": 363
+   },
+   "after": {
+    "peakDb": -17.582792120278928,
+    "rmsDb": -32.192019756731696,
+    "ms": 745
+   },
+   "afterDefault": {
+    "peakDb": -19.520991155586948,
+    "rmsDb": -33.995260790135106,
+    "ms": 722
+   }
+  },
+  {
+   "event": "win",
+   "detail": {},
+   "cap": -6,
+   "before": {
+    "peakDb": -15.3388393988356,
+    "rmsDb": -28.918441673232195,
+    "ms": 1082
+   },
+   "after": {
+    "peakDb": -17.703429394241386,
+    "rmsDb": -31.395098954716293,
+    "ms": 1309
+   },
+   "afterDefault": {
+    "peakDb": -19.64162915760904,
+    "rmsDb": -33.2185222195344,
+    "ms": 1275
+   }
+  },
+  {
+   "event": "coin",
+   "detail": {},
+   "cap": -18,
+   "before": {
+    "peakDb": -29.192937112703913,
+    "rmsDb": -39.83964915865303,
+    "ms": 118
+   },
+   "after": {
+    "peakDb": -26.244593551849285,
+    "rmsDb": -40.07093774072775,
+    "ms": 138
+   },
+   "afterDefault": {
+    "peakDb": -28.182793978024186,
+    "rmsDb": -41.82502950250881,
+    "ms": 132
+   }
+  },
+  {
+   "event": "booster",
+   "detail": {},
+   "cap": -14,
+   "before": {
+    "peakDb": -19.88365630678542,
+    "rmsDb": -34.56982696252037,
+    "ms": 159
+   },
+   "after": {
+    "peakDb": -21.8022737640071,
+    "rmsDb": -36.05144327007037,
+    "ms": 170
+   },
+   "afterDefault": {
+    "peakDb": -23.740473825074258,
+    "rmsDb": -37.83027820859285,
+    "ms": 164
+   }
+  },
+  {
+   "event": "shuffle",
+   "detail": {},
+   "cap": -16,
+   "before": {
+    "peakDb": -19.12020526795555,
+    "rmsDb": -37.400499301800565,
+    "ms": 295
+   },
+   "after": {
+    "peakDb": -23.689224231360697,
+    "rmsDb": -41.667173528849794,
+    "ms": 297
+   },
+   "afterDefault": {
+    "peakDb": -25.627423996715063,
+    "rmsDb": -43.59418864665639,
+    "ms": 297
+   }
+  },
+  {
+   "event": "mapStone",
+   "detail": {},
+   "cap": -18,
+   "before": null,
+   "after": {
+    "peakDb": -23.432054655793415,
+    "rmsDb": -38.9628712277718,
+    "ms": 79
+   },
+   "afterDefault": {
+    "peakDb": -25.3702540753046,
+    "rmsDb": -40.64123177355461,
+    "ms": 75
+   }
+  },
+  {
+   "event": "locked",
+   "detail": {},
+   "cap": -18,
+   "before": null,
+   "after": {
+    "peakDb": -22.857638867442716,
+    "rmsDb": -35.24367248582271,
+    "ms": 56
+   },
+   "afterDefault": {
+    "peakDb": -24.795838340749405,
+    "rmsDb": -36.97238518851189,
+    "ms": 53
+   }
+  },
+  {
+   "event": "unlock",
+   "detail": {},
+   "cap": -12,
+   "before": null,
+   "after": {
+    "peakDb": -20.90298439380216,
+    "rmsDb": -34.802357369937134,
+    "ms": 479
+   },
+   "afterDefault": {
+    "peakDb": -22.841184474451218,
+    "rmsDb": -36.59910514444118,
+    "ms": 464
+   }
+  },
+  {
+   "event": "shell",
+   "detail": {},
+   "cap": -12,
+   "before": null,
+   "after": {
+    "peakDb": -23.613636865782937,
+    "rmsDb": -37.58229508560226,
+    "ms": 450
+   },
+   "afterDefault": {
+    "peakDb": -25.551836267534995,
+    "rmsDb": -39.35881086710876,
+    "ms": 434
+   }
+  },
+  {
+   "event": "sceneBought",
+   "detail": {},
+   "cap": -12,
+   "before": null,
+   "after": {
+    "peakDb": -21.82385606181278,
+    "rmsDb": -35.73124432894421,
+    "ms": 629
+   },
+   "afterDefault": {
+    "peakDb": -23.762056521563203,
+    "rmsDb": -37.5232279327477,
+    "ms": 608
+   }
+  },
+  {
+   "event": "playHere",
+   "detail": {},
+   "cap": -14,
+   "before": null,
+   "after": {
+    "peakDb": -22.960328663456337,
+    "rmsDb": -35.27444913828861,
+    "ms": 362
+   },
+   "afterDefault": {
+    "peakDb": -24.898528354894374,
+    "rmsDb": -37.004913585900574,
+    "ms": 345
+   }
+  }
+ ],
+ "errors": [
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started",
+  "InvalidStateError: Failed to execute 'resume' on 'OfflineAudioContext': cannot resume an offline context that has not started"
+ ],
+ "chromium": "153.0.8010.12"
+}

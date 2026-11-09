@@ -43,6 +43,8 @@ export function playHere(): void {
   lock?.claim(); // resumes saves through onOwnerChange(true), and the other tabs yield
   claimedAt = performance.now();
   reloadSave();
+  audio.unlock(); // a tap: this tab may never have had a gesture before
+  audio.play('playHere');
 }
 
 /**

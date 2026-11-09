@@ -1,49 +1,102 @@
 /**
  * Strata's audio event system (.claude/rules/ui-code.md: UI sounds go through events).
  * Everything is synthesised with WebAudio: no audio files, nothing sampled from another game.
- * Implements design/competitive-roadmap.md item C1 (game feel: sound, music, haptics).
+ * Implements design/competitive-roadmap.md item C1 (game feel: sound, music, haptics) and
+ * sprint 10 F1/F3/F4 (D64, D66, D68): the sound recipes and haptics are data in src/ui/sfx.ts.
+ *
+ * Signal path: each sound effect → `sfxBus` (sound volume) → `master` → destination;
+ * music → `musicBus` (the music's own fades) → `musicLevel` (music volume) → `master`.
  *
  * Example: `audio.play('pour', { units: 2 })` after `audio.unlock()` inside a tap handler.
  */
+import { HAPTICS, MASTER_GAIN, SOUNDS, type Haptic, type SoundDetail, type SoundEvent, type Voice } from './sfx';
 
-/** Every sound the game can make. */
-export type SoundEvent = 'select' | 'deselect' | 'nope' | 'pour' | 'land' | 'seal' | 'win' | 'coin' | 'booster' | 'shuffle';
+export type { SoundDetail, SoundEvent } from './sfx';
 
-/** Haptic patterns per event, in milliseconds (navigator.vibrate). */
-const HAPTICS: Partial<Record<SoundEvent, number | number[]>> = {
-  select: 8,
-  nope: [12, 40, 12],
-  land: 10,
-  seal: [18, 30, 28],
-  win: [30, 50, 30, 50, 60],
-  booster: 14,
-};
-
-/** Pentatonic scale (C major pentatonic, 2 octaves) used by chimes and music. */
+/** Pentatonic scale (C major pentatonic, 2 octaves) used by the music. */
 const SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
 
-/** The player's audio and haptics toggles, as passed to the audio engine (from the saved settings). */
+/** The player's audio and haptics settings, as passed to the audio engine (from the saved settings). */
 export interface AudioOptions {
+  /** Sound effects on; off mutes them (the switch next to the slider). */
   sound: boolean;
+  /** Music on; off mutes it. */
   music: boolean;
   haptics: boolean;
+  /** Sound effects volume, 0..1 (clamped). */
+  soundVolume: number;
+  /** Music volume, 0..1 (clamped). */
+  musicVolume: number;
 }
+
+/** What the engine needs from outside, injectable for tests and offline measurement. */
+export interface AudioDeps {
+  /**
+   * Makes the context on the first unlock. Default: the browser's AudioContext. Tests pass a
+   * fake; the loudness measurement passes an OfflineAudioContext. `null` means no audio.
+   */
+  createContext?: () => BaseAudioContext | null;
+  /** Default: navigator.vibrate, if the browser has it. */
+  vibrate?: (pattern: number | number[]) => void;
+  /** Fills the noise buffer and picks its start offsets. Default: Math.random. */
+  random?: () => number;
+}
+
+/** A volume clamped to 0..1; anything that isn't a finite number is silent. */
+export function clampVolume(v: number): number {
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0;
+}
+
+/** The browser's AudioContext, or null where there is none. */
+function browserContext(): BaseAudioContext | null {
+  const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  return Ctor ? new Ctor() : null;
+}
+
+/** navigator.vibrate, guarded: unsupported browsers (every iPhone browser) do nothing. */
+function browserVibrate(pattern: number | number[]): void {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    /* not supported */
+  }
+}
+
+/** Whether `ctx` renders offline (it has no resume before rendering starts). */
+function isOffline(ctx: BaseAudioContext): boolean {
+  return typeof OfflineAudioContext !== 'undefined' && ctx instanceof OfflineAudioContext;
+}
+
+/** Seconds a volume change takes to settle (a time constant), so dragging a slider doesn't click. */
+const LEVEL_GLIDE = 0.015;
 
 /** Audio engine. Construct once, call `unlock()` on the first user gesture. */
 export class GameAudio {
-  private ctx: AudioContext | null = null;
+  private ctx: BaseAudioContext | null = null;
   private master: GainNode | null = null;
+  /** Every sound effect goes through this gain, set to the sound volume. */
+  private sfxBus: GainNode | null = null;
+  /** The music's own bus: the music code fades it in and out. */
   private musicBus: GainNode | null = null;
+  /** Between musicBus and master, set to the music volume. */
+  private musicLevel: GainNode | null = null;
   private noise: AudioBuffer | null = null;
   private musicTimer = 0;
   private musicStep = 0;
   private waves: AudioBufferSourceNode | null = null;
+  private readonly random: () => number;
 
-  constructor(private options: AudioOptions) {}
+  constructor(
+    private options: AudioOptions,
+    private readonly deps: AudioDeps = {},
+  ) {
+    this.random = deps.random ?? Math.random;
+  }
 
-  /** Applies new settings immediately (music starts or stops). */
+  /** Applies new settings immediately: the volumes glide to their new levels, music starts or stops. */
   configure(options: AudioOptions): void {
     this.options = options;
+    this.applyLevels();
     if (options.music) this.startMusic();
     else this.stopMusic();
   }
@@ -52,134 +105,98 @@ export class GameAudio {
   unlock(): void {
     try {
       if (!this.ctx) {
-        const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        if (!Ctor) return;
-        this.ctx = new Ctor();
-        this.master = this.ctx.createGain();
-        this.master.gain.value = 0.7;
-        this.master.connect(this.ctx.destination);
-        this.musicBus = this.ctx.createGain();
+        const ctx = (this.deps.createContext ?? browserContext)();
+        if (!ctx) return;
+        this.ctx = ctx;
+        this.master = ctx.createGain();
+        this.master.gain.value = MASTER_GAIN;
+        this.master.connect(ctx.destination);
+        this.sfxBus = ctx.createGain();
+        this.sfxBus.gain.value = clampVolume(this.options.soundVolume);
+        this.sfxBus.connect(this.master);
+        this.musicLevel = ctx.createGain();
+        this.musicLevel.gain.value = clampVolume(this.options.musicVolume);
+        this.musicLevel.connect(this.master);
+        this.musicBus = ctx.createGain();
         this.musicBus.gain.value = 0.0;
-        this.musicBus.connect(this.master);
+        this.musicBus.connect(this.musicLevel);
         this.noise = this.makeNoise(2);
       }
-      if (this.ctx.state === 'suspended') void this.ctx.resume();
+      const live = this.ctx as AudioContext;
+      if (live.state === 'suspended' && typeof live.resume === 'function' && !isOffline(this.ctx)) void live.resume();
       if (this.options.music) this.startMusic();
     } catch {
       this.ctx = null; // audio unavailable; the game stays silent
     }
   }
 
-  /** Plays one event's sound and haptic. Safe to call before unlock (it does nothing). */
-  play(event: SoundEvent, detail: { units?: number; pitch?: number } = {}): void {
+  /**
+   * Plays one event's sound and haptic. Safe to call before unlock (it only vibrates).
+   * Example: `audio.play('shell', { delay: 0.8 })` lets the win chime ring first.
+   */
+  play(event: SoundEvent, detail: SoundDetail = {}): void {
     if (this.options.haptics) this.vibrate(HAPTICS[event]);
-    if (!this.options.sound || !this.ctx || !this.master) return;
-    const t = this.ctx.currentTime;
-    switch (event) {
-      case 'select':
-        this.tone(SCALE[4 + (detail.pitch ?? 0) % 3], t, 0.07, 'triangle', 0.18);
-        break;
-      case 'deselect':
-        this.tone(SCALE[2], t, 0.06, 'triangle', 0.12);
-        break;
-      case 'nope':
-        this.tone(140, t, 0.12, 'sine', 0.3, 90);
-        break;
-      case 'pour':
-        this.sandHiss(t, 0.28 + 0.12 * Math.min(4, detail.units ?? 1));
-        break;
-      case 'land':
-        this.tone(SCALE[Math.min(SCALE.length - 1, 3 + (detail.pitch ?? 0))], t, 0.09, 'sine', 0.14);
-        break;
-      case 'seal':
-        this.pop(t);
-        [5, 7, 9].forEach((n, i) => this.tone(SCALE[n], t + 0.06 + i * 0.07, 0.25, 'triangle', 0.16));
-        break;
-      case 'win':
-        [0, 2, 4, 5, 7, 9].forEach((n, i) => this.tone(SCALE[n], t + i * 0.09, 0.5, 'triangle', 0.2));
-        this.tone(SCALE[9] * 2, t + 0.6, 0.8, 'sine', 0.08);
-        break;
-      case 'coin':
-        this.tone(1318.5, t, 0.06, 'square', 0.05);
-        this.tone(1975.5, t + 0.05, 0.12, 'square', 0.05);
-        break;
-      case 'booster':
-        this.tone(SCALE[3], t, 0.08, 'triangle', 0.15);
-        this.tone(SCALE[6], t + 0.07, 0.14, 'triangle', 0.15);
-        break;
-      case 'shuffle':
-        for (let i = 0; i < 6; i++) this.sandHiss(t + i * 0.05, 0.08);
-        break;
+    if (!this.options.sound || clampVolume(this.options.soundVolume) === 0 || !this.ctx || !this.sfxBus) return;
+    const delay = Math.min(2, Math.max(0, detail.delay ?? 0));
+    const t = this.ctx.currentTime + delay;
+    for (const v of SOUNDS[event].voices(detail)) this.voice(v, t);
+  }
+
+  /** Glides the sfx bus and music level to the current volumes. */
+  private applyLevels(): void {
+    if (!this.ctx || !this.sfxBus || !this.musicLevel) return;
+    const now = this.ctx.currentTime;
+    for (const [node, v] of [
+      [this.sfxBus, this.options.soundVolume],
+      [this.musicLevel, this.options.musicVolume],
+    ] as const) {
+      node.gain.cancelScheduledValues(now);
+      node.gain.setTargetAtTime(clampVolume(v), now, LEVEL_GLIDE);
     }
   }
 
-  private vibrate(pattern: number | number[] | undefined): void {
-    if (pattern === undefined) return;
-    try {
-      navigator.vibrate?.(pattern);
-    } catch {
-      /* not supported */
-    }
+  private vibrate(pattern: Haptic): void {
+    if (pattern === null) return;
+    (this.deps.vibrate ?? browserVibrate)(pattern);
   }
 
   private makeNoise(seconds: number): AudioBuffer {
     const ctx = this.ctx!;
     const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * seconds), ctx.sampleRate);
     const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    for (let i = 0; i < d.length; i++) d[i] = this.random() * 2 - 1;
     return buf;
   }
 
-  /** A pitched blip with a fast attack and exponential decay. */
-  private tone(freq: number, at: number, dur: number, type: OscillatorType, vol: number, endFreq?: number): void {
+  /** Schedules one voice of a recipe at `t0` plus its offset, into the sfx bus. */
+  private voice(v: Voice, t0: number): void {
     const ctx = this.ctx!;
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, at);
-    if (endFreq) o.frequency.exponentialRampToValueAtTime(endFreq, at + dur);
-    g.gain.setValueAtTime(0.0001, at);
-    g.gain.exponentialRampToValueAtTime(vol, at + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-    o.connect(g).connect(this.master!);
-    o.start(at);
-    o.stop(at + dur + 0.02);
-  }
-
-  /** Falling sand: band-passed noise with a slow swell and a falling filter. */
-  private sandHiss(at: number, dur: number): void {
-    const ctx = this.ctx!;
-    const src = ctx.createBufferSource();
-    src.buffer = this.noise;
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.Q.value = 0.9;
-    bp.frequency.setValueAtTime(5200, at);
-    bp.frequency.exponentialRampToValueAtTime(1800, at + dur);
+    const at = t0 + v.at;
     const g = ctx.createGain();
     g.gain.setValueAtTime(0.0001, at);
-    g.gain.exponentialRampToValueAtTime(0.22, at + dur * 0.25);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-    src.connect(bp).connect(g).connect(this.master!);
-    src.start(at, Math.random());
-    src.stop(at + dur + 0.05);
-  }
-
-  /** Cork pop: a short noise click plus a quick downward chirp. */
-  private pop(at: number): void {
-    const ctx = this.ctx!;
+    g.gain.exponentialRampToValueAtTime(v.vol, at + v.attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + v.dur);
+    g.connect(this.sfxBus!);
+    if (v.kind === 'tone') {
+      const o = ctx.createOscillator();
+      o.type = v.wave;
+      o.frequency.setValueAtTime(v.freq, at);
+      if (v.endFreq) o.frequency.exponentialRampToValueAtTime(v.endFreq, at + v.dur);
+      o.connect(g);
+      o.start(at);
+      o.stop(at + v.dur + 0.02);
+      return;
+    }
     const src = ctx.createBufferSource();
     src.buffer = this.noise;
-    const hp = ctx.createBiquadFilter();
-    hp.type = 'highpass';
-    hp.frequency.value = 1200;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.35, at);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.04);
-    src.connect(hp).connect(g).connect(this.master!);
-    src.start(at);
-    src.stop(at + 0.05);
-    this.tone(620, at, 0.09, 'sine', 0.25, 260);
+    const f = ctx.createBiquadFilter();
+    f.type = v.filter;
+    f.Q.value = v.q;
+    f.frequency.setValueAtTime(v.from, at);
+    if (v.to !== v.from) f.frequency.exponentialRampToValueAtTime(v.to, at + v.dur);
+    src.connect(f).connect(g);
+    src.start(at, this.random() * 1.5);
+    src.stop(at + v.dur + 0.05);
   }
 
   /** Gentle generative music: soft pentatonic notes over a slow ocean swell. */

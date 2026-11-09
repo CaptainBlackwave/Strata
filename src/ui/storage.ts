@@ -27,6 +27,10 @@ export interface Settings {
   patterns: boolean;
   /** Season scenes use southern-hemisphere windows, six months on (D42, sprint 8 P2). Off by default. */
   southern: boolean;
+  /** Sound effects volume, 0..1 (D66, sprint 10 F3). The `sound` switch still mutes. */
+  soundVolume: number;
+  /** Music volume, 0..1 (D66, sprint 10 F3). The `music` switch still mutes. */
+  musicVolume: number;
 }
 
 /** Everything we persist. */
@@ -79,7 +83,9 @@ export interface KeyValueStore {
   setItem(key: string, value: string): void;
 }
 
-const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, patterns: false, southern: false };
+/** The volume a new player, or a save without a valid value, starts with (D66). */
+export const DEFAULT_VOLUME = 0.8;
+const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, patterns: false, southern: false, soundVolume: DEFAULT_VOLUME, musicVolume: DEFAULT_VOLUME };
 const BOOSTERS: BoosterId[] = ['undo', 'shuffle', 'extraJar', 'hint'];
 const NO_STREAK: StreakState = { last: null, streak: 0, best: 0, passes: 0 };
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
@@ -105,6 +111,14 @@ function read(store: KeyValueStore | null, key: string): unknown {
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object';
 const nonNegInt = (v: unknown, fallback: number) => (Number.isInteger(v) && (v as number) >= 0 ? (v as number) : fallback);
+
+/**
+ * A saved volume: a finite number clamped to 0..1, else {@link DEFAULT_VOLUME} (D66).
+ * Example: `volumeOf(1.4)` is 1, `volumeOf('0.5')` is 0.8.
+ */
+export function volumeOf(v: unknown): number {
+  return typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : DEFAULT_VOLUME;
+}
 
 /** Highest level number a save may hold. Above it the value is treated as corrupt or edited (TD-6). */
 const MAX_LEVEL = 1_000_000;
@@ -182,6 +196,8 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       haptics: typeof s.haptics === 'boolean' ? s.haptics : DEFAULT_SETTINGS.haptics,
       patterns: typeof s.patterns === 'boolean' ? s.patterns : DEFAULT_SETTINGS.patterns,
       southern: typeof s.southern === 'boolean' ? s.southern : DEFAULT_SETTINGS.southern,
+      soundVolume: volumeOf(s.soundVolume),
+      musicVolume: volumeOf(s.musicVolume),
     },
     daily: {
       last: typeof d.last === 'string' && DATE_KEY.test(d.last) ? d.last : null,

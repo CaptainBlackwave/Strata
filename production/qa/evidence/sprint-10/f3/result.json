@@ -1,0 +1,103 @@
+{
+ "version": "0.9.1",
+ "shots": [
+  {
+   "name": "settings-se-100-music-muted.png",
+   "sound": {
+    "value": "65",
+    "text": "65%",
+    "disabled": false,
+    "h": 44,
+    "w": 165,
+    "name": "Sound volume"
+   },
+   "music": {
+    "value": "40",
+    "text": "40%",
+    "disabled": true,
+    "h": 44,
+    "w": 167,
+    "name": "Music volume"
+   },
+   "hOverflow": false
+  },
+  {
+   "name": "settings-se-150.png",
+   "sound": {
+    "value": "65",
+    "text": "65%",
+    "disabled": false,
+    "h": 44,
+    "w": 276,
+    "name": "Sound volume"
+   },
+   "music": {
+    "value": "40",
+    "text": "40%",
+    "disabled": false,
+    "h": 44,
+    "w": 276,
+    "name": "Music volume"
+   },
+   "hOverflow": false
+  },
+  {
+   "name": "settings-pixel7-100-music-muted.png",
+   "sound": {
+    "value": "65",
+    "text": "65%",
+    "disabled": false,
+    "h": 44,
+    "w": 257,
+    "name": "Sound volume"
+   },
+   "music": {
+    "value": "40",
+    "text": "40%",
+    "disabled": true,
+    "h": 44,
+    "w": 259,
+    "name": "Music volume"
+   },
+   "hOverflow": false
+  },
+  {
+   "name": "settings-pixel7-150.png",
+   "sound": {
+    "value": "65",
+    "text": "65%",
+    "disabled": false,
+    "h": 44,
+    "w": 207,
+    "name": "Sound volume"
+   },
+   "music": {
+    "value": "40",
+    "text": "40%",
+    "disabled": false,
+    "h": 44,
+    "w": 211,
+    "name": "Music volume"
+   },
+   "hOverflow": false
+  }
+ ],
+ "mapOpen": true,
+ "win": {
+  "reached": true,
+  "pours": 18,
+  "title": "Level cleared"
+ },
+ "keyboard": {
+  "saved": {
+   "soundVolume": 0.65,
+   "musicVolume": 0.9
+  },
+  "valuetext": {
+   "sound": "65%",
+   "music": "90%"
+  },
+  "ok": true
+ },
+ "errors": []
+}
