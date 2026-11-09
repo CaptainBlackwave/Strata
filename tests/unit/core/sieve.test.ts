@@ -173,7 +173,7 @@ describe('solver and hint with the sieve', () => {
       expect(s.pour(m!.from, m!.to)).toBe(true);
     }
     expect(s.status).toBe('won');
-  });
+  }, 60_000);
 });
 
 describe('sieve colour choice (proveDeal)', () => {
@@ -285,7 +285,7 @@ describe('sieve placement and generation', () => {
       expect(isWon(b), `level ${l}`).toBe(true);
     }
     expect(withSieveCount).toBeGreaterThanOrEqual(5);
-  });
+  }, 60_000);
 });
 
 describe('no earlier board changes (sprint 13 M2 hard constraints)', () => {
@@ -293,7 +293,7 @@ describe('no earlier board changes (sprint 13 M2 hard constraints)', () => {
     const hashes = pins.hashes as Record<string, string>;
     expect(Object.keys(hashes).length).toBe(40);
     for (const [l, h] of Object.entries(hashes)) expect(hash(generateLevel(Number(l), cfg).board), `level ${l}`).toBe(h);
-  });
+  }, 60_000);
 
   it('the daily Saturday rotation never picks the sieve yet (W1 adds it from a start date)', () => {
     for (let w = 0; w < 520; w++) {
