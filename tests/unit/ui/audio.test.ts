@@ -52,6 +52,7 @@ class FakeNode {
   gain = new FakeParam();
   frequency = new FakeParam();
   Q = new FakeParam();
+  playbackRate = new FakeParam();
   type = '';
   buffer: unknown = null;
   loop = false;
@@ -206,5 +207,59 @@ describe('GameAudio.play (F1)', () => {
     const { ctx, audio } = setup();
     audio.play('pour', { units: 2 });
     expect(ctx.nodes.filter((n) => n.kind !== 'destination')).toEqual([]);
+  });
+});
+
+describe('review of PR #8: music lifecycle', () => {
+  // The music engine reads document.hidden and listens for visibilitychange.
+  let onVisibility: (() => void) | null = null;
+  const doc = { hidden: false, addEventListener: (_: string, fn: () => void) => void (onVisibility = fn) };
+  beforeEach(() => {
+    onVisibility = null;
+    doc.hidden = false;
+    vi.stubGlobal('document', doc);
+  });
+  const sources = (ctx: FakeContext) => ctx.nodes.filter((n) => n.kind === 'source').length;
+
+  it('music at volume 0 schedules nothing, and raising the slider starts it', () => {
+    const { ctx, audio } = setup({ music: true, musicVolume: 0 });
+    audio.unlock();
+    expect(sources(ctx)).toBe(0);
+    audio.configure({ ...OPTS, music: true, musicVolume: 0.5 });
+    expect(sources(ctx)).toBeGreaterThan(0);
+  });
+
+  it('a failed first unlock does not keep a dead music engine: the next unlock plays on the new context', () => {
+    const broken = new FakeContext();
+    broken.createBufferSource = () => {
+      throw new Error('context lost');
+    };
+    const fresh = new FakeContext();
+    let calls = 0;
+    const audio = new GameAudio({ ...OPTS, music: true }, { createContext: () => (calls++ === 0 ? broken : fresh) as unknown as BaseAudioContext, vibrate: () => undefined, random: () => 0.5 });
+    audio.unlock();
+    audio.unlock();
+    expect(sources(fresh)).toBeGreaterThan(0);
+  });
+
+  it('unlock resumes a context in any non-running state (iOS "interrupted"), not only "suspended"', () => {
+    const { ctx, audio } = setup();
+    const resume = vi.fn(() => Promise.resolve());
+    Object.assign(ctx, { state: 'interrupted', resume });
+    audio.unlock();
+    expect(resume).toHaveBeenCalled();
+  });
+
+  it('coming back to the page resumes a context the system interrupted', () => {
+    const { ctx, audio } = setup({ music: true });
+    const resume = vi.fn(() => Promise.resolve());
+    Object.assign(ctx, { resume });
+    audio.unlock();
+    Object.assign(ctx, { state: 'interrupted' });
+    doc.hidden = true;
+    onVisibility?.();
+    doc.hidden = false;
+    onVisibility?.();
+    expect(resume).toHaveBeenCalled();
   });
 });

@@ -245,6 +245,7 @@ export function flyCoins(from: Element | null, to: Element | null, reward: numbe
   if (!from || !to || !plan.count || !allowed()) return onLand();
   const a = from.getBoundingClientRect();
   const b = to.getBoundingClientRect();
+  if (!a.width || !b.width) return onLand(); // a hidden end (closed card or chip): nothing to fly between
   const x0 = a.left + a.width / 2;
   const y0 = a.top + a.height / 2;
   const dx = b.left + b.width / 2 - x0;

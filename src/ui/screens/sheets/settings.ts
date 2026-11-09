@@ -25,9 +25,9 @@ const sliderOf = (v: Volume) => $<HTMLInputElement>(`set-${v.mute}-volume`);
 /** Shows a slider at its saved level, with its spoken percentage, disabled while its switch mutes it. */
 function syncSlider(v: Volume): void {
   const el = sliderOf(v);
-  const percent = Math.round(state.save.settings[v.field] * 100);
-  el.value = String(percent);
-  el.setAttribute('aria-valuetext', t.volumeValue(percent));
+  el.value = String(Math.round(state.save.settings[v.field] * 100));
+  // Read back the value the slider shows: it snaps to its step (a saved 0.33 shows as 35%).
+  el.setAttribute('aria-valuetext', t.volumeValue(Number(el.value)));
   el.disabled = !state.save.settings[v.mute];
 }
 

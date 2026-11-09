@@ -121,12 +121,26 @@ export class GameAudio {
         this.musicBus.connect(this.musicLevel);
         this.noise = this.makeNoise(2);
       }
-      const live = this.ctx as AudioContext;
-      if (live.state === 'suspended' && typeof live.resume === 'function' && !isOffline(this.ctx)) void live.resume();
+      this.resumeIfNeeded();
       if (this.options.music) this.startMusic();
     } catch {
-      this.ctx = null; // audio unavailable; the game stays silent
+      // Audio unavailable: the game stays silent. Drop everything tied to this context, so a later
+      // unlock builds fresh nodes and a fresh music engine instead of keeping a dead one.
+      this.music?.stop();
+      this.music = null;
+      this.ctx = null;
+      this.master = this.sfxBus = this.musicBus = this.musicLevel = null;
     }
+  }
+
+  /**
+   * Resumes the context unless it is running: "suspended" before a gesture, and "interrupted" on
+   * iOS after the page was backgrounded or a call came in. An offline context is never resumed.
+   */
+  private resumeIfNeeded(): void {
+    const live = this.ctx as AudioContext | null;
+    if (!live || isOffline(live) || live.state === 'running' || typeof live.resume !== 'function') return;
+    void live.resume().catch(() => undefined);
   }
 
   /**
@@ -203,6 +217,8 @@ export class GameAudio {
     if (!this.ctx || !this.musicBus || !this.noise) return;
     this.watchVisibility();
     if (document.hidden) return;
+    // A music slider at 0 is silent: schedule nothing (battery), and start again when it is raised.
+    if (clampVolume(this.options.musicVolume) === 0) return this.stopMusic();
     this.music ??= new SceneMusic(this.ctx, this.musicBus, this.noise);
     if (this.music.playing) return;
     this.musicBus.gain.cancelScheduledValues(this.ctx.currentTime);
@@ -221,7 +237,10 @@ export class GameAudio {
     this.watchingVisibility = true;
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.stopMusic();
-      else if (this.options.music) this.startMusic();
+      else {
+        this.resumeIfNeeded(); // iOS leaves the context "interrupted" after the page was hidden
+        if (this.options.music) this.startMusic();
+      }
     });
   }
 

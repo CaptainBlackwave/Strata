@@ -197,6 +197,12 @@ export function countUp(el: HTMLElement, total: number, delay = 0): void {
   };
   window.setTimeout(() => {
     const timer = window.setInterval(() => {
+      // The player closed the card before the count finished: no coins fly over the next screen.
+      if ($('win').hidden) {
+        window.clearInterval(timer);
+        updateHud();
+        return;
+      }
       shown = Math.min(total, shown + step);
       el.textContent = t.reward(shown);
       if (shown % (step * 3) === 0 || shown === total) audio.play('coin');
