@@ -6,14 +6,15 @@ import config from '../../../src/config/game-config.json';
 // @ts-expect-error node:fs types are not installed (as in style-art.test.ts)
 import { readFileSync as readFs } from 'node:fs';
 import { type CollectionConfig } from '../../../src/core/collection';
-import { type GameConfig, type MechanicId, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
+import { type GameConfig, type MechanicId, hasMechanicCard, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
 import { specialsOf } from '../../../src/core/map';
 import { t } from '../../../src/ui/strings';
 
 /** style.css as text (CSS ?raw imports are empty under Vitest; style-art.test.ts reads it the same way). */
 const css = (readFs as (path: URL, enc: string) => string)(new URL('../../../src/ui/style.css', import.meta.url), 'utf8');
 const cfg = config as unknown as GameConfig & CollectionConfig;
-const ids: MechanicId[] = cfg.mechanics.list.map((m) => m.id);
+// Card mechanics only: the clam (D96, sprint 13 M3) gets its card with its UI task.
+const ids: MechanicId[] = cfg.mechanics.list.map((m) => m.id).filter(hasMechanicCard);
 
 describe('the sieve is a card mechanic (D96)', () => {
   it('every configured mechanic, the sieve included, has a card, a map name and a jar state', () => {
