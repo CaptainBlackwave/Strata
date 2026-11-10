@@ -1629,6 +1629,108 @@ button {
     repeating-linear-gradient(90deg, rgba(40, 30, 20, 0.5) 0 1px, transparent 1px 3px),
     linear-gradient(0deg, transparent 1.5px, rgba(40, 30, 20, 0.5) 1.5px 2.5px, transparent 2.5px);
 }
+/* Clam jar (sprint 13 M3, D96): while it is closed a ribbed shell covers the whole glass, so its
+   sand cannot be seen (jar-mechanics.md 2.6). The shell is a fan of ribs and growth rings from a
+   hinge at the jar's foot, its crown domed into the cork room. The pours left until it opens sit
+   on the shell in a pill in the scene's toast colours (the hourglass pill's look), sized in rem so
+   it grows with text; at 1 it takes the accent. A clam is never narrow, a funnel, the hourglass or
+   a sieve (placement), and nothing is drawn on a closed clam's rim, so no other mark shares its
+   place. `.clam-opening` keeps the shell drawn while it swings open (jars.ts clamOpenFx). */
+.clam-shell {
+  display: none;
+}
+:is(.jar, .mini-jar).clam .clam-shell,
+.jar.clam-opening .clam-shell {
+  display: block;
+  position: absolute;
+  z-index: 3;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  height: calc(var(--jar-h) + var(--jar-w) * 0.12);
+  border-radius: 48% 48% calc(var(--jar-w) * 0.38) calc(var(--jar-w) * 0.38) /
+    calc(var(--jar-w) * 0.3) calc(var(--jar-w) * 0.3) calc(var(--jar-w) * 0.38)
+    calc(var(--jar-w) * 0.38);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 0 rgba(90, 70, 50, 0.25));
+}
+.clam-ribs {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #94704c;
+  border-radius: inherit;
+  background:
+    repeating-conic-gradient(
+      from -90deg at 50% 104%,
+      rgba(122, 82, 48, 0.34) 0 2.4deg,
+      transparent 2.4deg 14deg
+    ),
+    repeating-radial-gradient(
+      ellipse 120% 100% at 50% 104%,
+      transparent 0 calc(var(--jar-w) * 0.34),
+      rgba(122, 82, 48, 0.14) calc(var(--jar-w) * 0.34)
+        calc(var(--jar-w) * 0.34 + 1.5px)
+    ),
+    radial-gradient(
+      ellipse 110% 100% at 50% 100%,
+      #e4c49e 0,
+      #f3dfc4 55%,
+      #fcf1e2 100%
+    );
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -3px 0 rgba(122, 82, 48, 0.18);
+}
+/* The hinge at the foot. */
+.clam-ribs::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 38%;
+  height: max(5px, calc(var(--jar-w) * 0.14));
+  transform: translateX(-50%);
+  border: 1.5px solid #94704c;
+  border-radius: 50% 50% 35% 35%;
+  background: #d6b38b;
+}
+.clam-shell b {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 36%;
+  transform: translate(-50%, -50%);
+  min-width: 1.45em;
+  padding: 0.1em 0.38em;
+  border-radius: 999px;
+  border: 1.5px solid var(--card);
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.clam-shell b:empty {
+  display: none;
+}
+/* The next pour opens it: the pill takes the scene's accent, so the opening is never a surprise. */
+.jar.clam[data-clam='1'] .clam-shell b {
+  background: var(--accent-text);
+  color: var(--card);
+}
+/* Night scenes: the shell is moonlit, not lamp-bright. */
+body:is(
+    [data-theme='moonlit'],
+    [data-theme='harvestmoon'],
+    [data-theme='newyear']
+  )
+  .clam-ribs {
+  filter: brightness(0.8) saturate(0.85);
+}
 .mini-jar {
   --neck: 14px;
 }

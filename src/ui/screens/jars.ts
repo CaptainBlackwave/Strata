@@ -33,7 +33,7 @@ export const SIEVE_BAND = '<span class="sieve-band" aria-hidden="true"><span cla
 /**
  * The clam jar's shell (D96, §2.6): while the clam is closed a ribbed shell covers the glass, so
  * its sand cannot be seen, and the pours left until it opens sit on the shell in the empty `<b>`.
- * Drawn for Strata: a fan of ribs from a hinge at the foot, a frilled rim at the top.
+ * Drawn for Strata: a fan of ribs and growth rings from a hinge at the jar's foot, its crown domed.
  */
 export const CLAM_SHELL = '<span class="clam-shell" aria-hidden="true"><span class="clam-ribs"></span><b></b></span>';
 

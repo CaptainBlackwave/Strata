@@ -4,6 +4,8 @@
 // out (isClassicMechanic) until W1.
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
+// @ts-expect-error node:fs types are not installed (as in style-art.test.ts)
+import { readFileSync as readFs } from 'node:fs';
 import { type CollectionConfig } from '../../../src/core/collection';
 import { type Board, type Jar, isSealed, pourRefusal } from '../../../src/core/board';
 import { type GameConfig, type MechanicId, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
@@ -12,6 +14,8 @@ import { jarSummary } from '../../../src/ui/logic/jar-label';
 import { refusalNote, tapMechanic } from '../../../src/ui/logic/refusal';
 import { t } from '../../../src/ui/strings';
 
+/** style.css as text (CSS ?raw imports are empty under Vitest; style-art.test.ts reads it the same way). */
+const css = (readFs as (path: URL, enc: string) => string)(new URL('../../../src/ui/style.css', import.meta.url), 'utf8');
 const cfg = config as unknown as GameConfig & CollectionConfig;
 const ids: MechanicId[] = cfg.mechanics.list.map((m) => m.id);
 const colour = (c: number) => cfg.palette[c].id;
@@ -101,5 +105,17 @@ describe('jarSummary: the jar name a screen reader hears', () => {
     expect(jarSummary(jar([2], { sieve: 2 }), false, colour)).toBe(`${colour(2)} (${t.jarStates.sieve(colour(2))})`);
     expect(jarSummary(jar([1, 1, 1, 1]), true, colour)).toBe(`${Array(4).fill(colour(1)).join(', ')} (${t.sealed})`);
     expect(jarSummary(jar([0], { hourglass: { left: 2, every: 3 } } as Partial<Jar>), false, colour)).toBe(`${colour(0)} (${t.jarStates.hourglass(2)})`);
+  });
+});
+
+describe('the clam shell art (style.css)', () => {
+  it('draws a ribbed shell over the whole glass while closed, hidden on other jars', () => {
+    expect(css).toMatch(/\.clam-shell \{\s*display: none;/);
+    expect(css).toMatch(/:is\(\.jar, \.mini-jar\)\.clam \.clam-shell,\s*\.jar\.clam-opening \.clam-shell \{[^}]*z-index: 3;[^}]*height: calc\(var\(--jar-h\)/);
+    expect(css).toMatch(/\.clam-ribs \{[^}]*repeating-conic-gradient\(/);
+  });
+  it('shows the count in a rem-sized pill in the scene colours, the accent at 1', () => {
+    expect(css).toMatch(/\.clam-shell b \{[^}]*background: var\(--toast-bg\);[^}]*color: var\(--toast-fg\);[^}]*font-size: 0\.75rem;/);
+    expect(css).toMatch(/\.jar\.clam\[data-clam='1'\] \.clam-shell b \{[^}]*var\(--accent-text\)/);
   });
 });
