@@ -1584,10 +1584,66 @@ button {
   color: var(--card);
 }
 
+/* Sieve jar (sprint 13 M2, D96): a collar round the jar's mouth in its band colour, with a fine
+   mesh over it, so it reads as the jar's own fitting and never as sand. It sits on the rim, above
+   the sand, under the cork; a sieve is never frozen, locked, narrow, a funnel or the hourglass
+   (placement, jar-mechanics.md 2.5), so no other mark shares its place. With colour patterns on,
+   the band carries its colour's pattern (.pat-*) and the mesh thins to the edges. */
+.sieve-band {
+  display: none;
+}
+:is(.jar, .mini-jar).sieve .sieve-band {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  /* --neck is where the glass starts: below the cork room on the board, 14 px in the Jar guide. */
+  left: min(-2px, calc(var(--jar-w) * -0.06));
+  right: min(-2px, calc(var(--jar-w) * -0.06));
+  top: calc(var(--neck, calc(var(--jar-w) * 0.18)) - 2px);
+  height: max(11px, calc(var(--jar-w) * 0.25));
+  border: 2px solid var(--ink);
+  border-radius: 5px;
+  background-color: var(--band);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.22),
+    0 2px 0 rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  pointer-events: none;
+}
+/* The mesh: a fine woven grid, light and dark threads, so it shows on pale and dark bands alike. */
+.sieve-mesh {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(40, 30, 20, 0.45) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 4px);
+}
+/* Patterns on: the mesh keeps to a woven strip at the band's foot, so the pattern reads above it. */
+.sieve-band[class*='pat-'] .sieve-mesh {
+  top: auto;
+  height: 4px;
+  border-top: 1px solid rgba(40, 30, 20, 0.5);
+  background-color: var(--band);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(40, 30, 20, 0.5) 0 1px, transparent 1px 3px),
+    linear-gradient(0deg, transparent 1.5px, rgba(40, 30, 20, 0.5) 1.5px 2.5px, transparent 2.5px);
+}
+.mini-jar {
+  --neck: 14px;
+}
+
 /* Intro card and jar guide */
 .intro-card {
   width: min(380px, 100%);
   padding-bottom: 16px;
+}
+/* The Jar guide outgrows a phone screen with six or more jars: the list scrolls and Got it stays
+   pinned to the card's foot, on the card's own background. */
+.intro-card #btn-intro-ok {
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -12px 12px -4px var(--card);
 }
 .intro-kicker {
   margin: 2px 0 10px;

@@ -5,7 +5,7 @@ import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
-import { HOURGLASS_MARK } from '../jars';
+import { HOURGLASS_MARK, SIEVE_BAND } from '../jars';
 
 /** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
 export const MECHANICS: readonly MechanicId[] = config.mechanics.list.map((m) => m.id);
@@ -13,14 +13,16 @@ export const MECHANICS: readonly MechanicId[] = config.mechanics.list.map((m) =>
 /** A tiny static jar illustrating a mechanic, built from the same classes as the board. */
 export function miniJar(id: MechanicId): string {
   const lockC = config.palette[2].hex;
-  const units = id === 'narrow' ? ['#2a9d8f'] : id === 'funnel' ? ['#f2a541', '#f2a541'] : ['#c8553d', '#2a9d8f', '#f2a541'];
+  // The sieve is banded terracotta and holds its own colour under a mixed top, as a dealt one may.
+  const units = id === 'narrow' ? ['#2a9d8f'] : id === 'funnel' ? ['#f2a541', '#f2a541'] : id === 'sieve' ? ['#c8553d', '#c8553d', '#2a9d8f'] : ['#c8553d', '#2a9d8f', '#f2a541'];
   const sand = units.map((c) => `<span class="unit" style="--c:${c}"></span>`).join('');
   const extra = id === 'frozen' ? '<span class="ice"></span>' : '';
   const top = id === 'locked' ? `<span class="padlock" style="--lock:${lockC}"></span>` : id === 'funnel' ? '<span class="funnel-mark"></span>' : '';
   // The hourglass shows its full count, like a freshly dealt one.
   const every = config.mechanics.list.find((m) => m.id === 'hourglass')?.every ?? 3;
   const mark = id === 'hourglass' ? HOURGLASS_MARK.replace('></b>', `>${every}</b>`) : '';
-  return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span>${mark}</span>`;
+  const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) : '';
+  return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span>${mark}${band}</span>`;
 }
 
 /** Shows the intro card for any mechanic on this board the player hasn't met yet. */
@@ -53,6 +55,11 @@ export function showMechanicCards(ids: readonly MechanicId[], kicker: string, op
     $('intro-list').append(note);
   }
   openLayer($('intro'), $('btn-intro-ok'), opener);
+  // With six or more jars the card is taller than a phone screen: focusing Got it scrolled it to the
+  // bottom, so the list opened at its end with the title cut off. Start at the top; Got it stays
+  // pinned to the card's foot (style.css), so it is still in view and focused.
+  const card = $('intro').querySelector<HTMLElement>('.cabinet-card');
+  if (card) card.scrollTop = 0;
 }
 
 /** Wires the Jar guide and the intro card's button. */

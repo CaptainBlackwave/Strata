@@ -3,11 +3,12 @@
 // screen-reader text, and a level's intro cards include the hourglass from its own flag.
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { type GameConfig, type MechanicId, isCardMechanic, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
+import { type GameConfig, type MechanicId, hasMechanicCard, isCardMechanic, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
 import { t } from '../../../src/ui/strings';
 
 const cfg = config as unknown as GameConfig;
-const ids = cfg.mechanics.list.map((m) => m.id);
+// Every mechanic has a card since sprint 13 M2 (the sieve's UI).
+const ids = cfg.mechanics.list.map((m) => m.id).filter(hasMechanicCard);
 
 describe('hourglass strings (D96)', () => {
   it('every configured mechanic, the hourglass included, has a card, a map name and a jar state', () => {
@@ -47,7 +48,7 @@ describe('specMechanics: the intro cards of a level', () => {
     expect(specMechanics({ mechanics: [], hourglass: false })).toEqual([]);
   });
   it('earlier debut levels are unchanged', () => {
-    for (const m of cfg.mechanics.list.filter((x) => x.id !== 'hourglass')) expect(specMechanics(levelSpec(m.unlockAt, cfg)), m.id).toEqual([m.id]);
+    for (const m of cfg.mechanics.list.filter((x) => x.id !== 'hourglass' && x.id !== 'sieve')) expect(specMechanics(levelSpec(m.unlockAt, cfg)), m.id).toEqual([m.id]);
   });
 });
 
