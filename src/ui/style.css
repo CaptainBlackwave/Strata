@@ -1638,6 +1638,13 @@ button {
   width: min(380px, 100%);
   padding-bottom: 16px;
 }
+/* The Jar guide outgrows a phone screen with six or more jars: the list scrolls and Got it stays
+   pinned to the card's foot, on the card's own background. */
+.intro-card #btn-intro-ok {
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -12px 12px -4px var(--card);
+}
 .intro-kicker {
   margin: 2px 0 10px;
   font-size: 0.8125rem;

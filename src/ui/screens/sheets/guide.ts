@@ -55,6 +55,11 @@ export function showMechanicCards(ids: readonly MechanicId[], kicker: string, op
     $('intro-list').append(note);
   }
   openLayer($('intro'), $('btn-intro-ok'), opener);
+  // With six or more jars the card is taller than a phone screen: focusing Got it scrolled it to the
+  // bottom, so the list opened at its end with the title cut off. Start at the top; Got it stays
+  // pinned to the card's foot (style.css), so it is still in view and focused.
+  const card = $('intro').querySelector<HTMLElement>('.cabinet-card');
+  if (card) card.scrollTop = 0;
 }
 
 /** Wires the Jar guide and the intro card's button. */
