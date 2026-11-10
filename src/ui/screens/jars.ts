@@ -6,6 +6,7 @@ import { computeLayout } from '../layout';
 import { t } from '../strings';
 import { boardEl, reducedMotion, showToast } from '../dom';
 import { FLIP_MS } from '../logic/flip';
+import { jarSummary } from '../logic/jar-label';
 import { audio, config, state } from '../state';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
@@ -28,6 +29,13 @@ export const HOURGLASS_MARK =
  * pattern too. Drawn for Strata.
  */
 export const SIEVE_BAND = '<span class="sieve-band" aria-hidden="true"><span class="sieve-mesh"></span></span>';
+
+/**
+ * The clam jar's shell (D96, §2.6): while the clam is closed a ribbed shell covers the glass, so
+ * its sand cannot be seen, and the pours left until it opens sit on the shell in the empty `<b>`.
+ * Drawn for Strata: a fan of ribs from a hinge at the foot, a frilled rim at the top.
+ */
+export const CLAM_SHELL = '<span class="clam-shell" aria-hidden="true"><span class="clam-ribs"></span><b></b></span>';
 
 let tapHandler: (i: number) => void = () => {};
 
@@ -62,7 +70,8 @@ export function buildJars(): void {
       '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
       '<span class="hint-badge" aria-hidden="true"></span>' +
       HOURGLASS_MARK +
-      SIEVE_BAND;
+      SIEVE_BAND +
+      CLAM_SHELL;
     jar.addEventListener('click', () => tapHandler(i));
     rows.appendChild(jar);
     return jar;
@@ -112,17 +121,8 @@ export function updateJar(i: number, growFrom = Infinity): void {
   renderMechanics(el, jar);
   el.classList.toggle('selected', state.selected === i);
   el.setAttribute('aria-pressed', String(state.selected === i));
-  const contents = jar.units.length ? jar.units.map((c, k) => (k < jar.hidden ? t.buried : config.palette[c].id)).join(', ') : t.jarEmpty;
-  const states = [
-    jar.cap !== undefined ? t.jarStates.narrow : '',
-    jar.frozen ? t.jarStates.frozen : '',
-    jar.lock !== undefined ? t.jarStates.locked(config.palette[jar.lock].id) : '',
-    jar.funnel ? t.jarStates.funnel : '',
-    jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
-    jar.sieve !== undefined ? t.jarStates.sieve(config.palette[jar.sieve].id) : '',
-    sealed ? t.sealed : '',
-  ].filter(Boolean);
-  el.setAttribute('aria-label', t.jarLabel(i, states.length ? `${contents} (${states.join(', ')})` : contents));
+  // A closed clam's sand is hidden from the screen reader too (D96, §2.6).
+  el.setAttribute('aria-label', t.jarLabel(i, jarSummary(jar, sealed, (c) => config.palette[c].id)));
 }
 
 /** Draws a jar's mechanic state, and plays the thaw/unlock effect when one ends. */
@@ -146,6 +146,13 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
     const band = el.querySelector('.sieve-band') as HTMLElement;
     band.style.setProperty('--band', config.palette[jar.sieve].hex);
     band.className = `sieve-band${state.save.settings.patterns ? ` pat-${jar.sieve % PATTERNS}` : ''}`;
+  }
+  // A closed clam's shell and count (D96, §2.6). Undo of the opening pour closes it again here.
+  el.classList.toggle('clam', jar.clam !== undefined);
+  const opensIn = jar.clam !== undefined ? String(jar.clam) : '';
+  if (el.dataset.clam !== opensIn) {
+    el.dataset.clam = opensIn;
+    (el.querySelector('.clam-shell b') as HTMLElement).textContent = opensIn;
   }
   const glass = el.querySelector('.glass') as HTMLElement;
   if (jar.cap !== undefined) glass.style.height = `${state.unitHeight * jar.cap + Math.round(state.unitHeight * 0.45)}px`;

@@ -83,58 +83,56 @@ export interface PourBand {
 /**
  * Every jar mechanic. Each one has an intro card, a Jar guide entry and player-facing strings,
  * so the UI's lookup tables are keyed by this type. The hourglass (D96) joined in sprint 13 M1,
- * the sieve (D96) in sprint 13 M2.
+ * the sieve (D96) in sprint 13 M2 and the clam (D96) in sprint 13 M3.
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam';
 
 /**
- * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass
- * and the sieve ride in their own flags, `LevelSpec.hourglass` and `LevelSpec.sieve`, so the
- * generator's placement stream and every board from before them stay byte-identical. They are
+ * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass,
+ * the sieve and the clam ride in their own flags, `LevelSpec.hourglass`, `.sieve` and `.clam`, so
+ * the generator's placement stream and every board from before them stay byte-identical. They are
  * also the daily's Saturday rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve'>;
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam'>;
 
-/**
- * Every jar mechanic the core can place (the ids in `mechanics.list`): the card mechanics
- * (`MechanicId`) plus the clam (D96, sprint 13 M3). The clam rides in `LevelSpec.clam` and has
- * no intro card, strings or art until its UI task lands, which then folds it into `MechanicId`
- * (as the sieve was folded in after its sprint 13 M2 core).
- */
-export type BoardMechanicId = MechanicId | 'clam';
+/** @deprecated Since sprint 13 M3 (the clam's UI) every mechanic is a `MechanicId`; kept as an alias for older branches. */
+export type BoardMechanicId = MechanicId;
 
 /**
  * True for the four original mechanics (`ClassicMechanicId`), false for the hourglass, the sieve
  * and the clam. Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
  */
-export function isClassicMechanic(id: BoardMechanicId): id is ClassicMechanicId {
+export function isClassicMechanic(id: MechanicId): id is ClassicMechanicId {
   return id !== 'hourglass' && id !== 'sieve' && id !== 'clam';
 }
 
 /**
- * True for a mechanic with an intro card, Jar guide entry and strings (`MechanicId`): false for
- * the clam until its UI lands (sprint 13 M3). The Jar guide and the map's debut badge filter
- * `mechanics.list` with this. Example: `hasMechanicCard('clam') // false`.
+ * True for a mechanic with an intro card, Jar guide entry and strings. Since sprint 13 M3 (the
+ * clam's UI) that is every mechanic again. Kept for older branches. Example: `hasMechanicCard('clam') // true`.
  */
-export function hasMechanicCard(id: BoardMechanicId): id is MechanicId {
-  return id !== 'clam';
+export function hasMechanicCard(id: MechanicId): id is MechanicId {
+  return typeof id === 'string';
 }
 
 /** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
 export const isCardMechanic = isClassicMechanic;
 
 /**
- * Every card mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
- * the hourglass, then the sieve, each when it has one. Example: level 141 gives `['sieve']`. The
- * clam (`LevelSpec.clam`) has no card yet, so it is not listed until its UI task (sprint 13 M3).
+ * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
+ * the hourglass, the sieve and the clam, each when it has one. Example: level 181 gives `['clam']`.
  */
-export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve'>): MechanicId[] {
-  return [...spec.mechanics, ...(spec.hourglass ? ['hourglass' as const] : []), ...(spec.sieve ? ['sieve' as const] : [])];
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam'>): MechanicId[] {
+  return [
+    ...spec.mechanics,
+    ...(spec.hourglass ? ['hourglass' as const] : []),
+    ...(spec.sieve ? ['sieve' as const] : []),
+    ...(spec.clam ? ['clam' as const] : []),
+  ];
 }
 
 /** One mechanic's schedule and tuning in game-config.json. */
 export interface MechanicConfig {
-  readonly id: BoardMechanicId;
+  readonly id: MechanicId;
   readonly unlockAt: number;
   /** Narrow jar capacity. */
   readonly cap?: number;
@@ -169,12 +167,12 @@ export interface LevelSpec {
   readonly hourglass?: boolean;
   /** One filled jar is a sieve (D96, sprint 13 M2). Absent or false: none. See `ClassicMechanicId`. */
   readonly sieve?: boolean;
-  /** One filled jar is a closed clam (D96, sprint 13 M3). Absent or false: none. See `BoardMechanicId`. */
+  /** One filled jar is a closed clam (D96, sprint 13 M3). Absent or false: none. See `ClassicMechanicId`. */
   readonly clam?: boolean;
 }
 
 /** Splits rolled mechanics into the classic mechanics and the hourglass, sieve and clam flags of a `LevelSpec`. */
-function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true } {
+function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
@@ -270,7 +268,7 @@ export function mechanicChance(level: number, config: GameConfig): number {
  * possible from `comboFrom`. Deterministic per level. Tall-jar levels only call this
  * from `challenge.mechanicsFrom` (decision D8).
  */
-export function pickMechanics(level: number, config: GameConfig): BoardMechanicId[] {
+export function pickMechanics(level: number, config: GameConfig): MechanicId[] {
   const m = config.mechanics;
   const debut = m.list.find((x) => x.unlockAt === level);
   if (debut) return [debut.id];

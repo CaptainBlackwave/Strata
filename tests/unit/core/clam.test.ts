@@ -164,11 +164,11 @@ describe('solver and hint with the clam', () => {
 });
 
 describe('clam placement and generation', () => {
-  it('is not classic (never in the daily rotation) and has no card until its UI task', () => {
+  it('is a card mechanic since its UI (sprint 13 M3), but not classic, so never in the daily rotation', () => {
     expect(isClassicMechanic('clam')).toBe(false);
-    expect(hasMechanicCard('clam')).toBe(false);
+    expect(hasMechanicCard('clam')).toBe(true);
     expect(hasMechanicCard('sieve')).toBe(true);
-    expect(specMechanics(levelSpec(UNLOCK, cfg))).toEqual([]);
+    expect(specMechanics(levelSpec(UNLOCK, cfg))).toEqual(['clam']);
   });
 
   it('debuts alone on level 181 (no spare-jar swap, D28) and the board has one clam, closed for opensAfter pours', () => {
