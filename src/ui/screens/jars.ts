@@ -7,6 +7,7 @@ import { t } from '../strings';
 import { boardEl, reducedMotion, showToast } from '../dom';
 import { FLIP_MS } from '../logic/flip';
 import { jarSummary } from '../logic/jar-label';
+import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { audio, config, state } from '../state';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
@@ -149,7 +150,7 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   }
   // A closed clam's shell and count (D96, §2.6). Undo of the opening pour closes it again here.
   el.classList.toggle('clam', jar.clam !== undefined);
-  const opensIn = jar.clam !== undefined ? String(jar.clam) : '';
+  const opensIn = shellCount(jar);
   if (el.dataset.clam !== opensIn) {
     el.dataset.clam = opensIn;
     (el.querySelector('.clam-shell b') as HTMLElement).textContent = opensIn;
@@ -179,7 +180,7 @@ export function mechanicFx(el: HTMLElement, cls: string, label: string): void {
   burst({ x: r.left + r.width / 2, y: r.top + r.height * 0.3, colors: ['#dff3ff', '#ffffff', '#b9e0f5'], count: 14, spread: r.width, size: 5, duration: 600, className: 'spark' });
 }
 
-/** Flip animations still playing or waiting, so a board change can stop them (Undo, Restart, Shuffle). */
+/** Flip and clam-opening animations still playing or waiting, so a board change can stop them (Undo, Restart, Shuffle). */
 const flips = new Set<Animation>();
 
 /**
@@ -208,7 +209,38 @@ export function flipFx(i: number, delay: number): void {
   }
 }
 
-/** Stops every flip animation: the board was redrawn by something other than a pour. */
+/**
+ * A clam's shell swinging open on jar `i` (D96, §2.6). The jar is already drawn open (its sand
+ * shows); `.clam-opening` keeps the shell drawn over it, closed for `delay` ms while the pour's
+ * sand lands, then the shell tips back on its hinge at the foot and fades. Short and calm.
+ * Reduced motion: no motion, the open jar is simply drawn. The `clamOpen` sound plays either way.
+ * An Undo or other board change cancels it (cancelFlips), and the redraw closes the clam again.
+ */
+export function clamOpenFx(i: number, delay: number): void {
+  const el = state.jarEls[i];
+  if (!el) return;
+  audio.play('clamOpen', { delay: delay / 1000 });
+  if (reducedMotion()) return;
+  const shell = el.querySelector('.clam-shell') as HTMLElement;
+  el.classList.add('clam-opening');
+  const a = shell.animate(
+    [
+      { transform: 'perspective(240px) rotateX(0deg)', opacity: 1 },
+      { transform: 'perspective(240px) rotateX(34deg)', opacity: 1, offset: 0.45 },
+      { transform: 'perspective(240px) rotateX(78deg)', opacity: 0 },
+    ],
+    { duration: CLAM_OPEN_MS, delay, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'backwards' },
+  );
+  flips.add(a);
+  const done = () => {
+    flips.delete(a);
+    el.classList.remove('clam-opening');
+  };
+  a.addEventListener('finish', done);
+  a.addEventListener('cancel', done);
+}
+
+/** Stops every flip and clam-opening animation: the board was redrawn by something other than a pour. */
 export function cancelFlips(): void {
   for (const a of [...flips]) a.cancel();
 }
