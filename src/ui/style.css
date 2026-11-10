@@ -1662,9 +1662,10 @@ button {
   border-radius: inherit;
   background:
     repeating-conic-gradient(
-      from -90deg at 50% 104%,
-      rgba(122, 82, 48, 0.34) 0 2.4deg,
-      transparent 2.4deg 14deg
+      from -90deg at 50% 100%,
+      rgba(122, 82, 48, 0.3) 0 1.3deg,
+      rgba(255, 255, 255, 0.3) 1.3deg 2.8deg,
+      transparent 2.8deg 6.5deg
     ),
     repeating-radial-gradient(
       ellipse 120% 100% at 50% 104%,
