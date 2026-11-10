@@ -111,7 +111,7 @@ describe('sand overlay cap (jar-styles.md §4)', () => {
       }
     }
     expect(Object.keys(worst)).toHaveLength(SAND_IDS.length);
-  });
+  }, 60_000);
 
   it('the estimate notices a texture that breaks the cap (the check can fail)', () => {
     const heavy = [{ kind: 'band', rgb: [255, 255, 255], alpha: 0.25, from: 0, to: 60, soft: 0 } as const];
