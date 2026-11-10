@@ -8,9 +8,10 @@ import type { MechanicId } from '../../core/levels';
 
 /**
  * The note for a refused pour into a jar: `'mechanic'` (frozen or locked: the jar's own tap text),
- * `'sieve'` (a wrong colour into a sieve: "Only <colour> sand …"), `'sealed'`, `'full'` or `'colour'`.
+ * `'clam'` (a closed clam: "This clam opens in N pours.", D96 §2.6), `'sieve'` (a wrong colour
+ * into a sieve: "Only <colour> sand …"), `'sealed'`, `'full'` or `'colour'`.
  */
-export type RefusalNote = 'mechanic' | 'sieve' | 'sealed' | 'full' | 'colour';
+export type RefusalNote = 'mechanic' | 'clam' | 'sieve' | 'sealed' | 'full' | 'colour';
 
 /**
  * The note for a pour refused with `reason` into a jar that is (`targetSealed`) or is not sealed.
@@ -20,16 +21,20 @@ export type RefusalNote = 'mechanic' | 'sieve' | 'sealed' | 'full' | 'colour';
  */
 export function refusalNote(reason: PourRefusal | null, targetSealed: boolean): RefusalNote | null {
   if (reason === 'closed') return 'mechanic';
+  // A closed clam is never sealed (it is dealt unsealed and nothing pours in while it is shut).
+  if (reason === 'clam') return 'clam';
   if (reason === 'sieve' || reason === 'full' || reason === 'colour') return targetSealed ? 'sealed' : reason;
   return null;
 }
 
 /**
  * The mechanic whose tap text explains a tap on `jar` that could not lift it, or `null`.
- * An empty sieve explains its band; a sealed sieve is just sealed.
+ * An empty sieve explains its band; a sealed sieve is just sealed. A closed clam explains its
+ * count first, whatever else it is (D96, §2.6); an open clam is an ordinary jar.
  * Example: `tapMechanic({ units: [], hidden: 0, sieve: 2 }, false) // 'sieve'`
  */
 export function tapMechanic(jar: Jar, sealed: boolean): MechanicId | null {
+  if (jar.clam !== undefined) return 'clam';
   if (jar.frozen) return 'frozen';
   if (jar.lock !== undefined) return 'locked';
   if (jar.funnel) return 'funnel';
