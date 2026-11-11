@@ -9,6 +9,7 @@ import { FLIP_MS } from '../logic/flip';
 import { jarSummary } from '../logic/jar-label';
 import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { audio, config, state } from '../state';
+import { gpuInvalidate, gpuLayout } from '../board-gpu/hooks';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
@@ -79,6 +80,7 @@ export function buildJars(): void {
   });
   boardEl.appendChild(rows);
   renderAllJars();
+  gpuLayout(); // sprint 19 S2: the canvas board (when on) lines up with the new buttons
 }
 
 export function renderAllJars(shake = false): void {
@@ -124,6 +126,7 @@ export function updateJar(i: number, growFrom = Infinity): void {
   el.setAttribute('aria-pressed', String(state.selected === i));
   // A closed clam's sand is hidden from the screen reader too (D96, §2.6).
   el.setAttribute('aria-label', t.jarLabel(i, jarSummary(jar, sealed, (c) => config.palette[c].id)));
+  gpuInvalidate(); // sprint 19 S2: redraws this jar on the canvas board, if it changed
 }
 
 /** Draws a jar's mechanic state, and plays the thaw/unlock effect when one ends. */
@@ -257,6 +260,7 @@ export function renderSelectedState(): void {
     el.classList.toggle('selected', state.selected === i);
     el.setAttribute('aria-pressed', String(state.selected === i));
   });
+  gpuInvalidate();
 }
 
 export function nope(i: number): void {

@@ -930,6 +930,30 @@
       ]
     }
   },
+  "sand": {
+    "$comment": "Falling-sand pour for the GPU board (sprint 19 S1, docs/architecture/adr-0001-gpu-sand-board.md; code in src/ui/sand/). Units are grid cells and simulation steps. cols, rows: cells per jar grid; one unit is floor(rows / capacity) rows, so grainsPerUnit = cols * that, and any leftover rows are headroom. stepsPerSecond: simulation rate the renderer aims for (frame-rate independent). maxStepsPerFrame: most steps one frame may run; a longer frame drops the backlog instead of stalling. maxTiltDeg: the source jar's largest tilt. tiltPerStepDeg, returnPerStepDeg: how fast it tips toward the target and back. flowEndDeg: the flow direction at full tilt, in degrees below the horizontal toward the lip; negative points up the tipped wall and out of the mouth (it passes 0, sliding along the floor to the lip wall, on the way). Keep it within reposeDeg of straight up (-44 to -90 for 46) so every loose grain can always rise and the pour completes. reposeDeg: a grain only moves within this angle of the flow direction (45 is classic falling sand; a little over keeps exact diagonals). slideChance: chance a loose grain in the tilted source tries to move each step (lower is a lazier, grainier flow). flowPassesPerStep: flow passes per step in the tilted source, so a loose grain can move up to this many cells a step (a faster pour). spillPerStep: most grains that leave the source in one step. fallCellsPerStep: cells a grain can drop per step inside a grid (gravity). airRows: the drop from the lip to the target's mouth, in cells. airGravity: a falling grain's speed gain per step in the air, in cells per step. streamSpread: share of the target's width the stream lands across. levelReach: how far, in columns, a resting surface grain may creep to a lower spot, so piles level out flatter than 45 degrees. levelChance: chance per step a resting grain tries that long creep (otherwise it only tries the diagonal). quietSteps: steps without movement that count as settled. settleSteps: most steps spent settling once every grain has landed and the jar is upright. maxSteps: hard cap on a whole pour; done() is true from then on.",
+    "cols": 32,
+    "rows": 72,
+    "stepsPerSecond": 240,
+    "maxStepsPerFrame": 8,
+    "maxTiltDeg": 110,
+    "tiltPerStepDeg": 2,
+    "returnPerStepDeg": 3,
+    "flowEndDeg": -60,
+    "reposeDeg": 46,
+    "slideChance": 0.9,
+    "flowPassesPerStep": 2,
+    "spillPerStep": 20,
+    "fallCellsPerStep": 2,
+    "airRows": 24,
+    "airGravity": 0.2,
+    "streamSpread": 0.8,
+    "levelReach": 6,
+    "levelChance": 0.5,
+    "quietSteps": 6,
+    "settleSteps": 600,
+    "maxSteps": 4000
+  },
   "onboarding": {
     "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
     "installAfterLevels": 3,

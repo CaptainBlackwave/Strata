@@ -1,4 +1,5 @@
 /** Boot: static labels, the repaired save, wiring every screen, the first screen. main.ts only calls boot(). */
+import { initBoardMode } from './board-gpu/hooks';
 import { knownShells } from '../core/collection';
 import { type BoosterId } from '../core/economy';
 import { launchLevel } from '../core/levels';
@@ -55,6 +56,7 @@ function applyStrings(): void {
 
 /** Starts Strata: fills the labels, repairs the save, wires every screen, then shows Home (or the QA level). */
 export function boot(): void {
+  initBoardMode(); // sprint 19 S2: ?board=gpu (or the dev flag) turns the canvas board on
   const launch = parseLaunch(location.search); // ?level=N (QA, D3), ?daily=YYYY-MM-DD (O3), ?weekly=YYYY-Www (D82), ?challenge=N&pours=P (sharing §3.2)
   applyStrings();
   state.save.shells = knownShells(state.save.shells, config); // D26: before the profile repair counts them

@@ -1,0 +1,27 @@
+{
+ "A": {
+  "pours": 10,
+  "totalMs": 3827,
+  "frames": 230,
+  "median": 16.7,
+  "p95": 16.7,
+  "worst": 16.8
+ },
+ "gl": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+ "B": {
+  "pours": 10,
+  "totalMs": 43442,
+  "frames": 773,
+  "median": 50,
+  "p95": 83.2,
+  "worst": 116.7
+ },
+ "C": {
+  "pours": 10,
+  "totalMs": 43465,
+  "frames": 822,
+  "median": 50,
+  "p95": 66.7,
+  "worst": 83.3
+ }
+}
