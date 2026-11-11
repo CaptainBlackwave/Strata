@@ -102,6 +102,22 @@ async function controlled(b, base) {
     await p.screenshot({ path: path.join(out, 'mid-board-then-home-updated.png') });
     await ctx.close();
   }
+  // 5. An update that arrives while Settings is open over Home applies when Settings closes (strata-bya).
+  {
+    served = 'a-new';
+    const { ctx, p } = await controlled(b, base);
+    await p.click('#btn-home-settings', { force: true }); await w(p, 500);
+    served = 'b-new';
+    await p.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await w(p, 5000);
+    const whileOpen = await release(p);
+    await p.click('#btn-close-settings', { force: true });
+    await p.waitForFunction(() => !!document.querySelector('meta[name="strata-release"]'), null, { timeout: 15000 }).catch(() => undefined);
+    await w(p, 800);
+    R.settingsOverHome = { whileOpen, afterClose: await release(p), errors: p.errors };
+    await p.screenshot({ path: path.join(out, 'settings-closed-updated.png') });
+    await ctx.close();
+  }
   // 4. A first visit left open (review of PR #33): the install is not an update, the next release is.
   {
     served = 'a-new';

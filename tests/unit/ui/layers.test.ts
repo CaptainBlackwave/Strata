@@ -94,3 +94,16 @@ describe('LayerStack', () => {
     expect(stack.top()).toBe(board); // closing unpins
   });
 });
+
+describe('LayerStack.onChange (strata-bya)', () => {
+  it('tells listeners the new top layer after every open and close', () => {
+    const { home, settings, stack } = setup();
+    const tops: (string | null)[] = [];
+    stack.onChange((top) => tops.push(top?.name ?? null));
+    stack.open(home, null);
+    stack.open(settings, null);
+    stack.close(settings);
+    stack.close(home);
+    expect(tops).toEqual(['home', 'settings', 'home', null]);
+  });
+});
