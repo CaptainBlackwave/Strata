@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { type Board, isSealed, isWon, pour } from '../../../src/core/board';
 import { type DailyConfig, dailySpec, dailySteps, generateDaily, weekday } from '../../../src/core/daily';
-import { type GameConfig, type MechanicId, specMechanics } from '../../../src/core/levels';
+import { type GameConfig, type MechanicId, isClassicMechanic, specMechanics } from '../../../src/core/levels';
 import { solve } from '../../../src/core/solver';
 import { type WeeklyConfig, generateWeekly, weekIndex, weekMonday, weeklySpec, weeklyTheme } from '../../../src/core/weekly';
 
@@ -61,6 +61,17 @@ describe('config: the start dates (D98)', () => {
     const ids = eras[0].themes.map((t) => t.id);
     expect([...ids].sort()).toEqual([...cfg.weekly.themes.map((t) => t.id), ...NEW_JARS].sort());
     for (const id of NEW_JARS) expect(eras[0].themes.find((t) => t.id === id)?.mechanic).toBe(id);
+  });
+  it('every rotation list the lookups take a modulo of is non-empty, and the eras run oldest first', () => {
+    // rotationMechanic and weeklyTheme pick the last era whose start has passed and index lists by `mod length`.
+    expect(cfg.mechanics.list.map((m) => m.id).filter(isClassicMechanic).length).toBeGreaterThan(0);
+    expect(cfg.weekly.themes.length).toBeGreaterThan(0);
+    const daily = cfg.daily.saturdayFrom ?? [];
+    const weekly = cfg.weekly.themesFrom ?? [];
+    for (const e of daily) expect(e.mechanics.length, e.from).toBeGreaterThan(0);
+    for (const e of weekly) expect(e.themes.length, e.from).toBeGreaterThan(0);
+    expect(daily.map((e) => e.from)).toEqual(daily.map((e) => e.from).sort());
+    expect(weekly.map((e) => e.from)).toEqual(weekly.map((e) => e.from).sort());
   });
 });
 
