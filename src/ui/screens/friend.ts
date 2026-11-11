@@ -32,8 +32,8 @@ function playOffer(): void {
   closeLayer($('friend'), false);
   closeLayer(homeEl, false);
   if (o.kind === 'ahead') return startLevel(state.save.level);
-  state.versus = { level: o.level, pours: o.pours };
-  startLevel(o.level, false, o.level < state.save.level); // a cleared level is a replay (D50): no coins
+  // A cleared level is a replay (D50): no coins. The receiver's own next level is a first clear (D134).
+  startLevel(o.level, false, o.level < state.save.level, { level: o.level, pours: o.pours });
 }
 
 /**

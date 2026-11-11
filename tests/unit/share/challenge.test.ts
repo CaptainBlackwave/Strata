@@ -2,7 +2,7 @@
 // Challenge links: `?challenge=N&pours=P`. The rules are pure (logic/launch.ts, logic/challenge.ts).
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { challengeOffer, challengeVerdict } from '../../../src/ui/logic/challenge';
+import { challengeOffer, challengeVerdict, versusOnStart } from '../../../src/ui/logic/challenge';
 import { parseLaunch, shareLink } from '../../../src/ui/logic/launch';
 import { freshOnboarding, keepShare, onboardingOf, takeShare } from '../../../src/ui/logic/onboarding';
 import { t } from '../../../src/ui/strings';
@@ -89,5 +89,19 @@ describe('the challenge words (strings.ts)', () => {
     expect(t.friend.shareText(80, 34, 'https://x/?challenge=80&pours=34')).toBe('Can you beat my 34 pours on Strata level 80?\nhttps://x/?challenge=80&pours=34');
     expect(t.shareCard.level(80, 34, true)).toEqual({ headline: 'Level 80', sub: 'Perfect ✓', lines: ['34 pours', 'Can you beat it?'] });
     expect(t.shareCard.level(80, 1, false)).toEqual({ headline: 'Level 80', sub: '', lines: ['1 pour', 'Can you beat it?'] });
+  });
+});
+
+describe('versusOnStart: a challenge lasts only for the start it came with (strata-fd8)', () => {
+  const v = { level: 5, pours: 34 };
+  it('the challenge card starts its level with the target', () => {
+    expect(versusOnStart(5, v)).toEqual(v);
+  });
+  it('any other start clears it, even a later replay of the same level', () => {
+    expect(versusOnStart(5, null)).toBeNull();
+    expect(versusOnStart(6, null)).toBeNull();
+  });
+  it('a target for another level is never attached', () => {
+    expect(versusOnStart(6, v)).toBeNull();
   });
 });

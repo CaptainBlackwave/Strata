@@ -1,0 +1,14 @@
+{
+ "challenge": {
+  "target": "Beat 999",
+  "note": "New best: 18 pours · 18 pours: you beat it by 981",
+  "share": "Send it back"
+ },
+ "replay": {
+  "level": "Level 5",
+  "target": null,
+  "note": "Replay: no coins",
+  "share": "Challenge a friend"
+ },
+ "errors": []
+}

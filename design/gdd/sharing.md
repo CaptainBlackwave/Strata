@@ -50,12 +50,13 @@ verified-by: owner interview 2026-11-11
 
 | Receiver's progress | What happens |
 |---|---|
-| Has cleared or reached level N | A card: "A friend cleared level N in P pours. Beat it?" with **Play** and **Not now**. Play starts level N as a replay with "Beat P pours" under the pour counter |
+| Has cleared or reached level N | A card: "A friend cleared level N in P pours. Beat it?" with **Play** and **Not now**. Play starts level N with "Beat P" beside the pour counter: as a replay (no coins) when it is already cleared, and as a normal first clear when it is the receiver's own next level (D134) |
 | Has not reached level N | A card: "A friend is on level N. You're on level M." with **Play level M**. The challenge is not kept |
 | New player (tutorial not done) | The tutorial first, then the card above (as for daily links, D82) |
 
 - **While playing**: "Beat P" sits beside the pour counter, with a fuller label for screen readers. It shows only on the challenged level.
 - **The result**: the win card says "N pours: you beat it by X", "you matched it" or "X more than your friend", and offers **Send it back** (a new challenge link with the receiver's pours).
+- **The target lasts for that one start** (strata-fd8): a later replay of the same level, from the map or anywhere else, has no target, verdict or Send it back.
 - **Rules that do not change**: a replay pays no coins (M1); it can earn a missing Perfect mark and a better best (D50). A challenge never unlocks a level (D3).
 - **Honesty**: `P` is whatever the link says. There is no ranking, so a made-up number harms nobody; it is clamped to 1–999.
 
