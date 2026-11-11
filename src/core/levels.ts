@@ -171,8 +171,12 @@ export interface LevelSpec {
   readonly clam?: boolean;
 }
 
-/** Splits rolled mechanics into the classic mechanics and the hourglass, sieve and clam flags of a `LevelSpec`. */
-function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true } {
+/**
+ * Splits mechanics into the classic mechanics and the hourglass, sieve and clam flags of a `LevelSpec`,
+ * the one path every board recipe (levels, the daily, the weekly; sprint 13 W1) uses.
+ * Example: `splitMechanics(['sieve']) // { mechanics: [], sieve: true }`.
+ */
+export function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
