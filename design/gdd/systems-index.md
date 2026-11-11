@@ -39,6 +39,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 15 | Jar styles | Economy | Full Vision | Implemented (sprint 12, D85–D94) | [jar-styles.md](jar-styles.md) | 5, 8, 9, 10 |
 | 16 | Sharing | Meta | Full Vision | Designed and signed off (D116–D124), building in sprint 14 | [sharing.md](sharing.md) | 6, 7, 8, 9, 11, 12, 13, 14, 15 |
 | 17 | Daily goals | Progression | Full Vision | Implemented (sprint 16, D137) | [daily-goals.md](daily-goals.md) | 4, 5, 6, 10, 12, 14 |
+| 18 | Seasonal events | Progression | Full Vision | Designed (sprint 17, D141–D147), building | [events.md](events.md) | 5, 6, 10, 13, 14, 15 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 

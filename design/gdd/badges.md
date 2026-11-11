@@ -286,3 +286,7 @@ scene prices (`scenes.md`): 4 scenes is the four time-of-day scenes, 8 is a long
 |------|--------|---------|
 | 2026-11-09 | Claude (sprint 11 A1) | Designed from D76: 28 badges in five families, the weekly family reserved, `jarsSealed` and `scenesPlayed` added, back-fill at load |
 | 2026-11-09 | Claude (sprint 11 A2) | Built; tests in `tests/unit/badges/` (4 files, 66 tests); medallion rank dots capped at 4; evidence in `production/qa/evidence/sprint-11/badges/` |
+
+## Event badges (sprint 17)
+
+An event's prize badge (`event-<id>`, e.g. `event-wintertide`) is granted by the event on the clear that finishes all its boards (`events.md` §3.4), once and kept for good. Like weekly badges it is not earned by a catalogue rule, and like every badge it pays nothing (D76).
