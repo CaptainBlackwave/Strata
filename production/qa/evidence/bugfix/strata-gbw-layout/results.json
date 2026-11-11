@@ -1,0 +1,70 @@
+{
+  "viewport": 320,
+  "home": {
+    "chip": {
+      "left": 16,
+      "right": 260,
+      "top": 24,
+      "bottom": 72,
+      "w": 244,
+      "h": 48
+    },
+    "gear": {
+      "left": 260,
+      "right": 304,
+      "top": 26,
+      "bottom": 70,
+      "w": 44,
+      "h": 44
+    }
+  },
+  "switches": [
+    {
+      "id": "set-sound",
+      "w": 46,
+      "h": 28
+    },
+    {
+      "id": "set-music",
+      "w": 46,
+      "h": 28
+    },
+    {
+      "id": "set-haptics",
+      "w": 46,
+      "h": 28
+    },
+    {
+      "id": "set-patterns",
+      "w": 46,
+      "h": 28
+    },
+    {
+      "id": "set-southern",
+      "w": 46,
+      "h": 28
+    }
+  ],
+  "styles": {
+    "action": {
+      "left": 20,
+      "right": 300,
+      "top": 397,
+      "bottom": 485,
+      "w": 280,
+      "h": 88
+    },
+    "close": {
+      "left": 20,
+      "right": 110,
+      "top": 497,
+      "bottom": 548,
+      "w": 90,
+      "h": 51
+    },
+    "gap": 12,
+    "actionText": "Needs 1700 coins (you have 100)",
+    "disabled": true,
+    "opacity": "0.55"
+  }
+}

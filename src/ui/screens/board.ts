@@ -111,8 +111,8 @@ export function startTutorial(): void {
 
 /**
  * Starts numbered level `n` (P4): instantly from the prefetch cache when the worker already
- * made it; by waiting for the worker when it is making it now (a "Preparing" toast only after
- * 150 ms, `quiet` skips it); otherwise by generating synchronously, as before P4.
+ * made it; otherwise by asking the worker for it and waiting (a "Preparing" toast only after
+ * 150 ms, `quiet` skips it); by generating synchronously only without a worker (strata-gbw.7).
  * `quiet` is the board made behind Home (at boot, or when this tab takes over): it also holds
  * back the intro card, which shows when the level is played (sprint 13 M1: the "New jar!" card
  * opened over Home and was spent there). `replay` marks a replay started from the map (D50),
@@ -127,7 +127,9 @@ export function startLevel(n: number, quiet = false, replay = false, versus: Ver
   const token = ++startToken;
   const ready = prefetcher.get(n);
   if (ready) return showLevel(ready, quiet);
-  if (!prefetcher.pending(n)) return showLevel(prefetcher.generateNow(n), quiet);
+  // Any level not ready goes to the worker (a map replay or a link to a late level froze the page
+  // for up to a second, strata-gbw.7); only without a worker is it made here and now.
+  if (!prefetcher.ensure(n)) return showLevel(prefetcher.generateNow(n), quiet);
   state.busy = true; // the previous board (if any) takes no input until the new one arrives
   let toasted = false;
   const spinner = quiet ? 0 : window.setTimeout(() => {

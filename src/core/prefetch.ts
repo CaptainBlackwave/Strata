@@ -177,6 +177,23 @@ export class Prefetcher {
     this.pump();
   }
 
+  /**
+   * Makes sure the worker is making `level` (strata-gbw.7): asks for it if it is neither cached
+   * nor queued, and moves it to the front of the queue. True when it will arrive from the worker;
+   * false without a working worker (or when it is already cached), so the caller generates it.
+   * Example: a map replay of level 615 goes to the worker instead of freezing the page.
+   */
+  ensure(level: number): boolean {
+    if (this.get(level)) return false;
+    if (!this.pending(level)) this.request([level]);
+    const at = this.queue.indexOf(level);
+    if (at > 0) {
+      this.queue.splice(at, 1);
+      this.queue.unshift(level);
+    }
+    return this.pending(level);
+  }
+
   /** True when the worker is generating `level` right now or has it queued. */
   pending(level: number): boolean {
     return !this.broken && (this.inflight?.level === level || this.queue.includes(level));

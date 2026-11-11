@@ -217,6 +217,10 @@ cleared. No board layout is shared (no spoilers). The address is the page with o
 `?weekly=YYYY-Www` (0.11.1, D82), which opens the chooser for the current week; a link that arrives
 before the tutorial is kept and offered on the tutorial's win card (`first-run-review.md` R2).
 
+Which week is shared (strata-gbw.6, `weeklyToShare`): from a weekly win card, the board's own week;
+from the chooser, the week the chooser shows, as it was when it opened, so a chooser left open past
+Sunday midnight still shares that week; otherwise this week.
+
 ### 3.10 State and data
 
 - **Save** gains `weekly: { week: string, cleared: number[], pours: Record<string, number> }`.
