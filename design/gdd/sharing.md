@@ -1,5 +1,5 @@
 ---
-status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview (H1) and §3.1 share card (H2) live, §3.2 challenge links (H3, in review) and §3.4 share moments (H4) built
+status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview (H1) and §3.1 share card (H2) live, §3.2 challenge links (H3) live, §3.4 share moments (H4) built; all released in 0.14.0
 owner: game-designer / ux-designer
 decisions: D114, D116–D118, D120–D124
 verified-by: owner interview 2026-11-11

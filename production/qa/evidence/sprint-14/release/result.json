@@ -1,0 +1,25 @@
+{
+ "card": "What's new VERSION 0.14.0 Latest Share with friends Share your daily or weekly result as a picture. Your name stays off unless you switch it on. Challenge a friend on any level you have cleared: they see your pours to beat. A small Share appears when you finish a shell set, hit a streak milestone or earn a badge. Links to Strata now show a proper preview in chats. Got it",
+ "kept": {
+  "seenWhatsNew": "0.14.0",
+  "level": 40,
+  "best39": 37,
+  "perfect": [
+   39
+  ],
+  "coins": 2400,
+  "shells": [
+   "periwinkle",
+   "limpet"
+  ],
+  "scene": "dawn"
+ },
+ "cardAgainAfterReload": false,
+ "win": {
+  "title": "Level cleared",
+  "share": "Challenge a friend"
+ },
+ "sheetOpen": true,
+ "errors": [],
+ "smallErrors": []
+}
