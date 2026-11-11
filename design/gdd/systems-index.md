@@ -163,6 +163,17 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D102 | Hourglass jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/VP9f1xzygmbx9AaPJNaSsd): the badge, the flip, its sand fully shown, and levels from 101 rerolled | jar-mechanics | sprint 13 M1 |
 | D103 | Sieve jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/JaoZuxTRHtDPvjgjGGESci): the meshed collar, the refusal message, and levels from 141 rerolled | jar-mechanics | sprint 13 M2 |
 | D104 | Clam jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/BttQuWn7RxcQY1DecT9MUB): the ribbed shell with its count, the opening, the count of 6, and levels from 181 rerolled | jar-mechanics | sprint 13 M3 |
+| D105 | Difficulty complaints from level 20 | **Levels are endless and that is enough**: no level count, chapters or hand-made packs. Fix the climb between levels 20 and 45 instead (interview 2026-11-11) | level-generation | built (0.13.1) |
+| D106 | How fast colours climb | **Stretch to level ~100**: 8 colours at 18, 9 at 30, 10 at 45, 11 at 65, 12 at 95, 13 at 130, 14 at 170 (before: 12 by level 45). The late game ends as hard as before | level-generation | built (0.13.1) |
+| D107 | Breather levels | **Every 5th**: from level 21, every level ending in 3 or 8 has two fewer colours and both ordinary spare jars | level-generation | built (0.13.1) |
+| D108 | Hidden sand early | **Less of it**: one buried layer until level 30 (before: two from level 12); three layers from 110 (before: 75) | level-generation | built (0.13.1) |
+| D109 | Tall-jar levels under the gentler curve | **Soften them too**: 4 × 8 through level 40, 5 × 8 from level 50; levels 21–40 capped at 48 pours and 41–100 at 58 (before: 58 and 70) | level-generation | built (0.13.1) |
+| D110 | Saved records on changed boards | **Keep marks, reset best pours**: progress, coins, shells and Perfect marks stay; best pours are cleared once for levels 12 and up, with a line in What's new (0.13.1) | save-data, level-map | built (0.13.1) |
+| D111 | Late breathers | **Clearly easier from 101**: three fewer colours there, and a breather never has more than one special jar (a two-fewer breather with a combo was as long as its neighbours) | level-generation | built (0.13.1) |
+| D112 | Tall jars at 60 and 70 | **Cap tall-jar levels near their neighbours**: no numbered tall-jar level may need more than 50 solver pours (60 and 70 took 55 and 58 against about 40 around them) | level-generation | built (0.13.1) |
+| D113 | Shipping the gentler curve | **A pull request now, as a patch release** (0.13.1, since 0.13.0 shipped the same day), with a What's new card that explains the best-pours reset | — | 0.13.1 |
+| D114 | After 0.13.1 | **Growth and reach** is the next focus; scope by interview | — | open |
+| D115 | Where the complaints came from | **Friends and testers, informally**: no written record; they are asked to retry levels 20–60 after 0.13.1 | — | recorded |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).

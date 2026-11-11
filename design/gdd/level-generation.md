@@ -31,6 +31,7 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 - A level number always gives the same board, on every device.
 - **Difficulty keeps rising throughout the game** — `INTENDED — confirmed 2026-11-08`. **Implemented in sprint 5** (M3, D1): see Edge Cases and Formulas.
 - **A level always loads** (F7): generation never leaves the player on a broken screen. *Decided 2026-11-08, built in sprint 6.*
+- **A gentle climb** (D105–D109, owner interview 2026-11-11, after complaints that levels from 20 were too hard): colours reach 12 near level 95 instead of 45, hidden sand deepens later, tall jars start smaller, and every fifth level is a breather. Numbers: `production/qa/gentle-curve/difficulty-sweep.md`.
 - **Difficulty target** (D34, D36, set in sprint 7): pours per level band, a median and a max (`generator.pourBands`), measured by the solver and enforced by a test. A level over its band's max is re-dealt. The sweep is `production/qa/sprint-7/difficulty-sweep.md` (levels 1–200, plus bands for 201–500). This closes GX-13.
 
 ---
@@ -42,6 +43,8 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 **Recipe** (`levelSpec`): colours, capacity, spare empty jars, buried depth, challenge flag, mechanics.
 - Every 10th level is a *tall-jar challenge*: 5 colours, capacity 8, 2 spare jars, no burying. No mechanics before level 100; from level 100 it gets mechanics at the normal chance (D8, `challenge.mechanicsFrom: 100`, **built in sprint 5**).
 - **The first tall-jar level is gentler** (D82, R3, sprint 11): level 10 is **4 colours** × 8 (6 jars); from level 20 tall jars are 5 × 8 again. Set by `challenge.curve` rows (same rules as the main curve). *Why:* the first-run review found level 10 needed 42 solver pours with 7 jars against 25 at level 9. The cause was the shape, not seed luck or a pour band: 5 × 8 is 40 units against level 9's 24, and none of level 10's 60 candidate 5 × 8 deals was under 36 solver pours (median 47), so no pour cap could smooth it. Nothing documented the size of this step as intended: tall-jar levels are deliberate "event" levels (coin bonus, badges, map marker), but the sprint-7 sweep had already flagged level 10 as a spike and suggested 4 × 8. Shortest paths (breadth-first search, full knowledge of buried sand) agree: level 10 was 28 pours against 17 (level 9) and 19 (level 11). With 4 × 8 it is 32 solver pours and 24 shortest. Levels 1–9, 11–19, later tall-jar levels, the daily and the weekly are unchanged.
+- **Tall jars stay 4 × 8 through level 40** (D109, gentler curve): 5 × 8 starts at level 50. *Why:* once ordinary levels 21–40 dropped to about 34 solver pours, 5 × 8 at levels 20, 30 and 40 (44, 48 and 56 pours) became the hardest boards by far. At 4 × 8 they take 37, 28 and 34. 
+- **No tall-jar level is much longer than its neighbours** (D112, `challenge.maxPours` 50): a numbered tall-jar level is capped at 50 solver pours when its pour band allows more. Levels 60 and 70 took 55 and 58 against about 40 around them; they now take 46 and 38. Of the 46 tall-jar levels from 50 to 500, 15 changed (60, 70, 120, 140, 190 and ten past 200); none lost a special jar to the cap. The daily's tall Sunday board is not affected.
 - Other levels read the config curve; a row's omitted fields inherit from the previous row. Colours are clamped to the palette size (14 colours today, `palette` in config).
 
 | From level | Colours | Notes |
@@ -50,19 +53,23 @@ verified-by: pending review (intent for the difficulty ramp confirmed by the own
 | 3 | 4 | |
 | 5 | 5 | |
 | 8 | 6 | buried depth 1 |
-| 12 | 7 | buried depth 2 |
-| 16 | 8 | |
-| 21 | 9 | |
-| 28 | 10 | |
-| 36 | 11 | |
-| 45 | 12 | |
-| 75 | 12 | buried depth 3 (only the top layer visible) |
-| 90 | 13 | |
-| 130 | 14 | final row |
+| 12 | 7 | |
+| 18 | 8 | |
+| 30 | 9 | buried depth 2 |
+| 45 | 10 | |
+| 65 | 11 | |
+| 95 | 12 | |
+| 110 | 12 | buried depth 3 (only the top layer visible) |
+| 130 | 13 | |
+| 170 | 14 | final row |
+
+This is the gentler curve (D106, D108). Before it, the rows were 7 colours with depth 2 at 12, 8 at 16, 9 at 21, 10 at 28, 11 at 36, 12 at 45, depth 3 at 75, 13 at 90 and 14 at 130: levels doubled in length between 15 and 30 and then barely changed. Levels 1–11 are the same boards as before.
+
+**Breather levels** (D107, `breather` in config, `isBreather`): from level 21, every level with `level % 5 === 3` (levels ending in 3 or 8) is an easier board. It has `fewerColors` (2) fewer colours than the curve gives, or `late.fewerColors` (3) from level 101, never fewer than 3 in all. It never gets the spare-jar swap below, so it always has both ordinary spares. It keeps the first mechanic it rolled but never a second (`maxMechanics` 1, D111): from 101, a two-fewer breather with a combo was as long as its neighbours (45.5 pours against 46). The rhythm never lands on a tall-jar level, a shell milestone (every 5th) or a mechanic debut (levels ending in 1). Measured medians: 22–37 solver pours on levels 21–100 against 31–44 for the levels around them, and 37–44 on levels 101–200 against 45–55.
 
 From level 60 the spare-jar swap and from level 45 the rising mechanic chance also apply (below).
 
-**Spare-jar swap** (D1, `ramp.spareOne`): from level 60, with the chance in Formulas, one of the two spares is replaced by a narrow jar (or, from level 81, a narrow jar or a funnel). It runs after `pickMechanics`, so a level can carry up to 3 mechanics from level 101 (D22, `jar-mechanics.md` §2.1).
+**Spare-jar swap** (D1, `ramp.spareOne`): from level 60, with the chance in Formulas (never on a breather, D107), one of the two spares is replaced by a narrow jar (or, from level 81, a narrow jar or a funnel). It runs after `pickMechanics`, so a level can carry up to 3 mechanics from level 101 (D22, `jar-mechanics.md` §2.1).
 
 **Deal** (`dealBoard`): `colours × capacity` units, shuffled, split into `colours` full jars, plus `spare` empty jars. Each filled jar buries `min(depth, length − 1)` units from its bottom.
 
@@ -95,8 +102,10 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 
 | Formula | Expression | Variables | Example |
 |---|---|---|---|
-| Units dealt | `colours × capacity` | colours 3–14, capacity 4 (8 on tall-jar levels) | Level 45: 12 × 4 = 48 units in 12 full jars + 2 spare |
-| Jar count | `colours + spares + specials (+ extra jars)` | `spares` = 2, or 1 on a swap level; `specials` = 1 for the swap's narrow/funnel, +1 for each rolled narrow or funnel (up to +3 from 101); fallback step 2 = 2 spares + the swap's jar; extra jars come from the booster | Level 1: 3 + 2 = 5 jars. A level-130 swap level with a rolled funnel: 14 + 1 + 2 = 17 |
+| Units dealt | `colours × capacity` | colours 3–14, capacity 4 (8 on tall-jar levels) | Level 45: 10 × 4 = 40 units in 10 full jars + 2 spare |
+| Breather colours | `max(3, colours − fewerColors)` when `level ≥ 21` and `level % 5 = 3`; `late.fewerColors` from `late.from` | `breather` (`from` 21, `every` 5, `offset` 3, `fewerColors` 2, `late` 101 → 3, `maxMechanics` 1) | Level 33: 9 − 2 = 7 colours. Level 133: 13 − 3 = 10 |
+| Pour cap | 45 for levels 1–20, 48 for 21–40, 58 for 41–100, 70 from 101; tall-jar levels at most 50 | `generator.pourBands` (D36, D109), `challenge.maxPours` (D112); median targets 25, 36, 44, 56 | Level 30 may not need more than 48 solver pours |
+| Jar count | `colours + spares + specials (+ extra jars)` | `spares` = 2, or 1 on a swap level; `specials` = 1 for the swap's narrow/funnel, +1 for each rolled narrow or funnel (up to +3 from 101); fallback step 2 = 2 spares + the swap's jar; extra jars come from the booster | Level 1: 3 + 2 = 5 jars. A level-170 swap level with a rolled funnel: 14 + 1 + 2 = 17 |
 | Buried units per jar | `min(depth, length − 1)` | depth 0–3 | Depth 2 on a 4-unit jar buries the bottom 2; depth 3 leaves only the top visible |
 | Attempt seed | `mix(mix(baseSeed, level), attempt)` | attempt 0–59 | |
 | Spare-swap chance | `0` before 60; `0.2 + 0.55·(level − 60)/90` from 60 to 150; `0.75` after | `ramp.spareOne` | Level 105: 47.5% |
@@ -116,9 +125,9 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 - ✅ Plain levels keep their exact pre-mechanics boards (fixture-tested for plain levels 1–59).
 - ✅ **Difficulty keeps rising past level 45** (M3, fixed in sprint 5; before this, level 46 and level 5,000 shared one recipe). Decided 2026-11-08 (D1): use **all four levers**, **built in sprint 5**:
   - **Fewer spare jars, revised after testing**: a board with only one *empty* spare is almost never winnable (0 of 30 random deals at 12 colours), so on these levels one of the two spares is replaced by a narrow jar, or from level 81 a narrow jar or a funnel (28–30 of 30 winnable). Chance per level: 20% at level 60 rising linearly to 75% at level 150. Owner approved the revision 2026-11-08.
-  - **Deeper buried sand**: 3 layers from level 75.
+  - **Deeper buried sand**: 3 layers from level 75 (from level 110 since the gentler curve, D108).
   - **Mechanics more often**: 34% up to level 45, rising linearly to 50% at level 120.
-  - **More colours**: 13 from level 90, 14 from level 130 (new palette colours *lavender* and *sky*, each with its own colour-blind pattern).
+  - **More colours**: 13 from level 90, 14 from level 130 (130 and 170 since the gentler curve, D106) (new palette colours *lavender* and *sky*, each with its own colour-blind pattern).
 - ✅ From level 100 tall-jar levels can get a mechanic, at the normal-level chance (D8, **built in sprint 5**).
 - ✅ Up to 3 mechanics on one level from 101 (D22, as built).
 
@@ -139,7 +148,7 @@ From level 60 the spare-jar swap and from level 45 the rising mechanic chance al
 
 **Design Dependencies**: `pour-rules.md`, `jar-mechanics.md`, `daily-puzzle.md`, `session-boosters.md`, `economy.md` (reads the tall-jar flag for the bonus), `feel-audio-ui.md`, `save-data.md`, `shell-collection.md`.
 
-**Content Dependencies**: `curve`, `challenge` (`every` 10, `colors` 5, `capacity` 8, `spare` 2, `buriedDepth` 0, `mechanicsFrom` 100), `ramp.spareOne` (`from` 60, `to` 150, `chanceFrom` 0.2, `chanceTo` 0.75, `maxAttempts` 12), `ramp.mechanicChance` (`from` 45, `to` 120, `max` 0.5), `generator` (`maxAttempts` 60, `solverNodeBudget` 60,000, `maxSealedAtStart` 0, `stepNodeBudget` 25,000, `stepAttemptNodeBudget` 12,000), `baseSeed` 20261107, `palette` (14 colours).
+**Content Dependencies**: `curve`, `breather` (`from` 21, `every` 5, `offset` 3, `fewerColors` 2, `late`, `maxMechanics`), `challenge.maxPours` 50, `boardChanges` (see `save-data.md`), `challenge` (`every` 10, `colors` 5, `capacity` 8, `spare` 2, `buriedDepth` 0, `mechanicsFrom` 100), `ramp.spareOne` (`from` 60, `to` 150, `chanceFrom` 0.2, `chanceTo` 0.75, `maxAttempts` 12), `ramp.mechanicChance` (`from` 45, `to` 120, `max` 0.5), `generator` (`maxAttempts` 60, `solverNodeBudget` 60,000, `maxSealedAtStart` 0, `stepNodeBudget` 25,000, `stepAttemptNodeBudget` 12,000), `baseSeed` 20261107, `palette` (14 colours).
 
 ---
 
@@ -172,6 +181,8 @@ None open. Ramp: all four levers (D1). Tall-jar levels: mechanics from level 100
 - [x] Keep the 1–500 sweep as a retained report (`production/qa/sprint-7/difficulty-sweep.md`).
 - [x] Set a per-band difficulty target and sweep the ramp (D34, D36, sprint 7). The owner playtest was skipped; the sweep and band test stand as the evidence (D53).
 - [x] Use the solution length to check that difficulty rises (the band test, sprint 7).
+- [x] Gentler curve (D105–D112, 2026-11-11, 0.13.1): built, swept (`production/qa/gentle-curve/`), tests in `tests/unit/core/gentle-curve.test.ts`.
+- [ ] The owner or a playtester plays levels 20–60 on a phone and confirms the climb feels right. The sweep measures solver pours, not how a board feels.
 
 ---
 
@@ -182,4 +193,5 @@ None open. Ramp: all four levers (D1). Tall-jar levels: mechanics from level 100
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; ramp-needed confirmed by the owner |
 | 2026-11-08 | Claude | Sprint 5: ramp built (spare-jar lever revised with owner approval), tall-jar mechanics from 100, fallback chain |
 | 2026-11-08 | Claude (sprint 6, F9) | Tall-jar bullet follows D8 (GA-LG-1); ranges, jar-count formula and config keys updated to 14 colours, depth 0–3 and the ramp (GA-LG-2, GX-9); difficulty score defined (GA-LG-4); fixture and replay ranges match the tests (GA-LG-5); fallback effects stated with the GA-LG-6 default; F7 never-failing generation recorded; D22, D23 recorded; "a level always loads" no longer overclaimed (GA-LG-3, building) |
+| 2026-11-11 | Claude (0.13.1, D105–D112) | Colour steps stretched to level 170, hidden sand deepens later, breather levels (three fewer colours and one special jar at most from 101), tall jars 4 × 8 through 40 and capped at 50 pours, pour caps 48 and 58 with a new 101 row; boards from level 12 changed and the fixtures were re-baselined on purpose |
 | 2026-11-09 | Claude (0.10.1, D79) | Stale "no difficulty target" lines updated: the per-band pour targets (D34, D36) were set in sprint 7, so GX-13 is closed |

@@ -66,16 +66,16 @@
     }
   },
   "weekly": {
-    "$comment": "The weekly set (design/gdd/weekly-set.md, D77, sprint 11 W1). Five boards a week, ISO weeks from Monday 00:00 UTC. Boards borrow the daily's Monday-to-Friday recipes; bandLevel picks the generator.pourBands row that caps each board's length. One theme a week, rotating: a mechanic on all five boards, or buriedBonus extra buried layers (capped at maxBuried). Single boards pay nothing; clearing all five pays completeBonus once per week (D83: about five level clears, see design/gdd/economy.md). NEVER change seedSalt once released: every player's boards for the current week would change.",
+    "$comment": "The weekly set (design/gdd/weekly-set.md, D77, sprint 11 W1). Five boards a week, ISO weeks from Monday 00:00 UTC. Boards borrow the daily's Monday-to-Friday recipes; bandLevel picks the generator.pourBands row that caps each board's length (45, 58, 58, 70, 70 pours; the levels moved from 21 and 41 to 41 and 101 with the gentler curve, D109, so the caps and the boards did not change). One theme a week, rotating: a mechanic on all five boards, or buriedBonus extra buried layers (capped at maxBuried). Single boards pay nothing; clearing all five pays completeBonus once per week (D83: about five level clears, see design/gdd/economy.md). NEVER change seedSalt once released: every player's boards for the current week would change.",
     "seedSalt": 5309,
     "completeBonus": 100,
     "maxBuried": 2,
     "boards": [
       { "colors": 5, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 1 },
-      { "colors": 6, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 21 },
-      { "colors": 7, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 21 },
-      { "colors": 8, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 41 },
-      { "colors": 9, "capacity": 4, "spare": 2, "buriedDepth": 2, "bandLevel": 41 }
+      { "colors": 6, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 41 },
+      { "colors": 7, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 41 },
+      { "colors": 8, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 101 },
+      { "colors": 9, "capacity": 4, "spare": 2, "buriedDepth": 2, "bandLevel": 101 }
     ],
     "themes": [
       { "id": "narrow", "mechanic": "narrow" },
@@ -739,16 +739,27 @@
     { "fromLevel": 3, "colors": 4 },
     { "fromLevel": 5, "colors": 5 },
     { "fromLevel": 8, "colors": 6, "buriedDepth": 1 },
-    { "fromLevel": 12, "colors": 7, "buriedDepth": 2 },
-    { "fromLevel": 16, "colors": 8 },
-    { "fromLevel": 21, "colors": 9 },
-    { "fromLevel": 28, "colors": 10 },
-    { "fromLevel": 36, "colors": 11 },
-    { "fromLevel": 45, "colors": 12 },
-    { "fromLevel": 75, "buriedDepth": 3 },
-    { "fromLevel": 90, "colors": 13 },
-    { "fromLevel": 130, "colors": 14 }
+    { "fromLevel": 12, "colors": 7 },
+    { "fromLevel": 18, "colors": 8 },
+    { "fromLevel": 30, "colors": 9, "buriedDepth": 2 },
+    { "fromLevel": 45, "colors": 10 },
+    { "fromLevel": 65, "colors": 11 },
+    { "fromLevel": 95, "colors": 12 },
+    { "fromLevel": 110, "buriedDepth": 3 },
+    { "fromLevel": 130, "colors": 13 },
+    { "fromLevel": 170, "colors": 14 }
   ],
+  "breather": {
+    "$comment": "Breather levels (D107, design/gdd/level-generation.md 2.1): from `from`, every level with level % every === offset (levels ending in 3 or 8) is an easier board: `fewerColors` fewer colours than the curve gives, and no spare-jar swap. From `late.from` it has `late.fewerColors` fewer colours instead, and a breather never has more than `maxMechanics` special jars (D111: from 101 a two-fewer breather with a combo was as long as its neighbours). With every 5 and offset 3 it never lands on a tall-jar level, a shell milestone (every 5th) or a mechanic debut (levels ending in 1).",
+    "from": 21,
+    "every": 5,
+    "offset": 3,
+    "fewerColors": 2,
+    "late": { "from": 101, "fewerColors": 3 },
+    "maxMechanics": 1
+  },
+  "$commentBoardChanges": "Releases that changed the boards behind level numbers (D110, design/gdd/save-data.md). A save on an older `version` loses its best pours for levels from `fromLevel` on, once; everything else is kept. Version 2 is the gentler curve (D105-D112): levels 1-11 are unchanged. Add a row, never edit one.",
+  "boardChanges": [{ "version": 2, "fromLevel": 12 }],
   "ramp": {
     "$comment": "Difficulty past level 45 (decision D1, design/gdd/level-generation.md). spareOne: chance a normal level has 1 spare jar instead of 2, linear from `chanceFrom` at `from` to `chanceTo` at `to`; if no 1-spare deal is proven winnable in `maxAttempts`, the level falls back to 2 spares.",
     "spareOne": { "from": 60, "to": 150, "chanceFrom": 0.2, "chanceTo": 0.75, "salt": 4411, "maxAttempts": 12 },
@@ -769,8 +780,10 @@
     "spare": 2,
     "buriedDepth": 0,
     "mechanicsFrom": 100,
-    "$commentCurve": "Tall-jar shape rows (D82, R3), same rules as the main curve: a row applies from fromLevel, omitted fields inherit. Level 10, the first tall-jar level, is 4 x 8 so it is a smooth step after level 9 (5 x 8 needed 42 solver pours against 25); from level 20 tall jars are 5 x 8 again, as before. Rationale: design/gdd/level-generation.md 2.1.",
-    "curve": [{ "fromLevel": 10, "colors": 4 }, { "fromLevel": 20, "colors": 5 }]
+    "$commentMaxPours": "Tall-jar levels are capped at this many solver pours when it is below their generator.pourBands row (D112): levels 60 and 70 took 55 and 58 pours against about 40 around them. Numbered levels only; the daily's tall Sunday board is not affected.",
+    "maxPours": 50,
+    "$commentCurve": "Tall-jar shape rows (D82, R3), same rules as the main curve: a row applies from fromLevel, omitted fields inherit. Level 10, the first tall-jar level, is 4 x 8 so it is a smooth step after level 9 (5 x 8 needed 42 solver pours against 25); from level 20 tall jars were 5 x 8 again. The gentler curve (D109) keeps 4 x 8 through level 40 and starts 5 x 8 at level 50, because 5 x 8 at 20, 30 and 40 took 44, 48 and 56 solver pours against about 34 around them. Rationale: design/gdd/level-generation.md 2.1.",
+    "curve": [{ "fromLevel": 10, "colors": 4 }, { "fromLevel": 50, "colors": 5 }]
   },
   "generator": {
     "maxAttempts": 60,
@@ -778,11 +791,12 @@
     "maxSealedAtStart": 0,
     "stepNodeBudget": 25000,
     "stepAttemptNodeBudget": 12000,
-    "$commentPourBands": "Level length targets in solver pours (solutionLength), owner decision D36 (sprint 7 B7). Each row covers levels from `from` up to the next row's `from` - 1; the last row is open-ended. `max` is enforced at generation: a proven deal over it is re-dealt like an unwinnable one (src/core/generator.ts, maxPoursFor). `median` is a target only, checked by tests/unit/core/difficulty-bands.test.ts. The daily (level 0) uses the last row's max. Rationale: production/qa/sprint-7/difficulty-sweep.md.",
+    "$commentPourBands": "Level length targets in solver pours (solutionLength), owner decision D36 (sprint 7 B7). Each row covers levels from `from` up to the next row's `from` - 1; the last row is open-ended. `max` is enforced at generation: a proven deal over it is re-dealt like an unwinnable one (src/core/generator.ts, maxPoursFor). `median` is a target only, checked by tests/unit/core/difficulty-bands.test.ts. The daily (level 0) uses the last row's max. Rationale: production/qa/sprint-7/difficulty-sweep.md. The gentler curve (D109) lowered 21-40 to 48 and 41-100 to 58 and added the 101 row, which keeps 70; the weekly boards moved to the rows with their old caps. Numbers: production/qa/gentle-curve/difficulty-sweep.md.",
     "pourBands": [
       { "from": 1, "median": 25, "max": 45 },
-      { "from": 21, "median": 45, "max": 58 },
-      { "from": 41, "median": 56, "max": 70 }
+      { "from": 21, "median": 36, "max": 48 },
+      { "from": 41, "median": 44, "max": 58 },
+      { "from": 101, "median": 56, "max": 70 }
     ]
   },
   "hint": {

@@ -22,10 +22,20 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.11.0 | `6537631` (sprint 11, PR #12) |
 | v0.11.1 | `57cfc47` (first-run fixes, PR #13) |
 | v0.12.0 | `770639a` (sprint 12, PR #15) |
+| v0.13.0 | `ebf60b7` (sprint 13, PR #23) |
 
-## Unreleased
+## 0.13.1 (2026-11-11): a gentler climb
 **For players**
+- Levels get harder more slowly. Colours used to reach 12 by level 45; now there are 9 at level 30, 10 at 45, 11 at 65 and 12 at 95 (13 at 130, 14 at 170).
+- From level 21, every level ending in 3 or 8 is an easier board, with fewer colours and both spare jars.
+- Less sand is hidden early: one layer until level 30, where there were two from level 12.
+- Tall-jar levels have four colours through level 40, and no tall-jar level is much longer than the levels around it.
+- Because the boards behind level numbers changed, best pours on levels 12 and up start fresh, once. Your level, coins, shells and Perfect marks are kept. Levels 1–11 are the same boards as before.
 - Music now pauses whenever you leave the game, also when it is open inside another app's browser, and starts again when you come back (found in the phone check).
+
+**Under the hood**
+- Owner decisions D105–D112 after players reported that levels from 20 were too hard. Median solver pours for levels 31–40 went from 44 to 34; levels 171–200 are as long as before (`production/qa/gentle-curve/difficulty-sweep.md`).
+- New config: `breather`, `challenge.maxPours`, `boardChanges`. The board-hash fixtures were re-baselined on purpose.
 
 ## 0.13.0 (2026-11-11): sprint 13, three new jars and the late economy
 **For players**

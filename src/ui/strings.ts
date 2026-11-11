@@ -132,6 +132,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.13.1',
+        name: 'A gentler climb',
+        lines: [
+          'Levels from 12 get harder more slowly, and levels ending in 3 or 8 are easier boards.',
+          'Tall-jar levels start smaller and are never much longer than the levels around them.',
+          'Best pours on the changed levels start fresh. Your progress, coins, shells and Perfect marks are kept.',
+        ],
+      },
+      {
         version: '0.13.0',
         name: 'Three new jars',
         lines: [

@@ -12,12 +12,13 @@ const impossible: GameConfig & DailyConfig = { ...cfg, generator: { ...cfg.gener
 
 describe('maxPoursFor', () => {
   it('returns the max of the band a level falls in', () => {
-    const [a, b, c] = cfg.generator.pourBands ?? [];
+    const bands = cfg.generator.pourBands ?? [];
+    const [a, b, c] = bands;
     expect(maxPoursFor(a.from, cfg)).toBe(a.max);
     expect(maxPoursFor(b.from - 1, cfg)).toBe(a.max);
     expect(maxPoursFor(b.from, cfg)).toBe(b.max);
     expect(maxPoursFor(c.from, cfg)).toBe(c.max);
-    expect(maxPoursFor(10_000, cfg)).toBe(c.max);
+    expect(maxPoursFor(10_001, cfg)).toBe(bands[bands.length - 1].max); // not a tall-jar level (D112)
   });
   it('gives the daily (level 0, below every band) the last band max', () => {
     const bands = cfg.generator.pourBands ?? [];

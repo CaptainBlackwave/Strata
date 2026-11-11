@@ -21,6 +21,8 @@ export interface ChallengeConfig {
   readonly capacity: number;
   readonly spare: number;
   readonly buriedDepth: number;
+  /** A tall-jar level's own length cap in solver pours, used when below its pour band's (D112). Absent: the band's. */
+  readonly maxPours?: number;
   /** Tall-jar levels from this level on can get mechanics (decision D8). */
   readonly mechanicsFrom?: number;
   /**
@@ -38,12 +40,34 @@ export interface RampConfig {
   readonly mechanicChance: { readonly from: number; readonly to: number; readonly max: number };
 }
 
+/**
+ * Breather levels (owner decision D107): from `from`, every level with
+ * `level % every === offset` is an easier board with `fewerColors` fewer colours than the
+ * curve gives and no spare-jar swap. Example: `{ from: 21, every: 5, offset: 3, fewerColors: 2 }`
+ * makes every level ending in 3 or 8 from 23 on a breather.
+ */
+export interface BreatherConfig {
+  readonly from: number;
+  readonly every: number;
+  readonly offset: number;
+  readonly fewerColors: number;
+  /** From `late.from`, a breather has `late.fewerColors` fewer colours instead (D111). Absent: no late step. */
+  readonly late?: { readonly from: number; readonly fewerColors: number };
+  /** The most special jars a breather may have; extra rolled ones are dropped, last first (D111). Absent: no cap. */
+  readonly maxMechanics?: number;
+}
+
+/** The fewest colours a breather level can be cut down to: level 1's board. */
+const MIN_COLORS = 3;
+
 /** The game-config.json shape. */
 export interface GameConfig {
   readonly baseSeed: number;
   /** Extra-jar uses allowed per level; null means no cap (decision D5). */
   readonly extraJarsPerLevel: number | null;
   readonly curve: readonly CurveRow[];
+  /** Breather levels (D107). Absent: none. */
+  readonly breather?: BreatherConfig;
   readonly ramp: RampConfig;
   readonly challenge: ChallengeConfig;
   readonly generator: {
@@ -224,10 +248,16 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     spare = row.spare ?? spare;
     buriedDepth = row.buriedDepth ?? buriedDepth;
   }
-  const { mechanics, hourglass, sieve, clam } = splitMechanics(pickMechanics(level, config));
+  // Decisions D107, D111: a breather is the same recipe with fewer colours and at most
+  // `maxMechanics` special jars, and it never gets the swap below.
+  const breather = isBreather(level, config);
+  const br = breather ? config.breather : undefined;
+  if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
+  const rolled = pickMechanics(level, config);
+  const { mechanics, hourglass, sieve, clam } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
-  if (!debut && spare > 1 && spareOneChance(level, config) > 0) {
+  if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
     // Decision D1 (revised 2026-11-08): one of the two spares becomes a special jar.
     // A board with a single ordinary spare is almost never winnable, but one ordinary
     // spare plus a narrow jar or a funnel almost always is.
@@ -241,6 +271,19 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     }
   }
   return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}) };
+}
+
+/**
+ * True when `level` is a breather (decision D107): an ordinary level at or past
+ * `breather.from` whose number fits the `every`/`offset` rhythm. Tall-jar levels are never
+ * breathers. Example: `isBreather(23, config) // true`, `isBreather(20, config) // false`.
+ */
+export function isBreather(level: number, config: GameConfig): boolean {
+  const b = config.breather;
+  if (!b || b.every <= 0 || level < b.from) return false;
+  const ch = config.challenge;
+  if (ch.every > 0 && level % ch.every === 0) return false;
+  return level % b.every === b.offset;
 }
 
 const lerp = (level: number, from: number, to: number, a: number, b: number) =>

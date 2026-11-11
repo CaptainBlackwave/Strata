@@ -1,0 +1,44 @@
+{
+ "errors": [],
+ "levels": {
+  "21": {
+   "jars": 11
+  },
+  "23": {
+   "jars": 8
+  },
+  "30": {
+   "jars": 6
+  },
+  "33": {
+   "jars": 9
+  },
+  "40": {
+   "jars": 6
+  },
+  "45": {
+   "jars": 12
+  },
+  "60": {
+   "jars": 7
+  },
+  "103": {
+   "jars": 12
+  }
+ },
+ "whatsNewText": true,
+ "saveAfterLoad": {
+  "level": 110,
+  "best": {
+   "5": 14,
+   "11": 27
+  },
+  "perfect": [
+   5,
+   23,
+   30
+  ],
+  "boards": 2,
+  "coins": 900
+ }
+}
