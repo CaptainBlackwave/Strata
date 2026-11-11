@@ -25,7 +25,7 @@
     "$comment": "Sprint 3 (S3-1..S3-3): unlock every 20 levels, easiest first; each debuts on its unlock level, then appears in about `chance` of levels; two can combine from `comboFrom`. Narrow and funnel add an extra jar; frozen and locked change existing filled jars. Sprint 13 M1 (D96, D97): the hourglass turns one filled jar into an hourglass that flips its stack every `every` pours on the board; adding it to this list changed which mechanics levels 101+ roll (levels 1-100 unchanged). It stays out of the daily rotation and the weekly themes until W1. Sprint 13 M2 (D96, D97): the sieve bands one filled jar in a board colour; only that colour may be poured in. `colorTries` is how many band colours the generator may prove per deal (design/gdd/jar-mechanics.md §2.5). Adding it changed which mechanics levels 141+ roll (levels 1-140 unchanged); it stays out of the daily and weekly until W1. Sprint 13 M3 (D96, D97): the clam closes one filled jar under a shell for `opensAfter` successful pours on the board (nothing in or out while closed), then it opens for good (design/gdd/jar-mechanics.md §2.6). Adding it changed which mechanics levels 181+ roll (levels 1-180 unchanged); it stays out of the daily and weekly until W1.",
     "salt": 9137,
     "chance": 0.34,
-    "comboFrom": 101,
+    "comboFrom": 250,
     "comboChance": 0.45,
     "list": [
       { "id": "narrow", "unlockAt": 21, "cap": 2 },
@@ -741,13 +741,14 @@
     { "fromLevel": 8, "colors": 6, "buriedDepth": 1 },
     { "fromLevel": 12, "colors": 7 },
     { "fromLevel": 18, "colors": 8 },
-    { "fromLevel": 30, "colors": 9, "buriedDepth": 2 },
-    { "fromLevel": 45, "colors": 10 },
-    { "fromLevel": 65, "colors": 11 },
-    { "fromLevel": 95, "colors": 12 },
-    { "fromLevel": 110, "buriedDepth": 3 },
-    { "fromLevel": 130, "colors": 13 },
-    { "fromLevel": 170, "colors": 14 }
+    { "fromLevel": 30, "colors": 9 },
+    { "fromLevel": 70, "colors": 10 },
+    { "fromLevel": 150, "buriedDepth": 2 },
+    { "fromLevel": 250, "colors": 11 },
+    { "fromLevel": 340, "colors": 12 },
+    { "fromLevel": 420, "colors": 13 },
+    { "fromLevel": 450, "buriedDepth": 3 },
+    { "fromLevel": 490, "colors": 14 }
   ],
   "breather": {
     "$comment": "Breather levels (D107, design/gdd/level-generation.md 2.1): from `from`, every level with level % every === offset (levels ending in 3 or 8) is an easier board: `fewerColors` fewer colours than the curve gives, and no spare-jar swap. From `late.from` it has `late.fewerColors` fewer colours instead, and a breather never has more than `maxMechanics` special jars (D111: from 101 a two-fewer breather with a combo was as long as its neighbours). With every 5 and offset 3 it never lands on a tall-jar level, a shell milestone (every 5th) or a mechanic debut (levels ending in 1).",
@@ -759,11 +760,11 @@
     "maxMechanics": 1
   },
   "$commentBoardChanges": "Releases that changed the boards behind level numbers (D110, design/gdd/save-data.md). A save on an older `version` loses its best pours for levels from `fromLevel` on, once; everything else is kept. Version 2 is the gentler curve (D105-D112): levels 1-11 are unchanged. Add a row, never edit one.",
-  "boardChanges": [{ "version": 2, "fromLevel": 12 }],
+  "boardChanges": [{ "version": 2, "fromLevel": 12 }, { "version": 3, "fromLevel": 30 }],
   "ramp": {
     "$comment": "Difficulty past level 45 (decision D1, design/gdd/level-generation.md). spareOne: chance a normal level has 1 spare jar instead of 2, linear from `chanceFrom` at `from` to `chanceTo` at `to`; if no 1-spare deal is proven winnable in `maxAttempts`, the level falls back to 2 spares.",
-    "spareOne": { "from": 60, "to": 150, "chanceFrom": 0.2, "chanceTo": 0.75, "salt": 4411, "maxAttempts": 12 },
-    "mechanicChance": { "from": 45, "to": 120, "max": 0.5 }
+    "spareOne": { "from": 300, "to": 500, "chanceFrom": 0.1, "chanceTo": 0.75, "salt": 4411, "maxAttempts": 12 },
+    "mechanicChance": { "from": 250, "to": 500, "max": 0.5 }
   },
   "map": {
     "$comment": "Level map (design/gdd/level-map.md D48, D49, D52). stonesPerScreen: stones a phone screen height shows (large text shows fewer, never overlapping). lookahead: locked levels shown past the next one. bandSize: levels per scenery band; scenery cycles in this order, and each id needs a name in strings.ts (map.scenery) and art in src/ui/screens/map.ts. maxStones caps the track so its height stays inside browser element limits.",

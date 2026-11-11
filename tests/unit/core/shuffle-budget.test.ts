@@ -25,15 +25,15 @@ const cfg = config as unknown as GameConfig;
 /** States actually charged: a solve that runs out reports one past its budget. */
 const spent = () => calls.reduce((sum, c) => sum + Math.min(c.nodes, c.budget), 0);
 
-/** Level 152 (14 colours, 16 jars) with its ordinary spare removed: no re-deal of it is winnable. */
+/** Level 491 (14 colours, 16 jars; level 152 before 0.14.1, D128) with its ordinary spare removed: no re-deal of it is winnable. */
 function hopelessLateBoard(): Board {
-  const b = generateLevel(152, cfg).board;
+  const b = generateLevel(491, cfg).board;
   const spare = b.jars.findIndex((j) => j.units.length === 0 && j.cap === undefined && !j.funnel);
   return { capacity: b.capacity, jars: b.jars.filter((_, i) => i !== spare) };
 }
 /** Generated once; the generator's own solver calls are cleared before each test. */
 const hopeless = hopelessLateBoard();
-const late = generateLevel(152, cfg).board;
+const late = generateLevel(491, cfg).board;
 
 beforeEach(() => {
   calls.length = 0;

@@ -1,0 +1,8 @@
+patience 150, every 2 level(s), the 0.14.0 game-config.json (git show 53b6c12:src/config/game-config.json)
+1-40: stuck 0% | hints per 100 levels 0 | most on one level 0
+41-80: stuck 40% | hints per 100 levels 515 | most on one level 26
+81-150: stuck 49% | hints per 100 levels 646 | most on one level 30
+151-200: stuck 68% | hints per 100 levels 1084 | most on one level 30
+201-300: stuck 76% | hints per 100 levels 1388 | most on one level 30
+301-400: stuck 76% | hints per 100 levels 1460 | most on one level 30
+401-500: stuck 80% | hints per 100 levels 1560 | most on one level 30

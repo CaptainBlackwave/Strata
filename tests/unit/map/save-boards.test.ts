@@ -24,6 +24,16 @@ describe('save.boards (D110)', () => {
   it('the config records the gentler curve as a board change from level 12', () => {
     expect(changes).toContainEqual({ version: 2, fromLevel: 12 });
   });
+  it('0.14.1 records the gentle climb as a board change from level 30 (D133)', () => {
+    expect(changes).toContainEqual({ version: 3, fromLevel: 30 });
+    expect(LATEST).toBe(3);
+  });
+  it('a 0.13.1 save (boards 2) keeps best pours below level 30 and loses them from 30, once', () => {
+    const save = loadRaw({ ...OLD, boards: 2, best: { '12': 30, '29': 33, '30': 40, '120': 55 } });
+    expect(save.best).toEqual({ '12': 30, '29': 33 });
+    expect(save.boards).toBe(3);
+    expect(save).toMatchObject({ level: 40, perfect: [3, FROM, 39] });
+  });
   it('a fresh save is on the latest boards', () => {
     expect(freshSave(econ).boards).toBe(LATEST);
   });

@@ -225,10 +225,10 @@ describe('hintResult tells "can\'t be won" apart from "search ran out" (F7, GA-S
     s.pour(1, 2);
     expect(s.hintResult()).toEqual({ reason: 'won' });
   });
-  it('at the production hint budget, late 16-jar levels (171-176, the first with 14 colours) get a hint, and following hints wins', () => {
+  it('at the production hint budget, late 16-jar levels (491-496, the first with 14 colours, D128) get a hint, and following hints wins', () => {
     const cfg = config as unknown as GameConfig;
-    // 173 is a breather (D107) with fewer jars, so it is left out.
-    for (const level of [171, 172, 174, 175, 176]) {
+    // 493 is a breather (D107) with fewer jars, so it is left out.
+    for (const level of [491, 492, 494, 495, 496]) {
       const g = generateLevel(level, cfg);
       expect(g.board.jars.length, `level ${level}`).toBeGreaterThanOrEqual(15);
       const s = new GameSession(g.board, sessionOptions(cfg));

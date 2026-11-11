@@ -10,19 +10,18 @@ const cfg = config as unknown as GameConfig;
 /** Colour count of the ordinary (non-breather, non-tall) level `l`. */
 const colors = (l: number) => levelSpec(l, cfg).colors;
 
-describe('the gentler colour climb (D106)', () => {
-  it('colours step up slowly: 8 at 18, 9 at 30, 10 at 45, 11 at 65, 12 at 95, 13 at 130, 14 at 170', () => {
-    const steps: [number, number][] = [[17, 7], [19, 8], [29, 8], [31, 9], [44, 9], [46, 10], [64, 10], [66, 11], [94, 11], [96, 12], [129, 12], [131, 13], [169, 13], [171, 14]];
+describe('the gentler colour climb (D106, stretched again by D128 in 0.14.1)', () => {
+  it('colours step up slowly: 8 at 18, 9 at 30, then the D128 steps (tests/unit/balance/gentle-climb.test.ts)', () => {
+    const steps: [number, number][] = [[17, 7], [19, 8], [29, 8], [31, 9], [69, 9], [71, 10]];
     for (const [level, want] of steps) expect(colors(level), `level ${level}`).toBe(want);
   });
   it('levels 1-11 keep their recipe', () => {
     expect([1, 3, 5, 8, 11].map(colors)).toEqual([3, 4, 5, 6, 6]);
     expect(levelSpec(11, cfg).buriedDepth).toBe(1);
   });
-  it('hidden sand: one buried layer until level 30, three from level 110 (D108)', () => {
-    expect([12, 20 + 1, 29].map((l) => levelSpec(l, cfg).buriedDepth)).toEqual([1, 1, 1]);
-    expect([31, 109].map((l) => levelSpec(l, cfg).buriedDepth)).toEqual([2, 2]);
-    expect(levelSpec(111, cfg).buriedDepth).toBe(3);
+  it('hidden sand: one buried layer from level 8 to 149 (D108, extended by D129)', () => {
+    expect([12, 20 + 1, 29, 31, 149].map((l) => levelSpec(l, cfg).buriedDepth)).toEqual([1, 1, 1, 1, 1]);
+    expect(levelSpec(7, cfg).buriedDepth).toBe(0);
   });
   it('tall jars are 4 x 8 through level 40 and 5 x 8 from level 50 (D109)', () => {
     for (const l of [10, 20, 30, 40]) expect(levelSpec(l, cfg), `level ${l}`).toMatchObject({ challenge: true, colors: 4, capacity: 8 });
