@@ -1261,7 +1261,16 @@ button {
   display: none;
 }
 
-/* A quiet Share on a win card row (sharing §3.4): a set, a streak milestone, a badge. */
+/* A quiet Share on a win card row (sharing §3.4): a set, a streak milestone, a badge. The row wraps
+   and its text may shrink, so on a narrow card at large text the button drops under the text
+   instead of running off the card (strata-dwd). */
+.win-shell:has(.moment-share) {
+  flex-wrap: wrap;
+}
+.win-shell:has(.moment-share) > span:not(.win-shell-art) {
+  flex: 1 1 5em; /* narrow enough that the shell art stays beside it; only the Share drops */
+  min-width: 0;
+}
 .win-shell .moment-share {
   flex: none;
   margin-left: auto;
