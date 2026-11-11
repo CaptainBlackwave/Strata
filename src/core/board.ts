@@ -36,6 +36,15 @@ export interface Jar {
    * hints see it.
    */
   readonly sieve?: Color;
+  /**
+   * Clam jar (D96, design/gdd/jar-mechanics.md §2.6): closed under a shell, this many successful
+   * pours from opening (1..opensAfter). While closed nothing may be poured into or out of it
+   * (`pourRefusal` gives `'clam'`) and the UI hides its sand. Every successful pour anywhere
+   * counts it down; the pour that reaches zero removes the field, so from then on it is an
+   * ordinary jar (its burial unchanged). Part of the board, so undo, restart, the solver and
+   * hints see it.
+   */
+  readonly clam?: number;
 }
 
 /** An hourglass jar's count: it flips every `every` pours, `left` pours from now (1..every). */
@@ -117,16 +126,17 @@ export function isMonochrome(jar: Jar): boolean {
  * `'same'` source is the target; `'missing'` no such jar; `'closed'` either jar is frozen or
  * locked; `'funnel'` the source is a funnel; `'sealed'` the source is sealed; `'empty'` the
  * source is empty; `'sieve'` the target is a sieve and the poured colour is not its band (D96);
- * `'full'` the target has no room; `'colour'` the target's top is another colour.
+ * `'clam'` either jar is a closed clam (D96, §2.6); `'full'` the target has no room; `'colour'`
+ * the target's top is another colour.
  */
-export type PourRefusal = 'same' | 'missing' | 'closed' | 'funnel' | 'sealed' | 'empty' | 'sieve' | 'full' | 'colour';
+export type PourRefusal = 'same' | 'missing' | 'closed' | 'clam' | 'funnel' | 'sealed' | 'empty' | 'sieve' | 'full' | 'colour';
 
 /**
  * Teardown rule R5: a pour is legal when the source is non-empty, the target has
  * room, and the target is empty or its top colour matches. A sealed jar is done and
  * can't be poured from (decision D-b, production/qa/sprint-6-findings.md GA-PR-1), which
  * matches the UI and the solver, so `usefulMoves` and `isStuck` follow too. A sieve takes
- * only its own colour (D96). Returns `null` for a legal pour, otherwise the first reason in
+ * only its own colour, and a closed clam takes and gives nothing (D96). Returns `null` for a legal pour, otherwise the first reason in
  * the order of `PourRefusal`. Example: `pourRefusal(board, 2, 0) // 'sieve'`
  */
 export function pourRefusal(board: Board, from: number, to: number): PourRefusal | null {
@@ -135,6 +145,7 @@ export function pourRefusal(board: Board, from: number, to: number): PourRefusal
   const dst = board.jars[to];
   if (!src || !dst) return 'missing';
   if (isClosed(src) || isClosed(dst)) return 'closed';
+  if (src.clam !== undefined || dst.clam !== undefined) return 'clam';
   if (src.funnel) return 'funnel';
   if (isSealed(src, board.capacity)) return 'sealed';
   const run = topRun(src);
@@ -166,6 +177,8 @@ export interface PourResult {
   readonly color: Color;
   /** Indices of hourglass jars that flipped right after this pour (D96); usually empty. */
   readonly flipped: readonly number[];
+  /** Indices of clam jars that opened right after this pour (D96, §2.6); usually empty. */
+  readonly opened: readonly number[];
 }
 
 /**
@@ -182,8 +195,38 @@ export function pour(board: Board, from: number, to: number): PourResult {
   const newSrc: Jar = { ...src, units: newSrcUnits, hidden: clampHidden(src.hidden, newSrcUnits.length) };
   const newDst: Jar = { ...dst, units: [...dst.units, ...new Array<Color>(moved).fill(color)] };
   const poured = board.jars.map((j, i) => (i === from ? newSrc : i === to ? newDst : j));
-  const { jars, flipped } = tickHourglasses(poured);
-  return { board: settle({ capacity: board.capacity, jars }), moved, color, flipped };
+  const { jars: turned, flipped } = tickHourglasses(poured);
+  const { jars, opened } = tickClams(turned);
+  return { board: settle({ capacity: board.capacity, jars }), moved, color, flipped, opened };
+}
+
+/**
+ * The clam rule (D96, §2.6), applied after every successful pour (after the hourglasses, which
+ * can never be clams): each closed clam counts down one, and one that reaches zero opens for
+ * good, dropping its `clam` field. Its sand and burial are untouched, since nothing could pour
+ * into or out of it while it was closed. Returns the same array when there is none.
+ */
+function tickClams(jars: readonly Jar[]): { jars: readonly Jar[]; opened: number[] } {
+  const opened: number[] = [];
+  if (!jars.some((j) => j.clam !== undefined)) return { jars, opened };
+  const next = jars.map((j, i) => {
+    if (j.clam === undefined) return j;
+    if (j.clam > 1) return { ...j, clam: j.clam - 1 };
+    opened.push(i);
+    const { clam: _open, ...rest } = j;
+    return rest;
+  });
+  return { jars: next, opened };
+}
+
+/**
+ * True when a clam is still closed (D96, §2.6). Then every legal pour brings it closer to
+ * opening, so even a pour that merely swaps two jars is a wait a plan may need: `usefulMoves`
+ * keeps them all, and the board is never reported stuck while any pour is left. A closed clam
+ * with no legal pour anywhere can never open, so that board is truly stuck.
+ */
+export function hasClosedClam(board: Board): boolean {
+  return board.jars.some((j) => j.clam !== undefined);
 }
 
 /**
@@ -270,6 +313,8 @@ export function legalMoves(board: Board): Move[] {
 export function usefulMoves(board: Board): Move[] {
   // With a live hourglass any pour moves its count, so even a swap can be the wait a plan needs (D96).
   if (hasLiveHourglass(board)) return legalMoves(board);
+  // With a closed clam any pour counts it down, so a swap is a wait too (D96, §2.6).
+  if (hasClosedClam(board)) return legalMoves(board);
   return legalMoves(board).filter(({ from, to }) => {
     const src = board.jars[from];
     const dst = board.jars[to];
@@ -280,7 +325,10 @@ export function usefulMoves(board: Board): Move[] {
   });
 }
 
-/** Teardown rule R9: stuck when the level isn't won and no useful pour is left. */
+/**
+ * Teardown rule R9: stuck when the level isn't won and no useful pour is left. With a closed
+ * clam every legal pour is useful (D96, §2.6), so this is true only when no pour at all is left.
+ */
 export function isStuck(board: Board): boolean {
   return !isWon(board) && usefulMoves(board).length === 0;
 }
@@ -302,6 +350,8 @@ function countColor(jar: Jar, color: Color): number {
  * - `'funnel'`: a non-empty funnel can never seal, so it can never end empty or sealed:
  *   it holds two or more colours, has a non-standard capacity, or its colour can't reach
  *   a full jar any more (units in other funnels never come out).
+ * - A closed clam adds no reason of its own (D96, §2.6): its sand counts as reachable, since it
+ *   opens after enough pours, and a board with no pour left to open it is already `isStuck`.
  * - `'lock'`: a locked, non-empty, unsealed jar can never open, because its key colour
  *   can never be sealed for the first time. Units of the key inside jars locked by that
  *   same key, inside funnels (except the one funnel that could seal it) or inside jars
@@ -351,7 +401,7 @@ export function lostReason(board: Board): LostReason | null {
 
 /**
  * A canonical string for a board, ignoring jar order and burial. An hourglass's count and a
- * sieve's band are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
+ * sieve's band and a clam's count are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
  * with the same key are equivalent for solving purposes.
  */
 export function boardKey(board: Board): string {
@@ -365,7 +415,8 @@ export function boardKey(board: Board): string {
 export function jarKey(j: Jar): string {
   const glass = j.hourglass ? `H${j.hourglass.left}/${j.hourglass.every}` : '';
   const sieve = j.sieve !== undefined ? `S${j.sieve}` : '';
-  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}`;
+  const clam = j.clam !== undefined ? `C${j.clam}` : '';
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}`;
   return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 

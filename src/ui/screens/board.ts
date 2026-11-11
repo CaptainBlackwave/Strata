@@ -17,8 +17,9 @@ import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coach
 import { showHome } from './home';
 import { screenOut } from '../fx';
 import { coach, updateHud } from './hud';
-import { buildJars, cancelFlips, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
+import { buildJars, cancelFlips, clamOpenFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { flipDelay, grownFrom } from '../logic/flip';
+import { clamOpenDelay } from '../logic/clam';
 import { refusalNote, tapMechanic } from '../logic/refusal';
 import { animatePour, recoverPour } from './pour';
 import { introduce } from './sheets/guide';
@@ -209,10 +210,14 @@ export function onSessionEvent(e: SessionEvent): void {
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
       // The hourglass turns over once the pour around it is done (D96).
       for (const i of flipped) flipFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
+      // A clam that just opened swings its shell open once the sand has landed (D96, §2.6).
+      const opened = e.opened ?? [];
+      for (const i of opened) clamOpenFx(i, clamOpenDelay(reducedMotion(), ANIM));
       announce(
         t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
           (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
-          flipped.map((i) => ` ${t.flipAnnounce(i + 1)}`).join(''),
+          flipped.map((i) => ` ${t.flipAnnounce(i + 1)}`).join('') +
+          opened.map((i) => ` ${t.clamAnnounce(i + 1)}`).join(''),
       );
       break;
     }
@@ -311,15 +316,17 @@ export function relayoutWhenIdle(): void {
 
 export function isLiftable(i: number): boolean {
   const jar = state.session.board.jars[i];
-  return !!jar && jar.units.length > 0 && !isSealed(jar, state.session.board.capacity) && !isClosed(jar) && !jar.funnel;
+  // A closed clam (D96, §2.6) can't be lifted: `isClosed` covers frozen and locked jars only.
+  return !!jar && jar.units.length > 0 && !isSealed(jar, state.session.board.capacity) && !isClosed(jar) && jar.clam === undefined && !jar.funnel;
 }
 
-/** Explains why a mechanic jar refused a tap. A sieve names its band colour (D96). */
+/** Explains why a mechanic jar refused a tap. A sieve names its band colour, a closed clam its pours left (D96). */
 export function explain(i: number): void {
   const jar = state.session.board.jars[i];
   if (!jar) return;
   const id = tapMechanic(jar, isSealed(jar, state.session.board.capacity));
-  if (id === 'sieve') showToast(t.sieveRefused(config.palette[jar.sieve!].id));
+  if (id === 'clam') showToast(t.clamRefused(jar.clam!));
+  else if (id === 'sieve') showToast(t.sieveRefused(config.palette[jar.sieve!].id));
   else if (id) showToast(t.mechanics[id].tap);
 }
 
@@ -364,7 +371,7 @@ export function explainRefusal(from: number, i: number): void {
   const jar = board.jars[i];
   if (!jar) return;
   const note = refusalNote(pourRefusal(board, from, i), isSealed(jar, board.capacity));
-  if (note === 'mechanic') explain(i);
+  if (note === 'mechanic' || note === 'clam') explain(i);
   else if (note === 'sieve') showToast(t.sieveRefused(config.palette[jar.sieve!].id));
   else if (note === 'sealed') showToast(t.jarSealedFull);
   else if (note === 'full') showToast(t.jarFull);

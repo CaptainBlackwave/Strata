@@ -6,6 +6,8 @@ import { computeLayout } from '../layout';
 import { t } from '../strings';
 import { boardEl, reducedMotion, showToast } from '../dom';
 import { FLIP_MS } from '../logic/flip';
+import { jarSummary } from '../logic/jar-label';
+import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { audio, config, state } from '../state';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
@@ -28,6 +30,13 @@ export const HOURGLASS_MARK =
  * pattern too. Drawn for Strata.
  */
 export const SIEVE_BAND = '<span class="sieve-band" aria-hidden="true"><span class="sieve-mesh"></span></span>';
+
+/**
+ * The clam jar's shell (D96, §2.6): while the clam is closed a ribbed shell covers the glass, so
+ * its sand cannot be seen, and the pours left until it opens sit on the shell in the empty `<b>`.
+ * Drawn for Strata: a fan of ribs and growth rings from a hinge at the jar's foot, its crown domed.
+ */
+export const CLAM_SHELL = '<span class="clam-shell" aria-hidden="true"><span class="clam-ribs"></span><b></b></span>';
 
 let tapHandler: (i: number) => void = () => {};
 
@@ -62,7 +71,8 @@ export function buildJars(): void {
       '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
       '<span class="hint-badge" aria-hidden="true"></span>' +
       HOURGLASS_MARK +
-      SIEVE_BAND;
+      SIEVE_BAND +
+      CLAM_SHELL;
     jar.addEventListener('click', () => tapHandler(i));
     rows.appendChild(jar);
     return jar;
@@ -112,17 +122,8 @@ export function updateJar(i: number, growFrom = Infinity): void {
   renderMechanics(el, jar);
   el.classList.toggle('selected', state.selected === i);
   el.setAttribute('aria-pressed', String(state.selected === i));
-  const contents = jar.units.length ? jar.units.map((c, k) => (k < jar.hidden ? t.buried : config.palette[c].id)).join(', ') : t.jarEmpty;
-  const states = [
-    jar.cap !== undefined ? t.jarStates.narrow : '',
-    jar.frozen ? t.jarStates.frozen : '',
-    jar.lock !== undefined ? t.jarStates.locked(config.palette[jar.lock].id) : '',
-    jar.funnel ? t.jarStates.funnel : '',
-    jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
-    jar.sieve !== undefined ? t.jarStates.sieve(config.palette[jar.sieve].id) : '',
-    sealed ? t.sealed : '',
-  ].filter(Boolean);
-  el.setAttribute('aria-label', t.jarLabel(i, states.length ? `${contents} (${states.join(', ')})` : contents));
+  // A closed clam's sand is hidden from the screen reader too (D96, §2.6).
+  el.setAttribute('aria-label', t.jarLabel(i, jarSummary(jar, sealed, (c) => config.palette[c].id)));
 }
 
 /** Draws a jar's mechanic state, and plays the thaw/unlock effect when one ends. */
@@ -146,6 +147,13 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
     const band = el.querySelector('.sieve-band') as HTMLElement;
     band.style.setProperty('--band', config.palette[jar.sieve].hex);
     band.className = `sieve-band${state.save.settings.patterns ? ` pat-${jar.sieve % PATTERNS}` : ''}`;
+  }
+  // A closed clam's shell and count (D96, §2.6). Undo of the opening pour closes it again here.
+  el.classList.toggle('clam', jar.clam !== undefined);
+  const opensIn = shellCount(jar);
+  if (el.dataset.clam !== opensIn) {
+    el.dataset.clam = opensIn;
+    (el.querySelector('.clam-shell b') as HTMLElement).textContent = opensIn;
   }
   const glass = el.querySelector('.glass') as HTMLElement;
   if (jar.cap !== undefined) glass.style.height = `${state.unitHeight * jar.cap + Math.round(state.unitHeight * 0.45)}px`;
@@ -172,7 +180,7 @@ export function mechanicFx(el: HTMLElement, cls: string, label: string): void {
   burst({ x: r.left + r.width / 2, y: r.top + r.height * 0.3, colors: ['#dff3ff', '#ffffff', '#b9e0f5'], count: 14, spread: r.width, size: 5, duration: 600, className: 'spark' });
 }
 
-/** Flip animations still playing or waiting, so a board change can stop them (Undo, Restart, Shuffle). */
+/** Flip and clam-opening animations still playing or waiting, so a board change can stop them (Undo, Restart, Shuffle). */
 const flips = new Set<Animation>();
 
 /**
@@ -201,7 +209,38 @@ export function flipFx(i: number, delay: number): void {
   }
 }
 
-/** Stops every flip animation: the board was redrawn by something other than a pour. */
+/**
+ * A clam's shell swinging open on jar `i` (D96, §2.6). The jar is already drawn open (its sand
+ * shows); `.clam-opening` keeps the shell drawn over it, closed for `delay` ms while the pour's
+ * sand lands, then the shell tips back on its hinge at the foot and fades. Short and calm.
+ * Reduced motion: no motion, the open jar is simply drawn. The `clamOpen` sound plays either way.
+ * An Undo or other board change cancels it (cancelFlips), and the redraw closes the clam again.
+ */
+export function clamOpenFx(i: number, delay: number): void {
+  const el = state.jarEls[i];
+  if (!el) return;
+  audio.play('clamOpen', { delay: delay / 1000 });
+  if (reducedMotion()) return;
+  const shell = el.querySelector('.clam-shell') as HTMLElement;
+  el.classList.add('clam-opening');
+  const a = shell.animate(
+    [
+      { transform: 'perspective(240px) rotateX(0deg)', opacity: 1 },
+      { transform: 'perspective(240px) rotateX(34deg)', opacity: 1, offset: 0.45 },
+      { transform: 'perspective(240px) rotateX(78deg)', opacity: 0 },
+    ],
+    { duration: CLAM_OPEN_MS, delay, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'backwards' },
+  );
+  flips.add(a);
+  const done = () => {
+    flips.delete(a);
+    el.classList.remove('clam-opening');
+  };
+  a.addEventListener('finish', done);
+  a.addEventListener('cancel', done);
+}
+
+/** Stops every flip and clam-opening animation: the board was redrawn by something other than a pour. */
 export function cancelFlips(): void {
   for (const a of [...flips]) a.cancel();
 }
