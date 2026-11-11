@@ -23,7 +23,7 @@ const slot = (s: StyleSlot) => cfg.styles.slots[s];
 const def = (s: StyleSlot) => slot(s)[0].id;
 const price = (s: StyleSlot, id: string) => slot(s).find((p) => p.id === id)!.price;
 /** The priced pieces of a slot, in config order. */
-const paid = (s: StyleSlot) => slot(s).slice(1).filter((p) => (p as { earned?: number }).earned === undefined); // sold pieces; streak-only ones (sprint 16) are tested in tests/unit/streak
+const paid = (s: StyleSlot) => slot(s).slice(1).filter((p) => (p as { earned?: number }).earned === undefined && (p as { event?: string }).event === undefined); // sold pieces; streak-only (sprint 16) and event (sprint 17) ones are tested elsewhere
 const allPaid = STYLE_SLOTS.flatMap((s) => paid(s).map((p) => ({ slot: s, id: p.id, price: p.price })));
 const totalPrice = allPaid.reduce((n, p) => n + p.price, 0);
 const wallet = (coins: number): Wallet => ({ ...newWallet(econ), coins });

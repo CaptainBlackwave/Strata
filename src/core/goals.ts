@@ -39,7 +39,8 @@ export interface GoalsState {
 
 /** One won board, as the goals see it. */
 export interface GoalEvent {
-  readonly mode: 'level' | 'daily' | 'weekly';
+  /** `event` boards (sprint 17) count for jars sealed only. */
+  readonly mode: 'level' | 'daily' | 'weekly' | 'event';
   readonly jarsSealed: number;
   /** Won with no hint, shuffle or extra jar (Undo is free). */
   readonly perfect: boolean;
