@@ -5,7 +5,8 @@
  * `data-sand` (S3), which {@link applyStyles} sets on the board and Home.
  */
 import { STYLE_SLOTS, type StyleSlot, buyStyle, earnedDay, stylesOpen, wearStyle } from '../../../core/styles';
-import { styleAction, stylesNewDue } from '../../logic/styles-sheet';
+import { lockText, styleAction, stylesNewDue } from '../../logic/styles-sheet';
+import { type EventsConfig } from '../../../core/events';
 import { applyStyleAttrs } from '../../style-art';
 import { type FocusTarget } from '../../layers';
 import { writeSave } from '../../storage';
@@ -78,9 +79,9 @@ function pieceButton(slot: StyleSlot, id: string, price: number): HTMLButtonElem
   status.className = 'scene-status';
   const action = styleAction(state.save.styles, state.save.wallet.coins, state.save.level, slot, id, config);
   if (action === 'wearing') status.textContent = t.styles.wearing;
-  else if (action === 'wear') status.textContent = id === config.styles.slots[slot][0].id || price === 0 && earnedDay(slot, id, config) === undefined ? t.styles.free : t.styles.owned;
+  else if (action === 'wear') status.textContent = id === config.styles.slots[slot][0].id || price === 0 && earnedDay(slot, id, config) === undefined && !config.styles.slots[slot].find((p) => p.id === id)?.event ? t.styles.free : t.styles.owned;
   else if (action === 'earned') {
-    status.textContent = t.track.locked(earnedDay(slot, id, config) ?? 0); // streak-only: never a price (sprint 16)
+    status.textContent = lockText(slot, id, config, (config as unknown as EventsConfig).events); // streak or event prize: never a price
     status.classList.add('locked');
   } else {
     status.textContent = String(price);
@@ -137,7 +138,7 @@ export function renderStyles(): void {
   btn.hidden = action === 'wearing' || action === 'closed';
   btn.disabled = action === 'need' || action === 'earned';
   btn.textContent =
-    action === 'wear' ? t.styles.wear(name) : action === 'buy' ? t.styles.buy(name, piece.price) : action === 'earned' ? t.track.locked(piece.earned ?? 0) : t.styles.need(piece.price, state.save.wallet.coins);
+    action === 'wear' ? t.styles.wear(name) : action === 'buy' ? t.styles.buy(name, piece.price) : action === 'earned' ? lockText(focus.slot, focus.id, config, (config as unknown as EventsConfig).events) : t.styles.need(piece.price, state.save.wallet.coins);
   $('styles-previewing').textContent = action === 'wearing' ? '' : t.styles.previewing(name);
 }
 

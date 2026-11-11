@@ -130,13 +130,27 @@ export function weeklyBadgeId(isoYear: number, week: number): string {
   return `weekly-${isoYear}-W${String(week).padStart(2, '0')}`;
 }
 
+/** The part of the config naming event prize badges (sprint 17, events.md). */
+export interface EventBadgeConfig {
+  readonly events: readonly { readonly prize: { readonly badge?: string } }[];
+}
+
 /**
- * A saved badge list made safe (badges.md §3.10): catalogue ids and well-formed weekly ids, each
+ * The prize badge ids of every configured event (sprint 17). They are not in the catalogue and no
+ * rule awards them: only clearing an event's boards does (core/win.ts). Example: `['event-wintertide']`.
+ */
+export function eventBadgeIds(config: Partial<EventBadgeConfig>): string[] {
+  return (config.events ?? []).flatMap((e) => (e.prize.badge ? [e.prize.badge] : []));
+}
+
+/**
+ * A saved badge list made safe (badges.md §3.10): catalogue ids, event prize badge ids (sprint 17)
+ * and well-formed weekly ids, each
  * once, in their saved order. Anything else is dropped. Example: `repairBadges(['a', 'first-seal'])` → `['first-seal']`.
  */
-export function repairBadges(raw: unknown, config: BadgeConfig): string[] {
+export function repairBadges(raw: unknown, config: BadgeConfig & Partial<EventBadgeConfig>): string[] {
   if (!Array.isArray(raw)) return [];
-  const known = new Set(config.badges.list.map((b) => b.id));
+  const known = new Set([...config.badges.list.map((b) => b.id), ...eventBadgeIds(config)]);
   const ids = raw.filter((x): x is string => typeof x === 'string' && (known.has(x) || isWeeklyBadgeId(x)));
   return [...new Set(ids)];
 }

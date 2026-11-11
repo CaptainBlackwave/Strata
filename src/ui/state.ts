@@ -28,8 +28,8 @@ export const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 2
 /** The booster names shown on the tools and in their labels. */
 export const BOOSTER_NAMES: Record<BoosterId, string> = { undo: t.undo, shuffle: t.shuffle, extraJar: t.jar, hint: t.hint };
 
-/** What is being played: a numbered level, today's daily puzzle, a weekly-set board, or the tutorial. */
-export type Mode = 'level' | 'daily' | 'weekly' | 'tutorial';
+/** What is being played: a numbered level, today's daily puzzle, a weekly-set board, a seasonal event board, or the tutorial. */
+export type Mode = 'level' | 'daily' | 'weekly' | 'event' | 'tutorial';
 
 /** Everything more than one screen reads or writes. Screen-private values stay private to their module. */
 export interface UiState {
@@ -41,6 +41,10 @@ export interface UiState {
   /** The weekly board being played (weekly mode): its week key, fixed at the start (weekly-set.md §3.6), and 0-based index. */
   weeklyWeek: string;
   weeklyIndex: number;
+  /** The event board being played (event mode, sprint 17): event id, the event's year (fixed at the start) and 1-based board. */
+  eventId: string;
+  eventYear: number;
+  eventBoard: number;
   session: GameSession;
   challenge: boolean;
   /** The level was started as a replay from the map (D50): Continue goes back to the map. */
@@ -75,6 +79,9 @@ export const state: UiState = {
   dailyName: '',
   weeklyWeek: '',
   weeklyIndex: 0,
+  eventId: '',
+  eventYear: 0,
+  eventBoard: 0,
   session: undefined as unknown as GameSession,
   challenge: false,
   replay: false,

@@ -3591,6 +3591,7 @@ body[data-theme='harvestmoon']::before {
 .badge-medal[data-family='exploration'] { --bm-rim: #2f5f8a; --bm-face: #5b8fc0; --bm-ink: #ffffff; }
 .badge-medal[data-family='daily'] { --bm-rim: #b8621a; --bm-face: #f2a541; --bm-ink: #3f2410; }
 .badge-medal[data-family='weekly'] { --bm-rim: #634684; --bm-face: #9a7bbf; --bm-ink: #ffffff; }
+.badge-medal[data-family='event'] { --bm-rim: #3d6f96; --bm-face: #d6eaf7; --bm-ink: #1d3a52; } /* sprint 17: icy, for event prizes */
 .bm-rim { fill: var(--bm-rim); }
 .bm-face { fill: var(--bm-face); }
 .bm-rope {
@@ -3940,7 +3941,7 @@ body[data-theme='harvestmoon']::before {
   --style-shine-w: 11%;
   --style-shine-x: 17%;
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .jar > .glass {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .jar > .glass {
   border-color: var(--style-edge);
   background-color: var(--style-body);
   box-shadow:
@@ -3948,14 +3949,31 @@ body[data-theme='harvestmoon']::before {
     inset 0 -6px 10px rgba(255, 255, 255, 0.35),
     0 6px 0 rgba(90, 70, 50, 0.08);
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .jar > .glass::before {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .jar > .glass::before {
   border-color: var(--style-edge);
   background: var(--style-rim);
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .jar .shine {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .jar .shine {
   left: var(--style-shine-x, 16%);
   width: var(--style-shine-w, 14%);
   background: var(--style-shine);
+}
+[data-glass='frost'] {
+  /* Frost (sprint 17, the Winter Tide prize): icy white glass, more opaque at the edge than clear
+     glass so it reads in every scene, with a snowflake etched on the empty glass (below). */
+  --style-edge: color-mix(in srgb, var(--glass-edge) 55%, rgb(150, 190, 220));
+  --style-body: color-mix(in srgb, var(--glass) 55%, rgba(236, 246, 255, 0.6));
+  --style-band: rgba(225, 240, 255, 0.6);
+  --style-rim: linear-gradient(90deg, rgba(240, 248, 255, 0.85), rgba(200, 226, 248, 0.85));
+  --style-shine: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(220, 238, 255, 0.2));
+  --style-shine-w: 12%;
+}
+/* Frost's etching: a faint six-armed snowflake near the top of the glass, above the sand. Static. */
+[data-glass='frost'] .jar:not(.funnel) > .glass {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.85' stroke-width='1.3' stroke-linecap='round'%3E%3Cpath d='M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M10 4l2 2 2-2M10 20l2-2 2 2M4.6 10.3l2.7-.7-.7-2.7M19.4 13.7l-2.7.7.7 2.7M4.6 13.7l2.7.7-.7 2.7M19.4 10.3l-2.7-.7.7-2.7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 50% 10%;
+  background-size: 62% auto;
 }
 /* Sea Lantern's warm inner glow: a soft amber light low in the empty glass (static; never animates). */
 [data-glass='sealantern'] .jar > .glass {
@@ -3972,7 +3990,7 @@ body[data-theme='harvestmoon']::before {
   background-size: 3px 3px;
 }
 /* Home art: the outline and a highlight streak (the art has no rim). */
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .logo-jars i {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .logo-jars i {
   border-color: var(--style-edge);
   background:
     var(--style-shine) 18% 30% / var(--style-shine-w, 14%) 58% no-repeat,
@@ -4321,4 +4339,86 @@ body[data-theme='harvestmoon']::before {
 .sheet-close {
   display: block;
   width: 100%;
+}
+
+/* ==== Sprint 17: seasonal events (D141-D147, design/gdd/events.md) ==== */
+.event-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 34px;
+  color: var(--accent-text);
+}
+.event-ico svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.event-prize {
+  margin: 0 0 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.event-prize.done {
+  color: var(--accent-text);
+}
+.event-boards {
+  display: grid;
+  /* At least three columns, so 24 boards stay a short grid at 320 px with 150% text. */
+  grid-template-columns: repeat(auto-fill, minmax(min(4.25rem, calc((100% - 12px) / 3)), 1fr));
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+.event-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 6px 2px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.event-board b {
+  font-size: 1.125rem;
+  line-height: 1.1;
+}
+.event-board span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.event-board.open {
+  border-color: var(--accent);
+}
+.event-board.cleared span {
+  color: var(--accent-text);
+}
+/* Locked: muted but readable (ink-soft on surface-2 is 3:1+ in every scene), never faded with opacity. */
+.event-board.locked {
+  background: transparent;
+  border: 2px dashed color-mix(in srgb, var(--ink-soft) 50%, transparent);
+  cursor: not-allowed;
+}
+.event-board.locked b {
+  color: var(--ink-soft);
+}
+.event-board:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }

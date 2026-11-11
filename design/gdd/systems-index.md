@@ -39,6 +39,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 15 | Jar styles | Economy | Full Vision | Implemented (sprint 12, D85–D94) | [jar-styles.md](jar-styles.md) | 5, 8, 9, 10 |
 | 16 | Sharing | Meta | Full Vision | Designed and signed off (D116–D124), building in sprint 14 | [sharing.md](sharing.md) | 6, 7, 8, 9, 11, 12, 13, 14, 15 |
 | 17 | Daily goals | Progression | Full Vision | Implemented (sprint 16, D137) | [daily-goals.md](daily-goals.md) | 4, 5, 6, 10, 12, 14 |
+| 18 | Seasonal events | Progression | Full Vision | Implemented (sprint 17, D141–D147) | [events.md](events.md) | 5, 6, 10, 13, 14, 15 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -201,10 +202,10 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D138 | Reminders | **None**: no notifications, app badges or calendar events; the reasons to return live in the game | daily-goals | built |
 | D139 | Release size | **One sprint, one release: 0.15.0** with a What's new card | release | built |
 | D140 | A missed day and the track | **The track counts the current streak; rewards are kept and each day is claimed once.** A solve claims every unclaimed day up to the new streak (catch-up) | daily-puzzle | built |
-| D141 | Next focus after 0.15 | **Seasonal events**: a few weeks with their own boards and a prize (owner interview 2026-11-11) | events | planned |
-| D142 | First event | **Winter Tide, 1-31 December**, live before 1 December 2026 as 0.16.0 | events | planned |
-| D143 | A missed event | **Returns every year** on the same dates; its prize can be earned in a later year | events | planned |
-| D144 | Event difficulty | **Gentle, like the weekly**: every player can finish whatever their level | events | planned |
-| D145 | Event board pace | **Advent: 24 boards, one opens each day**; any open board can be caught up until the event ends | events | planned |
-| D146 | Winter Tide prize | **Frost jar glass + Winter Tide badge** for all 24; 50 coins after every 6th board | events, economy | planned |
-| D147 | Event engine | **One reusable engine**: an event is a config entry (dates, boards, prize); later events add entries | events | planned |
+| D141 | Next focus after 0.15 | **Seasonal events**: a few weeks with their own boards and a prize (owner interview 2026-11-11) | events | built |
+| D142 | First event | **Winter Tide, 1-31 December**, live before 1 December 2026 as 0.16.0 | events | built |
+| D143 | A missed event | **Returns every year** on the same dates; its prize can be earned in a later year | events | built |
+| D144 | Event difficulty | **Gentle, like the weekly**: every player can finish whatever their level | events | built |
+| D145 | Event board pace | **Advent: 24 boards, one opens each day**; any open board can be caught up until the event ends | events | built |
+| D146 | Winter Tide prize | **Frost jar glass + Winter Tide badge** for all 24; 50 coins after every 6th board | events, economy | built |
+| D147 | Event engine | **One reusable engine**: an event is a config entry (dates, boards, prize); later events add entries | events | built |

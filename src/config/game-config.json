@@ -89,6 +89,24 @@
       { "kind": "beatBest", "target": 1, "coins": 40 }
     ]
   },
+  "events": [
+    {
+      "$comment": "Seasonal events (sprint 17, D141-D147, design/gdd/events.md). Yearly, UTC, MM-DD dates; board n opens on day n (advent, D145); recipes are gentle weekly rows with no special jars (D144); coins after every coinsEvery-th board; prize for all boards, kept for good and earnable again in a later year (D143). NEVER change id or seedSalt once an event has run.",
+      "id": "wintertide",
+      "from": "12-01",
+      "to": "12-31",
+      "boards": 24,
+      "seedSalt": 7717,
+      "recipes": [
+        { "colors": 5, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 1 },
+        { "colors": 6, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 41 },
+        { "colors": 7, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 41 }
+      ],
+      "coinsEvery": 6,
+      "coins": 50,
+      "prize": { "style": "glass:frost", "badge": "event-wintertide" }
+    }
+  ],
   "weekly": {
     "$comment": "The weekly set (design/gdd/weekly-set.md, D77, sprint 11 W1). Five boards a week, ISO weeks from Monday 00:00 UTC. Boards borrow the daily's Monday-to-Friday recipes; bandLevel picks the generator.pourBands row that caps each board's length (45, 58, 58, 70, 70 pours; the levels moved from 21 and 41 to 41 and 101 with the gentler curve, D109, so the caps and the boards did not change). One theme a week, rotating: a mechanic on all five boards, or buriedBonus extra buried layers (capped at maxBuried). Single boards pay nothing; clearing all five pays completeBonus once per week (D83: about five level clears, see design/gdd/economy.md). NEVER change seedSalt once released: every player's boards for the current week would change.",
     "seedSalt": 5309,
@@ -893,7 +911,8 @@
         { "id": "amber", "price": 2050 },
         { "id": "cobalt", "price": 2450 },
         { "id": "pearl", "price": 2950 },
-        { "id": "sealantern", "price": 0, "earned": 30 }
+        { "id": "sealantern", "price": 0, "earned": 30 },
+        { "id": "frost", "price": 0, "event": "wintertide" }
       ],
       "cork": [
         { "id": "cork", "price": 0 },

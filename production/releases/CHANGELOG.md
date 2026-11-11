@@ -28,6 +28,14 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.16.0 (2026-11-11): sprint 17, Winter Tide
+**For players**
+- Winter Tide, every December (1–31, UTC): 24 gentle boards, one opening each day from the 1st to the 24th, all playable until the 31st. A Home card shows the boards open, your progress and the days left.
+- 50 coins after every 6th board cleared; the Frost jar glass and the Winter Tide badge for all 24. The prize is yours for good, and a missed year can be finished next December.
+
+**Under the hood**
+- Owner decisions D141–D147. A reusable event engine (`src/core/events.ts`, `design/gdd/events.md`): a later event is one config entry. Save field `events`, repaired field by field. Event-only jar pieces and prize badges are never sold and survive save repair.
+
 ## 0.15.1 (2026-11-11): all your streak rewards
 **For players**
 - A "Streak rewards" sheet, opened from the line under the daily puzzle, shows all six rewards (days 3 to 100), which you have collected and how many days to the next.

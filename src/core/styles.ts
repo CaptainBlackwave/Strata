@@ -21,6 +21,8 @@ export interface StylePiece {
   readonly id: string;
   readonly price: number;
   readonly earned?: number;
+  /** An event-only piece (sprint 17, D146): the event id whose prize it is. Never sold, like `earned`. */
+  readonly event?: string;
 }
 
 /**
@@ -128,7 +130,7 @@ export function buyStyle(wallet: Wallet, state: StyleState, level: number, slot:
   const piece = pieceOf(slot, id, config);
   const refused = { ok: false, wallet, state };
   if (!piece || !stylesOpen(level, state, config) || id === defaultOf(slot, config)) return refused;
-  if (piece.earned !== undefined) return refused; // streak-only (D136): never for sale
+  if (piece.earned !== undefined || piece.event !== undefined) return refused; // streak-only (D136) or an event prize (D146): never for sale
   if (isStyleOwned(state, slot, id, config) || wallet.coins < piece.price) return refused;
   return {
     ok: true,

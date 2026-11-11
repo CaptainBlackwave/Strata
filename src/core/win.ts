@@ -16,6 +16,7 @@ import { type ProfileConfig, type Progress, type SlotItem, type Stats, bumpStats
 import { type Goal, type GoalsConfig, type GoalsState, emptyGoals, goalsFor, recordGoals } from './goals';
 import { type TrackConfig, type TrackStep, claimTrack, trackOf } from './streak-track';
 import type { StyleState } from './styles';
+import { type EventsConfig, type EventsState, emptyEventProgress, eventById, recordEventClear } from './events';
 
 /** The slice of the save a win reads and writes. `SaveData` satisfies it structurally. */
 export interface WinState {
@@ -45,12 +46,14 @@ export interface WinState {
   readonly goals?: GoalsState;
   /** Jar styles; a track day can add a streak-only piece to `owned`. */
   readonly styles?: StyleState;
+  /** Seasonal event progress by event id (sprint 17, events.md). */
+  readonly events?: EventsState;
 }
 
 /** The config a win needs. */
-export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig & BadgeSourceConfig & WeeklyConfig & TrackConfig & Partial<GoalsConfig>;
+export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig & BadgeSourceConfig & WeeklyConfig & TrackConfig & Partial<GoalsConfig> & Partial<EventsConfig>;
 
-export type WinMode = 'tutorial' | 'daily' | 'level' | 'weekly';
+export type WinMode = 'tutorial' | 'daily' | 'level' | 'weekly' | 'event';
 
 /** The finished session and where it was played. */
 export interface WinResult {
@@ -71,6 +74,8 @@ export interface WinResult {
   readonly weekly?: { readonly week: string; readonly index: number };
   /** Today's UTC date key, for the daily goals (sprint 16). Without it no goal moves. */
   readonly today?: string;
+  /** The event board played (event mode, sprint 17): event id, the event's year and the 1-based board. */
+  readonly event?: { readonly id: string; readonly year: number; readonly board: number };
 }
 
 /** The shell row of the win card. */
@@ -105,6 +110,8 @@ export interface WinCard {
   readonly badges: string[];
   /** What a weekly win did to the set (weekly mode only, weekly-set.md §3.8). */
   readonly weekly?: WeeklyCard;
+  /** What an event win did (event mode only, sprint 17, events.md). */
+  readonly event?: EventCard;
   /** Streak-track days this daily solve claimed, in day order (sprint 16, D140). */
   readonly track: TrackStep[];
   /** Goals reached by this win and the all-goals bonus paid now (sprint 16, D137). */
@@ -125,6 +132,23 @@ export interface WeeklyCard {
   readonly completedNow: boolean;
   /** The board's week is older than the saved week: nothing was recorded (§3.6). */
   readonly outOfDate: boolean;
+}
+
+/** The event part of the win card (sprint 17, events.md). */
+export interface EventCard {
+  readonly id: string;
+  readonly board: number;
+  readonly cleared: number;
+  readonly total: number;
+  readonly firstClear: boolean;
+  readonly newBest: boolean;
+  readonly prevBest: number | undefined;
+  /** Coins this clear paid (every `coinsEvery`-th board). */
+  readonly coins: number;
+  /** This clear finished every board: the prize was granted. */
+  readonly completedNow: boolean;
+  /** The prize's jar piece `slot:id`, when `completedNow`. */
+  readonly prizeStyle?: string;
 }
 
 /** The new state and the card. */
@@ -261,6 +285,45 @@ function winWeekly(s: WinState, result: WinResult, config: WinConfig): WinOutcom
   return { state, card };
 }
 
+/**
+ * An event board (sprint 17, events.md): records the clear and best pours, pays `coins` on every
+ * `coinsEvery`-th board, and on the last board grants the prize (a jar piece and a badge, each once
+ * and kept for good, D143, D146).
+ */
+function winEvent(s: WinState, result: WinResult, config: WinConfig): WinOutcome {
+  const played = result.event;
+  const event = played && config.events ? eventById(played.id, config as EventsConfig) : undefined;
+  if (!played || !event) {
+    const f = finishWin(s, result, config);
+    return { state: f.state, card: { ...emptyCard(result), badges: f.badges, goals: f.goals } };
+  }
+  const before = progressOfState(s, config);
+  const r = recordEventClear(s.events?.[event.id] ?? emptyEventProgress(), event, played.year, played.board, result.moves);
+  let state: WinState = { ...s, events: { ...(s.events ?? {}), [event.id]: r.state }, stats: bumpStats(s.stats, { pours: result.moves }) };
+  if (r.coins > 0) state = earn(state, r.coins);
+  const prizeBadges: string[] = [];
+  if (r.completedNow) {
+    const { style, badge } = event.prize;
+    if (style && state.styles && !state.styles.owned.includes(style)) state = { ...state, styles: { ...state.styles, owned: [...state.styles.owned, style] } };
+    if (badge && !state.badges.includes(badge)) {
+      state = { ...state, badges: [...state.badges, badge] };
+      prizeBadges.push(badge);
+    }
+  }
+  const f = finishWin(state, result, config);
+  state = f.state;
+  const card: WinCard = {
+    ...emptyCard(result),
+    rewardShown: r.coins > 0,
+    reward: r.coins,
+    badges: [...prizeBadges, ...f.badges],
+    goals: f.goals,
+    event: { id: event.id, board: played.board, cleared: r.state.cleared.length, total: event.boards, firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, coins: r.coins, completedNow: r.completedNow, ...(r.completedNow && event.prize.style ? { prizeStyle: event.prize.style } : {}) },
+    unlocks: newlyUnlocked(config, before, progressOfState(state, config)),
+  };
+  return { state, card };
+}
+
 function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome {
   const { level, moves } = result;
   const before = progressOfState(s, config);
@@ -297,5 +360,6 @@ function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome
 export function applyWin(state: WinState, result: WinResult, config: WinConfig): WinOutcome {
   if (result.mode === 'tutorial') return winTutorial(state, result);
   if (result.mode === 'weekly') return winWeekly(state, result, config);
+  if (result.mode === 'event') return winEvent(state, result, config);
   return result.mode === 'daily' ? winDaily(state, result, config) : winLevel(state, result, config);
 }

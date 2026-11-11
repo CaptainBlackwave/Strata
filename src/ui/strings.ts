@@ -199,6 +199,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.16.0',
+        name: 'Winter Tide',
+        lines: [
+          'Winter Tide arrives on 1 December: a new board opens every day until the 24th, and you can catch up on any you missed until the 31st.',
+          'The boards are gentle, whatever your level. Every sixth board pays 50 coins.',
+          'Clear all 24 for the Frost jar glass and the Winter Tide badge. Winter Tide comes back every December.',
+        ],
+      },
+      {
         version: '0.15.1',
         name: 'All your streak rewards',
         lines: [
@@ -621,7 +630,7 @@ const en = {
     intro: 'Change how your jars look. A style never changes a sand colour.',
     slots: { glass: 'Glass', cork: 'Cork', sand: 'Sand' } as Readonly<Record<string, string>>,
     names: {
-      glass: { clear: 'Clear glass', seaglass: 'Sea glass', amber: 'Amber bottle', cobalt: 'Cobalt rim', pearl: 'Pearl', sealantern: 'Sea Lantern' },
+      glass: { clear: 'Clear glass', seaglass: 'Sea glass', amber: 'Amber bottle', cobalt: 'Cobalt rim', pearl: 'Pearl', sealantern: 'Sea Lantern', frost: 'Frost' },
       cork: { cork: 'Cork', driftwood: 'Driftwood', rope: 'Rope knot', scallop: 'Scallop cap', brass: 'Brass lid' },
       sand: { plain: 'Plain sand', fine: 'Fine grain', glint: 'Glint', layered: 'Layered', ripple: 'Ripple' },
     } as Readonly<Record<string, Readonly<Record<string, string>>>>,
@@ -685,6 +694,39 @@ const en = {
     allDone: 'All done',
     winRow: (text: string, coins: number) => `Goal done: ${text} \u00b7 +${coins}`,
     winBonus: (coins: number) => `All of today\u2019s goals done \u00b7 +${coins}`,
+  },
+  /** Seasonal events (sprint 17, D141-D147; design/gdd/events.md): Home card, chooser, board label, win card, prize. */
+  event: {
+    /** Event names by `events[].id` in game-config.json. */
+    names: { wintertide: 'Winter Tide' } as Readonly<Record<string, string>>,
+    /** Badge names and shelf lines by the prize badge id. */
+    badges: { 'event-wintertide': { name: 'Winter Tide', desc: 'Cleared every Winter Tide board' } } as Readonly<Record<string, { name: string; desc: string }>>,
+    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as readonly string[],
+    monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as readonly string[],
+    /** The Home card's line, e.g. "Board 12 open · 9 of 24 cleared". */
+    cardSub: (open: number, total: number, cleared: number) => `${open >= total ? `All ${total} boards open` : `Board ${open} open`} \u00b7 ${cleared >= total ? 'All cleared \u2713' : `${cleared} of ${total} cleared`}`,
+    daysLeft: (n: number) => (n <= 0 ? 'Last day' : n === 1 ? 'Ends tomorrow' : `Ends in ${n} days`),
+    prize: (total: number, piece: string, badge: string) => `Clear all ${total} for the ${piece} and the ${badge} badge`,
+    prizeCollected: 'Prize collected',
+    /** A jar piece as a prize, e.g. "Frost jar glass". */
+    piece: (name: string, slot: string) => `${name} jar ${slot.toLowerCase()}`,
+    /** A board in the chooser: its visible status and its spoken name. */
+    boardOpen: 'Open',
+    boardCleared: (pours: number) => `\u2713 ${pours}`,
+    boardClearedLabel: (n: number, pours: number) => `Board ${n}, cleared, best ${pours} ${pours === 1 ? 'pour' : 'pours'}`,
+    boardOpenLabel: (n: number) => `Board ${n}, not cleared yet`,
+    boardLocked: (month: string, day: number) => `${month} ${day}`,
+    boardLockedLabel: (n: number, month: string, day: number) => `Board ${n}, opens ${month} ${day}`,
+    /** The board screen's label, e.g. "Winter Tide · Board 6". */
+    label: (name: string, n: number) => `${name} \u00b7 Board ${n}`,
+    winTitle: (name: string, n: number) => `${name} \u00b7 Board ${n}`,
+    completeTitle: (name: string) => `${name} complete!`,
+    winText: (pours: number, cleared: number, total: number) => `${pours} ${pours === 1 ? 'pour' : 'pours'} \u00b7 ${cleared} of ${total} cleared`,
+    replay: 'Already cleared this year',
+    /** The win card's prize row, e.g. "Frost jar glass is yours". */
+    prizeRow: (piece: string) => `${piece} is yours`,
+    /** A jar piece that is an event's prize, in the Jar styles sheet, e.g. "Winter Tide prize · December". */
+    lockedPiece: (name: string, month: string) => `${name} prize \u00b7 ${month}`,
   },
   // sprint 11 weekly
   /** The weekly set (design/gdd/weekly-set.md, D77): Home card, chooser, board label, win card and Share. */

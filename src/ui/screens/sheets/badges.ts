@@ -3,7 +3,7 @@
  * away from the win card (design/gdd/badges.md §3.5–§3.8). The rules are the pure core/badges.ts.
  * Badges are recognition only: nothing here touches the wallet (D76).
  */
-import { type Badge, awardBadges, backfillBadges, badgeProgress, badgeProgressOf, isWeeklyBadgeId } from '../../../core/badges';
+import { type Badge, type EventBadgeConfig, awardBadges, backfillBadges, badgeProgress, badgeProgressOf, eventBadgeIds, isWeeklyBadgeId } from '../../../core/badges';
 import { badgeSvg, medalSvg } from '../../badge-art';
 import { t } from '../../strings';
 import { $ } from '../../dom';
@@ -25,16 +25,21 @@ function weekOf(id: string): [number, number] {
   return [Number(year), Number(week)];
 }
 
-/** The name shown for any earned id: a catalogue name, or "Week 46, 2026" for a weekly badge. */
-export function badgeName(id: string): string {
-  const b = badgeOf(id);
-  return b ? textOf(b).name : isWeeklyBadgeId(id) ? t.badgeWeekly(...weekOf(id)) : id;
+/** Whether `id` is an event's prize badge (sprint 17): not in the catalogue, never awarded by a rule. */
+function isEventBadge(id: string): boolean {
+  return eventBadgeIds(config as unknown as EventBadgeConfig).includes(id);
 }
 
-/** The medallion markup for any earned id. */
+/** The name shown for any earned id: a catalogue name, "Week 46, 2026" for a weekly badge, or an event's name. */
+export function badgeName(id: string): string {
+  const b = badgeOf(id);
+  return b ? textOf(b).name : isWeeklyBadgeId(id) ? t.badgeWeekly(...weekOf(id)) : (t.event.badges[id]?.name ?? id);
+}
+
+/** The medallion markup for any earned id: an event badge is an icy medallion with a snowflake. */
 function artOf(id: string): string {
   const b = badgeOf(id);
-  return b ? badgeSvg(b, config) : medalSvg('weekly', 'weekly');
+  return b ? badgeSvg(b, config) : isEventBadge(id) ? medalSvg('event', 'snowflake') : medalSvg('weekly', 'weekly');
 }
 
 /** Load-time back-fill (badges.md §3.5): adds every badge already met to the save, with no notice. */
@@ -99,6 +104,7 @@ export function renderBadgeShelf(): void {
     const key = (b.rule.kind === 'count' ? b.rule.of : b.rule.kind) as keyof typeof t.badgeCount;
     return tile(badgeSvg(b, config), name, desc, t.badgeCount[key](have, need));
   });
+  const events = state.save.badges.filter(isEventBadge).map((id) => tile(artOf(id), badgeName(id), t.event.badges[id]?.desc ?? '', null)); // sprint 17
   const weekly = state.save.badges.filter(isWeeklyBadgeId).map((id) => tile(artOf(id), badgeName(id), t.badgeWeeklyDesc, null));
-  $('badge-shelf').replaceChildren(...tiles, ...weekly);
+  $('badge-shelf').replaceChildren(...tiles, ...events, ...weekly);
 }

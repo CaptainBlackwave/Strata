@@ -1,6 +1,6 @@
 # Sprint 17: Winter Tide
 
-> **Status: planned (2026-11-11), approved by the owner.** From the owner interview after 0.15.0 (D141–D147 in `design/gdd/systems-index.md`). Target release: **0.16.0**, live **before 1 December 2026**, after the 0.15.1 patch.
+> **Status: built (2026-11-11), approved by the owner.** Released as 0.16.0. Evidence: `production/qa/evidence/sprint-17/`. From the owner interview after 0.15.0 (D141–D147 in `design/gdd/systems-index.md`). Target release: **0.16.0**, live **before 1 December 2026**, after the 0.15.1 patch.
 
 ## Why
 0.15 gives players daily reasons to return (streak rewards, daily goals). The next step chosen by the owner is **seasonal events** (D141): a few weeks with their own boards and a prize, returning every year.
@@ -36,6 +36,11 @@ A reusable **event engine** and its first event, **Winter Tide** (1–31 Decembe
 | E4 | **Save**: `events` field, repaired field by field; a save from before 0.16 loads with none | Save tests |
 | D1 | **Docs**: `events.md` (8 sections), `save-data.md`, `economy.md`, `badges.md`, decisions D141–D147 | As before |
 | R1 | **0.16.0**: What's new ("Winter Tide, from 1 December"), the changelog section, the release | Upgrade play-through; the card shown once; released before 1 Dec |
+
+## Notes from the build
+- Prize badges are kept by save repair through `eventBadgeIds` (they are not in the badge catalogue, and no rule awards them).
+- Event pieces are locked in the Jar styles sheet as "Winter Tide prize · December" and are never sold (`styleAction`, `buyStyle`).
+- Share is hidden on event win cards; the badge row keeps its moment Share.
 
 ## Out of scope
 - Other events (summer, New Year): the engine supports them, and each is a later config entry.
