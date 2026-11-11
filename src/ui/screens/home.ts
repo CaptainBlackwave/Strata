@@ -1,4 +1,5 @@
 /** The Home screen and the What's new card. */
+import { applyUpdateIfSafe } from '../update';
 import { allShells } from '../../core/collection';
 import { streakStatus, weekday } from '../../core/daily';
 import { byIdOr, isOwned } from '../../core/themes';
@@ -48,6 +49,7 @@ export function showHome(): void {
   openLayer(homeEl, $('btn-play'), null);
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
   maybeShowInstall(); // once, after a few levels, never on the first visit (O1, D78)
+  applyUpdateIfSafe(); // a new release that took over while a board was in play loads now
 }
 
 /**

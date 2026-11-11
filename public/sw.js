@@ -13,6 +13,8 @@
  *   reference are deleted, so a deploy that leaves sw.js byte-identical still cleans up.
  * - Non-hashed files (manifest, icons, the page) are network-first with a cache fallback, so a
  *   changed icon or manifest reaches installed copies. Hashed assets/* stay cache-first.
+ * - Network-first fetches skip the browser's HTTP cache (`fetchInit`): GitHub Pages lets a browser
+ *   reuse the page for 10 minutes, which would hand players the previous release after a deploy.
  */
 const BUILD_ID = '__BUILD_ID__';
 const CACHE = 'strata-' + BUILD_ID;
@@ -30,6 +32,15 @@ const CSS_URL_REF = /url\(\s*["']?(?!data:)([^"')]+)["']?\s*\)/g; // fonts and i
  */
 function addEach(cache, urls) {
   return Promise.allSettled(urls.map((u) => cache.add(new Request(u, { cache: 'reload' }))));
+}
+
+/**
+ * How the network-first fetches ask the network: the page and every non-hashed file revalidate with
+ * the server (`no-cache`: a cheap 304 when nothing changed), so a deploy reaches players on their
+ * next open. Hashed assets/* keep the normal cache, since a changed file gets a new name.
+ */
+function fetchInit(url, mode) {
+  return mode === 'navigate' || !new URL(url).pathname.includes('/assets/') ? { cache: 'no-cache' } : undefined;
 }
 
 /** The built assets (`assets/...`) an HTML page references, as absolute URLs (TD-7: the one copy of the regex). */
@@ -158,7 +169,7 @@ function register() {
         (async () => {
           const cache = await caches.open(CACHE);
           try {
-            const fresh = await fetch(req);
+            const fresh = await fetch(req, fetchInit(req.url, req.mode));
             if (fresh.ok) {
               // For the next offline launch: cache this version's files first, and only when all of
               // them are in, store the page itself and prune the old files. A download that fails
@@ -196,7 +207,7 @@ function register() {
           if (hit) return hit;
         }
         try {
-          const res = await fetch(req);
+          const res = await fetch(req, fetchInit(req.url, req.mode));
           if (res.ok) await cache.put(req, res.clone());
           return res;
         } catch {
@@ -209,5 +220,5 @@ function register() {
 }
 
 // Under Node (unit tests) export the pure helpers; in the worker, register the listeners.
-if (typeof module !== 'undefined') module.exports = { assetsOf, refsOf, referencedUrls, staleAssets, isComplete, OFFLINE_READY };
+if (typeof module !== 'undefined') module.exports = { assetsOf, refsOf, referencedUrls, staleAssets, isComplete, fetchInit, OFFLINE_READY };
 else register();
