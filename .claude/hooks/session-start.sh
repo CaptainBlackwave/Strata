@@ -54,6 +54,16 @@ fi
 
 echo "=== Claude Code Game Studios — Session Context ==="
 
+# Beads issue tracker (CLAUDE.md "Issue tracking (Beads)"): a filesystem check only, no bd call,
+# so this stays inside the hook's budget. Restoring is tools/beads/ensure.sh.
+if [ -f .beads/issues.jsonl ] || [ -d .beads ]; then
+    if command -v bd >/dev/null 2>&1 && [ -d .beads/embeddeddolt ]; then
+        echo "Beads: ready. Run \`bd ready\` for open work."
+    else
+        echo "Beads: not set up in this container. Run \`bash tools/beads/ensure.sh\`, then \`bd ready\`."
+    fi
+fi
+
 # Current branch
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 if [ -n "$BRANCH" ]; then
