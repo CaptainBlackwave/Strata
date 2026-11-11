@@ -6,8 +6,11 @@ import { makeTiltFill, renderSelectedState } from './jars';
 import { lowerLip } from '../logic/pour-geometry';
 import { showWin } from './win';
 import { ANIM, audio, config, state } from '../state';
+import { gpuOwnsPour, gpuPour } from '../board-gpu/hooks';
 
 export async function animatePour(from: number, to: number): Promise<void> {
+  // Sprint 19 S2: the canvas board plays the pour as falling sand (reduced motion still snaps below).
+  if (gpuOwnsPour()) return gpuPour(from, to, { finish: finishPour, win: showWin });
   state.busy = true;
   const src = state.jarEls[from];
   const dst = state.jarEls[to];

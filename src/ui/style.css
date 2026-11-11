@@ -4591,3 +4591,29 @@ body[data-theme='harvestmoon']::before {
 .stats-sheet .primary {
   margin-top: 8px;
 }
+
+/* ==== Sprint 19 S2/S4: the GPU board (src/ui/board-gpu/) ====
+   A WebGL canvas behind #board draws the glass and sand. The jar buttons stay over it as the input
+   and accessibility layer: their glass and sand are hidden, while the focus ring, the selection lift,
+   the hint and refusal outlines, the cork and the hit areas still show and work. */
+canvas.gpu-board {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+#board[data-render='gpu'] {
+  z-index: 1;
+}
+#board[data-render='gpu'] .jar > .glass {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+#board[data-render='gpu'] .jar > .glass::before,
+#board[data-render='gpu'] .jar .sand,
+#board[data-render='gpu'] .jar .shine,
+#board[data-render='gpu'] .jar .tilt {
+  visibility: hidden;
+}
