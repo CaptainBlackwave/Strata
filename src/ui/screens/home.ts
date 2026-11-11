@@ -19,9 +19,12 @@ import { renderProfileChip } from './sheets/profile';
 import { maybeShowInstall } from './onboarding';
 import { renderWeeklyCard } from './sheets/weekly';
 import { renderEventCard } from './sheets/event';
+import { winterSnow } from '../winter';
+import { activeEvent, type EventsConfig } from '../../core/events';
+import { EVENT_MUSIC } from '../music';
 import { applyStyles, renderStylesButton } from './sheets/styles';
 import { dailyKey } from '../clock';
-import { config, state } from '../state';
+import { audio, config, state } from '../state';
 
 export function showHome(): void {
   const arriving = !layers.has(homeEl);
@@ -47,6 +50,8 @@ export function showHome(): void {
   $('btn-track').hidden = !state.save.tutorialDone; // 0.15.1: opens the track sheet, never the daily
   renderWeeklyCard(); // sprint 11 W2: the weekly set's card, under the daily
   renderEventCard(today); // sprint 17: a seasonal event's card, while one runs
+  const running = activeEvent(today, config as unknown as EventsConfig)?.event.id ?? null;
+  audio.setEvent(running && EVENT_MUSIC[running] ? running : null); // sprint 18 W1: Winter Tide's music while it runs
   renderGoalsCard(today); // sprint 16: today's goals, under the weekly card
   const total = allShells(config).length;
   $('shells-label').textContent = t.shellCount(state.save.shells.length, total);
@@ -59,6 +64,7 @@ export function showHome(): void {
   applyStyles(); // after a save reload or import too
   renderProfileChip();
   openLayer(homeEl, $('btn-play'), null);
+  winterSnow('home', running); // sprint 18 W1: light snow behind Home while Winter Tide runs
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
   maybeShowInstall(); // once, after a few levels, never on the first visit (O1, D78)
   applyUpdateIfSafe(); // a new release that took over while a board was in play loads now

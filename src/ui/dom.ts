@@ -50,7 +50,9 @@ export function openLayer(el: HTMLElement, first: HTMLElement | null = null, ope
  * this layer can hand focus back to the same place.
  */
 export function closeLayer(el: HTMLElement, restore = true): FocusTarget | null {
+  const wasOpen = !el.hidden;
   const opener = layers.close(el);
+  if (wasOpen) fadeOut(el);
   if (restore) {
     if (canFocus(opener)) opener.focus();
     else {
@@ -59,6 +61,35 @@ export function closeLayer(el: HTMLElement, restore = true): FocusTarget | null 
     }
   }
   return opener;
+}
+
+/** Sprint 18 F4: how long a sheet, card or the win card takes to fade and slide out (ms, under 200). */
+const LAYER_OUT_MS = 160;
+
+/**
+ * Sprint 18 F4 (D149): a closing sheet, card or win card fades and slides out. The layer itself is
+ * already hidden (focus, inert and the stack moved on at once); a copy with no ids, inert and
+ * hidden from assistive tech, plays the exit and is removed. Nothing under reduced motion or in a
+ * hidden tab, and only for overlay layers (`.sheet`, `.cabinet`, `.win`).
+ */
+function fadeOut(el: HTMLElement): void {
+  if (reducedMotion() || document.hidden || !el.matches('.sheet, .cabinet, .win') || !el.parentElement) return;
+  const ghost = el.cloneNode(true) as HTMLElement;
+  ghost.removeAttribute('id');
+  ghost.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+  ghost.hidden = false;
+  ghost.inert = true;
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.classList.add('layer-ghost');
+  ghost.style.zIndex = el.style.zIndex || '40';
+  el.parentElement.append(ghost);
+  const card = ghost.querySelector<HTMLElement>('.sheet-card, .cabinet-card, .win-card');
+  const opts: KeyframeAnimationOptions = { duration: LAYER_OUT_MS, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' };
+  card?.animate([{ transform: 'none' }, { transform: ghost.matches('.sheet') ? 'translateY(24px)' : 'translateY(8px) scale(0.98)' }], opts);
+  ghost.animate([{ opacity: 1 }, { opacity: 0 }], opts).finished.then(
+    () => ghost.remove(),
+    () => ghost.remove(),
+  );
 }
 
 export function wait(ms: number): Promise<void> {

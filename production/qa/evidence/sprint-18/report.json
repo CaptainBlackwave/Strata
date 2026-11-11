@@ -1,0 +1,8 @@
+{
+  "snowCanvas": true,
+  "reducedHome": {
+    "snowCanvas": false,
+    "identicalAfter1200ms": true,
+    "runningAnimations": 0
+  }
+}

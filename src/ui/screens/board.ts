@@ -30,6 +30,7 @@ import { openMap } from './map';
 import { boosterHintOnStart } from './onboarding';
 import { openWeekly, weeklyThemeName } from './sheets/weekly';
 import { openEvent } from './sheets/event';
+import { winterSnow } from '../winter';
 import { ANIM, audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
@@ -62,6 +63,7 @@ export function startDaily(): void {
   screenOut(homeEl); // sprint 10 F5: Home fades off the board
   closeLayer(homeEl, false);
   state.mode = 'daily';
+  winterSnow('off', null);
   state.dailyDate = utcDateKey(state.clock()); // TD-16: the app clock
   const gen = generateDaily(state.dailyDate, config);
   state.dailyName = gen.spec.name;
@@ -83,6 +85,7 @@ export function startWeekly(week: string, index: number): void {
   screenOut(homeEl);
   closeLayer(homeEl, false);
   state.mode = 'weekly';
+  winterSnow('off', null);
   state.weeklyWeek = week;
   state.weeklyIndex = index;
   const gen = generateWeekly(week, index, config);
@@ -106,6 +109,7 @@ export function startEvent(id: string, year: number, n: number): void {
   screenOut(homeEl);
   closeLayer(homeEl, false);
   state.mode = 'event';
+  winterSnow('event', id); // sprint 18 W1: the snow follows onto Winter Tide's boards
   state.eventId = id;
   state.eventYear = year;
   state.eventBoard = n;
@@ -129,6 +133,7 @@ export function play(): void {
 
 export function startTutorial(): void {
   state.mode = 'tutorial';
+  winterSnow('off', null);
   beginSession(tutorialBoard(config), false);
   levelLabel.textContent = t.level(1);
   challengeTag.hidden = true;
@@ -147,6 +152,7 @@ export function startTutorial(): void {
  */
 export function startLevel(n: number, quiet = false, replay = false, versus: Versus | null = null): void {
   state.mode = 'level';
+  winterSnow('off', null);
   state.replay = replay;
   state.level = n;
   state.versus = versusOnStart(n, versus); // a challenge lasts only for the start it came with

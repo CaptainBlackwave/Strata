@@ -14,6 +14,8 @@ import {
   winBloomPlan,
   worstCaseParticles,
   pourGrainCount,
+  SNOW,
+  snowShows,
   winGlowPlan,
 } from '../../../src/ui/fx-plan';
 
@@ -171,5 +173,25 @@ describe('winGlowPlan (F3)', () => {
   it('reduced motion skips the run: no glow, the chord and the card at once', () => {
     expect(winGlowPlan([0, 1, 2], true)).toEqual({ steps: [], chordAt: 0, total: 0 });
     expect(winGlowPlan([], false).total).toBe(0);
+  });
+});
+
+describe('snowShows (W1)', () => {
+  const env = { reduced: false, hidden: false };
+  it('snows on Home and event boards only while Winter Tide runs', () => {
+    expect(snowShows(env, 'wintertide', 'home', false)).toBe(true);
+    expect(snowShows(env, 'wintertide', 'event', false)).toBe(true);
+    expect(snowShows(env, 'wintertide', 'off', false)).toBe(false);
+    expect(snowShows(env, null, 'home', false)).toBe(false);
+    expect(snowShows(env, 'summer', 'home', false)).toBe(false);
+  });
+  it('never under reduced motion, in a hidden tab, or over a scene that already snows', () => {
+    expect(snowShows({ reduced: true, hidden: false }, 'wintertide', 'home', false)).toBe(false);
+    expect(snowShows({ reduced: false, hidden: true }, 'wintertide', 'home', false)).toBe(false);
+    expect(snowShows(env, 'wintertide', 'home', true)).toBe(false);
+  });
+  it('is light: about 40 flakes at 30 frames a second', () => {
+    expect(SNOW.flakes).toBe(40);
+    expect(SNOW.fps).toBeLessThanOrEqual(30);
   });
 });

@@ -190,3 +190,23 @@ export function stretchDots(from: number, to: number, pt: (level: number) => Pt)
   }
   return out;
 }
+
+/** Sprint 18 W1 (D151): the winter snowfall layer during Winter Tide. */
+export const SNOW = {
+  /** Flakes on screen at once (well under {@link FX_BUDGET}; the layer draws on its own canvas). */
+  flakes: 40,
+  /** Frames a second, at most. */
+  fps: 30,
+  /** Fall speed range, px a second, and flake radius range, px. */
+  speed: [12, 30] as const,
+  radius: [1.2, 3] as const,
+} as const;
+
+/**
+ * Whether the winter snowfall shows (W1): only while Winter Tide runs (`eventId`), on Home or an
+ * event board, with motion allowed and the tab visible, and not when the scene already snows
+ * (Winter snow's own layer), so flakes never double up. Example: `snowShows(env, 'wintertide', 'home', false)`.
+ */
+export function snowShows(env: FxEnv, eventId: string | null, where: 'home' | 'event' | 'off', sceneSnows: boolean): boolean {
+  return effectAllowed(env) && eventId === 'wintertide' && where !== 'off' && !sceneSnows;
+}
