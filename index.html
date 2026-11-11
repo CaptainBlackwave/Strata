@@ -113,6 +113,7 @@
             <button id="btn-scenes-2" data-s="scenes" class="secondary" type="button">Scenes</button>
             <button id="btn-savecode" data-s="saveCode" class="secondary" type="button">Save code</button>
             <button id="btn-whatsnew" data-s="whatsNew.button" class="secondary" type="button">What's new</button>
+            <button id="btn-stats" data-s="stats.button" class="secondary" type="button">Your stats</button>
           </div>
           <button id="btn-close-settings" data-s="close" class="primary" type="button">Close</button>
         </div>
@@ -224,6 +225,16 @@
           <button id="btn-close-event" data-s="close" class="secondary sheet-close" type="button">Close</button>
         </div>
       </div>
+      <div id="stats" class="cabinet" hidden>
+        <div class="cabinet-card stats-sheet" role="dialog" aria-modal="true" aria-labelledby="stats-title" aria-describedby="stats-intro">
+          <div class="cabinet-head"><h2 id="stats-title" data-s="stats.heading">Your stats</h2></div>
+          <p id="stats-intro" data-s="stats.intro" class="cabinet-next">Copy these and send them to us with your feedback. Nothing is sent automatically.</p>
+          <div id="stats-list" class="stats-list"></div>
+          <p id="stats-status" class="share-status" aria-live="polite"></p>
+          <button id="btn-copy-stats" data-s="stats.copy" class="primary" type="button">Copy</button>
+          <button id="btn-close-stats" data-s="close" class="secondary sheet-close" type="button">Close</button>
+        </div>
+      </div>
       <div id="track" class="cabinet" hidden>
         <div class="cabinet-card track-sheet" role="dialog" aria-modal="true" aria-labelledby="track-title" aria-describedby="track-streak track-keep">
           <div class="cabinet-head"><h2 id="track-title" data-s="track.title">Streak rewards</h2></div>
@@ -316,6 +327,7 @@
         </div>
       </div>
       <div id="home" class="home" hidden>
+        <div class="home-tide" aria-hidden="true"><i></i></div>
         <div class="home-top">
           <button id="btn-profile" class="profile-chip" type="button" hidden aria-label="Profile">
             <span id="profile-chip-art" class="portrait portrait-sm" aria-hidden="true"></span>

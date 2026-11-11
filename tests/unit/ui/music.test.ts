@@ -340,3 +340,18 @@ describe('SceneMusic', () => {
     expect(r.music.voiceCount).toBe(1);
   });
 });
+
+// Sprint 18 W1 (D151): Winter Tide's own variation, used while the event runs.
+import { EVENT_MUSIC, eventMusicKey } from '../../../src/ui/music';
+describe('event music (W1)', () => {
+  it('Winter Tide has a brighter bell lead and slower steps than midday, within the tempo range', () => {
+    const w = musicFor(eventMusicKey('wintertide'));
+    expect(w).toBe(EVENT_MUSIC.wintertide);
+    expect(w.lead.partial).toBeGreaterThan(1);
+    expect(w.stepMs).toBeGreaterThan(MUSIC.midday.stepMs);
+    expect(w.stepMs).toBeLessThanOrEqual(MAX_STEP_MS);
+  });
+  it('an unknown event falls back to midday', () => {
+    expect(musicFor(eventMusicKey('nope'))).toBe(MUSIC.midday);
+  });
+});

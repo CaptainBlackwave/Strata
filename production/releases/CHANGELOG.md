@@ -28,6 +28,19 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.17.0 (2026-11-11): sprint 18, a softer touch
+**For players**
+- The pour: sand streams in grains and settles into a soft pile that levels out; the pour and landing sounds follow how much sand moves.
+- Sealing: the cork drops in with a small bounce and a sparkle, and the chime climbs a step with each jar sealed on the board.
+- Winning: the sealed jars light up one by one before the win card, with a final chord in the scene's key. Tap to skip.
+- Smoother sheets and cards, buttons that press in, and a gentle sway on Home.
+- Winter Tide: light snow on Home and on event boards, and winter music while the event runs.
+- Settings, Your stats: your progress, today, boosters and coins, and the game version and device, to copy and send with feedback. Nothing is sent automatically.
+- Everything that moves stops under the device's reduced-motion setting.
+
+**Under the hood**
+- Owner decisions D148–D152. Performance at 4× CPU throttle on a 16-jar board: worst frame 76 ms with effects, 64 ms without; the cost is the existing board redraw (Beads strata-8j3), not the new effects.
+
 ## 0.16.0 (2026-11-11): sprint 17, Winter Tide
 **For players**
 - Winter Tide, every December (1–31, UTC): 24 gentle boards, one opening each day from the 1st to the 24th, all playable until the 31st. A Home card shows the boards open, your progress and the days left.

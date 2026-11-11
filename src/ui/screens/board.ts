@@ -30,6 +30,7 @@ import { openMap } from './map';
 import { boosterHintOnStart } from './onboarding';
 import { openWeekly, weeklyThemeName } from './sheets/weekly';
 import { openEvent } from './sheets/event';
+import { winterSnow } from '../winter';
 import { ANIM, audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
@@ -62,6 +63,7 @@ export function startDaily(): void {
   screenOut(homeEl); // sprint 10 F5: Home fades off the board
   closeLayer(homeEl, false);
   state.mode = 'daily';
+  winterSnow('off', null);
   state.dailyDate = utcDateKey(state.clock()); // TD-16: the app clock
   const gen = generateDaily(state.dailyDate, config);
   state.dailyName = gen.spec.name;
@@ -83,6 +85,7 @@ export function startWeekly(week: string, index: number): void {
   screenOut(homeEl);
   closeLayer(homeEl, false);
   state.mode = 'weekly';
+  winterSnow('off', null);
   state.weeklyWeek = week;
   state.weeklyIndex = index;
   const gen = generateWeekly(week, index, config);
@@ -106,6 +109,7 @@ export function startEvent(id: string, year: number, n: number): void {
   screenOut(homeEl);
   closeLayer(homeEl, false);
   state.mode = 'event';
+  winterSnow('event', id); // sprint 18 W1: the snow follows onto Winter Tide's boards
   state.eventId = id;
   state.eventYear = year;
   state.eventBoard = n;
@@ -129,6 +133,7 @@ export function play(): void {
 
 export function startTutorial(): void {
   state.mode = 'tutorial';
+  winterSnow('off', null);
   beginSession(tutorialBoard(config), false);
   levelLabel.textContent = t.level(1);
   challengeTag.hidden = true;
@@ -147,6 +152,7 @@ export function startTutorial(): void {
  */
 export function startLevel(n: number, quiet = false, replay = false, versus: Versus | null = null): void {
   state.mode = 'level';
+  winterSnow('off', null);
   state.replay = replay;
   state.level = n;
   state.versus = versusOnStart(n, versus); // a challenge lasts only for the start it came with
@@ -227,6 +233,12 @@ export function beginSession(board: Board, isChallenge: boolean): void {
   updateHud();
 }
 
+/** How many jars on the board are sealed now (sprint 18 F2: the seal chime's step). */
+function sealedOnBoard(): number {
+  const b = state.session.board;
+  return b.jars.filter((j) => isSealed(j, b.capacity)).length;
+}
+
 export function onSessionEvent(e: SessionEvent): void {
   cancelAssists(); // every event is a board change: a Hint or Shuffle still thinking is stale (TD-13)
   // A pour, Undo, Restart or Shuffle redraws the jars: a flip still turning over describes the old board.
@@ -238,7 +250,7 @@ export function onSessionEvent(e: SessionEvent): void {
       updateJar(e.move.to, grownFrom(e.move.to, state.session.board.jars[e.move.to].units.length, e.moved, flipped));
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
-      if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
+      if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex, sealedOnBoard() - 1); // F2: the chime climbs per seal
       // The hourglass turns over once the pour around it is done (D96).
       for (const i of flipped) flipFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
       // A clam that just opened swings its shell open once the sand has landed (D96, §2.6).

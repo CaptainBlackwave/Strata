@@ -3884,6 +3884,145 @@ body[data-theme='harvestmoon']::before {
   display: none;
 }
 
+/* ==== Sprint 18: feel (D149, D151). Every animation here runs only with motion allowed. ==== */
+/* F1: the stream is a thin trickle; grains fall down it (fx.ts pourGrains) and land as a soft pile. */
+.stream {
+  width: 4px;
+  opacity: 0.7;
+}
+#fx i.pour-grain {
+  border-radius: 50%;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+}
+#fx i.sand-pile {
+  border-radius: 50% 50% 2px 2px / 100% 100% 2px 2px;
+  transform-origin: 50% 100%;
+}
+/* F2: a sharper drop with a second small bounce (motion only; reduced motion shows the cork at rest). */
+@media (prefers-reduced-motion: no-preference) {
+  .jar.just-sealed .cork {
+    animation: cork-drop-2 560ms cubic-bezier(0.25, 0.9, 0.4, 1);
+  }
+}
+@keyframes cork-drop-2 {
+  0% { opacity: 0; transform: translateY(-170%) rotate(-14deg) scale(0.92); }
+  45% { opacity: 1; transform: translateY(8%) rotate(3deg); }
+  62% { transform: translateY(-14%) rotate(-1deg); }
+  78% { transform: translateY(3%); }
+  100% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jar.just-sealed .cork {
+    animation: none;
+  }
+}
+/* F3: one jar's glow in the run before the win card (fx.ts winGlowRun), over the glass. */
+.glass .win-glow {
+  position: absolute;
+  inset: -2px;
+  z-index: 5;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(70% 55% at 50% 55%, rgba(var(--glow-core, 255, 246, 216), 0.55), transparent 75%);
+  box-shadow: 0 0 14px 3px rgba(var(--glow, 255, 220, 150), 0.65);
+  opacity: 0;
+}
+
+/* F4 (D149): sheets and cards open with a short slide and fade (200 ms or less; their close is
+   dom.ts fadeOut), buttons give a little under a press, and Home idles gently: the logo jars sway and
+   a soft light moves along the sea. All of it only with motion allowed; nothing moves under reduce. */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet,
+  .cabinet,
+  .win {
+    animation: fade 160ms ease-out;
+  }
+  .sheet-card {
+    animation: sheet-in 200ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  .cabinet-card,
+  .win-card {
+    animation: card-in 190ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  :is(.primary, .secondary, .daily-card, .shells-btn, .icon-btn, .scene-card, .style-piece, .event-board, .weekly-board, .track-link, .profile-chip, .whatsnew-card button) {
+    transition: transform 90ms ease-out;
+  }
+  :is(.primary, .secondary, .daily-card, .shells-btn, .icon-btn, .scene-card, .style-piece, .event-board, .weekly-board, .track-link, .profile-chip):not(:disabled):active {
+    transform: scale(0.97);
+  }
+  .home .logo-jars i {
+    transform-origin: 50% 100%;
+    animation: logo-sway 5.6s ease-in-out infinite alternate;
+  }
+  .home .logo-jars i:nth-child(2) {
+    animation-delay: -1.9s;
+  }
+  .home .logo-jars i:nth-child(3) {
+    animation-delay: -3.7s;
+  }
+  .home-tide i {
+    animation: tide-drift 9s ease-in-out infinite alternate;
+  }
+}
+@keyframes sheet-in {
+  from { transform: translateY(28px); opacity: 0; }
+}
+@keyframes card-in {
+  from { transform: translateY(8px) scale(0.98); opacity: 0; }
+}
+@keyframes logo-sway {
+  from { transform: rotate(-1.4deg); }
+  to { transform: rotate(1.4deg); }
+}
+@keyframes tide-drift {
+  from { transform: translateX(-5%) translateY(2px); }
+  to { transform: translateX(5%) translateY(-2px); }
+}
+/* The light along the sea's edge on Home, behind the content (static, and hidden, under reduced motion). */
+.home-tide {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.home-tide i {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  top: 87%;
+  height: 7%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.24), transparent 72%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-tide {
+    display: none;
+  }
+  .sheet,
+  .sheet-card,
+  .cabinet,
+  .cabinet-card,
+  .win,
+  .win-card,
+  .home .logo-jars i {
+    animation: none !important;
+  }
+}
+/* A closing layer's copy (dom.ts fadeOut): shown over the screen behind it, never taking a tap. */
+.layer-ghost {
+  pointer-events: none;
+}
+.layer-ghost .sheet-card,
+.layer-ghost .cabinet-card,
+.layer-ghost .win-card {
+  animation: none;
+}
+.layer-ghost.sheet,
+.layer-ghost.cabinet,
+.layer-ghost.win {
+  animation: none;
+}
+
 /* ==== Sprint 12 S3: jar styles (design/gdd/jar-styles.md §3.1, §3.4, §4) ====
    One block, keyed by data-glass, data-cork and data-sand on a container (#board, #home or a
    .style-preview): `[data-x='id'] …`. A missing attribute or a default id (clear, cork, plain) matches
@@ -4421,4 +4560,34 @@ body[data-theme='harvestmoon']::before {
 .event-board:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
+}
+
+
+/* Sprint 18 S1 (D150): the "Your stats" sheet, label/value rows that wrap at large text. */
+.stats-list section + section {
+  margin-top: 12px;
+}
+.stats-list h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+.stats-list dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 0.9375rem;
+}
+.stats-list dt {
+  color: var(--ink-soft);
+  min-width: 0;
+}
+.stats-list dd {
+  margin: 0;
+  font-weight: 800;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.stats-sheet .primary {
+  margin-top: 8px;
 }

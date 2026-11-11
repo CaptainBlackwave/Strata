@@ -11,7 +11,7 @@
  *   the tab is hidden;
  * - particles stay within FX_BUDGET (60, the scene-fx cap).
  */
-import { FX_COUNT, FX_MS, coinFlightPlan, effectAllowed, winBloomPlan } from './fx-plan';
+import { FX_COUNT, FX_MS, type WinGlowPlan, coinFlightPlan, effectAllowed, pourGrainCount, winBloomPlan } from './fx-plan';
 import { sceneWinDisplayRuns } from './scene-fx';
 
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -112,6 +112,101 @@ export function burst(o: BurstOptions): void {
       ),
     ).addEventListener('finish', () => p.remove());
   }
+}
+
+// ---- Sprint 18: the pour's grains and pile, the cork's sparkle, the win's glow run (D149) ----
+
+/**
+ * The pour's stream as falling grains (F1): small grains of `color` leave the jar's mouth at
+ * (`x`, `top`) one after another over `within` ms and fall to the sand at `bottom`, with a little
+ * sideways jitter. Transform and opacity only, in the fx layer; nothing under reduced motion.
+ */
+export function pourGrains(x: number, top: number, bottom: number, color: string, units: number, within: number): void {
+  if (!allowed()) return;
+  const layer = fxLayer();
+  const n = pourGrainCount(units);
+  const fall = Math.max(8, bottom - top);
+  const each = Math.min(FX_MS.grainFall, 120 + fall * 0.9);
+  const gap = Math.max(0, (within - each) / Math.max(1, n - 1));
+  for (let i = 0; i < n; i++) {
+    const g = document.createElement('i');
+    g.className = 'pour-grain';
+    const size = rand(2.6, 4.2);
+    g.style.cssText = `left:${x + rand(-1.8, 1.8)}px;top:${top}px;width:${size}px;height:${size}px;background:${color}`;
+    layer.appendChild(g);
+    const drift = rand(-2.5, 2.5);
+    track(
+      g.animate(
+        [
+          { transform: 'translate(-50%, 0) scale(0.8)', opacity: 0 },
+          { transform: 'translate(-50%, 0) scale(1)', opacity: 1, offset: 0.12 },
+          { transform: `translate(calc(-50% + ${drift}px), ${fall}px) scale(0.9)`, opacity: 1, offset: 0.92 },
+          { transform: `translate(calc(-50% + ${drift}px), ${fall}px) scale(0.4)`, opacity: 0 },
+        ],
+        { duration: each, delay: i * gap, easing: 'cubic-bezier(.45,0,.9,.6)', fill: 'both' },
+      ),
+    ).addEventListener('finish', () => g.remove());
+  }
+}
+
+/**
+ * The soft pile (F1): a low mound of `color` across the glass `g` at the new sand surface `y`,
+ * that spreads and flattens into the level top over {@link FX_MS.pileSettle}.
+ */
+export function sandPile(g: DOMRect, y: number, color: string): void {
+  if (!allowed()) return;
+  const pile = document.createElement('i');
+  pile.className = 'sand-pile';
+  const w = g.width - 6;
+  pile.style.cssText = `left:${g.left + 3}px;top:${y - 7}px;width:${w}px;height:8px;background:${color}`;
+  fxLayer().appendChild(pile);
+  track(
+    pile.animate(
+      [
+        { transform: 'scaleX(0.45) scaleY(1)', opacity: 1 },
+        { transform: 'scaleX(0.85) scaleY(0.7)', opacity: 1, offset: 0.45 },
+        { transform: 'scaleX(1) scaleY(0.15)', opacity: 0 },
+      ],
+      { duration: FX_MS.pileSettle, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'forwards' },
+    ),
+  ).addEventListener('finish', () => pile.remove());
+}
+
+/** The cork's sparkle (F2): a few small light points where the cork lands on `jar`. */
+export function corkSparkle(jar: HTMLElement): void {
+  if (!allowed()) return;
+  const cork = jar.querySelector('.cork') ?? jar;
+  const r = cork.getBoundingClientRect();
+  burst({ x: r.left + r.width / 2, y: r.top + r.height / 2, colors: ['#fff6d8', GLOW_MOTE], count: FX_COUNT.corkSparkle, spread: 18, angle: 0, cone: 200, size: 3.5, duration: 420, className: 'spark' });
+}
+
+/**
+ * The glow run (F3): each planned jar glows in turn (a soft light that rises and eases back), in
+ * `jars`, the board's jar buttons. Returns a stop function that removes every glow at once.
+ */
+export function winGlowRun(jars: readonly HTMLElement[], plan: WinGlowPlan): () => void {
+  const anims: Animation[] = [];
+  for (const s of plan.steps) {
+    const el = jars[s.jar]?.querySelector('.glass') as HTMLElement | null;
+    if (!el) continue;
+    const glow = document.createElement('span');
+    glow.className = 'win-glow';
+    glow.setAttribute('aria-hidden', 'true');
+    el.append(glow);
+    const a = glow.animate(
+      [
+        { opacity: 0, transform: 'scale(0.92)' },
+        { opacity: 1, transform: 'scale(1)', offset: 0.45 },
+        { opacity: 0.55, transform: 'scale(1)' },
+      ],
+      { duration: FX_MS.winGlowEach, delay: s.at, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'both' },
+    );
+    anims.push(a);
+  }
+  return () => {
+    for (const a of anims) a.cancel();
+    for (const j of jars) j.querySelectorAll('.win-glow').forEach((g) => g.remove());
+  };
 }
 
 /**
