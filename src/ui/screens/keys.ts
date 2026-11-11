@@ -47,7 +47,7 @@ export function wireKeys(): void {
       if (e.key === 'Escape') closeStyles();
       return;
     }
-    if (top === $('intro') || top === $('whatsnew') || top === $('install') || top === $('daily-over')) {
+    if (top === $('intro') || top === $('whatsnew') || top === $('install') || top === $('daily-over') || top === $('friend')) {
       // Enter on a focused button activates that button natively.
       if (e.key === 'Escape' || (e.key === 'Enter' && !onButton)) closeLayer(top);
       return;

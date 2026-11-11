@@ -1,18 +1,42 @@
 /**
  * The launch address and the share link (sprint 11 O3, D78), DOM-free. A link carries one key
  * and nothing else: `?daily=YYYY-MM-DD` opens that daily, `?weekly=YYYY-Www` (parsed now, for the
- * weekly set of D77) a week, and the QA route `?level=N` a level (D3). Save data never goes in a URL.
+ * weekly set of D77) a week, `?challenge=N&pours=P` a friend's challenge on level N (sprint 14 H3,
+ * sharing §3.2), and the QA route `?level=N` a level (D3). Save data never goes in a URL.
  */
+import gameConfig from '../../config/game-config.json';
+
+/** The bounds of a challenge link (`sharing.challenge` in game-config.json). */
+export interface ChallengeLimits {
+  readonly maxPours: number;
+  readonly maxLevel: number;
+}
+
+/** The shipped limits. */
+export const CHALLENGE_LIMITS: ChallengeLimits = gameConfig.sharing.challenge;
 
 /** What a launch address asks for. Anything malformed is `none`, which opens Home as usual. */
 export type Launch =
   | { readonly kind: 'none' }
   | { readonly kind: 'level'; readonly level: number }
   | { readonly kind: 'daily'; readonly date: string }
-  | { readonly kind: 'weekly'; readonly week: string };
+  | { readonly kind: 'weekly'; readonly week: string }
+  | { readonly kind: 'challenge'; readonly level: number; readonly pours: number };
 
 /** The one key a share link carries. */
-export type ShareKey = { readonly daily: string } | { readonly weekly: string };
+export type ShareKey = { readonly daily: string } | { readonly weekly: string } | { readonly challenge: number; readonly pours: number };
+
+const WHOLE = /^[1-9]\d*$/;
+
+/** Whether `n` is a level a challenge may name: a whole number from 1 to `maxLevel`. */
+export function isChallengeLevel(n: unknown, limits: ChallengeLimits = CHALLENGE_LIMITS): n is number {
+  return Number.isInteger(n) && (n as number) >= 1 && (n as number) <= limits.maxLevel;
+}
+
+/** Whether `n` is a pour count a challenge may carry: a whole number from 1 to `maxPours`. */
+export function isChallengePours(n: unknown, limits: ChallengeLimits = CHALLENGE_LIMITS): n is number {
+  return Number.isInteger(n) && (n as number) >= 1 && (n as number) <= limits.maxPours;
+}
 
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const WEEK = /^(\d{4})-W(\d{2})$/;
@@ -43,12 +67,20 @@ export function isWeekKey(s: string): boolean {
 
 /**
  * Reads a launch address's query (`location.search`). `?level=N` wins, as the QA route always
- * did; then a valid `daily`, then a valid `weekly`. Example: `parseLaunch('?daily=2026-11-09')`.
+ * did; then a valid `challenge`, then `daily`, then `weekly`. A challenge's pours are clamped to
+ * 1 to `maxPours`; pours that are not a whole number open its level as a plain replay (§4).
+ * Example: `parseLaunch('?challenge=80&pours=34') // { kind: 'challenge', level: 80, pours: 34 }`.
  */
-export function parseLaunch(search: string): Launch {
+export function parseLaunch(search: string, limits: ChallengeLimits = CHALLENGE_LIMITS): Launch {
   const q = new URLSearchParams(search);
   const level = Number(q.get('level'));
   if (Number.isInteger(level) && level >= 1) return { kind: 'level', level };
+  const challenge = q.get('challenge') ?? '';
+  if (WHOLE.test(challenge) && isChallengeLevel(Number(challenge), limits)) {
+    const pours = q.get('pours') ?? '';
+    if (!/^\d+$/.test(pours)) return { kind: 'level', level: Number(challenge) };
+    return { kind: 'challenge', level: Number(challenge), pours: Math.min(limits.maxPours, Math.max(1, Number(pours))) };
+  }
   const daily = q.get('daily');
   if (daily !== null && isDateKey(daily)) return { kind: 'daily', date: daily };
   const weekly = q.get('weekly');
@@ -66,7 +98,11 @@ export function shareLink(href: string, key: ShareKey): string {
   url.search = '';
   url.hash = '';
   if ('daily' in key) url.searchParams.set('daily', key.daily);
-  else url.searchParams.set('weekly', key.weekly);
+  else if ('weekly' in key) url.searchParams.set('weekly', key.weekly);
+  else {
+    url.searchParams.set('challenge', String(key.challenge));
+    url.searchParams.set('pours', String(key.pours));
+  }
   return url.href;
 }
 

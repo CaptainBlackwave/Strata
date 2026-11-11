@@ -15,6 +15,7 @@ import { startLevel } from './board';
 import { showHome } from './home';
 import { audio, config, state } from '../state';
 import { mapHintOnOpen } from './onboarding';
+import { shareChallenge } from './friend';
 
 const mapEl = $('map');
 const scrollEl = $('map-scroll');
@@ -382,6 +383,7 @@ function openCard(s: Stone, opener: HTMLElement): void {
   );
   $('stone-specials').hidden = items.length === 0;
   replayBtn.hidden = s.state !== 'cleared';
+  $('btn-stone-challenge').hidden = s.state !== 'cleared' || s.best === undefined; // sharing §3.2
   openLayer(cardEl, s.state === 'cleared' ? replayBtn : $('btn-stone-close'), opener);
 }
 
@@ -434,6 +436,10 @@ export function wireMap(): void {
   $('btn-map-home').addEventListener('click', closeMap);
   $('btn-stone-close').addEventListener('click', () => closeLayer(cardEl));
   replayBtn.addEventListener('click', () => playFromMap(cardLevel, true));
+  $('btn-stone-challenge').addEventListener('click', () => {
+    const best = state.save.best[String(cardLevel)];
+    if (best !== undefined) shareChallenge(cardLevel, best, $('btn-stone-challenge'));
+  });
   scrollEl.addEventListener('scroll', scheduleRender, { passive: true });
   window.addEventListener('resize', () => {
     if (mapEl.hidden) return;

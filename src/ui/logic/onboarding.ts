@@ -4,7 +4,7 @@
  * read the browser and call these. 0.11.1 adds the first-run fixes (D81, D82): the Home hint on the
  * win card, a shared link kept through the tutorial, and the Scenes "New" mark.
  */
-import { type Launch, type ShareKey, isDateKey, isWeekKey } from './launch';
+import { type Launch, type ShareKey, isChallengeLevel, isChallengePours, isDateKey, isWeekKey } from './launch';
 
 /** The `onboarding` object in the save: one-time notices, each remembered once shown. */
 export interface Onboarding {
@@ -88,9 +88,10 @@ export function onboardingOf(v: unknown, returning: boolean): Onboarding {
 /** A saved share key, or null when it is missing or not a real date or week (no free text is kept). */
 function shareKeyOf(v: unknown): ShareKey | null {
   if (!v || typeof v !== 'object') return null;
-  const k = v as { daily?: unknown; weekly?: unknown };
+  const k = v as { daily?: unknown; weekly?: unknown; challenge?: unknown; pours?: unknown };
   if (typeof k.daily === 'string' && isDateKey(k.daily)) return { daily: k.daily };
   if (typeof k.weekly === 'string' && isWeekKey(k.weekly)) return { weekly: k.weekly };
+  if (isChallengeLevel(k.challenge) && isChallengePours(k.pours)) return { challenge: k.challenge, pours: k.pours };
   return null;
 }
 
@@ -181,6 +182,7 @@ export function keepShare(o: Onboarding, launch: Launch, tutorialDone: boolean):
   if (tutorialDone) return o;
   if (launch.kind === 'daily') return { ...o, pendingShare: { daily: launch.date } };
   if (launch.kind === 'weekly') return { ...o, pendingShare: { weekly: launch.week } };
+  if (launch.kind === 'challenge') return { ...o, pendingShare: { challenge: launch.level, pours: launch.pours } };
   return o;
 }
 

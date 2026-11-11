@@ -45,6 +45,8 @@ export interface UiState {
   challenge: boolean;
   /** The level was started as a replay from the map (D50): Continue goes back to the map. */
   replay: boolean;
+  /** A friend's challenge on the level being played (sharing §3.2): its level and pours, else null. */
+  versus: { readonly level: number; readonly pours: number } | null;
   selected: number | null;
   busy: boolean;
   pendingWin: boolean;
@@ -76,6 +78,7 @@ export const state: UiState = {
   session: undefined as unknown as GameSession,
   challenge: false,
   replay: false,
+  versus: null,
   selected: null,
   busy: false,
   pendingWin: false,

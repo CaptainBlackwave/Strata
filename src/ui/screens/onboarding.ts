@@ -12,6 +12,7 @@ import { config, state } from '../state';
 import { startDaily } from './board';
 import { showHome } from './home';
 import { openWeekly } from './sheets/weekly';
+import { openFriend } from './friend';
 
 /** How long Home settles before the card may open over it (ms): presentation only (D31). */
 const INSTALL_ARRIVE_MS = 700;
@@ -113,9 +114,12 @@ export function openShared(share: ShareKey): void {
       if (!layers.has(homeEl)) showHome(); // at boot Home is already open
       openDailyOver(share.daily);
     } else startDaily();
-  } else {
+  } else if ('weekly' in share) {
     if (!layers.has(homeEl)) showHome();
     openWeekly($('btn-weekly'));
+  } else {
+    if (!layers.has(homeEl)) showHome();
+    openFriend(share.challenge, share.pours);
   }
 }
 

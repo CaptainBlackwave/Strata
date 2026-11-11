@@ -48,7 +48,7 @@
         </button>
         </div>
       </header>
-      <div class="subhud"><span id="moves">0</span> <span id="moves-label" data-s="pours">pours</span></div>
+      <div class="subhud"><span id="moves">0</span> <span id="moves-label" data-s="pours">pours</span><span id="versus" class="versus" hidden><span id="versus-text" aria-hidden="true"></span><span id="versus-sr" class="sr-only"></span></span></div>
       <main id="board" data-s-label="boardLabel" class="board" aria-label="Sand jars"></main>
       <div id="coach" class="coach" hidden aria-live="polite"><span class="coach-ring" aria-hidden="true"></span><span id="coach-text" class="coach-text"></span></div>
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -186,6 +186,16 @@
           <div class="sheet-row install-actions">
             <button id="btn-daily-over-later" data-s="onboarding.notNow" class="secondary" type="button">Not now</button>
             <button id="btn-daily-over-play" data-s="onboarding.playToday" class="primary" type="button">Play today's</button>
+          </div>
+        </div>
+      </div>
+      <div id="friend" class="cabinet" hidden>
+        <div class="cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="friend-title" aria-describedby="friend-text">
+          <h2 id="friend-title" data-s="friend.title" class="whatsnew-title">A friend's challenge</h2>
+          <p id="friend-text" class="install-text"></p>
+          <div class="sheet-row install-actions">
+            <button id="btn-friend-later" data-s="friend.notNow" class="secondary" type="button">Not now</button>
+            <button id="btn-friend-play" data-s="friend.play" class="primary" type="button">Play</button>
           </div>
         </div>
       </div>
@@ -340,6 +350,7 @@
             <button id="btn-stone-close" data-s="close" class="secondary" type="button">Close</button>
             <button id="btn-stone-replay" data-s="map.replay" class="primary stone-replay" type="button">Replay</button>
           </div>
+          <button id="btn-stone-challenge" data-s="friend.challengeFriend" class="secondary share stone-challenge" type="button" hidden>Challenge a friend</button>
         </div>
       </div>
     </div>

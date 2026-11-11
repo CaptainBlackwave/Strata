@@ -121,6 +121,7 @@ export function startLevel(n: number, quiet = false, replay = false): void {
   state.mode = 'level';
   state.replay = replay;
   state.level = n;
+  if (state.versus && state.versus.level !== n) state.versus = null; // a challenge is for its own level only
   const token = ++startToken;
   const ready = prefetcher.get(n);
   if (ready) return showLevel(ready, quiet);

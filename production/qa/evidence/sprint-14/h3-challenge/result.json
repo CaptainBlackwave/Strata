@@ -1,0 +1,90 @@
+{
+ "beat": {
+  "card": true,
+  "text": "A friend cleared level 80 in 34 pours. Beat it?",
+  "play": "Play",
+  "addressAfter": "",
+  "level": "Level 80",
+  "target": {
+   "shown": true,
+   "text": "Beat 34",
+   "sr": "Your friend's score to beat: 34 pours"
+  },
+  "win": {
+   "note": "Replay: no coins · 43 pours: 9 more than your friend",
+   "share": "Send it back",
+   "reward": false
+  },
+  "sent": {
+   "text": "Can you beat my 43 pours on Strata level 80?\nhttp://localhost:5542/?challenge=80&pours=43",
+   "files": [
+    "image/png"
+   ]
+  },
+  "errors": []
+ },
+ "ahead": {
+  "text": "A friend is on level 80. You’re on level 12.",
+  "play": "Play level 12",
+  "level": "Level 12",
+  "target": false,
+  "winShare": "Challenge a friend",
+  "errors": []
+ },
+ "fresh": {
+  "cardAtBoot": false,
+  "note": "Your friend’s challenge is waiting.",
+  "offer": "See the challenge",
+  "after": "A friend is on level 80. You’re on level 1.",
+  "errors": []
+ },
+ "map": {
+  "button": true,
+  "label": "Challenge a friend",
+  "sent": {
+   "text": "Can you beat my 31 pours on Strata level 25?\nhttp://localhost:5542/?challenge=25&pours=31",
+   "files": [
+    "image/png"
+   ]
+  },
+  "errors": []
+ },
+ "hostile": {
+  "?challenge=abc&pours=3": {
+   "home": true,
+   "friendCard": false,
+   "level": "Level 12",
+   "errors": []
+  },
+  "?challenge=0&pours=3": {
+   "home": true,
+   "friendCard": false,
+   "level": "Level 12",
+   "errors": []
+  },
+  "?challenge=99999999&pours=3": {
+   "home": true,
+   "friendCard": false,
+   "level": "Level 12",
+   "errors": []
+  },
+  "?challenge=80&pours=x": {
+   "home": false,
+   "friendCard": false,
+   "level": "Level 12",
+   "errors": []
+  },
+  "?challenge=80&pours=-5": {
+   "home": false,
+   "friendCard": false,
+   "level": "Level 12",
+   "errors": []
+  },
+  "?challenge=%3Cscript%3E": {
+   "home": true,
+   "friendCard": false,
+   "level": "Level 12",
+   "errors": []
+  }
+ }
+}
