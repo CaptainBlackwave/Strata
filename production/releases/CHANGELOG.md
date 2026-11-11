@@ -26,6 +26,10 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.13.1 | `252cc05` (gentler curve, PR #25) |
 | v0.14.0 | `53b6c12` (sprint 14, sharing, PR #31) |
 
+## Unreleased
+**For players**
+- A new version reaches you straight away: opening the game always checks for the latest release, and a game left open updates itself the next time you are on Home (never in the middle of a board). Before, a phone could show the previous version for up to 10 minutes after an update.
+
 ## 0.14.1 (2026-11-11): an easier climb
 **For players**
 - Levels get harder much more slowly. Ten colours from level 70 now last until level 250; 11, 12, 13 and 14 colours come at 250, 340, 420 and 490 (before: 65, 95, 130 and 170).

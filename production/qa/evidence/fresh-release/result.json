@@ -1,0 +1,32 @@
+{
+ "reopen-old-worker": {
+  "before": "A",
+  "firstLoad": "A",
+  "loads": [
+   "A",
+   "B"
+  ],
+  "settled": "B"
+ },
+ "reopen-new-worker": {
+  "before": "A",
+  "firstLoad": "B",
+  "loads": [
+   "B",
+   "B"
+  ],
+  "settled": "B"
+ },
+ "openOnHome": {
+  "after": "B",
+  "onHome": true,
+  "errors": []
+ },
+ "midBoard": {
+  "moves": "1",
+  "stillA": true,
+  "movesKept": true,
+  "afterHome": "B",
+  "errors": []
+ }
+}

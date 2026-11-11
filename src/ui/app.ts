@@ -24,6 +24,7 @@ import { wireTransfer } from './screens/sheets/transfer';
 import { wireWeekly } from './screens/sheets/weekly';
 import { wireShare } from './screens/sheets/share';
 import { wireFriend } from './screens/friend';
+import { watchForUpdates } from './update';
 import { applyStyles, wireStyles } from './screens/sheets/styles';
 import { wireWin } from './screens/win';
 import { BOOSTER_NAMES, config, state } from './state';
@@ -110,9 +111,11 @@ function wireAll(): void {
 function registerServiceWorker(): void {
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     listenForOffline(navigator.serviceWorker);
+    let registered: (r: ServiceWorkerRegistration | undefined) => void = () => undefined;
+    watchForUpdates(navigator.serviceWorker, new Promise((resolve) => (registered = resolve))); // no stale releases
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {
-        /* offline support unavailable; the game still works online */
+      navigator.serviceWorker.register('sw.js').then(registered, () => {
+        registered(undefined); /* offline support unavailable; the game still works online */
       });
     });
   }
