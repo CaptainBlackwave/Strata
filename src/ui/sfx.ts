@@ -39,6 +39,10 @@ export interface SoundDetail {
   pitch?: number;
   /** Seconds to wait before the sound starts (0 to 2), e.g. a shell row after the win chime. */
   delay?: number;
+  /** Seal (sprint 18 F2): how many jars this board sealed before this one; the chime rises one step each. */
+  step?: number;
+  /** Win (sprint 18 F3): the music's key, so the final chord is in the scene's key. Default C major pentatonic. */
+  key?: { readonly root: number; readonly scale: readonly number[] };
 }
 
 /** A pitched voice: an oscillator with a quick attack and an exponential decay. Times in seconds. */
@@ -83,6 +87,49 @@ export const MASTER_GAIN = 0.7;
 
 /** C major pentatonic, two octaves from middle C: every chime is drawn from it, as the music is. */
 const PENTA = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
+
+/** The seal chime's scale: {@link PENTA} and five notes more, so the chime can keep rising (sprint 18 F2). */
+const CHIME = [...PENTA, 1046.5, 1174.66, 1318.51, 1567.98, 1760.0];
+
+/** The seal chime's first note on a fresh board: today's chime (notes 5, 7 and 9 of the scale). */
+export const SEAL_BASE = 5;
+/** The highest first note: the chime's top note (first + 4) is then the scale's top. */
+export const SEAL_TOP = CHIME.length - 5;
+
+/**
+ * The seal chime's three notes, as indices of its scale, for the `step`-th jar sealed on this board
+ * (0 for the first): one scale step higher per jar, up to the top of the scale, then it stays there.
+ * Example: `sealChimeNotes(0) // [5, 7, 9]`, `sealChimeNotes(1) // [6, 8, 10]`.
+ */
+export function sealChimeNotes(step: number | undefined): [number, number, number] {
+  const first = Math.min(SEAL_TOP, SEAL_BASE + clampInt(step, 0, 99, 0));
+  return [first, first + 2, first + 4];
+}
+
+/**
+ * The pour's shape for `units` moved (sprint 18 F1): its length in seconds and the hiss's start and
+ * end frequencies. More sand pours longer and lower. Example: `pourShape(1).dur < pourShape(4).dur`.
+ */
+export function pourShape(units: number | undefined): { dur: number; from: number; to: number } {
+  const u = clampInt(units, 1, 6, 1);
+  return { dur: 0.24 + 0.07 * u, from: 4700 - 250 * u, to: 1800 - 120 * u };
+}
+
+/**
+ * The land's shape for `units` that just landed (sprint 18 F1): a longer, weightier thump for more
+ * sand. Example: `landShape(1).dur < landShape(4).dur`.
+ */
+export function landShape(units: number | undefined): { dur: number; thump: number } {
+  const u = clampInt(units, 1, 6, 1);
+  return { dur: 0.09 + 0.02 * u, thump: 0.04 + 0.008 * u };
+}
+
+/** The frequency of degree `i` of a key (its scale, repeated by octaves above the root). */
+function keyNote(key: { readonly root: number; readonly scale: readonly number[] }, i: number): number {
+  const n = key.scale.length;
+  const root = Math.max(150, Math.min(420, key.root));
+  return root * 2 ** ((key.scale[i % n] + 12 * Math.floor(i / n)) / 12);
+}
 
 /** A note of {@link PENTA}, clamped to its range. */
 const note = (i: number): number => PENTA[Math.max(0, Math.min(PENTA.length - 1, Math.floor(i)))];
@@ -140,9 +187,9 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
     capDb: -12,
     voices: ({ units }) => {
       const u = clampInt(units, 1, 6, 1);
-      const dur = 0.3 + 0.05 * u;
+      const { dur, from, to } = pourShape(u); // sprint 18 F1: length and pitch follow the sand moved
       const out: Voice[] = [
-        noise('bandpass', 4200, 1500, 0, dur, 0.15, 0.8, dur * 0.25), // the hiss of the stream
+        noise('bandpass', from, to, 0, dur, 0.15, 0.8, dur * 0.25), // the hiss of the stream
         noise('lowpass', 900, 450, 0.03, dur * 0.9, 0.03 + 0.01 * u, 0.7, dur * 0.3), // body: more sand, more weight
       ];
       const grains = 4 + 3 * u; // the grains: more sand, more of them
@@ -154,26 +201,31 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
   },
   land: {
     capDb: -14,
-    voices: ({ pitch = 0 }) => {
+    voices: ({ pitch = 0, units }) => {
       const f = note(3 + clampInt(pitch, 0, 99, 0));
-      return [tone(f, 0, 0.12, 0.11), tone(f * 2, 0, 0.06, 0.025, 'triangle'), noise('lowpass', 500, 180, 0, 0.07, 0.06, 0.7, 0.003)];
+      const { dur, thump } = landShape(units); // sprint 18 F1: more sand lands with more weight
+      return [tone(f, 0, dur + 0.02, 0.11), tone(f * 2, 0, 0.06, 0.025, 'triangle'), noise('lowpass', 500, 180, 0, dur * 0.6, thump, 0.7, 0.003)];
     },
   },
   seal: {
     capDb: -8,
-    voices: () => [
+    voices: ({ step }) => [
       noise('highpass', 1400, 1400, 0, 0.035, 0.12, 0.7, 0.002), // the cork
       tone(560, 0, 0.08, 0.1, 'sine', { endFreq: 280 }),
-      ...[5, 7, 9].flatMap((n, i) => bell(note(n), 0.07 + i * 0.08, 0.09, 0.75)), // the warm chime (D68)
+      ...sealChimeNotes(step).flatMap((n, i) => bell(CHIME[n], 0.07 + i * 0.08, 0.09, 0.75)), // the warm chime (D68), a step higher per seal (sprint 18 F2)
     ],
   },
   win: {
     capDb: -6,
-    voices: () => [
-      ...[0, 2, 4].map((n) => tone(note(n), 0, 1.6, 0.035, 'sine', { attack: 0.35 })), // the bloom: a chord that swells in
-      ...[0, 2, 4, 5, 7, 9].flatMap((n, i) => bell(note(n), i * 0.1, 0.09, 0.6)),
-      tone(note(9) * 2, 0.66, 0.9, 0.035, 'sine', { attack: 0.02 }),
-    ],
+    voices: ({ key }) => {
+      // Sprint 18 F3: in the music's key when given (degree i of its scale), else C major pentatonic as before.
+      const at = (i: number) => (key ? keyNote(key, i) : note(i));
+      return [
+        ...[0, 2, 4].map((n) => tone(at(n), 0, 1.6, 0.035, 'sine', { attack: 0.35 })), // the bloom: a chord that swells in
+        ...[0, 2, 4, 5, 7, 9].flatMap((n, i) => bell(at(n), i * 0.1, 0.09, 0.6)),
+        tone(at(9) * 2, 0.66, 0.9, 0.035, 'sine', { attack: 0.02 }),
+      ];
+    },
   },
   coin: { capDb: -18, voices: () => coinVoices() },
   booster: {

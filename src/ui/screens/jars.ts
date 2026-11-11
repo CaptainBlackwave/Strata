@@ -1,6 +1,6 @@
 /** Jar rendering: building the jars for the board size, redrawing one, mechanic effects, selection and refusals. */
 import { type Board, type Jar, isSealed } from '../../core/board';
-import { burst, sealShimmer } from '../fx';
+import { burst, sealShimmer, corkSparkle } from '../fx';
 import { sceneSealBurst } from '../scene-fx';
 import { computeLayout } from '../layout';
 import { t } from '../strings';
@@ -269,7 +269,11 @@ export function nope(i: number): void {
   audio.play('nope');
 }
 
-export function sealFx(i: number, color: string): void {
+/**
+ * A jar just sealed: the cork drops in (CSS, with a bounce and, sprint 18 F2, a sparkle), the shimmer,
+ * and the chime, one scale step higher for each jar this board sealed before it (`step`, 0 for the first).
+ */
+export function sealFx(i: number, color: string, step = 0): void {
   const el = state.jarEls[i];
   el.classList.remove('just-sealed');
   void el.offsetWidth;
@@ -277,7 +281,8 @@ export function sealFx(i: number, color: string): void {
   window.setTimeout(() => {
     sealShimmer(el, color); // a soft shimmer up the glass and a few motes (D68)
     sceneSealBurst(el, color); // tier 3 scenes: a firework, a meteor or an aurora ripple
-    audio.play('seal');
+    corkSparkle(el); // F2: where the cork lands (nothing under reduced motion)
+    audio.play('seal', { step });
   }, reducedMotion() ? 0 : 180);
 }
 

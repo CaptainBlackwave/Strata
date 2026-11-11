@@ -1,6 +1,6 @@
 /** The pour animation, with its reduced-motion shortcut and its recovery path. */
 import { pourAmount } from '../../core/board';
-import { burst } from '../fx';
+import { burst, pourGrains, sandPile } from '../fx';
 import { reducedMotion, wait } from '../dom';
 import { makeTiltFill, renderSelectedState } from './jars';
 import { showWin } from './win';
@@ -18,6 +18,7 @@ export async function animatePour(from: number, to: number): Promise<void> {
     const n = pourAmount(state.session.board, from, to);
     state.session.pour(from, to);
     audio.play('pour', { units: n });
+    audio.play('land', { pitch: targetLen, units: n }); // the sound follows the sand moved, as with motion
     finishPour(from);
     return;
   }
@@ -56,6 +57,8 @@ export async function animatePour(from: number, to: number): Promise<void> {
   document.body.appendChild(stream);
   const moved = pourAmount(state.session.board, from, to);
   audio.play('pour', { units: moved });
+  // Sprint 18 F1: the stream is a thin trickle with grains falling down it, over the stream and flow.
+  pourGrains(mouthX, mouthY, surface, color, moved, ANIM.streamIn + ANIM.flow);
   await stream.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: ANIM.streamIn, easing: 'ease-in', fill: 'forwards' }).finished;
 
   const before = state.session.board.jars[from].units.length;
@@ -64,7 +67,8 @@ export async function animatePour(from: number, to: number): Promise<void> {
   // Drain the poured stripes from the tilted fill.
   tilt.stripes.slice(after, before).forEach((el) => el.animate([{ height: `${state.unitHeight}px` }, { height: '0px' }], { duration: ANIM.flow, fill: 'forwards' }));
   burst({ x: mouthX, y: surface - (before - after) * state.unitHeight * 0.5, colors: [color], count: 10, spread: 22, angle: 0, cone: 160, size: 4, duration: 420, gravity: 14 });
-  audio.play('land', { pitch: targetLen });
+  audio.play('land', { pitch: targetLen, units: before - after });
+  sandPile(g, surface - (before - after) * state.unitHeight, color); // F1: lands as a soft pile that levels out
   await wait(ANIM.flow);
 
   stream.style.transformOrigin = 'bottom';

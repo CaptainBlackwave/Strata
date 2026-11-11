@@ -227,6 +227,12 @@ export function beginSession(board: Board, isChallenge: boolean): void {
   updateHud();
 }
 
+/** How many jars on the board are sealed now (sprint 18 F2: the seal chime's step). */
+function sealedOnBoard(): number {
+  const b = state.session.board;
+  return b.jars.filter((j) => isSealed(j, b.capacity)).length;
+}
+
 export function onSessionEvent(e: SessionEvent): void {
   cancelAssists(); // every event is a board change: a Hint or Shuffle still thinking is stale (TD-13)
   // A pour, Undo, Restart or Shuffle redraws the jars: a flip still turning over describes the old board.
@@ -238,7 +244,7 @@ export function onSessionEvent(e: SessionEvent): void {
       updateJar(e.move.to, grownFrom(e.move.to, state.session.board.jars[e.move.to].units.length, e.moved, flipped));
       // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
-      if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex);
+      if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex, sealedOnBoard() - 1); // F2: the chime climbs per seal
       // The hourglass turns over once the pour around it is done (D96).
       for (const i of flipped) flipFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
       // A clam that just opened swings its shell open once the sand has landed (D96, §2.6).

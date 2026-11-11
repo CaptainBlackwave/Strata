@@ -132,8 +132,23 @@ export const MUSIC: Readonly<Record<string, SceneVariation>> = {
 /** Scenes that knowingly use the fallback (midday). Empty: every scene has its own variation. */
 export const FALLBACK_SCENES: readonly string[] = [];
 
-/** The variation for a scene id; unknown ids get midday's. */
+/**
+ * Variations for seasonal events (sprint 18 W1, D151), keyed by event id, used while the event runs
+ * in place of the scene's. Winter Tide: E4 major pentatonic, slower steps, a bright bell lead (a sine
+ * with an inharmonic partial) and a soft sparkle.
+ */
+export const EVENT_MUSIC: Readonly<Record<string, SceneVariation>> = {
+  wintertide: { root: 329.63, scale: MAJOR_PENT, stepMs: 840, lead: { type: 'sine', partial: 2.76, partialLevel: 0.34 }, vol: 0.0776, swell: 0.034, layer: 'sparkle', layerLevel: 0.0125 },
+};
+
+/** The music key for an event: `event:<id>` (see {@link musicFor}). */
+export function eventMusicKey(eventId: string): string {
+  return `event:${eventId}`;
+}
+
+/** The variation for a scene id, or `event:<id>` for an event's; unknown ids get midday's. */
 export function musicFor(sceneId: string): SceneVariation {
+  if (sceneId.startsWith('event:')) return EVENT_MUSIC[sceneId.slice(6)] ?? MUSIC.midday;
   return MUSIC[sceneId] ?? MUSIC.midday;
 }
 

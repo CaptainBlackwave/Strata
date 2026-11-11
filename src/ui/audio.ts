@@ -10,7 +10,7 @@
  * Example: `audio.play('pour', { units: 2 })` after `audio.unlock()` inside a tap handler.
  */
 import { HAPTICS, MASTER_GAIN, SOUNDS, type Haptic, type SoundDetail, type SoundEvent, type Voice } from './sfx';
-import { SceneMusic } from './music';
+import { SceneMusic, type SceneVariation, eventMusicKey, musicFor } from './music';
 
 export type { SoundDetail, SoundEvent } from './sfx';
 
@@ -83,6 +83,13 @@ export class GameAudio {
   private readonly random: () => number;
   private music: SceneMusic | null = null;
   private scene = 'midday';
+  /** A seasonal event whose music plays instead of the scene's while it runs (sprint 18 W1), or null. */
+  private event: string | null = null;
+
+  /** What the music plays: the running event's variation, else the scene's. */
+  private musicKey(): string {
+    return this.event ? eventMusicKey(this.event) : this.scene;
+  }
   private watchingVisibility = false;
 
   constructor(
@@ -223,7 +230,7 @@ export class GameAudio {
     if (this.music.playing) return;
     this.musicBus.gain.cancelScheduledValues(this.ctx.currentTime);
     this.musicBus.gain.setTargetAtTime(0.5, this.ctx.currentTime, 1.5);
-    this.music.start(this.scene);
+    this.music.start(this.musicKey());
   }
 
   private stopMusic(): void {
@@ -256,6 +263,21 @@ export class GameAudio {
   /** Follows the scene shown: the music crossfades to its variation (D65). Safe before unlock. */
   setScene(id: string): void {
     this.scene = id;
-    this.music?.setScene(id);
+    this.music?.setScene(this.musicKey());
+  }
+
+  /**
+   * Plays an event's music variation instead of the scene's while it runs (`null` when none), with
+   * the usual crossfade (sprint 18 W1, D151). The music switch and volume apply as always. Safe before unlock.
+   */
+  setEvent(id: string | null): void {
+    if (id === this.event) return;
+    this.event = id;
+    this.music?.setScene(this.musicKey());
+  }
+
+  /** The key the music is in now (root and scale), for the win's final chord (sprint 18 F3). */
+  musicVariation(): SceneVariation {
+    return musicFor(this.musicKey());
   }
 }

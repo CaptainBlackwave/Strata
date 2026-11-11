@@ -15,8 +15,8 @@ import { homeHintDue, takeShare } from '../logic/onboarding';
 import { openShared } from './onboarding';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
 import { type SlotItem } from '../../core/profile';
-import { celebrate, flyCoins, mapFx, winBloom } from '../fx';
-import { noteFirstClear } from '../fx-plan';
+import { celebrate, flyCoins, mapFx, winBloom, winGlowRun } from '../fx';
+import { noteFirstClear, winGlowPlan } from '../fx-plan';
 import { sceneWinDisplay } from '../scene-fx';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
@@ -34,6 +34,10 @@ import { ANIM, audio, config, state } from '../state';
 
 /** Seconds after the win chime that a shell row's sound starts, so the two don't blur (F1, D68). */
 const SHELL_SOUND_DELAY = 0.8;
+/** Seconds from now until the win chord sounds (sprint 18 F3: after the glow run); the card's later sounds wait for it. */
+let chordLead = 0;
+/** Milliseconds from the win until the card opens (the glow run, or ANIM.winDelay), for the coin count-up. */
+let cardDelay: number = ANIM.winDelay;
 /** Seconds after the win chime that a cosmetic unlock's sound starts, after any shell's. */
 const UNLOCK_SOUND_DELAY = 1.2;
 
@@ -47,14 +51,14 @@ export function renderShell(award: ShellAward): void {
     let text = t.newShell(award.shell.name);
     if (award.completedSet) text += `\n${t.setComplete(award.completedSet.name, award.setCoins)}`;
     $('win-shell-text').textContent = text;
-    audio.play('shell', { delay: SHELL_SOUND_DELAY });
+    audio.play('shell', { delay: chordLead + SHELL_SOUND_DELAY });
   }
   $('win-shell').hidden = false;
 }
 
 /** Win card rows for cosmetics unlocked by this win (§3.7), then one row for its badges (badges.md §3.6). */
 export function showUnlocks(items: SlotItem[], badges: readonly string[] = []): void {
-  if (items.length || badges.length) audio.play('unlock', { delay: UNLOCK_SOUND_DELAY }); // once, for both
+  if (items.length || badges.length) audio.play('unlock', { delay: chordLead + UNLOCK_SOUND_DELAY }); // once, for both
   const badgeEl = badgeRow(badges);
   $('win-unlocks').replaceChildren(
     ...items.map(({ slot, item }) => {
@@ -81,7 +85,7 @@ export function showUnlocks(items: SlotItem[], badges: readonly string[] = []): 
 export function showTrackAndGoals(card: WinCard): void {
   const lines = [...trackWinRows(card.track, trackNames()), ...goalWinRows(card.goals.paid, card.goals.bonus)];
   if (!lines.length) return;
-  if ($('win-unlocks').childElementCount === 0) audio.play('unlock', { delay: UNLOCK_SOUND_DELAY }); // once, as for unlocks
+  if ($('win-unlocks').childElementCount === 0) audio.play('unlock', { delay: chordLead + UNLOCK_SOUND_DELAY }); // once, as for unlocks
   $('win-unlocks').append(
     ...lines.map((line) => {
       const row = document.createElement('div');
@@ -149,7 +153,6 @@ export function openWin(): void {
   celebrate(colors);
   sceneWinDisplay(colors); // tier 3 scenes: fireworks, a meteor shower or an aurora wave by the win card
   hideToast(); // a leftover hint or refusal toast must not sit over the win card
-  audio.play('win');
   $('win-shell').hidden = true;
   $('win-shell').querySelector('.moment-share')?.remove(); // a set's Share from the last win
   $('btn-share').hidden = true;
@@ -210,7 +213,7 @@ export function renderRewards(card: WinCard): void {
   showTrackAndGoals(card);
   renderMoments(card);
   $('win-reward').hidden = !card.rewardShown;
-  if (card.rewardShown) countUp($('win-coins'), card.reward, reducedMotion() ? 0 : ANIM.winDelay); // counts on the open card
+  if (card.rewardShown) countUp($('win-coins'), card.reward, reducedMotion() ? 0 : cardDelay); // counts on the open card
   $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;
   // Goal coins with no reward row (a replay, a weekly board): the count-up won't update the HUD, so do it now.
   if (!card.rewardShown && (card.goals.paid.length > 0 || card.goals.bonus > 0)) updateHud();
@@ -325,7 +328,20 @@ export function winLevel(): void {
   else if (card.perfectEarned) mapFx.perfect = state.level;
 }
 
+/**
+ * The win: the card's contents are filled at once (and the save written), then the glow run plays
+ * over the board (sprint 18 F3: the sealed jars glow one by one, then a final chord in the music's key)
+ * and the card opens, within 1.2 s. A tap or key skips straight to the card. Reduced motion or a
+ * hidden tab skips the run: the chord plays and the card opens at once, as before.
+ */
 export function showWin(): void {
+  const board = state.session.board;
+  const sealed = board.jars.flatMap((j, i) => (isSealed(j, board.capacity) ? [i] : []));
+  const plan = winGlowPlan(sealed, reducedMotion() || document.hidden);
+  chordLead = plan.chordAt / 1000;
+  cardDelay = plan.steps.length ? plan.total : ANIM.winDelay;
+  const v = audio.musicVariation();
+  audio.play('win', { key: { root: v.root, scale: v.scale }, delay: chordLead });
   openWin();
   if (state.mode === 'tutorial') winTutorial();
   else if (state.mode === 'daily') winDaily();
@@ -341,10 +357,28 @@ export function showWin(): void {
     $('win-unlocks').childElementCount > 0 && 'win-unlocks',
   ].filter(Boolean);
   winEl.querySelector('.win-card')!.setAttribute('aria-describedby', described.join(' '));
-  window.setTimeout(() => {
+  const stopGlow = winGlowRun(state.jarEls, plan);
+  let opened = false;
+  const open = () => {
+    if (opened) return;
+    opened = true;
+    window.clearTimeout(timer);
+    window.removeEventListener('pointerdown', skip, true);
+    window.removeEventListener('keydown', skip, true);
+    stopGlow();
     openLayer(winEl, btnNext, null);
     winBloom(colorsOf()); // sprint 10 F5: a soft glow and drifting motes behind the card
-  }, reducedMotion() ? 0 : ANIM.winDelay);
+  };
+  const skip = (e: Event) => {
+    e.preventDefault();
+    e.stopPropagation(); // the skipping tap must not also press a jar or a tool
+    open();
+  };
+  const timer = window.setTimeout(open, reducedMotion() ? 0 : cardDelay);
+  if (!reducedMotion()) {
+    window.addEventListener('pointerdown', skip, true);
+    window.addEventListener('keydown', skip, true);
+  }
 }
 
 /**

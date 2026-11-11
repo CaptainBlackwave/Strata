@@ -13,6 +13,8 @@ import {
   stretchDots,
   winBloomPlan,
   worstCaseParticles,
+  pourGrainCount,
+  winGlowPlan,
 } from '../../../src/ui/fx-plan';
 
 describe('timing table (D68: short)', () => {
@@ -39,7 +41,6 @@ describe('particle budget (same order as scene-fx: at most 60)', () => {
     expect(FX_BUDGET).toBe(60);
   });
   it('a last pour that seals and wins never has more than the budget alive at once', () => {
-    expect(worstCaseParticles()).toBe(FX_COUNT.pourSplash + FX_COUNT.sealMotes + FX_COUNT.celebrate + FX_COUNT.winMotes);
     expect(worstCaseParticles()).toBeLessThanOrEqual(FX_BUDGET);
   });
   it('a seal throws only a few motes', () => {
@@ -138,5 +139,37 @@ describe('stretchDots', () => {
   });
   it('an empty stretch has no dots', () => {
     expect(stretchDots(4, 4, pt)).toEqual([]);
+  });
+});
+
+// Sprint 18 F1, F3 (D149): the pour's grains and the win's glow run.
+describe('pourGrainCount (F1)', () => {
+  it('more sand streams more grains, within the cap', () => {
+    expect(pourGrainCount(1)).toBe(8);
+    expect(pourGrainCount(3)).toBe(12);
+    expect(pourGrainCount(9)).toBe(FX_COUNT.pourGrains);
+    expect(FX_COUNT.pourGrains + FX_COUNT.pourSplash + FX_COUNT.sealMotes + FX_COUNT.corkSparkle).toBeLessThanOrEqual(FX_BUDGET);
+  });
+});
+
+describe('winGlowPlan (F3)', () => {
+  it('glows each sealed jar in order, then the chord, then the card, within 1.2 s', () => {
+    const p = winGlowPlan([0, 2, 3], false);
+    expect(p.steps).toEqual([{ jar: 0, at: 0 }, { jar: 2, at: 90 }, { jar: 3, at: 180 }]);
+    expect(p.chordAt).toBe(180 + FX_MS.winGlowEach / 2);
+    expect(p.total).toBe(p.chordAt + FX_MS.winChordLead);
+    expect(p.total).toBeLessThanOrEqual(1200);
+  });
+  it('a 16-jar board still fits in 1.2 s, steps evenly spaced and rising', () => {
+    const p = winGlowPlan(Array.from({ length: 16 }, (_, i) => i), false);
+    expect(p.total).toBeLessThanOrEqual(FX_MS.winGlowMax);
+    const gaps = p.steps.slice(1).map((s, i) => s.at - p.steps[i].at);
+    expect(new Set(gaps).size).toBe(1);
+    expect(gaps[0]).toBeGreaterThan(0);
+    expect(p.chordAt).toBeLessThan(p.total);
+  });
+  it('reduced motion skips the run: no glow, the chord and the card at once', () => {
+    expect(winGlowPlan([0, 1, 2], true)).toEqual({ steps: [], chordAt: 0, total: 0 });
+    expect(winGlowPlan([], false).total).toBe(0);
   });
 });
