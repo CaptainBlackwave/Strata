@@ -1,0 +1,49 @@
+{
+ "dailySheetOpen": true,
+ "nameStartsOff": true,
+ "dailyPicture": {
+  "width": 1080,
+  "height": 1350,
+  "alt": "Share card: Daily · 12 Nov. Solved in 29 pours. 1-day streak."
+ },
+ "dailyPictureNamed": {
+  "width": 1080,
+  "height": 1350,
+  "alt": "Share card: Daily · 12 Nov. Solved in 29 pours. 1-day streak. Saffron Gull 42."
+ },
+ "filesShare": {
+  "status": "Shared",
+  "sent": {
+   "text": "Strata Daily 2026-11-12 (medium)\nSolved in 29 pours · 1-day streak\nhttp://localhost:5541/?daily=2026-11-12",
+   "files": [
+    {
+     "name": "strata.png",
+     "type": "image/png",
+     "size": 200151
+    }
+   ]
+  }
+ },
+ "escapeCloses": true,
+ "focusBackOnShare": "btn-share",
+ "dailyErrors": [],
+ "weeklyShareShown": true,
+ "weeklyPicture": {
+  "width": 1080,
+  "height": 1350,
+  "alt": "Share card: Weekly set · W46. 31 · 40 · – · 52 · –. 3 of 5 cleared."
+ },
+ "clipboardShare": {
+  "status": "Result copied",
+  "copied": "Strata Weekly 2026-W46 (Lock and Key)\n3 of 5 boards: 31 · 40 · – · 52 · –\nhttp://localhost:5541/?weekly=2026-W46"
+ },
+ "weeklyErrors": [],
+ "textShare": {
+  "status": "Shared",
+  "sent": {
+   "text": "Strata Daily 2026-11-12 (medium)\nSolved in 29 pours · 1-day streak\nhttp://localhost:5541/?daily=2026-11-12",
+   "files": []
+  }
+ },
+ "smallErrors": []
+}

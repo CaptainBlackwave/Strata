@@ -2,6 +2,8 @@
 import { isSealed } from '../../core/board';
 import { sharePours, streakStep } from '../../core/daily';
 import { type ShareKey, shareLink } from '../logic/launch';
+import { type ShareNavigator, shareChannel } from '../logic/share-card';
+import { openShare } from './sheets/share';
 import { homeHintDue, takeShare } from '../logic/onboarding';
 import { openShared } from './onboarding';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
@@ -62,24 +64,38 @@ export function showUnlocks(items: SlotItem[], badges: readonly string[] = []): 
   );
 }
 
-export async function shareDaily(): Promise<void> {
-  const url = shareLink(location.href, { daily: state.dailyDate }); // opens this daily directly; no save data (O3)
-  const text = t.shareText(state.dailyDate, state.dailyName, sharePours(state.save.dailyShare, state.dailyDate, state.session.moves), state.save.daily.streak, url);
-  // The outcome shows inside the card, not as a toast under the overlay (UX-win-4).
-  return shareTo(text, $('share-status'));
+/** The board's sand colours as palette indices, most first, for the share picture. */
+export function boardColors(): number[] {
+  const count = new Map<number, number>();
+  for (const j of state.session.board.jars) for (const u of j.units) count.set(u, (count.get(u) ?? 0) + 1);
+  return [...count.keys()];
 }
 
-/** Shares `text` with the native sheet, else copies it, and says how it went in `status` (UX-win-4). */
-export async function shareTo(text: string, status: HTMLElement): Promise<void> {
+/** Opens the share preview for this daily (sharing §3.1); the link opens this daily directly, with no save data (O3). */
+export function shareDaily(): void {
+  const url = shareLink(location.href, { daily: state.dailyDate });
+  const pours = sharePours(state.save.dailyShare, state.dailyDate, state.session.moves);
+  const streak = state.save.daily.streak;
+  openShare({ text: t.shareText(state.dailyDate, state.dailyName, pours, streak, url), card: t.shareCard.daily(state.dailyDate, state.dailyName, pours, streak), colors: boardColors() }, $('btn-share'));
+}
+
+/**
+ * Shares `text` (with `file`, the picture, where the share sheet takes files), else the text
+ * alone, else copies it, and says how it went in `status` (sharing §3.1, UX-win-4).
+ */
+export async function shareTo(text: string, status: HTMLElement, file: File | null = null): Promise<void> {
   status.textContent = '';
-  if (navigator.share) {
-    try {
-      await navigator.share({ text });
-      status.textContent = t.shared;
-      return;
-    } catch (e) {
-      if ((e as DOMException).name === 'AbortError') return; // the player closed the share sheet
-      // any other failure: fall back to copying
+  const channel = shareChannel(navigator as unknown as ShareNavigator, file);
+  if (channel !== 'clipboard') {
+    for (const data of channel === 'files' && file ? [{ files: [file], text }, { text }] : [{ text }]) {
+      try {
+        await navigator.share(data);
+        status.textContent = t.shared;
+        return;
+      } catch (e) {
+        if ((e as DOMException).name === 'AbortError') return; // the player closed the share sheet
+        // any other failure: try the next way (text alone, then the clipboard)
+      }
     }
   }
   try {
@@ -279,5 +295,5 @@ export function wireWin(): void {
     closeLayer(winEl, false);
     if (share) openShared(share);
   });
-  $('btn-share').addEventListener('click', () => void (state.mode === 'weekly' ? shareWeekly($('share-status')) : shareDaily()));
+  $('btn-share').addEventListener('click', () => (state.mode === 'weekly' ? shareWeekly($('btn-share'), boardColors()) : shareDaily()));
 }

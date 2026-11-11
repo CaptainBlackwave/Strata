@@ -28,6 +28,7 @@ When a release merges, add its row here so a backfill can recreate it.
 ## Unreleased
 **For players**
 - A link to Strata pasted into a chat or a post now shows a proper preview: the game's name, one line about it and a picture (sprint 14 H1).
+- Sharing a daily or weekly result now sends a picture of it with the text, on phones whose share sheet takes pictures. A preview shows the picture first, with a Show my name switch that starts off. Elsewhere the text is shared or copied as before (sprint 14 H2).
 
 ## 0.13.1 (2026-11-11): a gentler climb
 **For players**

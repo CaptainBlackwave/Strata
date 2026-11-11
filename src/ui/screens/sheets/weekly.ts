@@ -8,7 +8,7 @@ import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { type FocusTarget } from '../../layers';
 import { startWeekly } from '../board';
-import { shareTo } from '../win';
+import { openShare } from './share';
 import { shareLink } from '../../logic/launch';
 import { audio, config, state } from '../../state';
 
@@ -90,10 +90,15 @@ export function openWeekly(opener: FocusTarget | null = document.activeElement a
   openLayer($('weekly'), items[Math.max(0, first)].querySelector('button'), opener);
 }
 
-/** Shares this set's pours (§3.9) with a link that opens the weekly set (D82), reporting the outcome in `status`. */
-export function shareWeekly(status: HTMLElement): Promise<void> {
+/**
+ * Opens the share preview for this set's pours (§3.9, sharing §3.1), with a link that opens the
+ * weekly set (D82). `colors` are the jars' sand on the card: the board just cleared, or none.
+ */
+export function shareWeekly(opener: HTMLElement, colors: readonly number[] = []): void {
   const week = state.mode === 'weekly' && state.weeklyWeek ? state.weeklyWeek : currentWeek();
-  return shareTo(t.weekly.shareText(week, weeklyThemeName(week), weeklyPours(state.save.weekly, week, config), shareLink(location.href, { weekly: week })), status);
+  const pours = weeklyPours(state.save.weekly, week, config);
+  const theme = weeklyThemeName(week);
+  openShare({ text: t.weekly.shareText(week, theme, pours, shareLink(location.href, { weekly: week })), card: t.shareCard.weekly(week, theme, pours), colors }, opener);
 }
 
 /** Wires the Home card, the chooser's Close and its Share. */
@@ -103,8 +108,5 @@ export function wireWeekly(): void {
     openWeekly($('btn-weekly'));
   });
   $('btn-close-weekly').addEventListener('click', () => closeLayer($('weekly')));
-  $('btn-weekly-share').addEventListener('click', () => {
-    const week = currentWeek();
-    void shareTo(t.weekly.shareText(week, weeklyThemeName(week), weeklyPours(state.save.weekly, week, config), shareLink(location.href, { weekly: week })), $('weekly-share-status'));
-  });
+  $('btn-weekly-share').addEventListener('click', () => shareWeekly($('btn-weekly-share')));
 }

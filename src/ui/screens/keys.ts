@@ -1,4 +1,5 @@
 /** The global keyboard handler. */
+import { closeShare } from './sheets/share';
 import { $, btnNext, closeLayer, homeEl, layers, settingsEl, winEl } from '../dom';
 import { hasCommandModifier, keyToAction } from '../logic/keymap';
 import { onJarTap, play, requestRestart, useBooster } from './board';
@@ -28,6 +29,10 @@ export function wireKeys(): void {
     if (top === $('edit-profile')) {
       if (e.key === 'Escape') closeEditProfile();
       else if (e.key === 'Enter' && e.target === $('name-input')) saveEditProfile();
+      return;
+    }
+    if (top === $('share-sheet')) {
+      if (e.key === 'Escape') closeShare();
       return;
     }
     if (top === $('profile') || top === $('transfer') || top === $('cabinet') || top === $('weekly')) {
