@@ -165,6 +165,18 @@ const MAX_LEVEL = 1_000_000;
 /** Longest save code `importSave` reads, in characters (256 KB). A real save is a few KB. */
 const MAX_CODE_LENGTH = 256 * 1024;
 
+/** Most coins a save may hold; more is clamped, so an edited save never shows "1e+300" (strata-6og). */
+const MAX_COINS = 999_999_999;
+
+/**
+ * The level to resume when a save's `level` is unusable (strata-6og): one past the furthest
+ * level in `best` or `perfect`, else 1. Example: best for 1-44 gives 45.
+ */
+function inferredLevel(best: Record<string, number>, perfect: readonly number[]): number {
+  const furthest = Math.max(0, ...Object.keys(best).map(Number), ...perfect);
+  return Math.min(MAX_LEVEL, furthest + 1);
+}
+
 /** A level number: an integer from 1 to {@link MAX_LEVEL}, else 1. */
 const levelOf = (v: unknown): number => (Number.isInteger(v) && (v as number) >= 1 && (v as number) <= MAX_LEVEL ? (v as number) : 1);
 
@@ -238,7 +250,9 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     if (isObj(prefs) && prefs.patterns === true) base.settings.patterns = true;
     return base;
   }
-  const level = levelOf(v2.level);
+  const rawBest = bestOf(v2.best);
+  const perfect = perfectOf(v2.perfect);
+  const level = levelOf(v2.level) === v2.level ? (v2.level as number) : inferredLevel(rawBest, perfect);
   const w = isObj(v2.wallet) ? v2.wallet : {};
   const b = isObj(w.boosters) ? w.boosters : {};
   const s = isObj(v2.settings) ? v2.settings : {};
@@ -249,14 +263,15 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const shells = strings(v2.shells);
   return {
     level,
-    best: bestOnCurrentBoards(bestOf(v2.best), Math.max(FIRST_BOARDS, nonNegInt(v2.boards, FIRST_BOARDS))),
-    perfect: perfectOf(v2.perfect),
+    best: bestOnCurrentBoards(rawBest, Math.max(FIRST_BOARDS, nonNegInt(v2.boards, FIRST_BOARDS))),
+    perfect,
     boards: LATEST_BOARDS,
     wallet: {
-      coins: nonNegInt(w.coins, base.wallet.coins),
+      coins: Math.min(MAX_COINS, nonNegInt(w.coins, base.wallet.coins)),
       boosters: Object.fromEntries(BOOSTERS.map((id) => [id, nonNegInt(b[id], base.wallet.boosters[id])])) as Record<BoosterId, number>,
     },
-    tutorialDone: v2.tutorialDone === true,
+    // A save without the flag (edited or damaged) skips the tutorial past level 1, as v1 does (strata-6og).
+    tutorialDone: typeof v2.tutorialDone === 'boolean' ? v2.tutorialDone : level > 1,
     settings: {
       sound: typeof s.sound === 'boolean' ? s.sound : DEFAULT_SETTINGS.sound,
       music: typeof s.music === 'boolean' ? s.music : DEFAULT_SETTINGS.music,
