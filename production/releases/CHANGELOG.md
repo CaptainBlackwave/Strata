@@ -23,6 +23,10 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.11.1 | `57cfc47` (first-run fixes, PR #13) |
 | v0.12.0 | `770639a` (sprint 12, PR #15) |
 
+## Unreleased
+**For players**
+- Music now pauses whenever you leave the game, also when it is open inside another app's browser, and starts again when you come back (found in the phone check).
+
 ## 0.13.0 (2026-11-11): sprint 13, three new jars and the late economy
 **For players**
 - The hourglass jar, from level 101: every third pour anywhere on the board flips its sand upside down. The number on it counts the pours left, and Undo turns it back.
