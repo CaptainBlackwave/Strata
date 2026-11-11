@@ -79,6 +79,8 @@ export type HintResult = { readonly move: Move } | { readonly reason: 'won' | 'u
 export class GameSession {
   private readonly initial: Board;
   private history: Board[] = [];
+  /** For each history entry, whether the step it undoes was a pour (a shuffle is not; strata-gbw.1). */
+  private counted: boolean[] = [];
   private current: Board;
   private extraLeft: number;
   private moveCount = 0;
@@ -164,6 +166,7 @@ export class GameSession {
     if (this.status === 'won' || !canPour(this.current, from, to)) return false;
     const result = pour(this.current, from, to);
     this.history.push(this.current);
+    this.counted.push(true);
     this.current = result.board;
     this.moveCount++;
     const sealed = isSealed(result.board.jars[to], result.board.capacity);
@@ -175,15 +178,18 @@ export class GameSession {
   }
 
   /**
-   * Takes back the last pour. Free and unlimited (decision D-a), and it never counts
-   * against Perfect (design/gdd/session-boosters.md, M2).
+   * Takes back the last pour or shuffle. Free and unlimited (decision D-a), and it never counts
+   * against Perfect (design/gdd/session-boosters.md, M2). Only a pour taken back lowers the
+   * pour count (strata-gbw.1), and a board it lands on that is stuck says so again (strata-gbw.2).
    */
   undo(): boolean {
     const prev = this.history.pop();
     if (!prev) return false;
+    const wasPour = this.counted.pop() ?? true;
     this.current = prev;
-    this.moveCount = Math.max(0, this.moveCount - 1);
+    if (wasPour) this.moveCount = Math.max(0, this.moveCount - 1);
     this.emit({ type: 'undo' });
+    this.emitStatus();
     return true;
   }
 
@@ -193,6 +199,7 @@ export class GameSession {
     for (let i = 0; i < this.extrasAdded; i++) board = addEmptyJar(board);
     this.current = board;
     this.history = [];
+    this.counted = [];
     this.moveCount = 0;
     this.emit({ type: 'restart' });
   }
@@ -238,6 +245,7 @@ export class GameSession {
   applyShuffle(next: Board): boolean {
     if (this.status === 'won') return false;
     this.history.push(this.current);
+    this.counted.push(false);
     this.current = next;
     this.plan = null;
     this.assistCount++;
