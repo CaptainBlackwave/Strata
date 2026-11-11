@@ -3,6 +3,7 @@ import { pourAmount } from '../../core/board';
 import { burst, pourGrains, sandPile } from '../fx';
 import { reducedMotion, wait } from '../dom';
 import { makeTiltFill, renderSelectedState } from './jars';
+import { lowerLip } from '../logic/pour-geometry';
 import { showWin } from './win';
 import { ANIM, audio, config, state } from '../state';
 
@@ -33,6 +34,11 @@ export async function animatePour(from: number, to: number): Promise<void> {
   const dx = mouthX - side * r * Math.sin(rad) - (s.left + s.width / 2);
   const dy = mouthY + r * Math.cos(rad) - (s.top + s.height / 2);
   const lifted = getComputedStyle(src).transform;
+  // The jar's box at rest (without the selection lift), so the lip can be found after the move.
+  const liftY = lifted === 'none' ? 0 : new DOMMatrixReadOnly(lifted).m42;
+  const srcGlass = (src.querySelector('.glass') as HTMLElement).getBoundingClientRect();
+  const rest = { left: s.left, top: s.top - liftY, width: s.width, height: s.height };
+  const restGlass = { left: srcGlass.left, top: srcGlass.top - liftY, width: srcGlass.width, height: srcGlass.height };
   src.classList.add('pouring');
   const tilt = makeTiltFill(src, from);
   const ease = 'cubic-bezier(.3,.7,.4,1)';
@@ -48,25 +54,29 @@ export async function animatePour(from: number, to: number): Promise<void> {
   const glass = dst.querySelector('.glass') as HTMLElement;
   const g = glass.getBoundingClientRect();
   const surface = g.bottom - 4 - targetLen * state.unitHeight;
+  // The sand leaves from the jar's lower lip (bug 2026-11-11), kept over the target's opening.
+  const lip = lowerLip(rest, restGlass, side * ANIM.tilt, dx, dy);
+  const fallX = Math.min(g.right - 5, Math.max(g.left + 5, lip.x));
+  const fallY = Math.min(lip.y, surface - 8);
   const stream = document.createElement('div');
   stream.className = 'stream';
-  stream.style.left = `${mouthX - 3}px`;
-  stream.style.top = `${mouthY}px`;
-  stream.style.height = `${Math.max(8, surface - mouthY)}px`;
+  stream.style.left = `${fallX - 3}px`;
+  stream.style.top = `${fallY}px`;
+  stream.style.height = `${Math.max(8, surface - fallY)}px`;
   stream.style.setProperty('--c', color);
   document.body.appendChild(stream);
   const moved = pourAmount(state.session.board, from, to);
+  const before = state.session.board.jars[from].units.length;
   audio.play('pour', { units: moved });
+  // The poured layers drain from the tilted jar while the sand falls, not after it lands (bug 2026-11-11).
+  tilt.stripes.slice(before - moved, before).forEach((el) => el.animate([{ height: `${state.unitHeight}px` }, { height: '0px' }], { duration: ANIM.streamIn + ANIM.flow, easing: 'ease-in', fill: 'forwards' }));
   // Sprint 18 F1: the stream is a thin trickle with grains falling down it, over the stream and flow.
-  pourGrains(mouthX, mouthY, surface, color, moved, ANIM.streamIn + ANIM.flow);
+  pourGrains(fallX, fallY, surface, color, moved, ANIM.streamIn + ANIM.flow);
   await stream.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: ANIM.streamIn, easing: 'ease-in', fill: 'forwards' }).finished;
 
-  const before = state.session.board.jars[from].units.length;
   state.session.pour(from, to);
   const after = state.session.board.jars[from].units.length;
-  // Drain the poured stripes from the tilted fill.
-  tilt.stripes.slice(after, before).forEach((el) => el.animate([{ height: `${state.unitHeight}px` }, { height: '0px' }], { duration: ANIM.flow, fill: 'forwards' }));
-  burst({ x: mouthX, y: surface - (before - after) * state.unitHeight * 0.5, colors: [color], count: 10, spread: 22, angle: 0, cone: 160, size: 4, duration: 420, gravity: 14 });
+  burst({ x: fallX, y: surface - (before - after) * state.unitHeight * 0.5, colors: [color], count: 10, spread: 22, angle: 0, cone: 160, size: 4, duration: 420, gravity: 14 });
   audio.play('land', { pitch: targetLen, units: before - after });
   sandPile(g, surface - (before - after) * state.unitHeight, color); // F1: lands as a soft pile that levels out
   await wait(ANIM.flow);

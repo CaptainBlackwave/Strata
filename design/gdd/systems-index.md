@@ -214,3 +214,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D150 | Player feedback | **A local "Your stats" sheet players copy and send**: progress, today, boosters and coins, version and device; nothing is sent automatically | feel-audio-ui | built |
 | D151 | Winter touches | **Snowfall and a winter music variation** while Winter Tide runs | events, feel-audio-ui | built |
 | D152 | Release | **One release, 0.17.0, before 1 December** | release | built |
+| D153 | Studio-quality look | **Rich 2D on the GPU**: lit glass and real-looking sand, still flat-on and readable; menus stay HTML (owner brainstorm 2026-11-11) | feel-audio-ui | proposed |
+| D154 | The pour | **A real falling-sand simulation is a must**: grains slide, pile and stream over the lip; the puzzle rules stay discrete and the simulation only plays them out | feel-audio-ui | proposed |
+| D155 | Runtime libraries | **Allowed for the board renderer** (e.g. PixiJS), about 200-250 KB gzipped in total | feel-audio-ui | proposed |
+| D156 | How to start | **Prototype first** in `prototypes/`: today's board vs Pixi glass+sand vs Pixi + sand sim, measured on the owner's phone, then decide | feel-audio-ui | proposed |
