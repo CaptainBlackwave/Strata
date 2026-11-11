@@ -60,3 +60,19 @@ describe('importSave size cap (TD-6)', () => {
     expect(imported.best).toEqual({ '2': 2 });
   });
 });
+
+describe('save codes and saves that are not objects (strata-9hb)', () => {
+  const code = (v: unknown) => 'STRATA1:' + btoa(JSON.stringify(v));
+  it('a code holding a list, a number, a string or null is not a Strata save code', () => {
+    for (const v of [[], [1, 2], 7, 'x', null]) expect(importSave(code(v), econ), JSON.stringify(v)).toBeNull();
+  });
+  it('a real code still restores', () => {
+    expect(importSave(exportSave({ ...freshSave(econ), level: 33 }), econ)?.level).toBe(33);
+  });
+  it('a list where a save section should be is ignored, field by field', () => {
+    const save = load({ wallet: [5, 6], settings: [true], themes: ['midday'], level: 12 });
+    expect(save.level).toBe(12);
+    expect(save.wallet.coins).toBe(freshSave(econ).wallet.coins);
+    expect(save.settings).toEqual(freshSave(econ).settings);
+  });
+});

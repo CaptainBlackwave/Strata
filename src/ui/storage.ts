@@ -148,7 +148,8 @@ function read(store: KeyValueStore | null, key: string): unknown {
   }
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object';
+/** A plain object: not null and not a list (a list is never a valid save or save section, strata-9hb). */
+const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const nonNegInt = (v: unknown, fallback: number) => (Number.isInteger(v) && (v as number) >= 0 ? (v as number) : fallback);
 
 /**
@@ -170,7 +171,7 @@ const levelOf = (v: unknown): number => (Number.isInteger(v) && (v as number) >=
 /** The usable part of a `best` map: keys that are positive level numbers, values non-negative integers. */
 function bestOf(v: unknown): Record<string, number> {
   const out: Record<string, number> = {};
-  if (!isObj(v) || Array.isArray(v)) return out;
+  if (!isObj(v)) return out;
   for (const [k, n] of Object.entries(v)) {
     if (/^[1-9]\d*$/.test(k) && Number.isInteger(n) && (n as number) >= 0) out[k] = n as number;
   }
