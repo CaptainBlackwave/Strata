@@ -23,6 +23,7 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.11.1 | `57cfc47` (first-run fixes, PR #13) |
 | v0.12.0 | `770639a` (sprint 12, PR #15) |
 | v0.13.0 | `ebf60b7` (sprint 13, PR #23) |
+| v0.13.1 | `252cc05` (gentler curve, PR #25) |
 
 ## 0.13.1 (2026-11-11): a gentler climb
 **For players**
