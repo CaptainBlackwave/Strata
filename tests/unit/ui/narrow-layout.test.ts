@@ -34,7 +34,21 @@ describe('Jar styles sheet (strata-gbw.5)', () => {
   it('puts space between the action button and Close', () => {
     expect(rule('.scene-buy + .secondary')).toMatch(/margin-top:\s*1[0-9]px/);
   });
-  it('a disabled buy button looks disabled', () => {
-    expect(rule('.scene-buy:disabled')).toMatch(/opacity/);
+  // 0.15.1 strata-r20: no longer faded with opacity (unreadable); a muted surface with full ink, a lock and no shadow.
+  it('a disabled buy button reads as locked but stays readable', () => {
+    const r = rule('.scene-buy:disabled');
+    expect(r).not.toMatch(/opacity/);
+    expect(r).toMatch(/color:\s*var\(--ink\)/);
+    expect(r).toMatch(/background:\s*var\(--surface-2\)/);
+    expect(r).toMatch(/box-shadow:\s*none/);
+    expect(r).toMatch(/cursor:\s*not-allowed/);
+    expect(rule('.scene-buy:disabled::before')).toMatch(/mask:/); // the lock icon
+  });
+});
+
+describe('sheet Close (strata-r20)', () => {
+  it('the Scenes and Jar styles Close spans the sheet', () => {
+    expect(rule('.sheet-close')).toMatch(/width:\s*100%/);
+    expect(rule('.sheet-close')).toMatch(/display:\s*block/);
   });
 });

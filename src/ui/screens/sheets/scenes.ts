@@ -1,5 +1,5 @@
 /** The Scenes sheet: preview, buy and use (sprint 4). */
-import { buyTheme, isOwned, themeById } from '../../../core/themes';
+import { type Theme, buyTheme, isOwned, themeById } from '../../../core/themes';
 import { type FocusTarget } from '../../layers';
 import { writeSave } from '../../storage';
 import { t } from '../../strings';
@@ -11,6 +11,17 @@ import { applyTheme, currentTheme } from '../../theme';
 import { awardBadgesNow } from './badges';
 
 let previewing: string | null = null;
+
+/** A scene's little picture: its sky, sea and three jars (the Scenes cards and the streak track sheet). */
+export function sceneSwatchEl(theme: Theme): HTMLElement {
+  const k = theme.tokens;
+  const el = document.createElement('span');
+  el.className = 'scene-swatch';
+  el.setAttribute('style', `--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})`);
+  el.setAttribute('data-scene', theme.id);
+  el.innerHTML = '<i></i><i></i><i></i>';
+  return el;
+}
 
 export function openScenes(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
   previewing = currentTheme();
@@ -31,9 +42,8 @@ export function renderScenes(): void {
       card.className = 'scene-card';
       card.dataset.id = theme.id;
       card.setAttribute('aria-pressed', String(previewing === theme.id));
-      const k = theme.tokens;
-      card.innerHTML = `<span class="scene-swatch" style="--sw-edge:${k.glassEdge};background:radial-gradient(120% 50% at 50% 115%, ${k.sea} 0 40%, transparent 41%),radial-gradient(80% 70% at 80% 0, ${k.sky} 0 35%, transparent 60%),linear-gradient(${k.bgTop}, ${k.bgBottom})"><i></i><i></i><i></i></span><span class="scene-name"></span><span class="scene-status"></span>`;
-      card.querySelector('.scene-swatch')!.setAttribute('data-scene', theme.id);
+      card.innerHTML = '<span class="scene-name"></span><span class="scene-status"></span>';
+      card.prepend(sceneSwatchEl(theme));
       card.querySelector('.scene-name')!.textContent = theme.name;
       const badges = [seasonBadge(theme, state.clock, { southern: state.save.settings.southern }) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
       if (badges.length) {

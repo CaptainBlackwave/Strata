@@ -262,6 +262,9 @@ describe('readability (WCAG contrast) in every scene', () => {
         expect(m!.slice(1).every((n) => Number(n) <= 255)).toBe(true);
       }
     });
+    it(`${theme.id}: a locked or unaffordable buy button (ink on surface-2, 0.15.1 strata-r20) reaches 4.5:1`, () => {
+      expect(contrastRatio(k.ink, k.surface2)).toBeGreaterThanOrEqual(4.5);
+    });
     it(`${theme.id}: the focus ring reaches 3:1 on every surface it sits on`, () => {
       for (const bg of [k.card, k.surface2, k.bgTop, k.bgBottom]) expect(contrastRatio(k.focus!, bg)).toBeGreaterThanOrEqual(3);
     });

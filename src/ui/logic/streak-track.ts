@@ -55,6 +55,33 @@ export function nextRewardLine(claimed: readonly number[], streak: number, track
   return t.track.next(trackRewardName(next.step.reward, names), next.daysLeft);
 }
 
+/** One row of the streak track sheet. */
+export interface TrackSheetRow {
+  readonly step: TrackStep;
+  /** The reward in words, from {@link trackRewardName}. */
+  readonly name: string;
+  readonly state: 'collected' | 'next' | 'later';
+  /** "Day 3 · Collected", "Day 14 · Next · 4 days" or "Day 60". */
+  readonly status: string;
+}
+
+/**
+ * The track sheet's rows, in day order: each day collected (in `claimed`), the next one to aim for
+ * (with the days left, from the live streak) or a later day.
+ * Example: `trackSheetRows(save.track, streakStatus(save.daily, today).current, track, names)`.
+ */
+export function trackSheetRows(claimed: readonly number[], streak: number, track: readonly TrackStep[], names: TrackNames): TrackSheetRow[] {
+  const next = nextTrackStep(claimed, streak, track);
+  return [...track]
+    .sort((a, b) => a.day - b.day)
+    .map((step) => {
+      const name = trackRewardName(step.reward, names);
+      if (claimed.includes(step.day)) return { step, name, state: 'collected', status: t.track.collected(step.day) };
+      if (next && next.step.day === step.day) return { step, name, state: 'next', status: t.track.nextIn(step.day, next.daysLeft) };
+      return { step, name, state: 'later', status: t.track.later(step.day) };
+    });
+}
+
 /**
  * The win card's rows for the track days a solve claimed: "Day 30 streak reward: Sea Lantern glass".
  * Frames and plates are left out: they already show as unlock rows (`card.unlocks`).

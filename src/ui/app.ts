@@ -22,6 +22,7 @@ import { wireScenes } from './screens/sheets/scenes';
 import { wireSettings } from './screens/sheets/settings';
 import { wireTransfer } from './screens/sheets/transfer';
 import { wireWeekly } from './screens/sheets/weekly';
+import { wireTrack } from './screens/sheets/track';
 import { wireShare } from './screens/sheets/share';
 import { wireFriend } from './screens/friend';
 import { watchForUpdates } from './update';
@@ -93,6 +94,7 @@ function wireAll(): void {
   wireScenes();
   wireCabinet();
   wireWeekly();
+  wireTrack();
   wireShare();
   wireFriend();
   wireStyles();

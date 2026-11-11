@@ -139,7 +139,7 @@
           <button id="btn-scene-buy" class="primary scene-buy" type="button" hidden>Buy</button>
           <label class="toggle"><span class="toggle-text"><span id="scenes-auto-label" data-s="matchClock">Match my clock</span><small id="scenes-auto-help" data-s="matchClockOff" class="toggle-help" aria-hidden="true"></small></span><input type="checkbox" id="set-auto" aria-describedby="scenes-auto-help" /></label>
           <p id="scenes-auto-note" class="cabinet-next"></p>
-          <button id="btn-close-scenes" data-s="close" class="secondary" type="button">Close</button>
+          <button id="btn-close-scenes" data-s="close" class="secondary sheet-close" type="button">Close</button>
         </div>
       </div>
       <div id="styles" class="sheet" hidden>
@@ -150,7 +150,7 @@
           <div id="styles-slots" class="styles-slots"></div>
           <p id="styles-previewing" class="scene-previewing" aria-live="polite"></p>
           <button id="btn-style-action" class="primary scene-buy" type="button" hidden>Wear</button>
-          <button id="btn-close-styles" data-s="close" class="secondary" type="button">Close</button>
+          <button id="btn-close-styles" data-s="close" class="secondary sheet-close" type="button">Close</button>
         </div>
       </div>
       <div id="intro" class="cabinet" hidden>
@@ -213,6 +213,15 @@
           <ol id="weekly-boards" class="weekly-boards"></ol>
           <button id="btn-weekly-share" data-s="share" class="secondary share" type="button" hidden>Share</button>
           <p id="weekly-share-status" class="share-status" role="status"></p>
+        </div>
+      </div>
+      <div id="track" class="cabinet" hidden>
+        <div class="cabinet-card track-sheet" role="dialog" aria-modal="true" aria-labelledby="track-title" aria-describedby="track-streak track-keep">
+          <div class="cabinet-head"><h2 id="track-title" data-s="track.title">Streak rewards</h2></div>
+          <p id="track-streak" class="cabinet-next"></p>
+          <ol id="track-list" class="track-list"></ol>
+          <p id="track-keep" data-s="track.keep" class="track-keep">Rewards are yours to keep, even if a streak ends.</p>
+          <button id="btn-close-track" data-s="close" class="secondary track-close" type="button">Close</button>
         </div>
       </div>
       <div id="share-sheet" class="cabinet" hidden>
@@ -315,8 +324,9 @@
           <button id="btn-play" class="primary play" type="button">Play</button>
           <button id="btn-daily" class="daily-card" type="button">
             <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
-            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span><span id="daily-next" class="daily-next" hidden></span></span>
+            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
           </button>
+          <button id="btn-track" class="track-link" type="button" hidden><span id="track-link-text"></span><span class="track-link-arrow" aria-hidden="true">›</span></button>
           <button id="btn-weekly" class="daily-card weekly-card" type="button" hidden>
             <span id="weekly-jars" class="weekly-jars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
             <span class="daily-text"><strong id="weekly-title" data-s="weekly.title">Weekly set</strong><span id="weekly-sub"></span><span id="weekly-progress" class="daily-streak"></span></span>
