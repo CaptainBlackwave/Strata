@@ -803,10 +803,11 @@
     "solverNodeBudget": 40000
   },
   "sharing": {
-    "$comment": "Sharing (design/gdd/sharing.md, sprint 14). card: the share picture's size in pixels (portrait, 4:5); jars: how many small sealed jars it shows. challenge: the bounds of a ?challenge=N&pours=P link (sharing §4); maxLevel matches the save's level cap.",
+    "$comment": "Sharing (design/gdd/sharing.md, sprint 14). card: the share picture's size in pixels (portrait, 4:5); jars: how many small sealed jars it shows. challenge: the bounds of a ?challenge=N&pours=P link (sharing §4); maxLevel matches the save's level cap. streakMilestones: the daily streak days whose win card offers a Share (sharing §3.4).",
     "card": { "width": 1080, "height": 1350 },
     "jars": 3,
-    "challenge": { "maxPours": 999, "maxLevel": 1000000 }
+    "challenge": { "maxPours": 999, "maxLevel": 1000000 },
+    "streakMilestones": [7, 30, 60, 100]
   },
   "palette": [
     { "id": "terracotta", "hex": "#c8553d" },

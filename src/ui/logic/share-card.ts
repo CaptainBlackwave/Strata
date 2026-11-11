@@ -12,6 +12,7 @@ export interface SharingConfig {
     readonly card: { readonly width: number; readonly height: number };
     readonly jars: number;
     readonly challenge: { readonly maxPours: number; readonly maxLevel: number };
+    readonly streakMilestones: readonly number[];
   };
 }
 

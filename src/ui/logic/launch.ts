@@ -107,6 +107,17 @@ export function shareLink(href: string, key: ShareKey): string {
 }
 
 /**
+ * The plain site address for a share with no key (a milestone, sharing §3.4): origin and path only.
+ * Example: `siteLink('https://x.github.io/Strata/?challenge=3&pours=4#map') // 'https://x.github.io/Strata/'`.
+ */
+export function siteLink(href: string): string {
+  const url = new URL(href);
+  url.search = '';
+  url.hash = '';
+  return url.href;
+}
+
+/**
  * Which daily a `?daily=` link opens: always today's (the daily follows UTC), and `over` when the
  * link named an earlier day, so a gentle note says so first. A later day (a clock running ahead)
  * opens today's without a note. Example: `dailyLaunch('2026-11-02', '2026-11-09').over // true`.

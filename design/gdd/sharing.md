@@ -1,5 +1,5 @@
 ---
-status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview (H1) and §3.1 share card (H2) live, §3.2 challenge links built (H3), §3.4 not built
+status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview (H1) and §3.1 share card (H2) live, §3.2 challenge links (H3, in review) and §3.4 share moments (H4) built
 owner: game-designer / ux-designer
 decisions: D114, D116–D118, D120–D124
 verified-by: owner interview 2026-11-11
@@ -135,6 +135,7 @@ No questions are open.
 |------|--------|---------|
 | 2026-11-11 | Claude (sprint 14 draft) | First draft from the owner interview (D114, D116–D118) |
 | 2026-11-11 | Claude (sprint 14 H0) | Signed off: the five open questions answered (D120–D124) |
+| 2026-11-11 | Claude (sprint 14 H4) | §3.4 built: a quiet Share on the win card's set row, a new streak-milestone row (daily only, `sharing.streakMilestones`) and the badge row (first new badge). Links are the plain site address. The set card and badge card named in the design are the win card's rows: no separate cards exist |
 | 2026-11-11 | Claude (sprint 14 H3) | §3.2 built: `?challenge=N&pours=P` (logic/launch.ts, logic/challenge.ts), the receiver's card, "Beat P" beside the pour counter, the verdict and Send it back on the win card, Challenge a friend on the map card. A challenge waits through the tutorial like daily links. Limits in `sharing.challenge` |
 | 2026-11-11 | Claude (sprint 14 H2) | §3.1 built: `src/ui/logic/share-card.ts` (plan, fallbacks), `src/ui/share-card.ts` (canvas), the preview sheet; daily and weekly Share use it. Jars use scene glass, not jar styles |
 | 2026-11-11 | Claude (sprint 14 H1) | §3.3 built: title, description, Open Graph and Twitter tags, `public/og.png` from `tools/share/link-preview.cjs`; tests in `tests/unit/share/link-preview.test.ts` |
