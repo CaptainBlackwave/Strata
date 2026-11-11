@@ -24,6 +24,19 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.12.0 | `770639a` (sprint 12, PR #15) |
 | v0.13.0 | `ebf60b7` (sprint 13, PR #23) |
 | v0.13.1 | `252cc05` (gentler curve, PR #25) |
+| v0.14.0 | `53b6c12` (sprint 14, sharing, PR #31) |
+
+## 0.14.1 (2026-11-11): an easier climb
+**For players**
+- Levels get harder much more slowly. Ten colours from level 70 now last until level 250; 11, 12, 13 and 14 colours come at 250, 340, 420 and 490 (before: 65, 95, 130 and 170).
+- Only one layer of sand is hidden until level 150 (before: two from level 30), and three only from level 450.
+- Every level keeps two empty jars until level 300 (before: from level 60 many had one).
+- Special jars still appear for the first time at their usual levels, but come more often only from level 250, and two on one board only from 250.
+- Because boards from level 30 changed, best pours there start fresh, once. Your level, coins, shells and Perfect marks are kept. Levels 1–29, the daily and the weekly are unchanged.
+
+**Under the hood**
+- Owner decisions D125–D133. A simulated player that sees only visible sand (`tools/balance/sim-player.ts`) is the new difficulty measure: on 0.14.0 it got stuck on 40–80% of levels from 41 on; on 0.14.1 on none up to 150 and 12–14% from 151 to 300 (`production/qa/sprint-15/stuck-sweep.md`). The test `tests/unit/balance/gentle-climb.test.ts` holds the targets.
+- The board-hash fixtures were re-baselined on purpose.
 
 ## 0.14.0 (2026-11-11): sprint 14, sharing
 **For players**

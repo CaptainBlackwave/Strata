@@ -233,9 +233,9 @@ describe('clam placement and generation', () => {
     expect(row({ ...base, mechanics: [], hourglass: false, sieve: true, clam: true })).toEqual([['', true, true], ['', false, false]]);
   });
 
-  it('levels 181-260: every board with a clam is solver-proven, has one closed clam, and its solution replays to a win', () => {
+  it('levels 181-400: every board with a clam is solver-proven, has one closed clam, and its solution replays to a win', () => {
     let withClamCount = 0;
-    for (let l = UNLOCK; l <= 260; l++) {
+    for (let l = UNLOCK; l <= 400; l++) {
       const g = generateLevel(l, cfg);
       const at = clamIndex(g.board);
       if (at < 0) continue;

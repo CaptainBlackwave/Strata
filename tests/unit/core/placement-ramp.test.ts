@@ -20,9 +20,10 @@ describe('difficulty ramp past level 45 (D1)', () => {
   it('levels before 60 always have 2 spare jars', () => {
     for (const s of normal(1, 59)) expect(s.spare).toBe(2);
   });
-  it('from level 60 some levels have 1 spare jar, rising toward three quarters by 150', () => {
-    const early = normal(60, 90).filter((s) => s.spare === 1).length / normal(60, 90).length;
-    const late = normal(150, 400).filter((s) => s.spare === 1).length / normal(150, 400).length;
+  it('from level 300 some levels have 1 spare jar, rising toward three quarters by 500 (D130)', () => {
+    expect(normal(1, 299).every((s) => s.spare === 2)).toBe(true);
+    const early = normal(300, 350).filter((s) => s.spare === 1).length / normal(300, 350).length;
+    const late = normal(500, 750).filter((s) => s.spare === 1).length / normal(500, 750).length;
     expect(early).toBeGreaterThan(0.05);
     expect(early).toBeLessThan(0.5);
     expect(late).toBeGreaterThan(0.6);
@@ -31,24 +32,24 @@ describe('difficulty ramp past level 45 (D1)', () => {
   it('tall-jar levels keep 2 spare jars', () => {
     for (let l = 60; l <= 400; l += 10) expect(levelSpec(l, cfg).spare).toBe(2);
   });
-  it('buried sand goes to 3 layers from level 110 (75 before the gentler curve, D108)', () => {
-    expect(levelSpec(109, cfg).buriedDepth).toBe(2);
-    expect(levelSpec(111, cfg).buriedDepth).toBe(3);
+  it('buried sand goes to 3 layers from level 450 (75 before 0.13.1, 110 before 0.14.1; D129)', () => {
+    expect(levelSpec(449, cfg).buriedDepth).toBe(2);
+    expect(levelSpec(451, cfg).buriedDepth).toBe(3);
   });
-  it('colours rise to 13 at level 130 and 14 at level 170 (D106), using new palette colours', () => {
-    expect(levelSpec(129, cfg).colors).toBe(12);
-    expect(levelSpec(131, cfg).colors).toBe(13);
-    expect(levelSpec(171, cfg).colors).toBe(14);
+  it('colours rise to 13 at level 420 and 14 at level 490 (D128), using new palette colours', () => {
+    expect(levelSpec(419, cfg).colors).toBe(12);
+    expect(levelSpec(421, cfg).colors).toBe(13);
+    expect(levelSpec(491, cfg).colors).toBe(14);
     expect(cfg.palette.length).toBeGreaterThanOrEqual(14);
     expect(new Set(cfg.palette.map((p) => p.hex.toLowerCase())).size).toBe(cfg.palette.length);
   });
   it('difficulty keeps changing past level 45', () => {
     const score = (s: ReturnType<typeof levelSpec>) => s.colors + s.buriedDepth + (2 - s.spare) * 3 + s.mechanics.length;
     const avg = (xs: ReturnType<typeof levelSpec>[]) => xs.reduce((n, s) => n + score(s), 0) / xs.length;
-    expect(avg(normal(150, 250))).toBeGreaterThan(avg(normal(46, 58)) + 2);
+    expect(avg(normal(400, 500))).toBeGreaterThan(avg(normal(46, 58)) + 2);
   });
   it('a level that drops to 1 spare jar still generates (falling back to 2 if no 1-spare deal is proven)', () => {
-    for (let l = 60; l <= 200; l++) {
+    for (let l = 300; l <= 400; l++) {
       const g = generateLevel(l, cfg);
       expect([1, 2], `level ${l}`).toContain(g.spec.spare);
       expect(g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel).length, `level ${l}`).toBe(g.spec.spare);
@@ -58,17 +59,17 @@ describe('difficulty ramp past level 45 (D1)', () => {
 
 describe('spare-jar swap and generation fallback (D1 revised, sweep regressions)', () => {
   it('a 1-spare level swaps its missing spare for a narrow jar (or a funnel from level 81)', () => {
-    for (let l = 60; l <= 300; l++) {
+    for (let l = 60; l <= 700; l++) {
       const s = levelSpec(l, cfg);
       if (s.spare !== 1) continue;
       expect(s.mechanics.some((m) => m === 'narrow' || m === 'funnel'), `level ${l}`).toBe(true);
       if (l < 81) expect(s.mechanics, `level ${l}`).not.toContain('funnel');
     }
   });
-  it('most ordinary levels from 150 really play with one ordinary spare jar', () => {
+  it('most ordinary levels from 500 really play with one ordinary spare jar', () => {
     let n = 0;
     let one = 0;
-    for (let l = 150; l <= 260; l++) {
+    for (let l = 500; l <= 610; l++) {
       if (levelSpec(l, cfg).challenge || isBreather(l, cfg)) continue;
       n++;
       const g = generateLevel(l, cfg);

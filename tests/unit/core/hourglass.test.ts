@@ -211,9 +211,9 @@ describe('hourglass placement and generation', () => {
   });
 
   // Widened from 101-160 in sprint 13 M2: the sieve (141) rerolled levels 141+, leaving 4 hourglass boards there.
-  it('levels 101-200: every board with an hourglass is solver-proven and its solution replays to a win', () => {
+  it('levels 101-300: every board with an hourglass is solver-proven and its solution replays to a win', () => {
     let withGlass = 0;
-    for (let l = 101; l <= 200; l++) {
+    for (let l = 101; l <= 300; l++) {
       const g = generateLevel(l, cfg);
       if (!g.board.jars.some((j) => j.hourglass)) continue;
       withGlass++;

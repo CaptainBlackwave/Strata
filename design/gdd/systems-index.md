@@ -184,12 +184,12 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D122 | Name on the share card | **Off by default**, a switch on the share preview | sharing, player-profile | sprint 14 |
 | D123 | Link preview image | **One committed PNG**, rendered from the game's own art by a script | sharing | sprint 14 |
 | D124 | Site address in `index.html` | **Allowed** for the preview image only | sharing | sprint 14 |
-| D125 | Players still stuck (after 0.14.0) | **Soften levels 40–150 more**: players get stuck from 40 and lean on boosters. Causes named: hidden sand, too few empty jars, too many colours | level-generation | sprint 15 (proposed) |
-| D126 | Hardest boards | **Keep today's ceiling, reach it around level 500** instead of 150–200 | level-generation | sprint 15 (proposed) |
-| D127 | Boosters | **Unchanged**: only the boards get gentler | economy | sprint 15 (proposed) |
-| D128 | Colours | **Slower**: 10 colours from about 70 to 220, then a step every 80–90 levels to 14 near 470 | level-generation | sprint 15 (proposed) |
-| D129 | Hidden sand | **One layer until 150**, two from 150, three only near the ceiling (~420) | level-generation | sprint 15 (proposed) |
-| D130 | Empty jar swap | **Much later**: two ordinary empty jars until ~250, then the swap rises slowly to 75% at 500 | level-generation | sprint 15 (proposed) |
-| D131 | Special jars | **Debuts unchanged, the rest slower**: 1 in 3 until 250, 1 in 2 at 500, two on a board from 250 | jar-mechanics, level-generation | sprint 15 (proposed) |
-| D132 | Measuring "gentle" | **A simulated player** that sees only visible sand and gives up after a patience limit, plus booster counts; replaces solver pours as the target | level-generation | sprint 15 (proposed) |
-| D133 | Shipping | **One PR as 0.14.1**, best pours reset once for changed levels (D110 rule), after the owner approves the plan | — | sprint 15 (proposed) |
+| D125 | Players still stuck (after 0.14.0) | **Soften levels 40–150 more**: players get stuck from 40 and lean on boosters. Causes named: hidden sand, too few empty jars, too many colours | level-generation | built (0.14.1) |
+| D126 | Hardest boards | **Keep today's ceiling, reach it around level 500** instead of 150–200 | level-generation | built (0.14.1) |
+| D127 | Boosters | **Unchanged**: only the boards get gentler | economy | built (0.14.1) |
+| D128 | Colours | **Slower**: 10 colours from 70 to 249, then 11 at 250, 12 at 340, 13 at 420, 14 at 490 (tuned from the plan's 220/300/380/470 against the simulated player) | level-generation | built (0.14.1) |
+| D129 | Hidden sand | **One layer until 150**, two from 150, three from 450 | level-generation | built (0.14.1) |
+| D130 | Empty jar swap | **Much later**: two ordinary empty jars until 300, then the swap rises from 10% to 75% at 500 | level-generation | built (0.14.1) |
+| D131 | Special jars | **Debuts unchanged, the rest slower**: 1 in 3 until 250, 1 in 2 at 500, two on a board from 250 | jar-mechanics, level-generation | built (0.14.1) |
+| D132 | Measuring "gentle" | **A simulated player** that sees only visible sand and gives up after a patience limit, plus booster counts; replaces solver pours as the target | level-generation | built (0.14.1) |
+| D133 | Shipping | **One PR as 0.14.1**, best pours reset once for changed levels (D110 rule), after the owner approves the plan | — | built (0.14.1) |

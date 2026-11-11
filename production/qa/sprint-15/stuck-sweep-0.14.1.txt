@@ -1,0 +1,8 @@
+patience 150, every 2 level(s), shipped config
+1-40: stuck 0% | hints per 100 levels 0 | most on one level 0
+41-80: stuck 0% | hints per 100 levels 0 | most on one level 0
+81-150: stuck 0% | hints per 100 levels 0 | most on one level 0
+151-200: stuck 12% | hints per 100 levels 100 | most on one level 13
+201-300: stuck 14% | hints per 100 levels 162 | most on one level 24
+301-400: stuck 42% | hints per 100 levels 496 | most on one level 29
+401-500: stuck 56% | hints per 100 levels 772 | most on one level 29

@@ -199,6 +199,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.14.1',
+        name: 'An easier climb',
+        lines: [
+          'Levels get harder much more slowly: bigger boards, more hidden sand and fewer empty jars now arrive hundreds of levels later.',
+          'Up to about level 150 you should rarely need a booster.',
+          'Best pours from level 30 start fresh. Your progress, coins, shells and Perfect marks are kept.',
+        ],
+      },
+      {
         version: '0.14.0',
         name: 'Share with friends',
         lines: [

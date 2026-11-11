@@ -36,17 +36,17 @@ describe('mechanic schedule', () => {
     expect(withM).toBeGreaterThan(10);
     expect(withM).toBeLessThan(50);
   });
-  it('the mechanic chance is 34% up to level 45, rising to 50% at level 120 (D1)', () => {
+  it('the mechanic chance is 34% up to level 250, rising to 50% at level 500 (D1, D131)', () => {
     expect(mechanicChance(22, cfg)).toBeCloseTo(0.34);
-    expect(mechanicChance(45, cfg)).toBeCloseTo(0.34);
-    expect(mechanicChance(82.5, cfg)).toBeCloseTo(0.42);
-    expect(mechanicChance(120, cfg)).toBeCloseTo(0.5);
+    expect(mechanicChance(250, cfg)).toBeCloseTo(0.34);
+    expect(mechanicChance(375, cfg)).toBeCloseTo(0.42);
+    expect(mechanicChance(500, cfg)).toBeCloseTo(0.5);
     expect(mechanicChance(900, cfg)).toBeCloseTo(0.5);
   });
-  it('about half of levels past 120 roll a mechanic (D1; the spare-jar swap is counted separately)', () => {
+  it('about half of levels past 500 roll a mechanic (D1, D131; the spare-jar swap is counted separately)', () => {
     let n = 0;
     let withM = 0;
-    for (let l = 121; l <= 900; l++) {
+    for (let l = 501; l <= 1300; l++) {
       if (levelSpec(l, cfg).challenge) continue;
       n++;
       if (pickMechanics(l, cfg).length) withM++;
@@ -54,7 +54,9 @@ describe('mechanic schedule', () => {
     expect(withM / n).toBeGreaterThan(0.42);
     expect(withM / n).toBeLessThan(0.58);
   });
-  it('only unlocked mechanics appear, and rolled combos only from level 101', () => {
+  it('only unlocked mechanics appear, and rolled combos only from comboFrom (250, D131)', () => {
+    const from = cfg.mechanics.comboFrom;
+    expect(from).toBe(250);
     for (let l = 1; l <= 400; l++) {
       const rolled = pickMechanics(l, cfg);
       const all = levelSpec(l, cfg).mechanics;
@@ -63,9 +65,9 @@ describe('mechanic schedule', () => {
         if (l < 81) expect(m).not.toContain('funnel');
         expect(new Set(m).size).toBe(m.length);
       }
-      if (l < 101) expect(rolled.length).toBeLessThanOrEqual(1);
+      if (l < from) expect(rolled.length).toBeLessThanOrEqual(1);
     }
-    const combos = Array.from({ length: 300 }, (_, i) => pickMechanics(101 + i, cfg).length).filter((n) => n === 2).length;
+    const combos = Array.from({ length: 300 }, (_, i) => pickMechanics(from + i, cfg).length).filter((n) => n === 2).length;
     expect(combos).toBeGreaterThan(0);
   });
 });

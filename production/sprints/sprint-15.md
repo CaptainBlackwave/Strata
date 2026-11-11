@@ -1,6 +1,6 @@
 # Sprint 15: a gentle climb to level 500
 
-> **Status: proposed (2026-11-11), waiting for the owner's approval of this plan.** Nothing is built. From the owner interview after 0.14.0 (D125–D133 in `design/gdd/systems-index.md`). Target release: **0.14.1**, one PR (D133).
+> **Status: built (2026-11-11), approved by the owner.** Released as 0.14.1. Numbers: `production/qa/sprint-15/stuck-sweep.md`. From the owner interview after 0.14.0 (D125–D133 in `design/gdd/systems-index.md`). Target release: **0.14.1**, one PR (D133).
 
 ## Why
 Players still get stuck from level 40 and only get through by using boosters too often (D125). The 0.13.1 curve fixed the climb between 20 and 45, but its solver-pour measure missed the problem: the solver sees every hidden unit and never gives up.
@@ -26,13 +26,20 @@ Players enjoy levels up to about 150 without boosters, and meet today's hardest 
 | Special jars | debuts 21–181; 1 in 3 levels rising to 1 in 2 at 120; two on a board from 101 | debuts unchanged; 1 in 3 until 250, rising to 1 in 2 at 500; two on a board from 250 | D131 |
 | Breathers, tall jars, pour caps, daily, weekly | as 0.13.1 | unchanged (pour caps re-checked) | — |
 
-Exact level numbers marked "~" are tuned during the build against the targets below.
+Exact level numbers marked "~" were tuned during the build against the targets below. **As built:** 11 colours at 250, 12 at 340, 13 at 420, 14 at 490; three buried layers from 450; the swap from 300.
 
-**Measured with the prototype (planned curve):**
+**Measured with the prototype (planned curve, before tuning):**
 
 | Levels | 1–100 | 101–150 | 151–200 | 201–300 | 301–400 | 401–500 |
 |---|---|---|---|---|---|---|
 | Stuck, planned | 0% | 0% | 12% | 32% | 62% | 68% |
+
+## As built (`tools/balance/stuck-sweep.ts`)
+
+| Levels | 1–150 | 151–200 | 201–300 | 301–400 | 401–500 |
+|---|---|---|---|---|---|
+| Stuck, 0.14.0 | 0–49% | 68% | 76% | 76% | 80% |
+| Stuck, 0.14.1 | 0% | 12% | 14% | 42% | 56% |
 
 ## Tasks
 | ID | Task | Acceptance criteria |

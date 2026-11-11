@@ -265,9 +265,9 @@ describe('sieve placement and generation', () => {
     expect(row({ ...base, mechanics: [], hourglass: true, sieve: true })).toEqual([['', true, true], ['', false, false]]);
   });
 
-  it('levels 141-200: every board with a sieve is solver-proven, has one sieve in a board colour, and its solution replays to a win', () => {
+  it('levels 141-340: every board with a sieve is solver-proven, has one sieve in a board colour, and its solution replays to a win', () => {
     let withSieveCount = 0;
-    for (let l = UNLOCK; l <= 200; l++) {
+    for (let l = UNLOCK; l <= 340; l++) {
       const g = generateLevel(l, cfg);
       const at = sieveIndex(g.board);
       if (at < 0) continue;

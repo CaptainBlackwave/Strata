@@ -1,0 +1,64 @@
+{
+ "levels": {
+  "45": {
+   "label": "Level 45",
+   "jars": 11,
+   "hiddenUnits": 9,
+   "errors": 0
+  },
+  "100": {
+   "label": "Level 100",
+   "jars": 7,
+   "hiddenUnits": 0,
+   "errors": 0
+  },
+  "149": {
+   "label": "Level 149",
+   "jars": 12,
+   "hiddenUnits": 10,
+   "errors": 0
+  },
+  "151": {
+   "label": "Level 151",
+   "jars": 12,
+   "hiddenUnits": 20,
+   "errors": 0
+  },
+  "250": {
+   "label": "Level 250",
+   "jars": 7,
+   "hiddenUnits": 0,
+   "errors": 0
+  },
+  "300": {
+   "label": "Level 300",
+   "jars": 8,
+   "hiddenUnits": 0,
+   "errors": 0
+  }
+ },
+ "card": "What's new VERSION 0.14.1 Latest An easier climb Levels get harder much more slowly: bigger boards, more hidden sand and fewer empty jars now arrive hundreds of levels later. Up to about level 150 you should rarely need a booster. Best pours from level 30 start fresh. Your progress, coins, shells and Perfect marks are kept. Got it",
+ "saveAfter": {
+  "level": 320,
+  "boards": 3,
+  "best": {
+   "12": 20,
+   "29": 30
+  },
+  "perfect": [
+   12,
+   120
+  ],
+  "coins": 3100,
+  "boosters": {
+   "undo": 0,
+   "shuffle": 2,
+   "extraJar": 1,
+   "hint": 4
+  },
+  "shells": [
+   "periwinkle"
+  ]
+ },
+ "upgradeErrors": []
+}
