@@ -27,7 +27,12 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.14.0 | `53b6c12` (sprint 14, sharing, PR #31) |
 
 ## Unreleased
+
+## 0.15.0 (2026-11-11): sprint 16, come back tomorrow
 **For players**
+- Streak rewards: keep your daily streak going for boosters on days 3 (Hint, Shuffle) and 7 (2 Hints, Shuffle, Jar), then the Tide Line frame (day 14), Sea Lantern jar glass (day 30), the Lighthouse name plate (day 60) and the Lighthouse Night scene (day 100). These can only be earned this way, are kept if a streak ends, and each day pays once. A streak you already have counts: your next daily solve collects what you passed.
+- Today's goals on Home: three small goals each day, the same for everyone, worth 20–40 coins each and 50 more when all three are done.
+- Fixes from a full bug check: Undo after a Shuffle no longer takes a pour off your count, and the "No pours left" banner comes back after Undo; the Settings button, switches and Jar styles buttons fit on small phones with large text; a weekly Share after Sunday midnight shares the week you were looking at; replaying a late level no longer freezes the screen; a damaged save resumes at your real level; storage that the browser blocks now shows a warning; a friend's challenge target no longer returns on later replays.
 - A new version reaches you straight away: opening the game always checks for the latest release, and a game left open updates itself the next time you are on Home (never in the middle of a board). Before, a phone could show the previous version for up to 10 minutes after an update.
 
 ## 0.14.1 (2026-11-11): an easier climb
