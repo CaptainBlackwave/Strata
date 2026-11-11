@@ -235,17 +235,23 @@ describe('no existing board changes (sprint 13 M1 hard constraints)', () => {
     for (const [l, h] of Object.entries(hashes)) expect(hash(generateLevel(Number(l), cfg).board), `level ${l}`).toBe(h);
   }, 60_000);
 
-  it('the daily Saturday rotation never picks the hourglass yet (W1 adds it from a start date)', () => {
+  it('the daily Saturday rotation never picks the hourglass before its start date (2026-11-28, sprint 13 W1)', () => {
+    // Ten years of Saturdays up to 2026-11-21; from 2026-11-28 see tests/unit/weekly/new-jars-rotation.test.ts.
     for (let w = 0; w < 520; w++) {
-      const key = new Date(Date.UTC(2026, 10, 7 + 7 * w)).toISOString().slice(0, 10);
+      const key = new Date(Date.UTC(2026, 10, 21 - 7 * w)).toISOString().slice(0, 10);
       const spec = dailySpec(key, cfg);
       expect(spec.mechanics).not.toContain('hourglass');
       expect(spec.hourglass).toBeFalsy();
     }
   });
 
-  it('the Saturday dailies are byte-identical to the fixture', () => {
-    for (const [key, d] of Object.entries(saturdays.days as Record<string, { mechanic: string; hash: string }>)) {
+  it('the Saturday dailies before the start date (2026-11-28, W1) are byte-identical to the fixture', () => {
+    // From 2026-11-28 the rotation has all seven mechanics (D98), so a later entry is only checked when
+    // its Saturday still plays the fixture's mechanic: the same recipe and seed must give the same board.
+    const days = Object.entries(saturdays.days as Record<string, { mechanic: string; hash: string }>);
+    expect(days.filter(([key]) => key < '2026-11-28')).toHaveLength(3);
+    for (const [key, d] of days) {
+      if (key >= '2026-11-28' && dailySpec(key, cfg).mechanics[0] !== d.mechanic) continue;
       expect(dailySpec(key, cfg).mechanics).toEqual([d.mechanic]);
       expect(hash(generateDaily(key, cfg).board), key).toBe(d.hash);
     }

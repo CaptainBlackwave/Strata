@@ -87,6 +87,18 @@ same five boards.
   mechanic yet gets its intro card before the board (`jar-mechanics.md`).
 - Five themes against the daily Saturday's four-mechanic rotation means the two rarely feature the
   same mechanic in the same week, and never for long.
+- **The new jars join from 2026-W49** (D98, *built in sprint 13 W1*). From week `2026-W49` (Monday
+  30 November 2026) the rotation is `weekly.themesFrom[0].themes`, eight themes counted from that
+  week: **Turning Tides** (hourglass, W49), **Fine Sieve** (sieve, W50), **Clam Bay** (clam, W51),
+  then the old five in their old order (Narrow Necks from W52, through week 53, Deep Sand in
+  2027-W03), and round again. Each new theme puts its jar on all five boards, through the jar's own
+  `LevelSpec` flag: the same placement, solver proof and fallback chain as the numbered levels
+  (`jar-mechanics.md` §2.4 to 2.6, §3.4 here); the intro card shows on first encounter.
+  **Before 2026-W49 nothing changes**: the old five-theme rotation, exactly as before (W46 to W48 are
+  pinned in `tests/fixtures/daily-weekly-pins.json`). The weekly-boards fixture's W49 to 2027-W01
+  entries are no longer expected to match: those weeks now carry the new themes, on purpose.
+- Eight themes against the daily Saturday's seven-mechanic rotation (from 2026-11-28) stay out of
+  step the same way.
 
 ### 3.4 The five boards: a gentle ramp
 
@@ -228,7 +240,7 @@ before the tutorial is kept and offered on the tutorial's win card (`first-run-r
 |---|---|---|---|
 | ISO week | Thursday of the date's week `T = date + 3 − ((utcDay + 6) mod 7)` days; `isoYear = year(T)`; `week = 1 + floor((T − Jan 1 of isoYear) / 7 days)` | `utcDay` 0 = Sunday … 6 = Saturday; week 1–53 | 2026-11-15 23:59 UTC → `2026-W46`; 2026-11-16 00:00 UTC → `2026-W47` |
 | Week index | `floor((dayNumber(monday) + 3) / 7)` | `dayNumber` = whole days since 1970-01-01; Monday 1969-12-29 is week 0 | `2026-W46` → 2967 |
-| Theme | `themes[weekIndex mod themes.length]` | 5 themes | 2967 mod 5 = 2 → Lock and Key |
+| Theme | Before the first era: `themes[weekIndex mod themes.length]`. From an era's `from`: `era.themes[(weekIndex − weekIndex(from)) mod era.themes.length]` (`weeklyTheme`) | 5 themes; from 2026-W49, 8 | 2967 mod 5 = 2 → Lock and Key (W46); W49: (2970 − 2970) mod 8 = 0 → Turning Tides |
 | Board seed | `FNV-1a("YYYY-Www#n")`, basis `2166136261 XOR seedSalt` | n = 1–5, `seedSalt` 5309 | `2026-W46#1` |
 | Buried layers | `min(maxBuried, board.buriedDepth + theme.buriedBonus)` | `buriedBonus` 0 or 1, `maxBuried` 2 | Deep Sand board 4: min(2, 1 + 1) = 2 |
 | Pour cap | `maxPoursFor(board.bandLevel)` from `generator.pourBands` | 45, 58 or 70 | board 3 (`bandLevel` 21) → 58 |
@@ -282,7 +294,8 @@ All in `weekly` in `src/config/game-config.json`.
 |---|---|---|---|
 | `seedSalt` | 5309 | any 32-bit integer, but **never change it once released**: every player's boards for the current week would change mid-week | which boards are dealt |
 | `boards[]` | 5 rows (§3.4) | 3–7 rows; `colors` 4–10, `capacity` 4, `spare` 2, `buriedDepth` 0–2, `bandLevel` ≥ 1 | the ramp and the length caps; more rows means a longer set and a later badge |
-| `themes[]` | 5 themes | 1 or more; `mechanic` one of the four ids or absent; `buriedBonus` 0–1 | the weekly variety; a count that is not a multiple of 4 keeps it out of step with the daily Saturday |
+| `themes[]` | 5 themes | 1 or more; `mechanic` one of the four ids or absent; `buriedBonus` 0–1 | the rotation before the first `themesFrom` era; never edit it now (weeks before W49 would change) |
+| `themesFrom[]` | one era: `from` `2026-W49`, 8 themes (`hourglass`, `sieve`, `clam`, then the old five) | ascending eras `{ from: "YYYY-Www", themes: [...] }`; `mechanic` any of the seven ids; every `id` needs a name in `src/ui/strings.ts` `weekly.themes` | the weekly variety from each start week; add a new era with a future week rather than editing a live one |
 | `completeBonus` | 100 | 0–150 (0 restores "pays nothing"; above a Jar's 120 it starts to outpace levels for a weekly-only player) | the coins for completing the set, once a week (§3.7) |
 | `maxBuried` | 2 | 0–2 (3 buries all but the top unit of a 4-jar) | how hard Deep Sand gets |
 
@@ -305,6 +318,13 @@ All in `weekly` in `src/config/game-config.json`.
   pours and sealed jars.
 - [x] The win that completes the set pays `completeBonus` once per week, in any order, and shows it
   on the win card; replays pay nothing; a new week pays again (D83, `tests/unit/weekly/weekly-win.test.ts`).
+- [x] Sprint 13 W1 (D98): every board of 2026-W46 to W48 is byte-identical to the code before the
+  change (`tests/fixtures/daily-weekly-pins.json`); weeks before W49 keep the old rotation; from W49
+  the eight themes rotate, the hourglass, sieve and clam first, each new theme's flag on all five
+  boards; sampled boards keep their jar (no fallback), are solver-proven and replay to a win
+  (`tests/unit/weekly/new-jars-rotation.test.ts`); the 8-week board test (W47 to 2027-W01) passes with the
+  new themes; Home card, chooser, intro cards and boards for W49 to W51 are captured in
+  `production/qa/evidence/sprint-13/w1-daily-weekly/`.
 - [x] Home card, chooser, a weekly board, the mid-week win card, the completing win card with the
   badge, the Share text and 150% text at 320 px are captured in
   `production/qa/evidence/sprint-11/weekly/`.
@@ -319,3 +339,4 @@ All in `weekly` in `src/config/game-config.json`.
 | 2026-11-09 | Claude (sprint 11 W2) | Built; acceptance criteria ticked. Tests: `tests/unit/weekly/`; evidence: `production/qa/evidence/sprint-11/weekly/` |
 | 2026-11-09 | Claude (0.11.1) | D83: completing the set pays `completeBonus` (100) once a week; single boards still pay nothing (§3.7, §7, §8) |
 | 2026-11-09 | Claude (0.11.1) | D82: Share carries `?weekly=`, which opens the chooser (§3.9) |
+| 2026-11-11 | Claude (sprint 13 W1) | D98 built: from 2026-W49 the rotation adds Turning Tides (hourglass), Fine Sieve (sieve) and Clam Bay (clam) (`weekly.themesFrom`, §3.3, §4, §7, §8); earlier weeks unchanged (pinned) |
