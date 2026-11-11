@@ -162,6 +162,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D101 | Sprint 13 delivery | **One PR each** (D80): the economy (streak steps and rung prices) first, then each mechanic with its art, then 0.13.0; the owner approves each mechanic's art before its merge. The owner runs the phone checklist this week, and its findings join the sprint | — | sprint 13 |
 | D102 | Hourglass jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/VP9f1xzygmbx9AaPJNaSsd): the badge, the flip, its sand fully shown, and levels from 101 rerolled | jar-mechanics | sprint 13 M1 |
 | D103 | Sieve jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/JaoZuxTRHtDPvjgjGGESci): the meshed collar, the refusal message, and levels from 141 rerolled | jar-mechanics | sprint 13 M2 |
+| D104 | Clam jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/BttQuWn7RxcQY1DecT9MUB): the ribbed shell with its count, the opening, the count of 6, and levels from 181 rerolled | jar-mechanics | sprint 13 M3 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
