@@ -66,6 +66,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 
 **Repair** (on every load and every import). A bad or missing value falls back to its default without discarding the rest:
 - `level` must be a whole number ≥ 1; coins and charges must be whole numbers ≥ 0; settings must be booleans; the streak date must look like `YYYY-MM-DD`.
+- Inferred, not reset (strata-6og): an unusable `level` resumes one past the furthest level in `best` or `perfect` (1 if none); a missing `tutorialDone` is true past level 1 (as the v1 migration does); coins above 999,999,999 are clamped to it.
 - `best` is accepted as any object; its values are not checked.
 - Shell, intro and theme lists are de-duplicated and non-strings dropped. Unknown ids are **kept** (they are not checked against the catalog here). `themes.selected` is not checked against the catalog either; `activeTheme` falls back later (`scenes.md`). Midday is always owned.
 - `profile` strings are stored as read. `stats` counters that are missing or not non-negative integers become 0.

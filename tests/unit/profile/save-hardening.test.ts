@@ -56,7 +56,7 @@ describe('importSave size cap (TD-6)', () => {
   it('a hostile best in an imported code is repaired', () => {
     const json = JSON.stringify({ ...freshSave(econ), level: 1e308, best: { '1': 'x', '2': 2 } });
     const imported = importSave(`STRATA1:${btoa(json)}`, econ)!;
-    expect(imported.level).toBe(1);
+    expect(imported.level).toBe(3); // one past the furthest cleared level (strata-6og)
     expect(imported.best).toEqual({ '2': 2 });
   });
 });
