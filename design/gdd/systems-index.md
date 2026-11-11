@@ -184,31 +184,12 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D122 | Name on the share card | **Off by default**, a switch on the share preview | sharing, player-profile | sprint 14 |
 | D123 | Link preview image | **One committed PNG**, rendered from the game's own art by a script | sharing | sprint 14 |
 | D124 | Site address in `index.html` | **Allowed** for the preview image only | sharing | sprint 14 |
-
-**Defaults accepted by the owner (2026-11-08, sprint 6):**
-- GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
-- GA-DP-5: after the device clock moves back, Home shows today's real state, not "Solved today" (`daily-puzzle.md`).
-- GA-DP-6: Share uses the pour count of the first counted solve of that date (`daily-puzzle.md`).
-
-Not asked in the interview: whether scenes need anything beyond the four (gifting, re-buying). Recorded in `scenes.md` as "no change" until the owner says otherwise.
-
----
-
-## Dependency Map (design order)
-
-1. **Foundation**: pour-rules, save-data
-2. **Core**: level-generation, jar-mechanics
-3. **Feature**: session-boosters, economy, daily-puzzle, shell-collection
-4. **Presentation**: scenes, player-profile, feel-audio-ui
-
----
-
-## Next Steps
-
-- ~~Fix M1, M2 and M4 in code~~ (done 2026-11-08; evidence in `production/qa/evidence/gdd-alignment/`).
-- ~~Build D1, D3, D5, D8, D10, D14 and D16~~ (done in sprint 5: `production/sprints/sprint-5.md`).
-- `/balance-check` the ramp and the economy, then playtest levels 60–150. **Deferred by D23** to a later balance sprint (targets first).
-- Sprint 6 builds D19–D21 and the fix bundles F1–F8 (`production/qa/sprint-6-findings.md`); each owning GDD marks them "decided 2026-11-08, built in sprint 6" until built.
-- ~~Plan the fifth shell set (D12)~~ (built as sets 5–8, 2026-11-08; evidence in `production/qa/evidence/shell-sets/`).
-- ~~Build the player profile (PP-1 to PP-10)~~ (done 2026-11-08; evidence in `production/qa/evidence/player-profile/`).
-- `/design-review` each document, then `/review-all-gdds` across the set.
+| D125 | Players still stuck (after 0.14.0) | **Soften levels 40–150 more**: players get stuck from 40 and lean on boosters. Causes named: hidden sand, too few empty jars, too many colours | level-generation | sprint 15 (proposed) |
+| D126 | Hardest boards | **Keep today's ceiling, reach it around level 500** instead of 150–200 | level-generation | sprint 15 (proposed) |
+| D127 | Boosters | **Unchanged**: only the boards get gentler | economy | sprint 15 (proposed) |
+| D128 | Colours | **Slower**: 10 colours from about 70 to 220, then a step every 80–90 levels to 14 near 470 | level-generation | sprint 15 (proposed) |
+| D129 | Hidden sand | **One layer until 150**, two from 150, three only near the ceiling (~420) | level-generation | sprint 15 (proposed) |
+| D130 | Empty jar swap | **Much later**: two ordinary empty jars until ~250, then the swap rises slowly to 75% at 500 | level-generation | sprint 15 (proposed) |
+| D131 | Special jars | **Debuts unchanged, the rest slower**: 1 in 3 until 250, 1 in 2 at 500, two on a board from 250 | jar-mechanics, level-generation | sprint 15 (proposed) |
+| D132 | Measuring "gentle" | **A simulated player** that sees only visible sand and gives up after a patience limit, plus booster counts; replaces solver pours as the target | level-generation | sprint 15 (proposed) |
+| D133 | Shipping | **One PR as 0.14.1**, best pours reset once for changed levels (D110 rule), after the owner approves the plan | — | sprint 15 (proposed) |
