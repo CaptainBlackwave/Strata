@@ -1,8 +1,8 @@
 ---
-status: draft for owner review (2026-11-11); not built
+status: designed and signed off (owner interview 2026-11-11, D116–D124); not built
 owner: game-designer / ux-designer
-decisions: D114, D116, D117, D118
-verified-by: pending owner review
+decisions: D114, D116–D118, D120–D124
+verified-by: owner interview 2026-11-11
 ---
 
 # Sharing: Design Document
@@ -115,18 +115,21 @@ Never a pop-up, never a reminder, never a reward (no coins, shells, badges or bo
 - Nothing is sent to any server, and nothing new is written to the save.
 - Screenshots of every card and every new button are in `production/qa/evidence/sprint-14/`.
 
-## Open Questions
+## Owner Decisions (interview 2026-11-11)
 
-| # | Question | Draft default |
+| # | Question | Decision |
 |---|---|---|
-| Q1 | Should sharing or a friend's visit ever pay anything? | No: it invites spam and cannot be verified without a server |
-| Q2 | A challenge for a level the receiver has not reached: drop it, or keep it for later? | Drop it; keeping it means saving a pending challenge |
-| Q3 | May `index.html` name the GitHub Pages address for the preview image? | Yes; it is the only way a preview image works |
-| Q4 | Should the card show the player's name? | Off by default, a switch on the share preview |
-| Q5 | Is one committed PNG for the link preview acceptable, given all other art is CSS and SVG? | Yes, rendered from the game's own art by a script |
+| D120 | Should sharing or a friend's visit ever pay anything? | **No reward.** It cannot be verified without a server and would be farmable |
+| D121 | A challenge for a level the receiver has not reached | **Invite them to play on**; the challenge is dropped and nothing is saved |
+| D122 | The player's name on the card | **Off by default**, a switch on the share preview |
+| D123 | One committed PNG for the link preview | **Yes**, rendered from the game's own art by a script |
+| D124 | The GitHub Pages address in `index.html` for the preview image | **Yes**; share links keep using the page's own address |
+
+No questions are open.
 
 ## Version History
 
 | Date | Author | Changes |
 |------|--------|---------|
 | 2026-11-11 | Claude (sprint 14 draft) | First draft from the owner interview (D114, D116–D118) |
+| 2026-11-11 | Claude (sprint 14 H0) | Signed off: the five open questions answered (D120–D124) |

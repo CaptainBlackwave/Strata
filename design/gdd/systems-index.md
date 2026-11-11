@@ -37,7 +37,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 13 | Badges | Meta | Full Vision | Implemented (sprint 11 A1, A2, D76) | [badges.md](badges.md) | 3, 4, 6, 7, 8, 10, 11 |
 | 14 | Weekly set | Progression | Full Vision | Implemented (sprint 11 W1, W2, D77) | [weekly-set.md](weekly-set.md) | 2, 3, 6, 9, 10, 13 |
 | 15 | Jar styles | Economy | Full Vision | Implemented (sprint 12, D85–D94) | [jar-styles.md](jar-styles.md) | 5, 8, 9, 10 |
-| 16 | Sharing | Meta | Full Vision | Draft for owner review (sprint 14, D116–D118) | [sharing.md](sharing.md) | 6, 7, 8, 9, 11, 12, 13, 14, 15 |
+| 16 | Sharing | Meta | Full Vision | Designed and signed off (D116–D124), building in sprint 14 | [sharing.md](sharing.md) | 6, 7, 8, 9, 11, 12, 13, 14, 15 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -175,10 +175,15 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D113 | Shipping the gentler curve | **A pull request now, as a patch release** (0.13.1, since 0.13.0 shipped the same day), with a What's new card that explains the best-pours reset | — | 0.13.1 |
 | D114 | After 0.13.1 | **Growth and reach** is the next focus; scope by interview | — | scoped (D116–D118), sprint 14 |
 | D115 | Where the complaints came from | **Friends and testers, informally**: no written record; they are asked to retry levels 20–60 after 0.13.1 | — | recorded |
-| D116 | Growth goal | **Players share it**: better share cards, a challenge-a-friend link, a proper link preview | new GDD `sharing.md` | sprint 14 (proposed) |
+| D116 | Growth goal | **Players share it**: better share cards, a challenge-a-friend link, a proper link preview | new GDD `sharing.md` | sprint 14 |
 | D117 | Platforms | **Stay web only**: one build, no stores | — | standing |
 | D118 | Servers | **No server at all**: static files only; no counting of players or shares | sharing | standing |
 | D119 | 0.13.1 merge | **Merged on the owner's instruction** (PR #25), then sprint 14 planning started | — | done |
+| D120 | Rewards for sharing | **None**: no coins, shells or badges for sharing or for a friend's visit | sharing | sprint 14 |
+| D121 | A challenge for an unreached level | **Invite the receiver to play on**; the challenge is dropped | sharing | sprint 14 |
+| D122 | Name on the share card | **Off by default**, a switch on the share preview | sharing, player-profile | sprint 14 |
+| D123 | Link preview image | **One committed PNG**, rendered from the game's own art by a script | sharing | sprint 14 |
+| D124 | Site address in `index.html` | **Allowed** for the preview image only | sharing | sprint 14 |
 
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
