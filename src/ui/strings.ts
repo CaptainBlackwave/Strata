@@ -199,6 +199,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.14.0',
+        name: 'Share with friends',
+        lines: [
+          'Share your daily or weekly result as a picture. Your name stays off unless you switch it on.',
+          'Challenge a friend on any level you have cleared: they see your pours to beat.',
+          'A small Share appears when you finish a shell set, hit a streak milestone or earn a badge.',
+          'Links to Strata now show a proper preview in chats.',
+        ],
+      },
+      {
         version: '0.13.1',
         name: 'A gentler climb',
         lines: [

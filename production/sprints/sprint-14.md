@@ -1,6 +1,6 @@
 # Sprint 14: sharing
 
-> **Status: in progress (2026-11-11).** Design signed off (D120–D124). H1 (link preview, PR #27) and H2 (share card, PR #28) merged and live. H3 (challenge links) in review (PR #29). H4 (share moments) built. Chosen in the owner interview after 0.13.1 (D114, D116–D118 in `design/gdd/systems-index.md`). Target release: **0.14.0**. One PR per item (D80).
+> **Status: in progress (2026-11-11).** Design signed off (D120–D124). H1 (link preview, PR #27) and H2 (share card, PR #28) merged and live. H3 (challenge links, PR #29) merged and live. H4 (share moments) in review (PR #30). R1 (0.14.0) prepared. Chosen in the owner interview after 0.13.1 (D114, D116–D118 in `design/gdd/systems-index.md`). Target release: **0.14.0**. One PR per item (D80).
 
 ## Sprint Goal
 Players bring friends (D116): a result worth sending and a link worth opening. Web only (D117) and no server at all (D118): static files, links and pictures made on the device.
@@ -11,9 +11,9 @@ Players bring friends (D116): a result worth sending and a link worth opening. W
 | H0 | **Design sign-off**: the owner answers the five open questions in `design/gdd/sharing.md`. **Done 2026-11-11** | D114, D120–D124 | Answers recorded as decisions; the GDD status changes to signed off |
 | H1 | **Link preview** (PR 1). **Merged 2026-11-11 (PR #27)**; evidence `production/qa/evidence/sprint-14/h1-link-preview/`: title, description, Open Graph and Twitter tags, one 1200 × 630 preview image rendered by a script | sharing §3.3 | A link-preview check shows title, text and image; the image script is in `tools/` |
 | H2 | **Share card image** (PR 2). **Merged 2026-11-11 (PR #28)**; evidence `production/qa/evidence/sprint-14/h2-share-card/`: a pure card plan in `src/ui/logic/`, canvas drawing in `src/ui/`, daily and weekly use it; text stays as the fallback | sharing §3.1 | Card in all scenes with tested contrast; the three fallbacks work; screenshots |
-| H3 | **Challenge a friend** (PR 3). **Built 2026-11-11**; evidence `production/qa/evidence/sprint-14/h3-challenge/`: `?challenge=N&pours=P`, the three receiver cards, the verdict line, Send it back; the map card and the level win card get their buttons | sharing §3.2 | Launch parsing unit-tested with hostile input; never opens an unreached level; screenshots of each card |
+| H3 | **Challenge a friend** (PR 3). **Merged 2026-11-11 (PR #29)**; evidence `production/qa/evidence/sprint-14/h3-challenge/`: `?challenge=N&pours=P`, the three receiver cards, the verdict line, Send it back; the map card and the level win card get their buttons | sharing §3.2 | Launch parsing unit-tested with hostile input; never opens an unreached level; screenshots of each card |
 | H4 | **Share moments** (PR 4). **Built 2026-11-11**; evidence `production/qa/evidence/sprint-14/h4-moments/`: Share on a completed shell set, a streak milestone and a new badge | sharing §3.4 | Quiet secondary buttons only; no reward; screenshots |
-| R1 | **0.14.0** (last PR): What's new, changelog, version | D56, D60 | Upgrade play-through; tag and release after the merge |
+| R1 | **0.14.0** (last PR): What's new, changelog, version. **Built 2026-11-11**; evidence `production/qa/evidence/sprint-14/release/` | D56, D60 | Upgrade play-through; tag and release after the merge |
 
 ## Carried over
 - A phone playtest of levels 20–60 on the gentler curve by the testers who raised the complaint (D115). The 0.13.1 sweep measures solver pours, not feel.

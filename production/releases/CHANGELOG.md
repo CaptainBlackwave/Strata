@@ -25,12 +25,17 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.13.0 | `ebf60b7` (sprint 13, PR #23) |
 | v0.13.1 | `252cc05` (gentler curve, PR #25) |
 
-## Unreleased
+## 0.14.0 (2026-11-11): sprint 14, sharing
 **For players**
 - A link to Strata pasted into a chat or a post now shows a proper preview: the game's name, one line about it and a picture (sprint 14 H1).
 - Sharing a daily or weekly result now sends a picture of it with the text, on phones whose share sheet takes pictures. A preview shows the picture first, with a Show my name switch that starts off. Elsewhere the text is shared or copied as before (sprint 14 H2).
 - Challenge a friend: after clearing a level, or from a cleared level on the map, send a link that says "Can you beat my 34 pours?". Your friend sees the number to beat while they play, and can send their result back. A friend who hasn't reached that level is invited to play on instead. Challenges never pay coins (sprint 14 H3).
 - A small Share appears on the win card when you complete a shell set, reach a 7, 30, 60 or 100-day daily streak, or earn a badge. It never pays anything (sprint 14 H4).
+
+**Under the hood**
+- Owner decisions D116–D124: growth by players sharing, web only, no server at all, no rewards for sharing (`design/gdd/sharing.md`).
+- New: `sharing` in `game-config.json`, `src/ui/logic/share-card.ts`, `challenge.ts`, `moments.ts`, the canvas drawing in `src/ui/share-card.ts`, and the link preview image rendered by `tools/share/link-preview.cjs`.
+- Nothing is sent to any server and nothing new is saved, except a challenge link that waits through the tutorial.
 
 ## 0.13.1 (2026-11-11): a gentler climb
 **For players**
