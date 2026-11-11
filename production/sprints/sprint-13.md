@@ -1,6 +1,6 @@
 # Sprint 13: puzzle variety, and the late economy
 
-> **Status: in progress (2026-11-09).** E1 merged (PR #16). M1 (hourglass) merged and live (PR #17, deploy fix #18). M2 (sieve) merged and live (PR #19, deploy fix #20). M3 (clam) approved by the owner (D104), in review. Chosen in the owner interview after 0.12.0 (D95–D101 in `design/gdd/systems-index.md`). Target release: **0.13.0**. One PR per item (D80).
+> **Status: closed (2026-11-11), released as 0.13.0.** E1 (PR #16), M1 hourglass (PR #17, deploy fix #18), M2 sieve (PR #19, deploy fix #20), M3 clam (PR #21) and W1 daily/weekly (PR #22) are merged and verified live; R1 is the 0.13.0 release PR. P1 carries over: the owner has not run the phone checklist yet (no answers on the checklist page on 2026-11-11), so its findings will be fixed when it is run. Chosen in the owner interview after 0.12.0 (D95–D101 in `design/gdd/systems-index.md`). One PR per item (D80).
 
 ## Sprint Goal
 Keep the late game teaching something new: three original jar mechanics, the hourglass at level 101, the sieve at 141 and the clam at 181 (D96, D97), also in the daily and weekly (D98). Bring the top scene prices back to about two weeks each for a regular player (D99, D100).
@@ -30,3 +30,10 @@ Keep the late game teaching something new: three original jar mechanics, the hou
 - Evidence in `production/qa/evidence/sprint-13/`.
 - The owner approved each mechanic's art.
 - Each PR merged under D61; the live site checked; the v0.13.0 tag and release exist.
+
+## Close (R1, 2026-11-11)
+- `npm test`: all tests pass, also with `--testTimeout=2500`.
+- Upgrade play-through: a 0.12.0 save at level 101 (a scene and a style owned) sees the 0.13.0 What's new card, keeps its coins, scenes and worn style, meets the hourglass intro card and wins level 101 with hints; no page errors (`production/qa/evidence/sprint-13/close/upgrade-0.12.cjs`, screenshots alongside).
+- The What's new card at 320 px with 150% text: no sideways scroll, Got it pinned in view (`whats-new-320.cjs`).
+- Regressions pass on the release build: the 0.8.0 upgrade play-through, two tabs, level 141 at a 4× CPU throttle, and hints to a win.
+- P1 carries over to the next sprint (see Status).

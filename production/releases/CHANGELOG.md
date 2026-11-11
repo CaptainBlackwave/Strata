@@ -21,6 +21,23 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.10.1 | `22d66e6` (look fixes, PR #9) |
 | v0.11.0 | `6537631` (sprint 11, PR #12) |
 | v0.11.1 | `57cfc47` (first-run fixes, PR #13) |
+| v0.12.0 | `770639a` (sprint 12, PR #15) |
+
+## 0.13.0 (2026-11-11): sprint 13, three new jars and the late economy
+**For players**
+- The hourglass jar, from level 101: every third pour anywhere on the board flips its sand upside down. The number on it counts the pours left, and Undo turns it back.
+- The sieve jar, from level 141: banded in one colour, and only that colour may be poured in. Anything can be poured out.
+- The clam jar, from level 181: shut under its shell until the count on it runs out (every pour on the board counts down), then it opens and plays like any jar.
+- Each new jar has an intro card the first time you meet it and a spoken state for screen readers; the flip and the clam opening have their own sounds.
+- From Saturday 28 November, the Saturday daily cycles through all seven special jars, the hourglass first. From the week of 30 November, the weekly set adds three themes: Turning Tides, Fine Sieve and Clam Bay. Every daily and weekly before those dates is unchanged.
+- Long streaks pay more: +25 coins a day from day 30 and +50 from day 60.
+- The seven priciest scenes cost less, now 4,500 to 5,400 coins (were 5,050 to 11,650), about two weeks of play each. Scenes you own are kept.
+
+**Under the hood**
+- Every board with a new jar is proven solvable by the solver, which models the flip, the band and the shell, so hints stay correct.
+- New prices come from the economy model over a simulated year (`production/qa/sprint-13/late-ladder.md`).
+- Pinned fixtures prove that no earlier level, daily or weekly board changed.
+- Two Pages deploy fixes: explicit timeouts on the long solver sweeps (PR #18), and the placement tests split into three files (PR #20).
 
 ## 0.12.0 (2026-11-09): sprint 12, jar styles
 **For players**
