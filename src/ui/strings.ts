@@ -513,8 +513,9 @@ const en = {
   /** The weekly set (design/gdd/weekly-set.md, D77): Home card, chooser, board label, win card and Share. */
   weekly: {
     title: 'Weekly set',
-    /** Theme names by `weekly.themes[].id` in game-config.json (§3.3). */
-    themes: { narrow: 'Narrow Necks', frozen: 'Cold Snap', locked: 'Lock and Key', funnel: 'Funnel Week', deep: 'Deep Sand' } as Readonly<Record<string, string>>,
+    /** Theme names by `weekly.themes[].id` and `weekly.themesFrom[].themes[].id` in game-config.json (§3.3). */
+    // The hourglass, sieve and clam themes join from 2026-W49 (`weekly.themesFrom`, sprint 13 W1, D98).
+    themes: { narrow: 'Narrow Necks', frozen: 'Cold Snap', locked: 'Lock and Key', funnel: 'Funnel Week', deep: 'Deep Sand', hourglass: 'Turning Tides', sieve: 'Fine Sieve', clam: 'Clam Bay' } as Readonly<Record<string, string>>,
     progress: (cleared: number, total: number) => (cleared >= total ? 'Set complete \u2713' : `${cleared} of ${total} cleared`),
     daysLeft: (n: number) => (n <= 1 ? 'Last day' : `${n} days left`),
     /** The Home card's theme line, e.g. "Lock and Key · 6 days left". */
