@@ -49,7 +49,9 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 | Wed | medium | 7 | 4 | 1 | none |
 | Thu | medium | 8 | 4 | 1 | none |
 | Fri | tricky | 9 | 4 | 2 | none |
-| Sat | tricky | 10 | 4 | 2 | one, rotating weekly through narrow, frozen, locked, funnel |
+| Sat | tricky | 10 | 4 | 2 | one, rotating weekly: narrow, frozen, locked, funnel; from 2026-11-28 all seven (below) |
+
+**The new jars join the Saturday from 2026-11-28** (D98, *built in sprint 13 W1*). From Saturday 2026-11-28 (UTC) the rotate day cycles through all seven mechanics in unlock order, counted from that date: hourglass (2026-11-28), sieve (12-05), clam (12-12), then narrow, frozen, locked, funnel, and round again. It continues the old cycle (2026-11-21 was narrow) and opens with the hourglass's debut. **Before 2026-11-28 nothing changes**: the four classic mechanics, exactly as before (pinned by `tests/fixtures/daily-weekly-pins.json` and the pre-start entries of `daily-saturdays.json`). A new jar is placed through its own `LevelSpec` flag (`hourglass`, `sieve`, `clam`), the same placement path, solver proof and fallback chain as the numbered levels (`jar-mechanics.md` §2.4 to 2.6); the fallback drops the flag like a classic mechanic. The intro card shows on a player's first encounter, as for any Saturday (D2). Later eras are added as more `daily.saturdayFrom` entries; never move a `from` to a date already played.
 
 All have 2 spare jars. The board is seeded from the date key and a salt (Formulas), then goes through the same solver-proven generation as numbered levels (`generateFromSpec`, 60 attempts).
 
@@ -75,7 +77,11 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 ### 2.2 State and Data
 
 - `StreakState`: `last` (date key or null), `streak`, `best`, `passes`.
-- `DailyConfig`: `seedSalt` 7351, `week[]`, `streak {baseCoins, coinsPerDay, maxCoins, longSteps, passEvery, maxPasses}`.
+- `DailyConfig`: `seedSalt` 7351, `week[]`, `saturdayFrom[]` (sprint 13 W1), `streak {baseCoins, coinsPerDay, maxCoins, longSteps, passEvery, maxPasses}`.
+
+**Tuning knobs** (`src/config/game-config.json`, `daily`):
+- `saturdayFrom`: rotation eras, ascending, each `{ "from": "YYYY-MM-DD" (a Saturday, UTC), "mechanics": [...] }`. The last era started applies; before the first, the classic four. Today one era: from `2026-11-28`, `["hourglass", "sieve", "clam", "narrow", "frozen", "locked", "funnel"]`. Reordering or moving a live era changes live boards: add a new era with a future date instead.
+- `seedSalt`: never change it (every player's daily would change).
 
 **Persistence**: the streak state is saved (`save-data.md`). The daily board itself is regenerated from the date.
 
@@ -93,7 +99,7 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 |---|---|---|---|
 | Streak reward | `min(100, 30 + 10·(streak − 1)) + step(streak)`; `step` = 25 from day 30, 50 from day 60 (`longSteps`, D99) | streak ≥ 1 | Day 1: 30; day 4: 60; day 8: 100 (cap); day 30: 125; day 60: 150. The win card says "Long streak bonus +25" (or +50) |
 | Weekday | `(dayNumber + 4) mod 7`, 0 = Sunday | `dayNumber` = whole days since 1970-01-01 | 2026-11-08 → Sunday |
-| Saturday mechanic | `list[floor(dayNumber / 7) mod 4]` | | Advances one mechanic per week |
+| Saturday mechanic | Before the first era: `classic[floor(dayNumber / 7) mod 4]`. From an era's `from`: `era.mechanics[floor((dayNumber − dayNumber(from)) / 7) mod length]` (`rotationMechanic`) | `classic` = narrow, frozen, locked, funnel | Advances one mechanic per week; 2026-11-21 narrow (classic), 2026-11-28 hourglass, 2026-12-19 narrow |
 | Pass earned | `streak mod 7 == 0 and passes < 2` | | Streak 7 and 14 each bank one pass |
 | Daily seed | `FNV-1a(dateKey)` computed with the offset basis `2166136261 XOR seedSalt` (the salt goes into the basis *before* hashing), then attempt mixing | `seedSalt` 7351 | Boards must stay identical, so the code (`daily.ts`) is the requirement |
 
@@ -145,7 +151,8 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 - ✅ Monday is the easiest, Sunday is tall-jar, colours never fall from Monday to Saturday.
 - ✅ First solve starts a streak of 1 and pays the base; consecutive days grow it to the cap.
 - ✅ A pass is earned every 7 days (cap 2); one missed day is saved by a pass; otherwise reset to 1 with the best kept.
-- ✅ Saturdays each have exactly one mechanic and all four appear within 8 weeks.
+- ✅ Saturdays each have exactly one mechanic and all four appear within 8 weeks (before 2026-11-28).
+- ✅ Sprint 13 W1 (D98, `tests/unit/weekly/new-jars-rotation.test.ts`, `start-date-pins.test.ts`): every daily from 2026-11-11 to 2026-11-27 is byte-identical to the code before the change; ten years of Saturdays before 2026-11-28 never pick a new jar; from 2026-11-28 every seven Saturdays feature all seven mechanics in unlock order, the new jar as its flag; the hourglass, sieve and clam Saturdays keep their jar (no fallback), are solver-proven and replay to a win. Evidence: `production/qa/evidence/sprint-13/w1-daily-weekly/` (intro cards and boards, clock set to each date).
 
 - ✅ The daily is keyed by the UTC date; the same instant in four time zones gives the same key (`utcDateKey` tests).
 
@@ -177,4 +184,5 @@ None open: GA-DP-5 and GA-DP-6 take the owner's defaults (2026-11-08).
 |------|--------|---------|
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; UTC date confirmed by the owner |
 | 2026-11-08 | Claude | M4 fixed: the daily follows the UTC date |
+| 2026-11-11 | Claude (sprint 13 W1) | D98 built: the hourglass, sieve and clam join the Saturday rotation from 2026-11-28 (`daily.saturdayFrom`), all seven in unlock order; earlier dailies unchanged (pinned); tuning knobs and acceptance criteria added |
 | 2026-11-08 | Claude (sprint 6, F9) | Never-failing daily (F7, GA-DP-1) and the GA-DP-5 / GA-DP-6 defaults recorded as building; seed formula corrected (GA-DP-2); backwards-clock rule moved into 2.1 and marked handled (GA-DP-3); what a daily pays stated (GA-DP-4); UTC switch and midnight crossing noted (GA-DP-7, GX-18); player-profile added to dependencies |
