@@ -13,6 +13,7 @@
 | Reopen within 10 minutes, 0.14.1 worker | First load: **A** (stale). It only became B because this test build already has the new reload-on-Home code; the live 0.14.1 would have stayed on A |
 | Reopen within 10 minutes, new worker | First load: **B** |
 | Game left open on Home, back in the foreground | Reloads itself into **B**, on Home |
+| Settings open over Home when B arrives (strata-bya) | Stays on A while Settings is open; reloads into **B** when Settings closes (`settings-closed-updated.png`) |
 | First visit left open (review of PR #33) | The install does not reload the page (1 load); the next release reloads it into **B** (2 loads) |
 | Game left open mid-board (1 pour made) | Not interrupted: still A, the pour count kept. After going Home: **B** |
 

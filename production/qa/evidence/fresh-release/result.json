@@ -29,6 +29,11 @@
   "afterHome": "B",
   "errors": []
  },
+ "settingsOverHome": {
+  "whileOpen": "A",
+  "afterClose": "B",
+  "errors": []
+ },
  "firstVisitLeftOpen": {
   "afterInstall": {
    "release": "A",

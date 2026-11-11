@@ -1,0 +1,20 @@
+{
+ "blocked": {
+  "toasts": [
+   "Progress can't be saved: this browser's storage is full or blocked"
+  ],
+  "errors": []
+ },
+ "full": {
+  "toasts": [
+   "Progress can't be saved: this browser's storage is full or blocked"
+  ],
+  "errors": []
+ },
+ "normal": {
+  "toasts": [
+   "Strata is ready to play offline"
+  ],
+  "errors": []
+ }
+}

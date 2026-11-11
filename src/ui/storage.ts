@@ -130,6 +130,15 @@ function defaultStore(): KeyValueStore | null {
   }
 }
 
+/** Whether `key` holds anything at all, readable or not. */
+function hasKey(store: KeyValueStore | null, key: string): boolean {
+  try {
+    return (store?.getItem(key) ?? null) !== null;
+  } catch {
+    return false;
+  }
+}
+
 function read(store: KeyValueStore | null, key: string): unknown {
   try {
     const raw = store?.getItem(key);
@@ -139,7 +148,8 @@ function read(store: KeyValueStore | null, key: string): unknown {
   }
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object';
+/** A plain object: not null and not a list (a list is never a valid save or save section, strata-9hb). */
+const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const nonNegInt = (v: unknown, fallback: number) => (Number.isInteger(v) && (v as number) >= 0 ? (v as number) : fallback);
 
 /**
@@ -161,7 +171,7 @@ const levelOf = (v: unknown): number => (Number.isInteger(v) && (v as number) >=
 /** The usable part of a `best` map: keys that are positive level numbers, values non-negative integers. */
 function bestOf(v: unknown): Record<string, number> {
   const out: Record<string, number> = {};
-  if (!isObj(v) || Array.isArray(v)) return out;
+  if (!isObj(v)) return out;
   for (const [k, n] of Object.entries(v)) {
     if (/^[1-9]\d*$/.test(k) && Number.isInteger(n) && (n as number) >= 0) out[k] = n as number;
   }
@@ -214,6 +224,9 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const base = freshSave(econ);
   const v2 = read(store, KEY);
   if (!isObj(v2)) {
+    // A v2 save that exists but is unreadable gives a fresh save (save-data.md): never fall back to
+    // the v1 keys, which a phone may still hold from before the v2 format (strata-wry).
+    if (hasKey(store, KEY)) return base;
     const v1 = read(store, LEGACY_PROGRESS);
     const prefs = read(store, LEGACY_PREFS);
     if (isObj(v1)) {
@@ -315,11 +328,16 @@ export function onSaveError(fn: (() => void) | null): void {
   saveError = fn;
 }
 
-/** Saves, unless saves are paused. A failure calls the {@link onSaveError} handler and is otherwise ignored. */
+/**
+ * Saves, unless saves are paused. A failure calls the {@link onSaveError} handler and is otherwise
+ * ignored. No store at all (reading `localStorage` threw: blocked site data) is a failure too, so
+ * the player is told progress isn't kept (strata-gtl).
+ */
 export function writeSave(save: SaveData, store: KeyValueStore | null = defaultStore()): void {
   if (savesPaused) return;
   try {
-    store?.setItem(KEY, JSON.stringify(save));
+    if (!store) throw new Error('storage unavailable');
+    store.setItem(KEY, JSON.stringify(save));
   } catch {
     saveError?.(); // storage full or blocked: progress isn't kept, and the player is told once
   }

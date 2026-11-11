@@ -1,0 +1,56 @@
+{
+ "small150": [
+  {
+   "label": "Share: Tide Pool set complete",
+   "inside": true,
+   "right": 270,
+   "rowRight": 282,
+   "cardRight": 304,
+   "width": 88
+  },
+  {
+   "label": "Share: 30-day streak",
+   "inside": true,
+   "right": 270,
+   "rowRight": 282,
+   "cardRight": 304,
+   "width": 88
+  },
+  {
+   "label": "Share: New badge, First Seal",
+   "inside": true,
+   "right": 270,
+   "rowRight": 282,
+   "cardRight": 304,
+   "width": 88
+  }
+ ],
+ "small150Errors": [],
+ "pixel7": [
+  {
+   "label": "Share: Tide Pool set complete",
+   "inside": true,
+   "right": 332,
+   "rowRight": 344,
+   "cardRight": 366,
+   "width": 69
+  },
+  {
+   "label": "Share: 30-day streak",
+   "inside": true,
+   "right": 332,
+   "rowRight": 344,
+   "cardRight": 366,
+   "width": 69
+  },
+  {
+   "label": "Share: New badge, First Seal",
+   "inside": true,
+   "right": 332,
+   "rowRight": 344,
+   "cardRight": 366,
+   "width": 69
+  }
+ ],
+ "pixel7Errors": []
+}

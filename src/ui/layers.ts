@@ -30,6 +30,7 @@ export class LayerStack<E extends LayerElement> {
   private stack: Entry<E>[] = [];
   /** A layer that stays on top until it closes (the other-tab overlay, D57). */
   private pinned: E | null = null;
+  private listeners: ((top: E | null) => void)[] = [];
 
   /**
    * @param siblings  every element that can be covered (the app root's children), read fresh on each change
@@ -83,10 +84,16 @@ export class LayerStack<E extends LayerElement> {
     return entry?.opener ?? null;
   }
 
-  /** Applies `inert` and the draw order to match the stack. */
+  /** Calls `fn` with the new top layer after every open and close (strata-bya: an update waits for Home). */
+  onChange(fn: (top: E | null) => void): void {
+    this.listeners.push(fn);
+  }
+
+  /** Applies `inert` and the draw order to match the stack, then tells the listeners. */
   private sync(): void {
     const top = this.top();
     for (const sib of this.siblings()) sib.inert = top !== null && sib !== top && !this.alwaysLive.includes(sib);
     this.stack.forEach((x, i) => (x.el.style.zIndex = String(this.baseZ + i)));
+    for (const fn of this.listeners) fn(top);
   }
 }

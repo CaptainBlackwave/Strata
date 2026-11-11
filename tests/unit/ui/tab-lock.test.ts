@@ -167,4 +167,28 @@ describe('writeSave while another tab owns the save (D57, TD-14)', () => {
     }
     expect(errors).toEqual(['failed']);
   });
+
+  it('reports blocked storage too: no store at all is a failed write (strata-gtl)', () => {
+    const errors: unknown[] = [];
+    onSaveError(() => errors.push('failed'));
+    try {
+      writeSave(freshSave(econ), null); // reading localStorage threw, so there is no store
+    } finally {
+      onSaveError(null);
+    }
+    expect(errors).toEqual(['failed']);
+  });
+
+  it('a paused tab still writes nothing and reports nothing, even without storage', () => {
+    const errors: unknown[] = [];
+    onSaveError(() => errors.push('failed'));
+    pauseSaves(true);
+    try {
+      writeSave(freshSave(econ), null);
+    } finally {
+      pauseSaves(false);
+      onSaveError(null);
+    }
+    expect(errors).toEqual([]);
+  });
 });
