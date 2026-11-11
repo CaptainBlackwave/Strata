@@ -315,11 +315,16 @@ export function onSaveError(fn: (() => void) | null): void {
   saveError = fn;
 }
 
-/** Saves, unless saves are paused. A failure calls the {@link onSaveError} handler and is otherwise ignored. */
+/**
+ * Saves, unless saves are paused. A failure calls the {@link onSaveError} handler and is otherwise
+ * ignored. No store at all (reading `localStorage` threw: blocked site data) is a failure too, so
+ * the player is told progress isn't kept (strata-gtl).
+ */
 export function writeSave(save: SaveData, store: KeyValueStore | null = defaultStore()): void {
   if (savesPaused) return;
   try {
-    store?.setItem(KEY, JSON.stringify(save));
+    if (!store) throw new Error('storage unavailable');
+    store.setItem(KEY, JSON.stringify(save));
   } catch {
     saveError?.(); // storage full or blocked: progress isn't kept, and the player is told once
   }

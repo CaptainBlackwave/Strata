@@ -5,7 +5,7 @@
  * The protocol itself is the pure src/ui/tab-lock.ts.
  */
 import { knownShells } from '../../core/collection';
-import { SAVE_KEY, loadSave, onSaveError, pauseSaves, writeSave } from '../storage';
+import { SAVE_KEY, loadSave, onSaveError, pauseSaves, saveStored, writeSave } from '../storage';
 import { t } from '../strings';
 import { TabLock, broadcastChannel, storageChannel } from '../tab-lock';
 import { $, canFocus, closeLayer, layers, showToast } from '../dom';
@@ -71,11 +71,13 @@ function reloadSave(write = true): void {
  */
 export function wireOtherTab(): void {
   let told = false;
-  onSaveError(() => {
+  const tell = () => {
     if (told) return;
     told = true;
     showToast(t.saveFailed);
-  });
+  };
+  onSaveError(tell);
+  if (!saveStored()) tell(); // boot's write came before this handler: blocked or full storage is told now (strata-gtl)
   $('btn-play-here').addEventListener('click', playHere);
   let store: Storage | null = null;
   try {
