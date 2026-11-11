@@ -6,6 +6,9 @@ import { type ShareNavigator, shareChannel } from '../logic/share-card';
 import { openShare } from './sheets/share';
 import { activeVersus, shareChallenge } from './friend';
 import { challengeVerdict } from '../logic/challenge';
+import { type Moment, shareMoments } from '../logic/moments';
+import { siteLink } from '../logic/launch';
+import { badgeName } from './sheets/badges';
 import { homeHintDue, takeShare } from '../logic/onboarding';
 import { openShared } from './onboarding';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
@@ -123,6 +126,7 @@ export function openWin(): void {
   hideToast(); // a leftover hint or refusal toast must not sit over the win card
   audio.play('win');
   $('win-shell').hidden = true;
+  $('win-shell').querySelector('.moment-share')?.remove(); // a set's Share from the last win
   $('btn-share').hidden = true;
   $('btn-share').textContent = t.share;
   $('win-unlocks').replaceChildren();
@@ -144,10 +148,40 @@ export function applyWinToSave(): WinCard {
   return r.card;
 }
 
+/** A quiet Share for one high point on the win card (sharing §3.4): never a pop-up, never a reward. */
+function momentButton(m: Moment): HTMLButtonElement {
+  const name = m.kind === 'badge' ? badgeName(m.id) : '';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'secondary moment-share';
+  btn.textContent = t.moment.share;
+  btn.setAttribute('aria-label', t.moment.label(m, name));
+  btn.addEventListener('click', () => openShare({ text: t.moment.shareText(m, name, siteLink(location.href)), card: t.moment.card(m, name), colors: boardColors() }, btn));
+  return btn;
+}
+
+/** Adds the Share buttons for this win's moments: on the set's shell row, a streak row, the badge row. */
+function renderMoments(card: WinCard): void {
+  const setName = card.shell?.kind === 'shell' && card.shell.completedSet ? card.shell.completedSet.name : null;
+  for (const m of shareMoments({ setName, streak: state.mode === 'daily' ? card.streak : null, badges: card.badges }, config.sharing.streakMilestones)) {
+    if (m.kind === 'set') $('win-shell').append(momentButton(m));
+    else if (m.kind === 'badge') $('win-unlocks').querySelector('.win-badge')?.append(momentButton(m));
+    else {
+      const row = document.createElement('div');
+      row.className = 'win-shell win-unlock win-moment';
+      const text = document.createElement('span');
+      text.textContent = t.moment.row(m, '');
+      row.append(text, momentButton(m));
+      $('win-unlocks').prepend(row);
+    }
+  }
+}
+
 /** The parts of the card shared by the daily and level wins: shell row, unlocks, reward row. */
 export function renderRewards(card: WinCard): void {
   if (card.shell) renderShell(card.shell);
   showUnlocks(card.unlocks, card.badges);
+  renderMoments(card);
   $('win-reward').hidden = !card.rewardShown;
   if (card.rewardShown) countUp($('win-coins'), card.reward, reducedMotion() ? 0 : ANIM.winDelay); // counts on the open card
   $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;

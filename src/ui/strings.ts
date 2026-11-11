@@ -25,6 +25,9 @@ export interface WhatsNewRelease {
 /** A count with thousands separators, as the stats grid shows it: 1200 → "1,200". */
 const n0 = (n: number) => n.toLocaleString('en');
 
+/** The moment shapes the words describe (logic/moments.ts `Moment`). */
+type MomentWords = { readonly kind: 'set'; readonly name: string } | { readonly kind: 'streak'; readonly days: number } | { readonly kind: 'badge'; readonly id: string };
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 /** `2026-11-01` -> `1 Nov`: the daily's date on the share card. */
 const shortDate = (key: string) => `${Number(key.slice(8, 10))} ${MONTHS[Number(key.slice(5, 7)) - 1]}`;
@@ -93,6 +96,20 @@ const en = {
   shareFailed: 'Couldn\u2019t share. Try again.',
   shareText: (date: string, difficulty: string, moves: number, streak: number, url: string) =>
     `Strata Daily ${date} (${difficulty})\nSolved in ${moves} pours · ${streak}-day streak\n${url}`,
+  /** Share moments on the win card (sharing §3.4). `name` is the badge's name, '' for the others. */
+  moment: {
+    share: 'Share',
+    row: (m: MomentWords, name: string) => (m.kind === 'set' ? `${m.name} set complete!` : m.kind === 'streak' ? `${m.days}-day streak!` : `New badge: ${name}`),
+    label: (m: MomentWords, name: string) => `Share: ${m.kind === 'set' ? `${m.name} set complete` : m.kind === 'streak' ? `${m.days}-day streak` : `New badge, ${name}`}`,
+    card: (m: MomentWords, name: string) =>
+      m.kind === 'set'
+        ? { headline: `${m.name} set`, sub: 'Shell collection', lines: ['Complete', 'Every shell found'] }
+        : m.kind === 'streak'
+          ? { headline: `${m.days}-day streak`, sub: 'Daily puzzle', lines: [`${m.days} days`, 'One calm puzzle a day'] }
+          : { headline: 'New badge', sub: name, lines: ['Badge earned', 'Earned by play'] },
+    shareText: (m: MomentWords, name: string, url: string) =>
+      `${m.kind === 'set' ? `I completed the ${m.name} shell set` : m.kind === 'streak' ? `I'm on a ${m.days}-day streak` : `I earned the ${name} badge`} in Strata, a calm seaside sand-sort puzzle.\n${url}`,
+  },
   /** A friend's challenge on a numbered level (sharing §3.2, D121). `challenge` is the tall-jar tag. */
   friend: {
     title: 'A friend\u2019s challenge',

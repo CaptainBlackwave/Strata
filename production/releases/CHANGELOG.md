@@ -30,6 +30,7 @@ When a release merges, add its row here so a backfill can recreate it.
 - A link to Strata pasted into a chat or a post now shows a proper preview: the game's name, one line about it and a picture (sprint 14 H1).
 - Sharing a daily or weekly result now sends a picture of it with the text, on phones whose share sheet takes pictures. A preview shows the picture first, with a Show my name switch that starts off. Elsewhere the text is shared or copied as before (sprint 14 H2).
 - Challenge a friend: after clearing a level, or from a cleared level on the map, send a link that says "Can you beat my 34 pours?". Your friend sees the number to beat while they play, and can send their result back. A friend who hasn't reached that level is invited to play on instead. Challenges never pay coins (sprint 14 H3).
+- A small Share appears on the win card when you complete a shell set, reach a 7, 30, 60 or 100-day daily streak, or earn a badge. It never pays anything (sprint 14 H4).
 
 ## 0.13.1 (2026-11-11): a gentler climb
 **For players**

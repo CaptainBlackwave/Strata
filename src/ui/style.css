@@ -1261,6 +1261,22 @@ button {
   display: none;
 }
 
+/* A quiet Share on a win card row (sharing §3.4): a set, a streak milestone, a badge. */
+.win-shell .moment-share {
+  flex: none;
+  margin-left: auto;
+  min-height: 44px; /* F5 */
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  background: var(--card); /* the row is surface-2 */
+  box-shadow: inset 0 0 0 2px var(--accent-text);
+  color: var(--accent-text);
+}
+.win-moment {
+  font-size: 0.9375rem;
+}
+
 /* A friend's score to beat, beside the pour counter (sharing §3.2). */
 .versus {
   margin-left: 8px;

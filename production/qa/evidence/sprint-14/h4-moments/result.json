@@ -1,0 +1,58 @@
+{
+ "daily": {
+  "rows": [
+   {
+    "text": "New shell: Sea Star\nTide Pool set complete! +150 coins and 1 Shuffle, Jar and HintShare",
+    "share": "Share: Tide Pool set complete"
+   },
+   {
+    "text": "30-day streak!Share",
+    "share": "Share: 30-day streak"
+   },
+   {
+    "text": "New avatar: Anchor",
+    "share": null
+   },
+   {
+    "text": "New badges: First Seal, Matched Set, Morning Dip, Full MoonShare",
+    "share": "Share: New badge, First Seal"
+   }
+  ],
+  "buttons": 3,
+  "firstPicture": {
+   "width": 1080,
+   "height": 1350,
+   "alt": "Share card: Tide Pool set. Complete. Every shell found."
+  },
+  "firstSent": {
+   "text": "I completed the Tide Pool shell set in Strata, a calm seaside sand-sort puzzle.\nhttp://localhost:5543/",
+   "files": [
+    {
+     "name": "strata.png",
+     "type": "image/png",
+     "size": 189416
+    }
+   ]
+  },
+  "secondPicture": {
+   "width": 1080,
+   "height": 1350,
+   "alt": "Share card: 30-day streak. 30 days. One calm puzzle a day."
+  },
+  "secondSent": {
+   "text": "I'm on a 30-day streak in Strata, a calm seaside sand-sort puzzle.\nhttp://localhost:5543/",
+   "files": [
+    {
+     "name": "strata.png",
+     "type": "image/png",
+     "size": 195811
+    }
+   ]
+  },
+  "errors": []
+ },
+ "level": {
+  "buttons": 1,
+  "errors": []
+ }
+}
