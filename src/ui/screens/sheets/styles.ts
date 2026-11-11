@@ -48,6 +48,17 @@ function jarHtml(colors: readonly number[], sealed: boolean): string {
   return `<span class="jar${sealed ? ' sealed' : ''}"><span class="cork"></span><span class="glass"><span class="sand">${units}</span><span class="shine"></span></span></span>`;
 }
 
+/** A tiny sealed jar wearing piece `slot:id` over the worn styles (the piece buttons and the streak track sheet). */
+export function styleSwatchEl(slot: StyleSlot, id: string): HTMLElement {
+  const swatch = document.createElement('span');
+  swatch.className = 'style-preview style-swatch';
+  swatch.setAttribute('aria-hidden', 'true');
+  applyStyleAttrs(swatch, { ...state.save.styles.worn, [slot]: id });
+  const c = slot === 'sand' ? 1 : 0;
+  swatch.innerHTML = jarHtml([c, c, c, c], true);
+  return swatch;
+}
+
 /** The three sample jars on the stage: a sealed one, a mixed one, and another sealed one. */
 const STAGE_HTML = () => jarHtml([0, 0, 0, 0], true) + jarHtml([1, 2, 1, 3], false) + jarHtml([2, 2, 2, 2], true);
 
@@ -59,11 +70,7 @@ function pieceButton(slot: StyleSlot, id: string, price: number): HTMLButtonElem
   btn.dataset.slot = slot;
   btn.dataset.id = id;
   btn.setAttribute('aria-pressed', String(preview?.[slot] === id));
-  const swatch = document.createElement('span');
-  swatch.className = 'style-preview style-swatch';
-  swatch.setAttribute('aria-hidden', 'true');
-  applyStyleAttrs(swatch, { ...state.save.styles.worn, [slot]: id });
-  swatch.innerHTML = jarHtml([slot === 'sand' ? 1 : 0, slot === 'sand' ? 1 : 0, slot === 'sand' ? 1 : 0, slot === 'sand' ? 1 : 0], true);
+  const swatch = styleSwatchEl(slot, id);
   const name = document.createElement('span');
   name.className = 'scene-name';
   name.textContent = nameOf(slot, id);

@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import config from '../../../../src/config/game-config.json';
 import { type TrackConfig, trackOf } from '../../../../src/core/streak-track';
-import { type TrackNames, nextRewardLine, trackRewardName, trackWinRows } from '../../../../src/ui/logic/streak-track';
+import { type TrackNames, nextRewardLine, trackRewardName, trackSheetRows, trackWinRows } from '../../../../src/ui/logic/streak-track';
 
 const track = trackOf(config as unknown as TrackConfig);
 const names: TrackNames = { frame: () => 'Tide Line', plate: () => 'Lighthouse', scene: () => 'Lighthouse Night' };
@@ -42,5 +42,24 @@ describe('trackWinRows', () => {
       'Day 30 streak reward: Sea Lantern glass',
       'Day 100 streak reward: Lighthouse Night scene',
     ]);
+  });
+});
+
+describe('trackSheetRows (0.15.1, strata-dll)', () => {
+  it('lists all six days in order: collected, then the next with days left, then later days', () => {
+    const rows = trackSheetRows([3, 7], 13, track, names);
+    expect(rows.map((r) => r.step.day)).toEqual([3, 7, 14, 30, 60, 100]);
+    expect(rows.map((r) => r.state)).toEqual(['collected', 'collected', 'next', 'later', 'later', 'later']);
+    expect(rows.map((r) => r.status)).toEqual(['Day 3 · Collected', 'Day 7 · Collected', 'Day 14 · Next · 1 day', 'Day 30', 'Day 60', 'Day 100']);
+    expect(rows[3].name).toBe('Sea Lantern glass');
+  });
+  it('a streak of 40 with four days collected aims for day 60 in 20 days', () => {
+    const rows = trackSheetRows([3, 7, 14, 30], 40, track, names);
+    expect(rows[4]).toMatchObject({ state: 'next', status: 'Day 60 · Next · 20 days', name: 'Lighthouse name plate' });
+    expect(rows[5].state).toBe('later');
+  });
+  it('a collected day stays collected after the streak ends; nothing is next once all are collected', () => {
+    expect(trackSheetRows([3, 7, 14], 0, track, names)[2].state).toBe('collected');
+    expect(trackSheetRows(track.map((s) => s.day), 0, track, names).every((r) => r.state === 'collected')).toBe(true);
   });
 });

@@ -199,6 +199,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.15.1',
+        name: 'All your streak rewards',
+        lines: [
+          'Tap the line under the daily puzzle to see all six streak rewards and which you have collected.',
+          'Buttons for things you can\'t get yet are easier to read, with a small lock.',
+          'The Close buttons in the Scenes and Jar styles sheets are full width.',
+        ],
+      },
+      {
         version: '0.15.0',
         name: 'Come back tomorrow',
         lines: [
@@ -627,6 +636,18 @@ const en = {
   },
   /** The streak reward track (sprint 16, D136; daily-puzzle.md §2.4): Home's next reward, win card rows, locked pieces. */
   track: {
+    /** The streak track sheet (0.15.1, strata-dll). */
+    title: 'Streak rewards',
+    keep: 'Rewards are yours to keep, even if a streak ends.',
+    /** Home's link to the sheet once every day is collected. */
+    allCollected: 'All streak rewards collected',
+    /** Spoken after Home's link text, so it says where it goes. */
+    linkLabel: (line: string) => `${line}. See all streak rewards`,
+    current: (n: number) => (n > 0 ? `Current streak: ${n === 1 ? '1 day' : `${n} days`}` : 'No streak right now. Solve today\u2019s daily to start one.'),
+    /** A sheet row's state: collected, the next one, or a later day. */
+    collected: (day: number) => `Day ${day} \u00b7 Collected`,
+    nextIn: (day: number, days: number) => `Day ${day} \u00b7 Next \u00b7 ${days === 1 ? '1\u00a0day' : `${days}\u00a0days`}`,
+    later: (day: number) => `Day ${day}`,
     /** The daily card's line, e.g. "Next streak reward: Tide Line frame · 4 days". */
     next: (name: string, days: number) => `Next streak reward: ${name} \u00b7 ${days === 1 ? '1\u00a0day' : `${days}\u00a0days`}`,
     /** A streak that already passed unclaimed days (a player who updated mid-streak, D140). */

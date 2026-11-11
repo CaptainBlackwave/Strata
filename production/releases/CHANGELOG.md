@@ -28,6 +28,14 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.15.1 (2026-11-11): all your streak rewards
+**For players**
+- A "Streak rewards" sheet, opened from the line under the daily puzzle, shows all six rewards (days 3 to 100), which you have collected and how many days to the next.
+- Buttons for things you can't get yet ("Needs N coins", "Streak reward · day N") are easier to read, with a small lock. The Close buttons in the Scenes and Jar styles sheets are full width.
+
+**Under the hood**
+- Beads strata-dll and strata-r20. A tester checklist for iPhone Safari and Firefox: `production/qa/tester-checklist-0.15.md`.
+
 ## 0.15.0 (2026-11-11): sprint 16, come back tomorrow
 **For players**
 - Streak rewards: keep your daily streak going for boosters on days 3 (Hint, Shuffle) and 7 (2 Hints, Shuffle, Jar), then the Tide Line frame (day 14), Sea Lantern jar glass (day 30), the Lighthouse name plate (day 60) and the Lighthouse Night scene (day 100). These can only be earned this way, are kept if a streak ends, and each day pays once. A streak you already have counts: your next daily solve collects what you passed.

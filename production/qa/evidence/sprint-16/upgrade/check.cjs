@@ -20,7 +20,7 @@ const save = { boards: 3, level: 80, wallet: { coins: 2400, boosters: { hint: 2,
   await p.screenshot({ path: __dirname + '/home-after.png', fullPage: true });
   await p.reload(); await p.waitForTimeout(1500);
   const s = await p.evaluate(() => JSON.parse(localStorage.getItem('strata.save.v2')));
-  r.second = { whatsNew: await p.locator('#whatsnew:not([hidden])').count(), level: s.level, coins: s.wallet.coins, streak: s.daily.streak, track: s.track, next: await p.textContent('#daily-next'), goals: await p.textContent('#goals-card') };
+  r.second = { whatsNew: await p.locator('#whatsnew:not([hidden])').count(), level: s.level, coins: s.wallet.coins, streak: s.daily.streak, track: s.track, next: await p.textContent('#btn-track'), goals: await p.textContent('#goals-card') };
   console.log(JSON.stringify(r, null, 1));
   require('fs').writeFileSync(__dirname + '/results.json', JSON.stringify(r, null, 2));
   await b.close();

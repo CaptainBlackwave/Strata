@@ -1,0 +1,15 @@
+{
+  "first": {
+    "whatsNew": 1,
+    "text": "Version 0.15.1 LatestAll your streak rewardsTap the line under the daily puzzle to see all six streak rewards and which "
+  },
+  "second": {
+    "whatsNew": 0,
+    "level": 80,
+    "coins": 2400,
+    "streak": 20,
+    "track": [],
+    "next": "Your next daily solve collects your streak rewards›",
+    "goals": "\n            Today’s goalsBeat your best pours on a level0/1Clear a weekly board0/1Solve today’s daily0/1+50 when all three are done\n          "
+  }
+}

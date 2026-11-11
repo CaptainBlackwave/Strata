@@ -40,8 +40,10 @@ export function showHome(): void {
   $('btn-daily').classList.toggle('solved', status.solvedToday);
   $('btn-daily').hidden = !state.save.tutorialDone;
   const next = nextRewardLine(state.save.track, status.current, trackOf(config as unknown as TrackConfig), trackNames()); // sprint 16: the next streak reward
-  $('daily-next').textContent = next;
-  $('daily-next').hidden = next === '';
+  const link = next || t.track.allCollected;
+  $('track-link-text').textContent = link;
+  $('btn-track').setAttribute('aria-label', t.track.linkLabel(link));
+  $('btn-track').hidden = !state.save.tutorialDone; // 0.15.1: opens the track sheet, never the daily
   renderWeeklyCard(); // sprint 11 W2: the weekly set's card, under the daily
   renderGoalsCard(today); // sprint 16: today's goals, under the weekly card
   const total = allShells(config).length;

@@ -2082,11 +2082,25 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 .scene-buy + .secondary {
   margin-top: 12px;
 }
-/* A buy the wallet can't cover ("Needs N coins") reads as unavailable. */
+/* A buy that can't happen ("Needs N coins", "Streak reward · day N", 0.15.1 strata-r20): a muted
+   surface-2 button with full-strength ink (4.5:1 in every scene, tests/unit/core/themes.test.ts), a
+   small lock, no shadow. Not faded with opacity, so the words stay readable. */
 .scene-buy:disabled {
-  opacity: 0.55;
+  color: var(--ink);
+  background: var(--surface-2);
   box-shadow: none;
   cursor: not-allowed;
+}
+.scene-buy:disabled::before {
+  content: '';
+  display: inline-block;
+  vertical-align: -0.12em;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.45em;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 /* The moon appears on the home screen only, where the top of the sky is empty */
@@ -4173,4 +4187,138 @@ body[data-theme='harvestmoon']::before {
   font-size: 0.6875rem;
   font-weight: 700;
   color: var(--ink-soft);
+}
+
+/* ==== 0.15.1: the streak track sheet (strata-dll) and locked buy buttons (strata-r20) ==== */
+/* Home's link to the track sheet, under the daily card: a slim card of its own (never inside the
+   daily's button), so it opens the sheet and not the daily. Accent text on the card is 4.5:1 in every scene. */
+.track-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--accent-text);
+  background: var(--card);
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.track-link > span:first-child {
+  flex: 1;
+  min-width: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.track-link-arrow {
+  flex: none;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.track-link[hidden] {
+  display: none;
+}
+.track-link:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.track-list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.track-row.next {
+  border-color: var(--accent);
+}
+.track-art {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 64px;
+  min-height: 44px;
+  overflow: hidden;
+  color: var(--ink);
+}
+.track-art > svg {
+  width: 44px;
+  height: 44px;
+}
+.track-art-boosters > svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.track-art .scene-swatch {
+  width: 64px;
+  height: 44px;
+  margin: 0;
+}
+/* Fixed px, so the plate's preview keeps a few letters of the name at 150% text. */
+.track-art .plate {
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-inline: 6px;
+  font-size: 10px;
+}
+.track-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.track-text b {
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.track-status {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+.track-row.collected .track-status,
+.track-row.next .track-status {
+  font-weight: 800;
+  color: var(--accent-text);
+}
+.track-keep {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+.track-close {
+  display: block;
+  width: 100%;
+  margin: 8px 0 8px;
+}
+/* strata-r20: the Scenes and Jar styles sheets end on a full-width Close. `.secondary` is a flex item
+   in a .sheet-row; here it sits alone in a block card, where it shrank to its label. */
+.sheet-close {
+  display: block;
+  width: 100%;
 }
