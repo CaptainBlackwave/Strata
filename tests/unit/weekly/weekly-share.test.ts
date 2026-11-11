@@ -20,6 +20,12 @@ describe('weekly card text (§3.8)', () => {
   it('every theme in the config has a name', () => {
     for (const theme of cfg.weekly.themes) expect(t.weekly.themes[theme.id], theme.id).toBeTruthy();
   });
+  it('every theme of a later era has a name; the new jar themes are named (sprint 13 W1)', () => {
+    for (const era of cfg.weekly.themesFrom ?? []) for (const theme of era.themes) expect(t.weekly.themes[theme.id], theme.id).toBeTruthy();
+    expect(t.weekly.themes.hourglass).toBe('Turning Tides');
+    expect(t.weekly.themes.sieve).toBe('Fine Sieve');
+    expect(t.weekly.themes.clam).toBe('Clam Bay');
+  });
   it('progress, days left and the board lines', () => {
     expect(t.weekly.progress(2, 5)).toBe('2 of 5 cleared');
     expect(t.weekly.progress(5, 5)).toBe('Set complete ✓');

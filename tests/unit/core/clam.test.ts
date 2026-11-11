@@ -262,9 +262,10 @@ describe('no earlier board changes (sprint 13 M3 hard constraints)', () => {
     for (const [l, h] of Object.entries(hashes)) expect(hash(generateLevel(Number(l), cfg).board), `level ${l}`).toBe(h);
   }, 60_000);
 
-  it('the daily Saturday rotation never picks the clam yet (W1 adds it from a start date)', () => {
+  it('the daily Saturday rotation never picks the clam before its start date (2026-11-28, sprint 13 W1)', () => {
+    // Ten years of Saturdays up to 2026-11-21; from 2026-11-28 see tests/unit/weekly/new-jars-rotation.test.ts.
     for (let w = 0; w < 520; w++) {
-      const key = new Date(Date.UTC(2026, 10, 7 + 7 * w)).toISOString().slice(0, 10);
+      const key = new Date(Date.UTC(2026, 10, 21 - 7 * w)).toISOString().slice(0, 10);
       const spec = dailySpec(key, cfg);
       expect(spec.mechanics).not.toContain('clam');
       expect(spec.clam).toBeFalsy();

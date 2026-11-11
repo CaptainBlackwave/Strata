@@ -49,6 +49,13 @@
       { "name": "tricky", "colors": 9, "capacity": 4, "spare": 2, "buriedDepth": 2 },
       { "name": "tricky", "colors": 10, "capacity": 4, "spare": 2, "buriedDepth": 2, "mechanic": "rotate" }
     ],
+    "saturdayFrom": [
+      {
+        "$comment": "Sprint 13 W1 (D98, design/gdd/daily-puzzle.md §3.3): from this Saturday (UTC) the rotate day cycles through all seven mechanics in unlock order, counted from the date, so it plays mechanics[0] first. It continues the old four-way cycle (2026-11-21 was narrow) with the hourglass's debut. Before the date the rotation is the four classic mechanics by dayNumber / 7, unchanged. Never move `from` to a date already played.",
+        "from": "2026-11-28",
+        "mechanics": ["hourglass", "sieve", "clam", "narrow", "frozen", "locked", "funnel"]
+      }
+    ],
     "streak": {
       "baseCoins": 30,
       "coinsPerDay": 10,
@@ -76,6 +83,22 @@
       { "id": "locked", "mechanic": "locked" },
       { "id": "funnel", "mechanic": "funnel" },
       { "id": "deep", "buriedBonus": 1 }
+    ],
+    "themesFrom": [
+      {
+        "$comment": "Sprint 13 W1 (D98, design/gdd/weekly-set.md §3.3): from this ISO week (Monday 2026-11-30) the rotation is these eight themes, counted from the week, so it plays themes[0] first: the three new jar themes, then the old rotation, which continues after 2026-W48 (deep). Before the week, `themes` above by weekIndex, unchanged. Never move `from` to a week already played.",
+        "from": "2026-W49",
+        "themes": [
+          { "id": "hourglass", "mechanic": "hourglass" },
+          { "id": "sieve", "mechanic": "sieve" },
+          { "id": "clam", "mechanic": "clam" },
+          { "id": "narrow", "mechanic": "narrow" },
+          { "id": "frozen", "mechanic": "frozen" },
+          { "id": "locked", "mechanic": "locked" },
+          { "id": "funnel", "mechanic": "funnel" },
+          { "id": "deep", "buriedBonus": 1 }
+        ]
+      }
     ]
   },
   "collection": {

@@ -6,7 +6,7 @@
 import { weeklyBadgeId } from './badges';
 import { dailySteps, dayNumber } from './daily';
 import { type FallbackStep, type GeneratedLevel, runFallbackSteps } from './generator';
-import type { ClassicMechanicId, GameConfig, LevelSpec } from './levels';
+import { type GameConfig, type LevelSpec, type MechanicId, splitMechanics } from './levels';
 
 /** One board of the set (weekly-set.md §3.4): a recipe and the level whose pour band caps it. */
 export interface WeeklyBoard {
@@ -18,11 +18,23 @@ export interface WeeklyBoard {
   readonly bandLevel: number;
 }
 
-/** A theme of the week (§3.3): one featured jar mechanic, or more buried sand. `id` keys the UI name. */
+/**
+ * A theme of the week (§3.3): one featured jar mechanic, or more buried sand. `id` keys the UI name.
+ * The hourglass, the sieve and the clam ride in their `LevelSpec` flags (sprint 13 W1).
+ */
 export interface WeeklyTheme {
   readonly id: string;
-  readonly mechanic?: ClassicMechanicId;
+  readonly mechanic?: MechanicId;
   readonly buriedBonus?: number;
+}
+
+/**
+ * A theme era (§3.3, sprint 13 W1, D98): from week `from` the rotation is `themes`, counted from
+ * that week, so the era's first week plays `themes[0]`.
+ */
+export interface WeeklyThemeEra {
+  readonly from: string;
+  readonly themes: readonly WeeklyTheme[];
 }
 
 /** The weekly part of game-config.json. */
@@ -33,7 +45,10 @@ export interface WeeklyConfig {
     readonly completeBonus: number;
     readonly maxBuried: number;
     readonly boards: readonly WeeklyBoard[];
+    /** The rotation before the first `themesFrom` era: `themes[weekIndex mod length]`. */
     readonly themes: readonly WeeklyTheme[];
+    /** Later rotations, ascending by `from`; the last one started applies (D98). */
+    readonly themesFrom?: readonly WeeklyThemeEra[];
   };
 }
 
@@ -113,8 +128,14 @@ export function daysLeft(key: string, now: Date): number {
   return Math.min(7, Math.max(1, 7 - elapsed));
 }
 
-/** The theme of a week: `themes[weekIndex mod themes.length]` (§3.3). */
+/**
+ * The theme of a week (§3.3): `themes[weekIndex mod themes.length]` before the first `themesFrom`
+ * era, exactly as before sprint 13 W1; from an era's `from`, its list counted from that week (D98).
+ * Example: `weeklyTheme('2026-W49', config).id // 'hourglass'`.
+ */
 export function weeklyTheme(week: string, config: WeeklyConfig): WeeklyTheme {
+  const era = [...(config.weekly.themesFrom ?? [])].reverse().find((e) => e.themes.length > 0 && week >= e.from);
+  if (era) return era.themes[(weekIndex(week) - weekIndex(era.from)) % era.themes.length];
   const list = config.weekly.themes;
   return list[weekIndex(week) % list.length];
 }
@@ -133,7 +154,7 @@ export function weeklySeeds(week: string, config: WeeklyConfig): number[] {
   return config.weekly.boards.map((_, i) => hashKey(`${week}#${i + 1}`, config.weekly.seedSalt));
 }
 
-/** The recipe of board `index` (0-based) of a week: its row, the theme's mechanic or extra buried layer. */
+/** The recipe of board `index` (0-based) of a week: its row, the theme's mechanic (a new jar as its flag) or extra buried layer. */
 export function weeklySpec(week: string, index: number, config: GameConfig & WeeklyConfig): WeeklySpec {
   const w = config.weekly;
   const b = w.boards[index];
@@ -148,7 +169,7 @@ export function weeklySpec(week: string, index: number, config: GameConfig & Wee
     spare: b.spare,
     buriedDepth: Math.min(w.maxBuried, b.buriedDepth + (theme.buriedBonus ?? 0)),
     challenge: b.capacity > 4,
-    mechanics: theme.mechanic ? [theme.mechanic] : [],
+    ...splitMechanics(theme.mechanic ? [theme.mechanic] : []),
   };
 }
 

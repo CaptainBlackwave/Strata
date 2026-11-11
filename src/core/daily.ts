@@ -4,8 +4,8 @@
  * be saved by a banked "tide pass". Pure functions only.
  * Implements design/competitive-roadmap.md item C6 (sprint 2 decisions S2-1, S2-2).
  */
-import { type FallbackStep, type GeneratedLevel, runFallbackSteps, stepBudgets } from './generator';
-import { type GameConfig, type LevelSpec, isClassicMechanic } from './levels';
+import { type FallbackStep, type GeneratedLevel, hasAnyMechanic, runFallbackSteps, stepBudgets, withoutMechanics } from './generator';
+import { type GameConfig, type LevelSpec, type MechanicId, isClassicMechanic, splitMechanics } from './levels';
 
 /** One weekday's board recipe. */
 export interface DailyDay {
@@ -18,12 +18,26 @@ export interface DailyDay {
   readonly mechanic?: 'rotate';
 }
 
+/**
+ * A rotation era (sprint 13 W1, D98): from date key `from` (a Saturday, UTC) the rotate day plays
+ * `mechanics[(whole weeks since from) mod length]`, so the first Saturday plays `mechanics[0]`.
+ */
+export interface DailyRotationEra {
+  readonly from: string;
+  readonly mechanics: readonly MechanicId[];
+}
+
 /** The daily part of game-config.json. */
 export interface DailyConfig {
   readonly daily: {
     readonly seedSalt: number;
     /** Index 0 = Sunday ... 6 = Saturday. */
     readonly week: readonly DailyDay[];
+    /**
+     * Later rotations, ascending by `from`; the last one started applies (D98). Before the first,
+     * or when absent, the rotation is the four classic mechanics by `dayNumber / 7` (S3-4).
+     */
+    readonly saturdayFrom?: readonly DailyRotationEra[];
     readonly streak: {
       readonly baseCoins: number;
       readonly coinsPerDay: number;
@@ -82,12 +96,27 @@ function hashKey(key: string, salt: number): number {
   return h >>> 0;
 }
 
-/** The board recipe for a date. */
+/**
+ * The mechanic a rotate day features on date `key` (daily-puzzle.md §3.3). Before the first
+ * `saturdayFrom` era: the four classic mechanics, `floor(dayNumber / 7) mod 4`, exactly as before
+ * sprint 13 W1 (tests/fixtures/daily-weekly-pins.json). From an era's `from`: its list, counted
+ * from that date, so no daily before the start date changes (D98).
+ * Example: `rotationMechanic('2026-11-28', config) // 'hourglass'`.
+ */
+export function rotationMechanic(key: string, config: GameConfig & DailyConfig): MechanicId {
+  const era = [...(config.daily.saturdayFrom ?? [])].reverse().find((e) => e.mechanics.length > 0 && key >= e.from);
+  if (era) {
+    const n = Math.floor((dayNumber(key) - dayNumber(era.from)) / 7);
+    return era.mechanics[n % era.mechanics.length];
+  }
+  const classic = config.mechanics.list.map((m) => m.id).filter(isClassicMechanic);
+  return classic[Math.floor(dayNumber(key) / 7) % classic.length];
+}
+
+/** The board recipe for a date. A new jar (hourglass, sieve, clam) rides in its `LevelSpec` flag, as on the levels. */
 export function dailySpec(key: string, config: GameConfig & DailyConfig): DailySpec {
   const day = config.daily.week[weekday(key)];
-  // The rotation is the four classic mechanics only: the hourglass (D96) joins it from a start date
-  // (sprint 13 W1, D98), so no daily changes before then (tests/fixtures/daily-saturdays.json).
-  const rotation = config.mechanics.list.map((m) => m.id).filter(isClassicMechanic);
+  const featured = day.mechanic === 'rotate' ? splitMechanics([rotationMechanic(key, config)]) : { mechanics: [] };
   return {
     level: 0,
     date: key,
@@ -97,7 +126,7 @@ export function dailySpec(key: string, config: GameConfig & DailyConfig): DailyS
     spare: day.spare,
     buriedDepth: day.buriedDepth,
     challenge: day.capacity > 4,
-    mechanics: day.mechanic === 'rotate' ? [rotation[Math.floor(dayNumber(key) / 7) % rotation.length]] : [],
+    ...featured,
   };
 }
 
@@ -119,17 +148,17 @@ export function generateDaily(key: string, config: GameConfig & DailyConfig): Ge
 
 /**
  * The daily's fallback chain (TD-5): the full recipe with the plain generator caps (it is
- * not capped by step work, unlike a level's first step), then, when the day has a mechanic,
- * the same recipe without it, capped by `generator.stepNodeBudget`.
+ * not capped by step work, unlike a level's first step), then, when the day has a mechanic
+ * (a new jar's flag included, sprint 13 W1), the same recipe without it, capped by `generator.stepNodeBudget`.
  * The weekly set uses the same chain for its boards (design/gdd/weekly-set.md §3.4).
  * Example: `dailySteps(dailySpec('2026-11-08', config), config).length // 1 or 2`
  */
 export function dailySteps<S extends LevelSpec = DailySpec>(spec: S, config: GameConfig): FallbackStep<S>[] {
   const g = config.generator;
   const steps: FallbackStep<S>[] = [{ spec, maxAttempts: g.maxAttempts, totalNodeBudget: Infinity, attemptNodeBudget: g.solverNodeBudget }];
-  if (spec.mechanics.length) {
+  if (hasAnyMechanic(spec)) {
     const { cap, perAttempt } = stepBudgets(config);
-    steps.push({ spec: { ...spec, mechanics: [] }, maxAttempts: g.maxAttempts, totalNodeBudget: cap, attemptNodeBudget: perAttempt });
+    steps.push({ spec: withoutMechanics(spec), maxAttempts: g.maxAttempts, totalNodeBudget: cap, attemptNodeBudget: perAttempt });
   }
   return steps;
 }

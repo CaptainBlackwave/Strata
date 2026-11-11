@@ -86,15 +86,16 @@ describe('weekKey: ISO weeks on the UTC calendar (§3.1)', () => {
 });
 
 describe('themes (§3.3)', () => {
-  it('rotate one per week through the list; 2026-W46 is Lock and Key', () => {
+  // Before 2026-W49 (sprint 13 W1, D98); from then see tests/unit/weekly/new-jars-rotation.test.ts.
+  it('rotate one per week through the list before 2026-W49; 2026-W46 is Lock and Key', () => {
     expect(weeklyTheme('2026-W46', cfg).id).toBe('locked');
-    const ids = Array.from({ length: cfg.weekly.themes.length }, (_, i) => weeklyTheme(weekAfter('2026-W46', i), cfg).id);
+    const ids = Array.from({ length: cfg.weekly.themes.length }, (_, i) => weeklyTheme(weekAfter('2026-W41', i), cfg).id);
     expect(new Set(ids).size).toBe(cfg.weekly.themes.length);
-    expect(weeklyTheme(weekAfter('2026-W46', cfg.weekly.themes.length), cfg).id).toBe('locked');
+    expect(weeklyTheme('2026-W41', cfg).id).toBe('locked');
   });
   it('a mechanic theme puts its jar on all five boards; Deep Sand buries one more, capped', () => {
     for (let w = 0; w < cfg.weekly.themes.length; w++) {
-      const week = weekAfter('2026-W46', w);
+      const week = weekAfter('2026-W44', w); // 2026-W44 to W48, the classic themes
       const theme = weeklyTheme(week, cfg);
       for (let i = 0; i < BOARDS; i++) {
         const spec = weeklySpec(week, i, cfg);
@@ -134,9 +135,11 @@ describe('generateWeekly (§3.4)', () => {
     expect(weeks[6]).toBe('2026-W53');
     expect(weeks[7]).toBe('2027-W01');
   });
-  it('matches the 8-week fixture of board hashes (the same boards for everyone, on every run)', () => {
+  it('matches the fixture of board hashes before 2026-W49 (the same boards for everyone, on every run)', () => {
+    // From 2026-W49 the rotation has the new jar themes (sprint 13 W1, D98), so later weeks' boards changed on purpose;
+    // tests/fixtures/daily-weekly-pins.json pins W46 to W48 from the code before that change.
     const hashes = fixture.hashes as Record<string, string>;
-    for (const week of weeks) for (let i = 0; i < BOARDS; i++) expect(hash(generateWeekly(week, i, cfg).board), `${week}#${i + 1}`).toBe(hashes[`${week}#${i + 1}`]);
+    for (const week of weeks.filter((w) => w < '2026-W49')) for (let i = 0; i < BOARDS; i++) expect(hash(generateWeekly(week, i, cfg).board), `${week}#${i + 1}`).toBe(hashes[`${week}#${i + 1}`]);
     expect(Object.keys(hashes)).toHaveLength(weeks.length * BOARDS);
   });
   it('every board of 8 weeks is solvable, starts unsealed, keeps its theme and is within its pour cap', () => {

@@ -1,0 +1,94 @@
+{
+ "$comment": "Pins for sprint 13 W1 (D98): every daily from 2026-11-11 to 2026-11-27 and every weekly board of 2026-W46 to 2026-W48, hashed (FNV-1a of the board JSON) from the code before the new jars joined the daily and the weekly (branch w1-daily-weekly, parent 73dbc5b). The new rotations start on 2026-11-28 (daily) and 2026-W49 (weekly), so these must never change.",
+ "days": {
+  "2026-11-11": {
+   "mechanics": [],
+   "hash": "703581d7"
+  },
+  "2026-11-12": {
+   "mechanics": [],
+   "hash": "ffddd843"
+  },
+  "2026-11-13": {
+   "mechanics": [],
+   "hash": "fa879336"
+  },
+  "2026-11-14": {
+   "mechanics": [
+    "funnel"
+   ],
+   "hash": "f3650aa4"
+  },
+  "2026-11-15": {
+   "mechanics": [],
+   "hash": "946303a5"
+  },
+  "2026-11-16": {
+   "mechanics": [],
+   "hash": "de89f6d4"
+  },
+  "2026-11-17": {
+   "mechanics": [],
+   "hash": "8f5caec9"
+  },
+  "2026-11-18": {
+   "mechanics": [],
+   "hash": "b2e96d1b"
+  },
+  "2026-11-19": {
+   "mechanics": [],
+   "hash": "dfcaff0f"
+  },
+  "2026-11-20": {
+   "mechanics": [],
+   "hash": "ef0fd116"
+  },
+  "2026-11-21": {
+   "mechanics": [
+    "narrow"
+   ],
+   "hash": "3e36648"
+  },
+  "2026-11-22": {
+   "mechanics": [],
+   "hash": "95cf5ec3"
+  },
+  "2026-11-23": {
+   "mechanics": [],
+   "hash": "8ae1aaee"
+  },
+  "2026-11-24": {
+   "mechanics": [],
+   "hash": "e4b3dbb5"
+  },
+  "2026-11-25": {
+   "mechanics": [],
+   "hash": "841f0309"
+  },
+  "2026-11-26": {
+   "mechanics": [],
+   "hash": "71291c69"
+  },
+  "2026-11-27": {
+   "mechanics": [],
+   "hash": "c588e1dc"
+  }
+ },
+ "weeks": {
+  "2026-W46#1": "105c4003",
+  "2026-W46#2": "566be98c",
+  "2026-W46#3": "53a87784",
+  "2026-W46#4": "7ca6f34",
+  "2026-W46#5": "8fe7c55d",
+  "2026-W47#1": "c023df31",
+  "2026-W47#2": "6d874abc",
+  "2026-W47#3": "a0dca708",
+  "2026-W47#4": "65738128",
+  "2026-W47#5": "b2f220a9",
+  "2026-W48#1": "64e6cc71",
+  "2026-W48#2": "374467d",
+  "2026-W48#3": "16700002",
+  "2026-W48#4": "81abd6ab",
+  "2026-W48#5": "c2da612c"
+ }
+}
