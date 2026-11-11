@@ -132,6 +132,17 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.13.0',
+        name: 'Three new jars',
+        lines: [
+          'The hourglass jar at level 101: every third pour, it flips its sand upside down.',
+          'The sieve jar at level 141: only the colour of its band goes in.',
+          'The clam jar at level 181: shut under its shell until the count runs out.',
+          'From 28 November the new jars join the Saturday daily, and from 30 November the weekly set.',
+          'Long streaks pay more from day 30 and day 60, and the priciest scenes now cost less.',
+        ],
+      },
+      {
         version: '0.12.0',
         name: 'Jar styles',
         lines: [
