@@ -29,3 +29,19 @@ export function challengeVerdict(mine: number, theirs: number): ChallengeVerdict
   const diff = mine - theirs;
   return { kind: diff < 0 ? 'beat' : diff === 0 ? 'matched' : 'behind', by: Math.abs(diff) };
 }
+
+/** A friend's challenge on a level being played: its level and the pours to beat. */
+export interface Versus {
+  readonly level: number;
+  readonly pours: number;
+}
+
+/**
+ * The challenge a level start carries (strata-fd8): only the one the challenge card started it
+ * with. Every other start clears it, including a later replay of the same level, so the "Beat P"
+ * target, the verdict and Send it back appear only while the challenge itself is played.
+ * Example: `versusOnStart(5, null) // null`.
+ */
+export function versusOnStart(level: number, offered: Versus | null): Versus | null {
+  return offered && offered.level === level ? offered : null;
+}

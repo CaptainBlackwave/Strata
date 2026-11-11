@@ -1,4 +1,5 @@
 /** The board screen: starting levels, session events, input, Restart, the stuck banner, boosters and hints. */
+import { type Versus, versusOnStart } from '../logic/challenge';
 import { type Board, canPour, isClosed, isSealed, pourRefusal } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { generateWeekly, parseWeek } from '../../core/weekly';
@@ -115,13 +116,14 @@ export function startTutorial(): void {
  * `quiet` is the board made behind Home (at boot, or when this tab takes over): it also holds
  * back the intro card, which shows when the level is played (sprint 13 M1: the "New jar!" card
  * opened over Home and was spent there). `replay` marks a replay started from the map (D50),
- * so Continue returns to the map.
+ * so Continue returns to the map. `versus` is a friend's challenge, passed only by the challenge
+ * card; any other start clears it (strata-fd8).
  */
-export function startLevel(n: number, quiet = false, replay = false): void {
+export function startLevel(n: number, quiet = false, replay = false, versus: Versus | null = null): void {
   state.mode = 'level';
   state.replay = replay;
   state.level = n;
-  if (state.versus && state.versus.level !== n) state.versus = null; // a challenge is for its own level only
+  state.versus = versusOnStart(n, versus); // a challenge lasts only for the start it came with
   const token = ++startToken;
   const ready = prefetcher.get(n);
   if (ready) return showLevel(ready, quiet);

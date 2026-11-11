@@ -193,3 +193,4 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D131 | Special jars | **Debuts unchanged, the rest slower**: 1 in 3 until 250, 1 in 2 at 500, two on a board from 250 | jar-mechanics, level-generation | built (0.14.1) |
 | D132 | Measuring "gentle" | **A simulated player** that sees only visible sand and gives up after a patience limit, plus booster counts; replaces solver pours as the target | level-generation | built (0.14.1) |
 | D133 | Shipping | **One PR as 0.14.1**, best pours reset once for changed levels (D110 rule), after the owner approves the plan | — | built (0.14.1) |
+| D134 | A challenge on the receiver's own next level | **Pays as a normal first clear**: it is their own next level; only an already-cleared level plays as a replay with no coins (bug sweep, strata-8s1) | sharing | built |
