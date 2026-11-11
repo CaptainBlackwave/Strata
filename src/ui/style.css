@@ -942,6 +942,7 @@ button {
   font-weight: 700;
 }
 .toggle input {
+  flex: none; /* strata-gbw.4: a wrapping label never squashes the switch */
   appearance: none;
   width: 46px;
   height: 28px;
@@ -2077,6 +2078,16 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 .scene-buy[hidden] {
   display: none;
 }
+/* strata-gbw.5: the Jar styles action sits straight above Close, so keep its shadow clear of it. */
+.scene-buy + .secondary {
+  margin-top: 12px;
+}
+/* A buy the wallet can't cover ("Needs N coins") reads as unavailable. */
+.scene-buy:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+  cursor: not-allowed;
+}
 
 /* The moon appears on the home screen only, where the top of the sky is empty */
 body[data-theme='moonlit'] .home::before {
@@ -2267,6 +2278,9 @@ svg.fx-stone {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* strata-gbw.3: may shrink (its plate ellipsises) so the gear stays on a 320 px screen. */
+  flex: 0 1 auto;
+  min-width: 0;
   max-width: min(18rem, 100%);
   min-height: 48px;
   padding: 2px 10px 2px 2px;
@@ -2645,6 +2659,7 @@ input[type='text'] {
   padding-right: env(safe-area-inset-right);
 }
 .home-settings {
+  flex: none;
   margin-left: auto;
   box-shadow: 0 3px 0 rgba(90, 70, 50, 0.12);
 }

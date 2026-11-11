@@ -2,7 +2,8 @@
  * The weekly set's Home card and its chooser of five boards (design/gdd/weekly-set.md §3.8), and
  * its Share (§3.9). The rules are the pure core/weekly.ts; this only shows them.
  */
-import { type WeeklyState, daysLeft, parseWeek, weekKey, weeklyFor, weeklyPours, weeklyTheme } from '../../../core/weekly';
+import { type WeeklyState, daysLeft, parseWeek, weekKey, weeklyFor, weeklyTheme } from '../../../core/weekly';
+import { weeklyToShare } from '../../logic/weekly-share';
 import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
@@ -11,6 +12,9 @@ import { startWeekly } from '../board';
 import { openShare } from './share';
 import { shareLink } from '../../logic/launch';
 import { audio, config, state } from '../../state';
+
+/** The set the open chooser shows, kept as it was when it opened (strata-gbw.6). */
+let shownSet: WeeklyState | null = null;
 
 /** The current week by the app clock (TD-16), on the UTC calendar like the daily (§3.1). */
 function currentWeek(): string {
@@ -80,6 +84,7 @@ function boardButton(set: WeeklyState, i: number): HTMLLIElement {
  */
 export function openWeekly(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
   const set = currentSet();
+  shownSet = set;
   const total = config.weekly.boards.length;
   $('weekly-sheet-sub').textContent = t.weekly.sheetSub(parseWeek(set.week)?.week ?? 0, weeklyThemeName(set.week), t.weekly.progress(set.cleared.length, total));
   const items = config.weekly.boards.map((_, i) => boardButton(set, i));
@@ -93,10 +98,11 @@ export function openWeekly(opener: FocusTarget | null = document.activeElement a
 /**
  * Opens the share preview for this set's pours (§3.9, sharing §3.1), with a link that opens the
  * weekly set (D82). `colors` are the jars' sand on the card: the board just cleared, or none.
+ * `fromChooser` shares the week the open chooser shows, even past Sunday midnight (strata-gbw.6).
  */
-export function shareWeekly(opener: HTMLElement, colors: readonly number[] = []): void {
-  const week = state.mode === 'weekly' && state.weeklyWeek ? state.weeklyWeek : currentWeek();
-  const pours = weeklyPours(state.save.weekly, week, config);
+export function shareWeekly(opener: HTMLElement, colors: readonly number[] = [], fromChooser = false): void {
+  const playing = state.mode === 'weekly' && state.weeklyWeek ? state.weeklyWeek : null;
+  const { week, pours } = weeklyToShare({ saved: state.save.weekly, shown: fromChooser ? shownSet : null, playing: fromChooser ? null : playing, now: currentWeek() }, config);
   const theme = weeklyThemeName(week);
   openShare({ text: t.weekly.shareText(week, theme, pours, shareLink(location.href, { weekly: week })), card: t.shareCard.weekly(week, theme, pours), colors }, opener);
 }
@@ -108,5 +114,5 @@ export function wireWeekly(): void {
     openWeekly($('btn-weekly'));
   });
   $('btn-close-weekly').addEventListener('click', () => closeLayer($('weekly')));
-  $('btn-weekly-share').addEventListener('click', () => shareWeekly($('btn-weekly-share')));
+  $('btn-weekly-share').addEventListener('click', () => shareWeekly($('btn-weekly-share'), [], true));
 }
