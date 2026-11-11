@@ -1,0 +1,15 @@
+{
+  "stuck": {
+    "moves": "3",
+    "banner": true
+  },
+  "shuffled": {
+    "moves": "3",
+    "banner": false
+  },
+  "undone": {
+    "moves": "3",
+    "banner": true,
+    "text": "No pours left. Undo, shuffle, add a jar or restart."
+  }
+}
