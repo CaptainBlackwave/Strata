@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- PROTOTYPE - NOT FOR PRODUCTION -->
+<!-- Question: can a GPU board (Pixi) and a falling-sand pour look and run well enough for Strata? -->
+<!-- Date: 2026-11-11 -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Strata GPU sand prototype</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0f2a33; font-family: system-ui, sans-serif; overflow: hidden; touch-action: manipulation; }
+    #app { display: flex; flex-direction: column; height: 100%; max-width: 520px; margin: 0 auto; }
+    #bar { flex: 0 0 auto; padding: 6px 8px 6px; background: #12343f; color: #e8f4f2; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+    #bar button { font: inherit; color: inherit; background: #1d5262; border: 1px solid #3b8097; border-radius: 8px; padding: 7px 10px; }
+    #bar button.on { background: #f0b34a; color: #20160a; border-color: #ffd98a; font-weight: 700; }
+    #bar label { display: flex; align-items: center; gap: 4px; }
+    #info { width: 100%; opacity: .75; font-size: 11px; }
+    #host { flex: 1 1 auto; position: relative; min-height: 0; }
+    #host canvas { display: block; width: 100%; height: 100%; }
+
+    /* variant A: today's look stand-in */
+    .a-board { position: absolute; inset: 0; background: linear-gradient(#bfe6ef, #e9efd8); display: grid; grid-template-columns: repeat(4, 1fr); align-content: center; gap: 28px 8px; padding: 16px 14px; }
+    .a-jar { justify-self: center; width: 62px; height: 150px; border: 3px solid rgba(255,255,255,.85); border-top-width: 1px; border-radius: 6px 6px 22px 22px; background: rgba(255,255,255,.35); display: flex; flex-direction: column-reverse; overflow: hidden; box-sizing: border-box; transition: transform .15s; }
+    .a-jar.sel { transform: translateY(-14px); }
+    .a-unit { width: 100%; flex: 0 0 auto; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="bar">
+      <button data-v="A">A today</button>
+      <button data-v="B">B pixi</button>
+      <button data-v="C">C pixi + sand sim</button>
+      <button id="undo">Undo</button>
+      <label><input type="checkbox" id="pat" /> patterns</label>
+      <div id="info">Level 52. Tap a jar, then another jar to pour.</div>
+    </div>
+    <div id="host"></div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
