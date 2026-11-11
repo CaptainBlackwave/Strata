@@ -4,7 +4,7 @@
  * Implements design/game-brief.md MVP 6 and design/competitive-roadmap.md C2/C5.
  */
 import gameConfig from '../config/game-config.json';
-import { type BadgeConfig, repairBadges } from '../core/badges';
+import { type BadgeConfig, type EventBadgeConfig, repairBadges } from '../core/badges';
 import type { DailyShareRecord, StreakState } from '../core/daily';
 import { type StyleState, type StylesConfig, defaultStyles, stylesOf } from '../core/styles';
 import type { ThemeState } from '../core/themes';
@@ -313,7 +313,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
         : null,
     seenWhatsNew: typeof v2.seenWhatsNew === 'string' ? v2.seenWhatsNew : '',
     seenShells: Math.min(nonNegInt(v2.seenShells, shells.length), shells.length),
-    badges: repairBadges(v2.badges, gameConfig as unknown as BadgeConfig),
+    badges: repairBadges(v2.badges, gameConfig as unknown as BadgeConfig & EventBadgeConfig),
     scenesPlayed: strings(v2.scenesPlayed).filter((id) => SCENE_IDS.has(id)),
     onboarding: onboardingOf(v2.onboarding, true), // any v2 save is from an earlier visit (D78)
     weekly: repairWeekly(v2.weekly, gameConfig as unknown as WeeklyConfig),

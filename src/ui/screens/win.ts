@@ -28,6 +28,8 @@ import { coach, updateHud } from './hud';
 import { plateEl, portraitOf } from './sheets/profile';
 import { badgeRow } from './sheets/badges';
 import { shareWeekly } from './sheets/weekly';
+import { styleSwatchEl } from './sheets/styles';
+import { type StyleSlot } from '../../core/styles';
 import { ANIM, audio, config, state } from '../state';
 
 /** Seconds after the win chime that a shell row's sound starts, so the two don't blur (F1, D68). */
@@ -165,7 +167,8 @@ export function applyWinToSave(): WinCard {
   const board = state.session.board;
   const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length; // counted at the win, so Undo can't farm it (badges.md §3.2)
   const weekly = state.mode === 'weekly' ? { week: state.weeklyWeek, index: state.weeklyIndex } : undefined;
-  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists, sealed, scene: currentTheme(), weekly, today: utcDateKey(state.clock()) }, config);
+  const event = state.mode === 'event' ? { id: state.eventId, year: state.eventYear, board: state.eventBoard } : undefined;
+  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists, sealed, scene: currentTheme(), weekly, event, today: utcDateKey(state.clock()) }, config);
   Object.assign(state.save, r.state);
   writeSave(state.save);
   return r.card;
@@ -265,6 +268,34 @@ export function winWeekly(): void {
   renderRewards(card);
 }
 
+/**
+ * An event board's win card (sprint 17, events.md): "Winter Tide · Board 6" (or "Winter Tide complete!"),
+ * the pours and the year's progress, a replay or new-best note, the coins every 6th board, and on the
+ * last board a prize row for the jar piece above the badge row. No Share (events have no share link yet).
+ */
+export function winEvent(): void {
+  const card = applyWinToSave();
+  const e = card.event;
+  const name = t.event.names[state.eventId] ?? state.eventId;
+  $('win-title').textContent = e?.completedNow ? t.event.completeTitle(name) : t.event.winTitle(name, state.eventBoard);
+  $('win-text').textContent = e ? t.event.winText(card.moves, e.cleared, e.total) : `${card.moves} ${t.poursLabel(card.moves)}`;
+  $('win-note').textContent = !e || e.firstClear ? '' : e.newBest ? t.newBest(card.moves) : t.event.replay;
+  btnNext.textContent = t.next;
+  renderRewards(card);
+  if (e?.prizeStyle) {
+    const [slot, id] = e.prizeStyle.split(':') as [StyleSlot, string];
+    const row = document.createElement('div');
+    row.className = 'win-shell win-unlock win-prize';
+    const art = document.createElement('span');
+    art.className = 'win-shell-art';
+    art.append(styleSwatchEl(slot, id));
+    const text = document.createElement('span');
+    text.textContent = t.event.prizeRow(t.event.piece(t.styles.names[slot]?.[id] ?? id, t.styles.slots[slot] ?? slot));
+    row.append(art, text);
+    $('win-unlocks').prepend(row); // above the badge row
+  }
+}
+
 /** What a replay changed (D50): "Perfect earned", "New best: X pours", or "Replay: no coins". */
 export function replayNote(card: WinCard): string {
   const changes = [card.perfectEarned && t.perfectEarned, card.newBest && t.newBest(card.moves)].filter(Boolean);
@@ -299,6 +330,7 @@ export function showWin(): void {
   if (state.mode === 'tutorial') winTutorial();
   else if (state.mode === 'daily') winDaily();
   else if (state.mode === 'weekly') winWeekly();
+  else if (state.mode === 'event') winEvent();
   else winLevel();
   // Focus lands on Continue, so the dialog describes the result: only the parts shown this time (UX-win-3).
   const described = [

@@ -18,6 +18,7 @@ import { screenIn } from '../fx';
 import { renderProfileChip } from './sheets/profile';
 import { maybeShowInstall } from './onboarding';
 import { renderWeeklyCard } from './sheets/weekly';
+import { renderEventCard } from './sheets/event';
 import { applyStyles, renderStylesButton } from './sheets/styles';
 import { dailyKey } from '../clock';
 import { config, state } from '../state';
@@ -45,6 +46,7 @@ export function showHome(): void {
   $('btn-track').setAttribute('aria-label', t.track.linkLabel(link));
   $('btn-track').hidden = !state.save.tutorialDone; // 0.15.1: opens the track sheet, never the daily
   renderWeeklyCard(); // sprint 11 W2: the weekly set's card, under the daily
+  renderEventCard(today); // sprint 17: a seasonal event's card, while one runs
   renderGoalsCard(today); // sprint 16: today's goals, under the weekly card
   const total = allShells(config).length;
   $('shells-label').textContent = t.shellCount(state.save.shells.length, total);

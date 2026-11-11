@@ -215,6 +215,15 @@
           <p id="weekly-share-status" class="share-status" role="status"></p>
         </div>
       </div>
+      <div id="event" class="cabinet" hidden>
+        <div class="cabinet-card event-sheet" role="dialog" aria-modal="true" aria-labelledby="event-sheet-title" aria-describedby="event-sheet-sub event-prize">
+          <div class="cabinet-head"><h2 id="event-sheet-title"></h2></div>
+          <p id="event-sheet-sub" class="cabinet-next"></p>
+          <p id="event-prize" class="event-prize"></p>
+          <ol id="event-boards" class="event-boards"></ol>
+          <button id="btn-close-event" data-s="close" class="secondary sheet-close" type="button">Close</button>
+        </div>
+      </div>
       <div id="track" class="cabinet" hidden>
         <div class="cabinet-card track-sheet" role="dialog" aria-modal="true" aria-labelledby="track-title" aria-describedby="track-streak track-keep">
           <div class="cabinet-head"><h2 id="track-title" data-s="track.title">Streak rewards</h2></div>
@@ -330,6 +339,10 @@
           <button id="btn-weekly" class="daily-card weekly-card" type="button" hidden>
             <span id="weekly-jars" class="weekly-jars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
             <span class="daily-text"><strong id="weekly-title" data-s="weekly.title">Weekly set</strong><span id="weekly-sub"></span><span id="weekly-progress" class="daily-streak"></span></span>
+          </button>
+          <button id="btn-event" class="daily-card weekly-card event-card" type="button" hidden>
+            <span class="event-ico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M10 4l2 2 2-2M10 20l2-2 2 2M4.6 10.3l2.7-.7-.7-2.7M19.4 13.7l-2.7.7.7 2.7M4.6 13.7l2.7.7-.7 2.7M19.4 10.3l-2.7-.7.7-2.7" /></svg></span>
+            <span class="daily-text"><strong id="event-title"></strong><span id="event-sub"></span><span id="event-days" class="daily-streak"></span></span>
           </button>
           <section id="goals-card" class="daily-card goals-card" role="group" aria-labelledby="goals-title" hidden>
             <span class="daily-text goals-text"><strong id="goals-title" data-s="goals.title">Today's goals</strong><ul id="goals-list" class="goals-list"></ul><span id="goals-foot" class="daily-streak"></span></span>

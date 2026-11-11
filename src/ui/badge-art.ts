@@ -35,6 +35,8 @@ const GLYPHS: Record<string, string> = {
   everyOwnedScene: '<circle cx="24" cy="23" r="10"/><path d="M24 15l3 8-3 8-3-8z"/>',
   // The weekly set (badges.md §3.9): five little jars in a row.
   weekly: '<path d="M14 30v-8M19 30v-10M24 30v-12M29 30v-10M34 30v-8"/><path d="M12 33h24"/>',
+  // An event (sprint 17): a six-armed snowflake (Winter Tide).
+  snowflake: '<path d="M24 12v24M13.6 18l20.8 12M13.6 30l20.8-12"/><path d="M21 14l3 3 3-3M21 34l3-3 3 3M14.4 22.2l4.1-1.1-1.1-4.1M33.6 25.8l-4.1 1.1 1.1 4.1M14.4 25.8l4.1 1.1-1.1 4.1M33.6 22.2l-4.1-1.1 1.1-4.1"/>',
 };
 
 /** The glyph key of a badge: its rule's stat, or `everyOwnedScene`. */

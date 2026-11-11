@@ -3,6 +3,8 @@ import { type Versus, versusOnStart } from '../logic/challenge';
 import { type Board, canPour, isClosed, isSealed, pourRefusal } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { generateWeekly, parseWeek } from '../../core/weekly';
+import { type EventsConfig, eventById, generateEventBoard } from '../../core/events';
+import { type GameConfig } from '../../core/levels';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
 import { tutorialBoard } from '../../core/generator';
@@ -27,6 +29,7 @@ import { introduce } from './sheets/guide';
 import { openMap } from './map';
 import { boosterHintOnStart } from './onboarding';
 import { openWeekly, weeklyThemeName } from './sheets/weekly';
+import { openEvent } from './sheets/event';
 import { ANIM, audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
@@ -89,6 +92,29 @@ export function startWeekly(week: string, index: number): void {
   challengeTag.hidden = false;
   coach(null);
   introduce(specMechanics(gen.spec));
+}
+
+/**
+ * Starts board `n` (1-based) of an event's `year` (sprint 17, design/gdd/events.md). Gentle boards are
+ * generated here on the main thread, like the weekly's. The year is fixed at the start, so a board won
+ * after the event ends still counts for its own year. No level progress and no prefetch.
+ */
+export function startEvent(id: string, year: number, n: number): void {
+  const event = eventById(id, config as unknown as EventsConfig);
+  if (!event) return;
+  audio.unlock();
+  screenOut(homeEl);
+  closeLayer(homeEl, false);
+  state.mode = 'event';
+  state.eventId = id;
+  state.eventYear = year;
+  state.eventBoard = n;
+  const gen = generateEventBoard(event, year, n, config as unknown as GameConfig);
+  beginSession(gen.board, gen.spec.challenge);
+  levelLabel.textContent = t.event.label(t.event.names[id] ?? id, n);
+  challengeTag.hidden = true;
+  coach(null);
+  introduce(specMechanics(gen.spec)); // none: event boards have no special jars (D144)
 }
 
 /** Home's Play: the tutorial until it is done, then level 1, then the level map from level 2 (D51). */
@@ -563,6 +589,9 @@ export function wireBoard(): void {
     else if (state.mode === 'weekly') {
       showHome();
       openWeekly($('btn-weekly')); // back to the five boards (weekly-set.md §3.8)
+    } else if (state.mode === 'event') {
+      showHome();
+      openEvent($('btn-event')); // back to the event's boards (sprint 17)
     }
     else if (state.mode === 'level' && state.replay) openMap(state.level);
     else startLevel(state.mode === 'tutorial' ? 1 : state.level + 1);

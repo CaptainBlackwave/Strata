@@ -35,7 +35,7 @@ export function wireKeys(): void {
       if (e.key === 'Escape') closeShare();
       return;
     }
-    if (top === $('profile') || top === $('transfer') || top === $('cabinet') || top === $('weekly') || top === $('track')) {
+    if (top === $('profile') || top === $('transfer') || top === $('cabinet') || top === $('weekly') || top === $('track') || top === $('event')) {
       if (e.key === 'Escape') closeLayer(top);
       return;
     }
