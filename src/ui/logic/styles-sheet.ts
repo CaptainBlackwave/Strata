@@ -6,11 +6,12 @@ import { type StyleSlot, type StyleState, type StylesConfig, isStyleOwned, style
 import { type Onboarding } from './onboarding';
 
 /** What the sheet's main button does for the previewed piece. */
-export type StyleAction = 'wearing' | 'wear' | 'buy' | 'need' | 'closed';
+export type StyleAction = 'wearing' | 'wear' | 'buy' | 'need' | 'earned' | 'closed';
 
 /**
  * The action for piece `slot:id`: `wearing` (already worn; no button), `wear` (owned or a default),
- * `buy` (affordable), `need` (not enough coins), or `closed` (unknown, or the shop is not open yet).
+ * `buy` (affordable), `need` (not enough coins), `earned` (a streak-only piece not granted yet: no
+ * Buy, sprint 16), or `closed` (unknown, or the shop is not open yet).
  * Example: `styleAction(save.styles, save.wallet.coins, save.level, 'glass', 'seaglass', config)`.
  */
 export function styleAction(state: StyleState, coins: number, level: number, slot: StyleSlot, id: string, config: StylesConfig): StyleAction {
@@ -18,6 +19,7 @@ export function styleAction(state: StyleState, coins: number, level: number, slo
   if (!piece) return 'closed';
   if (state.worn[slot] === id) return 'wearing';
   if (isStyleOwned(state, slot, id, config)) return 'wear';
+  if (piece.earned !== undefined) return 'earned';
   if (!stylesOpen(level, state, config)) return 'closed';
   return coins >= piece.price ? 'buy' : 'need';
 }

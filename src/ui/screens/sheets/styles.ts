@@ -4,7 +4,7 @@
  * core/styles.ts and logic/styles-sheet.ts; the art is CSS keyed by `data-glass`, `data-cork` and
  * `data-sand` (S3), which {@link applyStyles} sets on the board and Home.
  */
-import { STYLE_SLOTS, type StyleSlot, buyStyle, stylesOpen, wearStyle } from '../../../core/styles';
+import { STYLE_SLOTS, type StyleSlot, buyStyle, earnedDay, stylesOpen, wearStyle } from '../../../core/styles';
 import { styleAction, stylesNewDue } from '../../logic/styles-sheet';
 import { applyStyleAttrs } from '../../style-art';
 import { type FocusTarget } from '../../layers';
@@ -71,8 +71,11 @@ function pieceButton(slot: StyleSlot, id: string, price: number): HTMLButtonElem
   status.className = 'scene-status';
   const action = styleAction(state.save.styles, state.save.wallet.coins, state.save.level, slot, id, config);
   if (action === 'wearing') status.textContent = t.styles.wearing;
-  else if (action === 'wear') status.textContent = price === 0 ? t.styles.free : t.styles.owned;
-  else {
+  else if (action === 'wear') status.textContent = id === config.styles.slots[slot][0].id || price === 0 && earnedDay(slot, id, config) === undefined ? t.styles.free : t.styles.owned;
+  else if (action === 'earned') {
+    status.textContent = t.track.locked(earnedDay(slot, id, config) ?? 0); // streak-only: never a price (sprint 16)
+    status.classList.add('locked');
+  } else {
     status.textContent = String(price);
     status.classList.add('price');
     const unit = document.createElement('span'); // "1700 coins", not a bare number (as Scenes, UX-scenes-3)
@@ -125,8 +128,9 @@ export function renderStyles(): void {
   const name = nameOf(focus.slot, focus.id);
   const action = styleAction(state.save.styles, state.save.wallet.coins, state.save.level, focus.slot, focus.id, config);
   btn.hidden = action === 'wearing' || action === 'closed';
-  btn.disabled = action === 'need';
-  btn.textContent = action === 'wear' ? t.styles.wear(name) : action === 'buy' ? t.styles.buy(name, piece.price) : t.styles.need(piece.price, state.save.wallet.coins);
+  btn.disabled = action === 'need' || action === 'earned';
+  btn.textContent =
+    action === 'wear' ? t.styles.wear(name) : action === 'buy' ? t.styles.buy(name, piece.price) : action === 'earned' ? t.track.locked(piece.earned ?? 0) : t.styles.need(piece.price, state.save.wallet.coins);
   $('styles-previewing').textContent = action === 'wearing' ? '' : t.styles.previewing(name);
 }
 

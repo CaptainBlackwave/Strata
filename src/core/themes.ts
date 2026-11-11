@@ -45,6 +45,8 @@ export interface Theme {
   readonly id: string;
   readonly name: string;
   readonly price: number;
+  /** A streak-only scene (sprint 16, D136): the streak day that grants it. Never sold; `price` is 0 and unused. */
+  readonly earned?: number;
   readonly hours?: readonly [number, number];
   readonly kind?: ThemeKind;
   readonly tier?: 1 | 2 | 3;
@@ -78,9 +80,13 @@ export function themeById(config: ThemeConfig, id: string): Theme {
   return byIdOr(config.themes.list, id);
 }
 
-/** Whether the player can use a scene: it is free (price 0) or listed in `owned`. Example: `isOwned(theme, save.themes.owned)`. */
-export function isOwned(theme: Pick<Theme, 'id' | 'price'>, owned: readonly string[]): boolean {
-  return theme.price === 0 || owned.includes(theme.id);
+/**
+ * Whether the player can use a scene: it is free (price 0 and not streak-only) or listed in `owned`.
+ * A streak-only scene (`earned`) is owned only once the streak track has granted it.
+ * Example: `isOwned(theme, save.themes.owned)`.
+ */
+export function isOwned(theme: Pick<Theme, 'id' | 'price' | 'earned'>, owned: readonly string[]): boolean {
+  return (theme.price === 0 && theme.earned === undefined) || owned.includes(theme.id);
 }
 
 /** The time-of-day scene whose clock range contains `hour` (0-23). Scenes without `hours` are skipped. */
@@ -169,10 +175,10 @@ export function activeTheme(state: ThemeState, hour: number, config: ThemeConfig
   return owns(clock) ? clock : selected;
 }
 
-/** Buys a scene with coins. Fails, changing nothing, if owned, unknown or unaffordable. */
+/** Buys a scene with coins. Fails, changing nothing, if owned, unknown, streak-only (`earned`) or unaffordable. */
 export function buyTheme(wallet: Wallet, owned: readonly string[], id: string, config: ThemeConfig) {
   const theme = config.themes.list.find((t) => t.id === id);
-  if (!theme || owned.includes(id) || wallet.coins < theme.price) return { ok: false, wallet, owned };
+  if (!theme || theme.earned !== undefined || owned.includes(id) || wallet.coins < theme.price) return { ok: false, wallet, owned };
   return { ok: true, wallet: { ...wallet, coins: wallet.coins - theme.price }, owned: [...owned, id] };
 }
 

@@ -687,6 +687,37 @@
           "glow": "196, 172, 255",
           "glowCore": "234, 224, 255"
         }
+      },
+      {
+        "id": "lighthousenight",
+        "name": "Lighthouse Night",
+        "price": 0,
+        "earned": 100,
+        "kind": "sky",
+        "tier": 1,
+        "tokens": {
+          "bgTop": "#0b1424",
+          "bgBottom": "#16233a",
+          "sea": "#12324a",
+          "ink": "#f4ecd8",
+          "inkSoft": "#b9c3d0",
+          "glass": "rgba(255, 255, 255, 0.1)",
+          "glassEdge": "rgba(220, 226, 240, 0.6)",
+          "card": "#172238",
+          "accent": "#f2b84b",
+          "accentInk": "#0b1424",
+          "accentText": "#f2b84b",
+          "coralText": "#ff9a85",
+          "focus": "#8cc0ff",
+          "surface": "rgba(255, 255, 255, 0.1)",
+          "surface2": "#22304a",
+          "toastBg": "#f4ecd8",
+          "toastFg": "#172238",
+          "sky": "#27406a",
+          "themeColor": "#0b1424",
+          "glow": "255, 214, 140",
+          "glowCore": "255, 240, 210"
+        }
       }
     ]
   },
@@ -861,7 +892,8 @@
         { "id": "seaglass", "price": 1700 },
         { "id": "amber", "price": 2050 },
         { "id": "cobalt", "price": 2450 },
-        { "id": "pearl", "price": 2950 }
+        { "id": "pearl", "price": 2950 },
+        { "id": "sealantern", "price": 0, "earned": 30 }
       ],
       "cork": [
         { "id": "cork", "price": 0 },

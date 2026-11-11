@@ -28,7 +28,7 @@ import {
 const CSS_PATH = new URL('../../../src/ui/style.css', import.meta.url);
 const config = gameConfig as unknown as {
   palette: { id: string; hex: string }[];
-  styles: { slots: Record<'glass' | 'cork' | 'sand', { id: string; price: number }[]> };
+  styles: { slots: Record<'glass' | 'cork' | 'sand', { id: string; price: number; earned?: number }[]> };
 };
 
 function readCss(): string {
@@ -128,7 +128,7 @@ describe('style pieces in style.css (jar-styles.md §3.4)', () => {
     for (const slot of ['glass', 'cork'] as const) {
       for (const p of config.styles.slots[slot]) {
         const sel = `[data-${slot}='${p.id}']`;
-        if (p.price > 0) expect(piecesBlock, sel).toContain(sel);
+        if (p.price > 0 || p.earned !== undefined) expect(piecesBlock, sel).toContain(sel); // sold or streak-only (sprint 16)
         else expect(styleBlock, sel).not.toContain(sel);
       }
     }

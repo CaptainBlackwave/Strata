@@ -13,13 +13,24 @@ export type StyleSlot = 'glass' | 'cork' | 'sand';
 export const STYLE_SLOTS: readonly StyleSlot[] = ['glass', 'cork', 'sand'];
 
 /**
+ * One piece in a slot. `earned` marks a streak-only piece (sprint 16, D136): the streak day that
+ * grants it. An earned piece is never sold (its `price` is 0 and unused) and is owned only once the
+ * streak track has put it in `owned`.
+ */
+export interface StylePiece {
+  readonly id: string;
+  readonly price: number;
+  readonly earned?: number;
+}
+
+/**
  * The styles part of game-config.json. The first entry of each slot is its free default
  * (price 0); the rest are bought once with coins. Ids are saved, so they never change.
  */
 export interface StylesConfig {
   readonly styles: {
     readonly unlockLevel: number;
-    readonly slots: Readonly<Record<StyleSlot, readonly { readonly id: string; readonly price: number }[]>>;
+    readonly slots: Readonly<Record<StyleSlot, readonly StylePiece[]>>;
   };
 }
 
@@ -110,19 +121,28 @@ export function stylesOpen(level: number, state: StyleState, config: StylesConfi
 /**
  * Buys a piece with coins and wears it at once in its slot (§3.3, §4). Refuses, returning the same
  * `wallet` and `state` objects, when styles are closed, the slot or id is unknown, the piece is a
- * default or already owned, or `coins < price`. Other slots stay worn as they were.
+ * default, a streak-only piece (`earned`) or already owned, or `coins < price`. Other slots stay worn as they were.
  * Example: `buyStyle(save.wallet, save.styles, save.level, 'glass', 'seaglass', config)`.
  */
 export function buyStyle(wallet: Wallet, state: StyleState, level: number, slot: StyleSlot, id: string, config: StylesConfig): StyleBuyResult {
   const piece = pieceOf(slot, id, config);
   const refused = { ok: false, wallet, state };
   if (!piece || !stylesOpen(level, state, config) || id === defaultOf(slot, config)) return refused;
+  if (piece.earned !== undefined) return refused; // streak-only (D136): never for sale
   if (isStyleOwned(state, slot, id, config) || wallet.coins < piece.price) return refused;
   return {
     ok: true,
     wallet: { ...wallet, coins: wallet.coins - piece.price },
     state: { owned: [...state.owned, `${slot}:${id}`], worn: { ...state.worn, [slot]: id } },
   };
+}
+
+/**
+ * The streak day that grants this piece, or undefined for a piece sold for coins (or unknown).
+ * Example: `earnedDay('glass', 'sealantern', config) // 30`.
+ */
+export function earnedDay(slot: StyleSlot, id: string, config: StylesConfig): number | undefined {
+  return pieceOf(slot, id, config)?.earned;
 }
 
 /**

@@ -603,7 +603,7 @@ const en = {
     intro: 'Change how your jars look. A style never changes a sand colour.',
     slots: { glass: 'Glass', cork: 'Cork', sand: 'Sand' } as Readonly<Record<string, string>>,
     names: {
-      glass: { clear: 'Clear glass', seaglass: 'Sea glass', amber: 'Amber bottle', cobalt: 'Cobalt rim', pearl: 'Pearl' },
+      glass: { clear: 'Clear glass', seaglass: 'Sea glass', amber: 'Amber bottle', cobalt: 'Cobalt rim', pearl: 'Pearl', sealantern: 'Sea Lantern' },
       cork: { cork: 'Cork', driftwood: 'Driftwood', rope: 'Rope knot', scallop: 'Scallop cap', brass: 'Brass lid' },
       sand: { plain: 'Plain sand', fine: 'Fine grain', glint: 'Glint', layered: 'Layered', ripple: 'Ripple' },
     } as Readonly<Record<string, Readonly<Record<string, string>>>>,
@@ -615,6 +615,44 @@ const en = {
     need: (price: number, have: number) => `Needs ${price} coins (you have ${have})`,
     bought: (name: string) => `${name} is yours`,
     previewing: (name: string) => `Previewing ${name}`,
+  },
+  /** The streak reward track (sprint 16, D136; daily-puzzle.md §2.4): Home's next reward, win card rows, locked pieces. */
+  track: {
+    /** The daily card's line, e.g. "Next streak reward: Tide Line frame · 4 days". */
+    next: (name: string, days: number) => `Next streak reward: ${name} \u00b7 ${days === 1 ? '1 day' : `${days} days`}`,
+    /** A win card row, e.g. "Day 7 streak reward: Hint ×2, Shuffle, Jar". */
+    row: (day: number, name: string) => `Day ${day} streak reward: ${name}`,
+    /** A streak-only scene or jar piece not earned yet, e.g. "Streak reward · day 100". */
+    locked: (day: number) => `Streak reward \u00b7 day ${day}`,
+    frame: (name: string) => `${name} frame`,
+    plate: (name: string) => `${name} name plate`,
+    /** A jar piece with its slot, e.g. "Sea Lantern glass". */
+    style: (name: string, slot: string) => `${name} ${slot.toLowerCase()}`,
+    scene: (name: string) => `${name} scene`,
+    boosterNames: { hint: 'Hint', shuffle: 'Shuffle', extraJar: 'Jar', undo: 'Undo' } as Readonly<Record<string, string>>,
+    /** One booster in a list: "Hint ×2", or "Shuffle" for one. */
+    booster: (name: string, n: number) => (n === 1 ? name : `${name} \u00d7${n}`),
+  },
+  /** Daily goals (sprint 16, D137; design/gdd/daily-goals.md): the Home card and the win card rows. */
+  goals: {
+    title: 'Today\u2019s goals',
+    /** A goal's text by kind and target, e.g. "Seal 25 jars". */
+    text: {
+      seal: (n: number) => (n === 1 ? 'Seal a jar' : `Seal ${n} jars`),
+      clear: (n: number) => (n === 1 ? 'Clear a level' : `Clear ${n} levels`),
+      perfect: (n: number) => (n === 1 ? 'Clear a level Perfect' : `Clear ${n} levels Perfect`),
+      daily: () => 'Solve today\u2019s daily',
+      weekly: (n: number) => (n === 1 ? 'Clear a weekly board' : `Clear ${n} weekly boards`),
+      beatBest: (n: number) => (n === 1 ? 'Beat your best pours on a level' : `Beat your best pours on ${n} levels`),
+    } as Readonly<Record<string, (n: number) => string>>,
+    progress: (have: number, need: number) => `${have}/${need}`,
+    /** Spoken for a done goal's tick. */
+    done: 'Done',
+    /** The card's last line until all goals are done, e.g. "+50 when all three are done". */
+    bonusLeft: (coins: number, n: number) => `+${coins} when all ${(['', 'one', 'two', 'three', 'four', 'five'] as const)[n] ?? n} are done`,
+    allDone: 'All done',
+    winRow: (text: string, coins: number) => `Goal done: ${text} \u00b7 +${coins}`,
+    winBonus: (coins: number) => `All of today\u2019s goals done \u00b7 +${coins}`,
   },
   // sprint 11 weekly
   /** The weekly set (design/gdd/weekly-set.md, D77): Home card, chooser, board label, win card and Share. */
