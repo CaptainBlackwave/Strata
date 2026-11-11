@@ -9,6 +9,7 @@ import type { DailyShareRecord, StreakState } from '../core/daily';
 import { type StyleState, type StylesConfig, defaultStyles, stylesOf } from '../core/styles';
 import type { ThemeState } from '../core/themes';
 import { type WeeklyConfig, type WeeklyState, emptyWeekly, repairWeekly } from '../core/weekly';
+import { type GoalsState, emptyGoals, repairGoals } from '../core/goals';
 import { type Profile, STAT_KEYS, type Stats, emptyStats } from '../core/profile';
 import { type BoosterId, type EconomyConfig, type Wallet, newWallet } from '../core/economy';
 import { WHATS_NEW_VERSION } from './strings';
@@ -105,6 +106,13 @@ export interface SaveData {
    * stored) and the piece worn in each slot. Repaired field by field on load; an older save gets defaults.
    */
   styles: StyleState;
+  /**
+   * Streak track days already claimed (sprint 16, D136, D140; daily-puzzle.md §2.4), ascending, each once.
+   * A claimed day never pays again. An older save loads none.
+   */
+  track: number[];
+  /** Today's daily goals progress (sprint 16, D137; daily-goals.md). Repaired field by field. */
+  goals: GoalsState;
 }
 
 /** Abstracts the storage backend so it can be swapped in tests. */
@@ -225,7 +233,7 @@ function bestOnCurrentBoards(best: Record<string, number>, seen: number): Record
 
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], boards: LATEST_BOARDS, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding(), weekly: emptyWeekly(), styles: defaultStyles(gameConfig as unknown as StylesConfig) };
+  return { level: 1, best: {}, perfect: [], boards: LATEST_BOARDS, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding(), weekly: emptyWeekly(), styles: defaultStyles(gameConfig as unknown as StylesConfig), track: [], goals: emptyGoals() };
 }
 
 /**
@@ -307,6 +315,8 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     onboarding: onboardingOf(v2.onboarding, true), // any v2 save is from an earlier visit (D78)
     weekly: repairWeekly(v2.weekly, gameConfig as unknown as WeeklyConfig),
     styles: stylesOf(v2.styles, gameConfig as unknown as StylesConfig),
+    track: Array.isArray(v2.track) ? [...new Set(v2.track.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= 100_000))].sort((a, b) => a - b) : [],
+    goals: repairGoals(v2.goals),
   };
 }
 

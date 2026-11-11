@@ -477,6 +477,7 @@ const en = {
     dailiesSolved: (n: number) => `Solve ${n} daily puzzles`,
     shells: (n: number) => `Collect ${n} shells`,
     sets: (n: number) => (n === 1 ? 'Complete a shell set' : `Complete ${n} shell sets`),
+    trackDay: (n: number) => `Streak reward: reach day ${n}`,
   },
   unlockLine: (name: string, req: string, have: number, need: number) => `${name}: ${req} · ${have}/${need}`,
   newCosmetic: {

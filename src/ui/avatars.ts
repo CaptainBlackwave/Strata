@@ -62,6 +62,13 @@ const FRAMES: Record<string, () => string> = {
     }).join('')}</g>`,
   gold: () =>
     `${ring('#e2b552')}<path d="M16 40a35 35 0 0 1 26-25" fill="none" stroke="#fff2b8" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="50" r="41.8" fill="none" stroke="#a87a22" stroke-width="1.4"/>`,
+  // Streak reward, day 14 (sprint 16, D136): a deep-sea ring with a white tide line running round it.
+  tideline: () =>
+    `${ring('#2f7f9e')}<path d="${Array.from({ length: 97 }, (_, i) => {
+      const a = (i * Math.PI * 2) / 96;
+      const r = 45 + 2.2 * Math.sin(a * 12);
+      return `${i ? 'L' : 'M'}${(50 + r * Math.cos(a)).toFixed(1)} ${(50 + r * Math.sin(a)).toFixed(1)}`;
+    }).join('')}" fill="none" stroke="#e8fbff" stroke-width="1.8" stroke-linejoin="round"/>`,
 };
 
 /** Every frame id that has artwork. */

@@ -33,10 +33,10 @@ const progress = (n = 0, over: Partial<Progress> = {}): Progress => ({ ...Object
 const fresh = progress(0);
 
 describe('catalog', () => {
-  it('ships 8 avatars, 6 frames and 6 plates (PP-10)', () => {
+  it('ships 8 avatars, 7 frames and 7 plates (PP-10, plus a streak-track frame and plate in sprint 16, D136)', () => {
     expect(cfg.profile.avatars).toHaveLength(8);
-    expect(cfg.profile.frames).toHaveLength(6);
-    expect(cfg.profile.plates).toHaveLength(6);
+    expect(cfg.profile.frames).toHaveLength(7);
+    expect(cfg.profile.plates).toHaveLength(7);
   });
   it.each(SLOTS)('%s ids are unique, the default is a start item, and at least 3 are open from the start', (slot) => {
     const items = catalog(cfg, slot);
@@ -144,7 +144,7 @@ describe('unlocks', () => {
   });
   it('progressOf counts levels cleared, not the level being played', () => {
     const p = progressOf({ level: 26, bestStreak: 3, shellsOwned: 7, setsCompleted: 1, stats: { ...emptyStats(), perfectClears: 2, dailiesSolved: 4 } });
-    expect(p).toEqual({ levels: 25, perfectClears: 2, bestStreak: 3, dailiesSolved: 4, shells: 7, sets: 1 });
+    expect(p).toEqual({ levels: 25, perfectClears: 2, bestStreak: 3, dailiesSolved: 4, shells: 7, sets: 1, trackDay: 0 });
     expect(progressOf({ level: 1, bestStreak: 0, shellsOwned: 0, setsCompleted: 0, stats: emptyStats() }).levels).toBe(0);
   });
 });

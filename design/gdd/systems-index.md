@@ -194,3 +194,9 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D132 | Measuring "gentle" | **A simulated player** that sees only visible sand and gives up after a patience limit, plus booster counts; replaces solver pours as the target | level-generation | built (0.14.1) |
 | D133 | Shipping | **One PR as 0.14.1**, best pours reset once for changed levels (D110 rule), after the owner approves the plan | — | built (0.14.1) |
 | D134 | A challenge on the receiver's own next level | **Pays as a normal first clear**: it is their own next level; only an already-cleared level plays as a replay with no coins (bug sweep, strata-8s1) | sharing | built |
+| D135 | Next focus after the bug sweep | **Bring players back**: more reasons to return each day, inside the brief's anti-pillars (owner interview 2026-11-11) | daily-puzzle, daily-goals | planned |
+| D136 | Streak reward track | **Fixed rewards on streak days 3, 7, 14, 30, 60, 100**: boosters on 3 and 7, then streak-only cosmetics (Tide Line frame, Sea Lantern glass, Lighthouse plate, Lighthouse Night scene), never for sale | daily-puzzle | planned |
+| D137 | Daily goals | **Three goals a UTC day, the same for everyone**, picked from the date; each pays 20-40 coins once, all three +50 | daily-goals | planned |
+| D138 | Reminders | **None**: no notifications, app badges or calendar events; the reasons to return live in the game | daily-goals | planned |
+| D139 | Release size | **One sprint, one release: 0.15.0** with a What's new card | release | planned |
+| D140 | A missed day and the track | **The track counts the current streak; rewards are kept and each day is claimed once.** A solve claims every unclaimed day up to the new streak (catch-up) | daily-puzzle | planned |

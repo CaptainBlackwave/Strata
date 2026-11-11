@@ -6,10 +6,11 @@
 import type { Rng } from './rng';
 
 /** What an unlock is measured against (player-profile.md §3.6). */
-export type UnlockKind = 'levels' | 'perfectClears' | 'bestStreak' | 'dailiesSolved' | 'shells' | 'sets';
+/** `trackDay` is the highest streak-track day claimed (sprint 16, D136): items only the track gives. */
+export type UnlockKind = 'levels' | 'perfectClears' | 'bestStreak' | 'dailiesSolved' | 'shells' | 'sets' | 'trackDay';
 
 /** Every unlock kind, in display order. */
-export const UNLOCK_KINDS: readonly UnlockKind[] = ['levels', 'perfectClears', 'bestStreak', 'dailiesSolved', 'shells', 'sets'];
+export const UNLOCK_KINDS: readonly UnlockKind[] = ['levels', 'perfectClears', 'bestStreak', 'dailiesSolved', 'shells', 'sets', 'trackDay'];
 
 /** A milestone: met when `progress[kind] >= count`. */
 export interface Unlock {
@@ -107,6 +108,8 @@ export interface ProgressInput {
   readonly shellsOwned: number;
   readonly setsCompleted: number;
   readonly stats: Stats;
+  /** Streak-track days claimed (sprint 16); none for older callers. */
+  readonly track?: readonly number[];
 }
 
 /** The progress values for unlocks. Example: on level 26 → `levels: 25`. */
@@ -118,6 +121,7 @@ export function progressOf(p: ProgressInput): Progress {
     dailiesSolved: p.stats.dailiesSolved,
     shells: p.shellsOwned,
     sets: p.setsCompleted,
+    trackDay: Math.max(0, ...(p.track ?? [])),
   };
 }
 
