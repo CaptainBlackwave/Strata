@@ -75,6 +75,21 @@ See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 > **First session?** If the project has no engine configured and no game concept,
 > run `/start` to begin the guided onboarding flow.
 
+## Issue tracking (Beads)
+
+Work items, bugs and follow-ups live in **Beads** (`bd`, an issue tracker in the repo). Use it
+instead of ad-hoc TODO lists so work survives between sessions.
+
+- **Start of a session:** `bash tools/beads/ensure.sh`. Cloud containers start empty, so it installs
+  `bd` and rebuilds the local database from `.beads/issues.jsonl`. Then `bd ready` lists open work
+  with nothing blocking it.
+- **While working:** `bd create "Title" -t bug|task|feature -p 0-4 -d "..."`, `bd update <id> --status in_progress`,
+  `bd close <id> --reason "..."`, `bd dep add <id> <blocks-id>`. Reference the issue id in commits
+  (`Issue: strata-xyz`).
+- **Before committing:** `bash tools/beads/save.sh` writes every issue to `.beads/issues.jsonl`.
+  Commit that file: it is the only copy git keeps (the database in `.beads/embeddeddolt/` is ignored).
+- Priorities: 0 critical (broken for players), 1 high, 2 normal, 3 low, 4 backlog.
+
 ## Coding Standards
 
 @.claude/docs/coding-standards.md
