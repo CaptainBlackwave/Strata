@@ -51,7 +51,7 @@ export interface SaveData {
    */
   perfect: number[];
   /**
-   * The newest `boardChanges` version this save has been through (D109). A save on an older one
+   * The newest `boardChanges` version this save has been through (D110). A save on an older one
    * loses its best pours for the changed levels on load, once. An older save loads as 1.
    */
   boards: number;
@@ -178,13 +178,13 @@ function perfectOf(v: unknown): number[] {
 /** A de-duplicated list of the strings in `v`, or [] if it isn't an array. */
 const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : []);
 
-/** One release that changed the boards behind level numbers (D109): every level from `fromLevel` on. */
+/** One release that changed the boards behind level numbers (D110): every level from `fromLevel` on. */
 interface BoardChange {
   readonly version: number;
   readonly fromLevel: number;
 }
 
-/** Releases that changed the boards behind level numbers: `boardChanges` in the config (D109). */
+/** Releases that changed the boards behind level numbers: `boardChanges` in the config (D110). */
 const BOARD_CHANGES: readonly BoardChange[] = (gameConfig as unknown as { boardChanges?: BoardChange[] }).boardChanges ?? [];
 /** The boards version a save has before any change. */
 const FIRST_BOARDS = 1;
@@ -192,7 +192,7 @@ const FIRST_BOARDS = 1;
 const LATEST_BOARDS = Math.max(FIRST_BOARDS, ...BOARD_CHANGES.map((c) => c.version));
 
 /**
- * `best` without the levels whose boards changed after boards version `seen` (D109): the best
+ * `best` without the levels whose boards changed after boards version `seen` (D110): the best
  * pours of a board that no longer exists are dropped; nothing else in the save is touched.
  * Example: a save on version 1 with the version-2 change from level 12 keeps `best` for 1-11.
  */

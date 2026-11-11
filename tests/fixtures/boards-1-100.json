@@ -1,5 +1,5 @@
 {
- "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-100 as built before the hourglass jar (sprint 13 M1, from commit 84adfc5). Levels 1-100 must never change. (plain-boards.json pins only the pre-sprint-3 boards of levels without a mechanic.) Re-baselined on purpose by the gentler curve (D104-D109, production/qa/gentle-curve/): every board from level 12 changed except the tall-jar levels from 50; levels 1-11 kept their hashes.",
+ "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-100 as built before the hourglass jar (sprint 13 M1, from commit 84adfc5). Levels 1-100 must never change. (plain-boards.json pins only the pre-sprint-3 boards of levels without a mechanic.) Re-baselined on purpose by the gentler curve (D105-D112, 0.13.1, production/qa/gentle-curve/): boards from level 12 changed; levels 1-11 kept their hashes.",
  "hashes": {
   "1": "2ed94f4c",
   "2": "3750eaba",

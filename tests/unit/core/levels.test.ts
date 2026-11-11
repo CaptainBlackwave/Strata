@@ -24,7 +24,7 @@ describe('levelSpec', () => {
     expect(levelSpec(10, cfg)).toMatchObject({ challenge: true, capacity: 8 });
     expect(levelSpec(11, cfg).challenge).toBe(false);
   });
-  it('the early tall-jar levels are 4 x 8 and later ones are 5 x 8 (challenge.curve, D82 R3, D108)', () => {
+  it('the early tall-jar levels are 4 x 8 and later ones are 5 x 8 (challenge.curve, D82 R3, D109)', () => {
     expect(levelSpec(10, cfg)).toMatchObject({ challenge: true, colors: 4, capacity: 8, spare: 2, buriedDepth: 0 });
     for (const l of [50, 100, 500]) expect(levelSpec(l, cfg), `level ${l}`).toMatchObject({ challenge: true, colors: 5, capacity: 8, spare: 2 });
   });
@@ -42,7 +42,7 @@ describe('levelSpec', () => {
   it('rejects non-positive levels', () => {
     expect(() => levelSpec(0, cfg)).toThrow(RangeError);
   });
-  it('colour count never decreases across normal levels (breathers aside, D106)', () => {
+  it('colour count never decreases across normal levels (breathers aside, D107)', () => {
     let prev = 0;
     for (let l = 1; l <= 200; l++) {
       const s = levelSpec(l, cfg);

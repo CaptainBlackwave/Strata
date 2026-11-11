@@ -227,7 +227,7 @@ describe('hintResult tells "can\'t be won" apart from "search ran out" (F7, GA-S
   });
   it('at the production hint budget, late 16-jar levels (171-176, the first with 14 colours) get a hint, and following hints wins', () => {
     const cfg = config as unknown as GameConfig;
-    // 173 is a breather (D106) with fewer jars, so it is left out.
+    // 173 is a breather (D107) with fewer jars, so it is left out.
     for (const level of [171, 172, 174, 175, 176]) {
       const g = generateLevel(level, cfg);
       expect(g.board.jars.length, `level ${level}`).toBeGreaterThanOrEqual(15);

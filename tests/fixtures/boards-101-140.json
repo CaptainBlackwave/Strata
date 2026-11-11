@@ -1,5 +1,5 @@
 {
- "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 101-140 as built before the sieve jar (sprint 13 M2, from commit 1a4f9f9, the hourglass already in). The sieve unlocks at 141, so levels 101-140 must never change. Re-baselined on purpose by the gentler curve (D104-D109, production/qa/gentle-curve/): every board from level 12 changed except the tall-jar levels from 50; levels 1-11 kept their hashes.",
+ "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 101-140 as built before the sieve jar (sprint 13 M2, from commit 1a4f9f9, the hourglass already in). The sieve unlocks at 141, so levels 101-140 must never change. Re-baselined on purpose by the gentler curve (D105-D112, 0.13.1, production/qa/gentle-curve/): boards from level 12 changed; levels 1-11 kept their hashes.",
  "hashes": {
   "101": "544f90a3",
   "102": "6370df9d",

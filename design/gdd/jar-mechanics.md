@@ -96,7 +96,7 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 **Placement** (`applyMechanics`): one hourglass per level that rolls it, placed after the other mechanics from the same seeded placement stream, on a random filled jar that is not sealed, frozen, locked, narrow or a funnel. Its sand is shown when the level starts (`hidden: 0`). Reason: from level 75 every dealt jar buries 3 units, so a dealt jar "with no buried units" never exists; the chosen jar is revealed instead, because a flip would otherwise bring buried sand to the top. A deal where no jar qualifies is re-dealt. Levels that do not roll the hourglass draw nothing extra from the stream and keep exactly the board they had.
 
 **Schedule**: `{ "id": "hourglass", "unlockAt": 101, "every": 3 }` in `mechanics.list`. Level 101 is its debut and shows it alone (no spare-jar swap, D28). From 102 it is one of five unlocked mechanics in `pickMechanics`; it can combine with a second rolled mechanic and the spare swap (still at most 3 mechanics, D22). Tall-jar levels from 100 can roll it too.
-- **Levels that changed.** Adding a fifth mechanic to the list changes the draw for levels 101 and up. Of levels 101–160, 16 boards changed (101, 103, 107, 110, 114, 120, 122, 125, 129, 132, 141, 145, 146, 147, 156, 158); the other 44 are byte-identical. Levels 1–100 are byte-identical (fixture `tests/fixtures/boards-1-100.json`). Of levels 101–300, 16 roll the hourglass and 15 are built with it (16 of 16 since the sieve rerolled levels 141+, sprint 13 M2).
+- **Levels that changed.** Adding a fifth mechanic to the list changes the draw for levels 101 and up. Of levels 101–160, 16 boards changed (101, 103, 107, 110, 114, 120, 122, 125, 129, 132, 141, 145, 146, 147, 156, 158); the other 44 are byte-identical. Levels 1–100 are byte-identical (fixture `tests/fixtures/boards-1-100.json`). Of levels 101–300, 16 roll the hourglass and 15 are built with it (16 of 16 since the sieve rerolled levels 141+, sprint 13 M2); 14 of 14 since the clam rerolled levels 181+, sprint 13 M3: 101, 120, 129, 146, 172, 211, 224, 229, 231, 259, 279, 292, 296, 297).
 - **Fallback.** A level that rolls the hourglass with another mechanic first falls back to the other mechanic alone (two spares), then to no mechanic, as before (`level-generation.md`). Level 170 (tall jars, frozen + hourglass) is built with frozen only: with the count in the state the solver needs more work, and long tall-jar plans go over the pour cap.
 
 **Daily and weekly**: not yet. The Saturday rotation cycles through the four card mechanics only, so every daily is unchanged (fixture `tests/fixtures/daily-saturdays.json`, 21 Saturdays from 2026-11-07, plus a test over 520 Saturdays); no weekly theme names the hourglass, and the weekly fixture is unchanged. Task W1 adds it to both from a start date (D98).
@@ -124,7 +124,7 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 **Band colour choice** (`proveDeal`, in the generator's solver check): the drawn band is a starting point. The generator proves up to `colorTries` bands on the same deal, the drawn one first, then the next colours in palette order (wrapping). It keeps the first band whose proof is within the level's pour cap (D36) **and ends with the sieve sealed in its band**; failing that the first band whose proof is within the cap; failing that the shortest over-cap proof (for the fallback chain); failing that the deal is rejected. All tries spend from the same solver budgets (per attempt and per step), so level starts stay bounded and identical on every device. Reason: a sieve that ends as its colour's sealed jar is the sieve doing its job (the home of that colour), and every band is solver-proven, so the board stays winnable. Measured on levels 141–300: 11 boards have a sieve and 8 of their proofs end with it sealed.
 
 **Schedule**: `{ "id": "sieve", "unlockAt": 141, "colorTries": 3 }` in `mechanics.list`. Level 141 is its debut and shows it alone with two spares (D28). From 142 it is one of six unlocked mechanics in `pickMechanics`, can combine with a second rolled mechanic and the spare swap (still at most 3 mechanics, D22), and tall-jar levels can roll it too.
-- **Levels that changed.** Adding a sixth mechanic changes the draw for levels 141 and up. Levels 1–140 are byte-identical (fixtures `boards-1-100.json` and `boards-101-140.json`, the latter hashed before the sieve at commit `1a4f9f9`). Of levels 141–300, 35 boards changed: 141, 142, 145, 158, 170, 171, 181, 182, 184, 186, 202, 216, 221, 222, 224, 225, 232, 235, 237, 240, 241, 250, 259, 262, 270, 276, 277, 278, 281, 282, 286, 291, 292, 296, 300; the other 125 are byte-identical. Of levels 141–300, 11 roll the sieve and all 11 are built with it (141, 145, 158, 170, 181, 224, 225, 232, 250, 259, 278).
+- **Levels that changed.** Adding a sixth mechanic changes the draw for levels 141 and up. Levels 1–140 are byte-identical (fixtures `boards-1-100.json` and `boards-101-140.json`, the latter hashed before the sieve at commit `1a4f9f9`). Of levels 141–300, 35 boards changed: 141, 142, 145, 158, 170, 171, 181, 182, 184, 186, 202, 216, 221, 222, 224, 225, 232, 235, 237, 240, 241, 250, 259, 262, 270, 276, 277, 278, 281, 282, 286, 291, 292, 296, 300; the other 125 are byte-identical. Of levels 141–300, 11 roll the sieve and all 11 are built with it (141, 145, 158, 170, 181, 224, 225, 232, 250, 259, 278). Since the clam rerolled levels 181+ (sprint 13 M3): 16 roll it, all 16 built (141, 145, 158, 170, 186, 201, 202, 216, 221, 222, 232, 262, 270, 276, 278, 282).
 - **Fallback.** A level that rolls the sieve (or the hourglass, or both) with a classic mechanic first falls back to the classic mechanic alone (two spares), then to no mechanic. With no classic mechanic it falls back straight to no mechanic.
 
 **Daily and weekly**: not yet. The Saturday rotation uses the four classic mechanics only (`isClassicMechanic` is false for the sieve), so every daily is unchanged (fixture `daily-saturdays.json`, plus a test over 520 Saturdays); no weekly theme names the sieve and the weekly fixture is unchanged. Task W1 adds it from a start date (D98).
@@ -133,6 +133,33 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 
 **Dead ends (D21)**: none added. A sieve never traps sand: anything can always be poured out of it, so no sieve state is *certainly* unwinnable on its own (a board can still be lost through it, for example when the only free space is a sieve of another colour, but whether space can be made elsewhere needs the solver, so the stuck rule and hints cover it, not `lostReason`). The funnel and lock checks stay exact (sound) with a sieve on the board: they count units per jar and treat a sieve as an open jar; a sieve only removes ways to win, so they never report a winnable board as lost.
 
+### 2.6 Clam jar (sprint 13 M3, D96, D97)
+
+*Designed for Strata; no rule, name or art is taken from another game.*
+
+**Rules**
+1. One filled jar on the board is a clam, closed under a shell. `Jar.clam` is the number of successful pours left until it opens (1 to `opensAfter`); an open clam has no `clam` field and is an ordinary jar.
+2. **Closed.** Nothing may be poured into or out of a closed clam. Its sand is hidden from the player (drawn under the shell by the UI task); the core keeps the sand and its burial as dealt.
+3. **The refusal is named.** `pourRefusal(board, from, to)` returns `'clam'` when either jar is a closed clam. It is checked right after `'closed'` (frozen or locked; placement never makes a clam frozen or locked, so the two never meet) and before every other reason, because a closed clam refuses everything. `canPour` is exactly "no reason". Every answer for a board without a closed clam is unchanged.
+4. **Counting.** Every successful pour anywhere on the board counts each closed clam down by one, after the pour and after the hourglasses tick (the same path in `pour()`). A refused pour changes nothing and does not count. The pour that brings the count to zero opens the clam for good: the field is removed and `pour()` reports the jar in `opened` (the session's pour event carries `opened` when non-empty, for the UI to animate). Opening is not a pour: it moves no sand.
+5. **Open.** From then on it is an ordinary jar: its sand is shown with its burial unchanged (buried units stay buried until exposed, as usual; the top is visible), it takes and gives sand by the usual rules and seals like any jar.
+6. **Board state.** The count is stored on the jar, so Undo, Restart, the solver, hint plans and saved boards keep it. A clam's count is part of its solver key (`C{left}`) and of the solver's empty-jar kind, so a board one pour from opening is a different state from the same sand two pours away, or open.
+7. **Waiting is useful.** While any clam is closed every legal pour brings it closer to opening, so `usefulMoves` keeps every legal pour, swaps included (like the hourglass "wait" rule, §2.4). The solver and the hint can therefore wait for it.
+8. **Shuffle** (decided here): a closed clam keeps its sand and its count. It is shut, like a frozen or locked jar, and a shuffle is not a pour, so it does not count down. Once open it is a free jar like any other. Each re-deal is solver-proven with the count, as before.
+9. **Hint**: the hint follows the solver, which never pours into or out of a closed clam and may spend pours waiting for it.
+
+**Stuck and dead ends (decided here)**. A closed clam can block a board until it opens, but the stuck banner never fires while a pour is left that would bring it closer: with a closed clam `usefulMoves` is every legal pour, so `isStuck` is true only when **no legal pour at all** is left. That board is truly stuck, since without a pour the clam can never open. No dead-end reason is added (D21): `lostReason` treats a closed clam's sand as reachable (it opens after enough pours, and a board with no pour left is already `isStuck`), so the funnel and lock checks stay exact and never report a winnable board as lost. A closed clam never holds a sealed jar (placement picks an unsealed jar and its sand cannot change while closed), so a board is never won while a clam is closed.
+
+**Placement** (`applyMechanics`): one clam per level that rolls it, placed after every other mechanic (after the hourglass and the sieve) from the same seeded placement stream, on a random filled jar that is not sealed, frozen, locked, narrow, a funnel, the hourglass or the sieve. One draw: the jar. Its count starts at `opensAfter`; its burial is kept. A deal where no jar qualifies is re-dealt. Levels that do not roll the clam draw nothing extra and keep exactly their boards. Every board is then solver-proven (with the count in the state) like any other.
+
+**Schedule**: `{ "id": "clam", "unlockAt": 181, "opensAfter": 6 }` in `mechanics.list`. Level 181 is its debut and shows it alone with two spares (D28). From 182 it is one of seven unlocked mechanics in `pickMechanics`, can combine with a second rolled mechanic and the spare swap (still at most 3 mechanics, D22), and tall-jar levels can roll it too.
+- **Levels that changed.** Adding a seventh mechanic changes the draw for levels 181 and up. Levels 1–180 are byte-identical (fixtures `boards-1-100.json`, `boards-101-140.json` and `boards-141-180.json`, the last hashed before the clam at commit `a30a5a0`). Of levels 181–300, 35 boards changed: 181, 186, 190, 192, 193, 194, 201, 202, 211, 214, 216, 221, 222, 224, 225, 229, 231, 242, 250, 253, 257, 259, 262, 270, 274, 275, 276, 279, 282, 287, 292, 293, 296, 297, 300; the other 85 are byte-identical. Of levels 181–300, 5 roll the clam and all 5 are built with it (181, 224, 225, 250, 259; the last four with a second mechanic).
+- **Fallback.** A level that rolls the clam (with or without the hourglass or the sieve) with a classic mechanic first falls back to the classic mechanic alone (two spares), then to no mechanic. With no classic mechanic it falls back straight to no mechanic.
+
+**Daily and weekly**: not yet. The Saturday rotation uses the four classic mechanics only (`isClassicMechanic` is false for the clam), so every daily is unchanged (fixture `daily-saturdays.json`, plus a test over 520 Saturdays); no weekly theme names the clam and the weekly fixture `weekly-boards.json` is unchanged. Task W1 adds it from a start date (D98).
+
+**Player-facing**: not built in the core task. Until the clam's UI task, `'clam'` is a `BoardMechanicId` but not a `MechanicId`: `hasMechanicCard('clam')` is false, `specMechanics` leaves it out, the Jar guide skips it (a one-line, compiler-forced filter in `src/ui/screens/sheets/guide.ts`, as for the sieve core), and the map shows no "new jar" badge at 181. The UI task adds its card, strings, the shell art with its count, hiding the sand while closed, the opening animation (`opened`), the `'clam'` refusal explanation and making a closed clam unselectable (the board's tap check uses `isClosed`, which is frozen and locked only), then folds it into `MechanicId`. **The core must not ship to players without that UI**: a clam drawn as a plain jar would refuse pours with no visible reason and show its sand.
+
 ### 2.2 State and Data
 
 - `Jar.cap?: number`, `Jar.frozen?: boolean`, `Jar.lock?: Color`, `Jar.funnel?: boolean`. A thawed or unlocked jar has the field removed, not set to false.
@@ -140,7 +167,9 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - `LevelSpec.hourglass?: boolean`: the level rolled the hourglass (kept apart from `mechanics` until its card lands).
 - `Jar.sieve?: Color` (§2.5): the sieve's band. Part of the jar's solver key (`S{colour}`) and of the solver's empty-jar kind.
 - `LevelSpec.sieve?: boolean`: the level rolled the sieve (kept apart from `mechanics`, like the hourglass, so placement stays byte-identical).
-- `BoardMechanicId` = `MechanicId | 'sieve'` (every id in `mechanics.list`); `hasMechanicCard(id)` is false for the sieve until its UI lands; `isClassicMechanic` is false for the hourglass and the sieve.
+- `Jar.clam?: number` (§2.6): a closed clam's pours left until it opens (1 to `opensAfter`); removed when it opens. Part of the jar's solver key (`C{left}`) and of the solver's empty-jar kind. `pour()` returns `opened` (indices of clams that opened); the session's pour event carries it when non-empty.
+- `LevelSpec.clam?: boolean`: the level rolled the clam (kept apart from `mechanics`, like the hourglass and the sieve, so placement stays byte-identical).
+- `BoardMechanicId` = `MechanicId | 'clam'` (every id in `mechanics.list`; the sieve was folded into `MechanicId` with its UI); `hasMechanicCard(id)` is false for the clam until its UI lands; `isClassicMechanic` is false for the hourglass, the sieve and the clam.
 - `pourRefusal(board, from, to)`: why a pour is refused (`PourRefusal`), or `null`; `canPour` is `pourRefusal(...) === null`.
 - `settle(board)`: collects the colours of all sealed jars; if any jar is sealed, drops `frozen` from all jars; drops `lock` from any jar whose lock colour is in that set. Returns the same object when nothing changes.
 - `seenMechanics` (save data) remembers which intro cards were shown.
@@ -168,8 +197,10 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 | Frozen count | 1 jar | `count` | |
 | Hourglass count | after `n` successful pours from the deal, the hourglass has flipped `floor(n / every)` times and `left = every − (n mod every)` | `every` (default 3), `n` ≥ 0 | Pours 1, 2: `left` 2, 1; pour 3 flips it and `left` is 3 again |
 | Sieve band tries | colours tried on one deal: `min(colorTries, colors)`, from the drawn band `b`: `b, b+1, … (mod colors)`; first proof that fits the cap and ends sealed wins, else first that fits | `colorTries` (default 3), `colors` | Drawn band 5 on a 9-colour board: bands 5, 6, 7 are tried at most |
-| Sieve share | not a separate draw: one of the unlocked mechanics, uniform | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 11 of levels 141–300 roll it, all 11 are built with it |
-| Hourglass share | not a separate draw: one of the unlocked mechanics, uniform, like the others | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 16 of levels 101–300 roll it, 15 are built with it |
+| Sieve share | not a separate draw: one of the unlocked mechanics, uniform | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 11 of levels 141–300 roll it, all 11 are built with it (16 of 16 since the clam rerolled levels 181+, sprint 13 M3) |
+| Hourglass share | not a separate draw: one of the unlocked mechanics, uniform, like the others | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 16 of levels 101–300 roll it, 15 are built with it (14 of 14 since the clam, sprint 13 M3) |
+| Clam count | after `n` successful pours from the deal, a clam dealt with `opensAfter` is closed with `left = opensAfter − n` while `n < opensAfter`, and open for good from `n = opensAfter` | `opensAfter` (default 6), `n` ≥ 0 | Pours 1–5: `left` 5 … 1; pour 6 opens it |
+| Clam share | not a separate draw: one of the unlocked mechanics, uniform | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 5 of levels 181–300 roll it, all 5 are built with it |
 
 **Tuning knobs (hourglass)**
 
@@ -184,6 +215,13 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 |---|---|---|---|
 | `mechanics.list[sieve].unlockAt` | 141 | ≥ 141 (lower would change levels ≤ 140) | Debut level |
 | `mechanics.list[sieve].colorTries` | 3 | 1–4 | Bands proven per deal. 1 keeps the drawn band (fewer sieves end sealed). Higher finds a sealing band more often but costs up to that many solves per deal (still capped by the step budgets). Changing it changes sieve boards from 141 |
+
+**Tuning knobs (clam)**
+
+| Knob | Default | Safe range | Effect |
+|---|---|---|---|
+| `mechanics.list[clam].unlockAt` | 181 | ≥ 181 (lower would change levels ≤ 180) | Debut level |
+| `mechanics.list[clam].opensAfter` | 6 | 2–10 (at least 1 is enforced) | Pours the clam stays closed. Low barely matters (it opens before the player needs it); high forces long waits (swaps) and lengthens solver plans toward the pour cap. Changing it changes clam boards from 181 |
 
 ---
 
@@ -222,6 +260,17 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - ✅ No jar qualifies for placement: the deal is re-dealt; no band within `colorTries` is proven: the deal is rejected and the next attempt is dealt; a level that never gets one falls back (§2.5).
 - ✅ The sieve and the hourglass on one level: they are always different jars.
 
+**Clam (sprint 13 M3)**:
+- ✅ Any pour into or out of a closed clam is refused with the reason `'clam'`, even one that would fit; a refused pour changes nothing and is not counted.
+- ✅ The pour that reaches zero opens it; the opening pour can be any pour on the board; burial is kept and the top shows.
+- ✅ Undo restores the count (also across the opening pour); Restart restores the dealt count; Shuffle keeps a closed clam's sand and count and re-deals the free jars.
+- ✅ Waiting is legal: with a closed clam any legal pour is useful, so the stuck banner appears only when no pour is left (then it can never open, so the board is truly stuck).
+- ✅ The solver waits (pours swaps) to open a clam and its path replays to a win; with no pour left it proves the board unwinnable.
+- ✅ A lock whose key colour is inside a closed clam is not reported lost: the clam's sand counts as reachable.
+- ✅ A board is never won while a clam is closed (its jar is unsealed when placed and cannot change while closed).
+- ✅ The clam, the sieve and the hourglass on one level: they are always different jars.
+- ✅ No jar qualifies for placement: the deal is re-dealt; a level that never gets one falls back (§2.6).
+
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
 - ⚠️ A debut level from 60 up can also get the spare-swap narrow jar, so its new mechanic is not always alone (GA-LG-7; no rule yet).
@@ -239,7 +288,7 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 
 **Design Dependencies**: `pour-rules.md`, `level-generation.md`, `daily-puzzle.md`, `session-boosters.md`, `feel-audio-ui.md`, `save-data.md` (remembers which intro cards were shown).
 
-**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`, `every`, `colorTries`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
+**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`, `every`, `colorTries`, `opensAfter`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
 
 ---
 
@@ -282,6 +331,20 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - ✅ Levels 101–140 byte-identical (`boards-101-140.json`); the Saturday dailies never pick the sieve over 520 weeks; no weekly theme has it.
 - [ ] Intro card, Jar guide entry, band art, the `'sieve'` refusal explanation, screen-reader state and map badge, with screenshots and owner art approval (the M2 UI task).
 
+**Clam (sprint 13 M3, core)**, covered in `tests/unit/core/clam.test.ts`:
+- ✅ Config lists the clam at 181 with `opensAfter: 6`.
+- ✅ A closed clam refuses pours in and out with `'clam'`; it has no legal moves and `pour()` throws on it.
+- ✅ Each successful pour anywhere counts down; the pour that reaches zero opens it (`opened`), and it is then an ordinary jar; opening keeps the burial.
+- ✅ A refused pour does nothing in a session; Undo and Restart restore the count.
+- ✅ Board keys differ by count and by open/closed; with a closed clam every legal pour is useful (swaps included) and the board is not stuck; a closed clam with no legal pour is stuck; a board with a closed clam is not won; no new dead end (a lock key inside it counts as reachable).
+- ✅ Shuffle keeps a closed clam's sand and count, re-deals the rest, and the result is solver-proven.
+- ✅ The solver waits for the clam and its path replays to a win; with no wait available it proves the board unwinnable; following hints on level 181 wins.
+- ✅ Level 181 debuts it alone with two spares and the count at `opensAfter`; no level ≤ 180 rolls it; placement picks one filled, unsealed, plain jar (never frozen, locked, narrow, a funnel, the hourglass or the sieve) and keeps its burial; the clam draw comes after every other mechanic; `opensAfter` is read from config.
+- ✅ Fallback: clam + classic keeps the classic one alone first; clam (and sieve) alone falls back to none.
+- ✅ Levels 181–260: every board with a clam has one clam closed for `opensAfter`, is solver-proven, and its proof replays legally to a win.
+- ✅ Levels 141–180 byte-identical (`boards-141-180.json`); the Saturday dailies never pick the clam over 520 weeks; no weekly theme has it.
+- [ ] Intro card, Jar guide entry, shell art with the count, hidden sand while closed, opening animation, the `'clam'` refusal explanation, a closed clam not selectable, screen-reader state and map badge, with screenshots and owner art approval (the M3 UI task).
+
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.
 - [x] Open questions answered (2026-11-08).
@@ -311,3 +374,4 @@ None open: Saturday stays as built (D2), narrow jars never seal (D4), dead ends 
 | 2026-11-08 | Claude (sprint 6, F9) | Mechanic chance is the D1 ramp, with the tested band (GA-JAR-1); D22 up to 3 mechanics from 101 with a per-band table (GA-JAR-2); D21 dead ends replace the overclaimed "mixed funnel leaves the board stuck" (GA-JAR-3); every-10th-level and fixture range updated (GA-JAR-4); timing figure left to level-generation (GA-JAR-5); "teal" → "lagoon" (GA-JAR-6); GA-LG-6 default noted on the intro card |
 | 2026-11-09 | Claude (sprint 13 M1) | Hourglass jar (D96, D97), §2.4: rules, placement (sand shown, since every dealt jar is buried from 75), schedule, the levels 101+ that changed, daily and weekly held back until W1, no new dead end (D21), formulas, tuning knobs, edge cases, acceptance criteria |
 | 2026-11-09 | Claude (sprint 13 M2) | Sieve jar (D96, D97), §2.5: rules (band in, anything out, seals), the `'sieve'` refusal reason (`pourRefusal`), Shuffle re-deals a free sieve and keeps its band, placement after every other mechanic, band colour chosen by solver proof (prefers a sieve that ends sealed, `colorTries`), the levels 141+ that changed, daily and weekly held back until W1, no new dead end (D21), formulas, tuning knobs, edge cases, acceptance criteria; §2.4 hourglass counts updated |
+| 2026-11-10 | Claude (sprint 13 M3) | Clam jar (D96, D97), §2.6: rules (closed: nothing in or out, sand hidden; every pour counts down; opens for good at zero), the `'clam'` refusal reason, `opened` on the pour result and event, the stuck decision (with a closed clam every legal pour is useful, so stuck only when no pour is left; no new dead end), Shuffle keeps a closed clam, placement after every other mechanic, `opensAfter` knob, the levels 181+ that changed (fixture `boards-141-180.json`), daily and weekly held back until W1, formulas, tuning knobs, edge cases, acceptance criteria; hourglass and sieve shares updated |

@@ -1,4 +1,4 @@
-// Gentler curve (D104-D109): the changed boards in the browser, and the one-time best-pours reset.
+// Gentler curve (D105-D110): the changed boards in the browser, and the one-time best-pours reset.
 // usage: node shots.cjs <baseUrl> <outDir>   (after `npm run build` and `npx vite preview --port 5530 --strictPort`)
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const fs = require('fs');
@@ -11,7 +11,7 @@ const OLD_SAVE = {
   level: 110, best: { 5: 14, 11: 27, 12: 30, 23: 36, 30: 48, 40: 56, 50: 45 }, perfect: [5, 23, 30],
   wallet: { coins: 900, boosters: { undo: 0, shuffle: 3, extraJar: 3, hint: 3 } }, tutorialDone: true,
   settings: { sound: false, music: false, haptics: false, patterns: false, southern: false },
-  seenMechanics: ['narrow', 'frozen'], seenWhatsNew: '0.12.0',
+  seenMechanics: ['narrow', 'frozen'], seenWhatsNew: '0.13.0',
   onboarding: { home: true, map: true, daily: true, weekly: true, scenes: true },
 };
 (async () => {

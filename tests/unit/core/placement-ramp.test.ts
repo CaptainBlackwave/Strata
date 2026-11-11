@@ -12,9 +12,9 @@ const has = (b: Board, id: string) =>
   id === 'narrow' ? b.jars.some((j) => j.cap !== undefined) : id === 'frozen' ? b.jars.some((j) => j.frozen) : id === 'locked' ? b.jars.some((j) => j.lock !== undefined) : b.jars.some((j) => j.funnel);
 
 describe('difficulty ramp past level 45 (D1)', () => {
-  // Ordinary levels: no tall jars and no breathers, which never get the spare-jar swap (D106).
+  // Ordinary levels: no tall jars and no breathers, which never get the spare-jar swap (D107).
   const normal = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => from + i).filter((l) => !isBreather(l, cfg)).map((l) => levelSpec(l, cfg)).filter((x) => !x.challenge);
-  it('breather levels always have 2 spare jars (D106)', () => {
+  it('breather levels always have 2 spare jars (D107)', () => {
     for (let l = 60; l <= 400; l++) if (isBreather(l, cfg)) expect(levelSpec(l, cfg).spare, `level ${l}`).toBe(2);
   });
   it('levels before 60 always have 2 spare jars', () => {
@@ -31,11 +31,11 @@ describe('difficulty ramp past level 45 (D1)', () => {
   it('tall-jar levels keep 2 spare jars', () => {
     for (let l = 60; l <= 400; l += 10) expect(levelSpec(l, cfg).spare).toBe(2);
   });
-  it('buried sand goes to 3 layers from level 110 (75 before the gentler curve, D107)', () => {
+  it('buried sand goes to 3 layers from level 110 (75 before the gentler curve, D108)', () => {
     expect(levelSpec(109, cfg).buriedDepth).toBe(2);
     expect(levelSpec(111, cfg).buriedDepth).toBe(3);
   });
-  it('colours rise to 13 at level 130 and 14 at level 170 (D105), using new palette colours', () => {
+  it('colours rise to 13 at level 130 and 14 at level 170 (D106), using new palette colours', () => {
     expect(levelSpec(129, cfg).colors).toBe(12);
     expect(levelSpec(131, cfg).colors).toBe(13);
     expect(levelSpec(171, cfg).colors).toBe(14);

@@ -21,7 +21,7 @@ export interface ChallengeConfig {
   readonly capacity: number;
   readonly spare: number;
   readonly buriedDepth: number;
-  /** A tall-jar level's own length cap in solver pours, used when below its pour band's (D111). Absent: the band's. */
+  /** A tall-jar level's own length cap in solver pours, used when below its pour band's (D112). Absent: the band's. */
   readonly maxPours?: number;
   /** Tall-jar levels from this level on can get mechanics (decision D8). */
   readonly mechanicsFrom?: number;
@@ -41,7 +41,7 @@ export interface RampConfig {
 }
 
 /**
- * Breather levels (owner decision D106): from `from`, every level with
+ * Breather levels (owner decision D107): from `from`, every level with
  * `level % every === offset` is an easier board with `fewerColors` fewer colours than the
  * curve gives and no spare-jar swap. Example: `{ from: 21, every: 5, offset: 3, fewerColors: 2 }`
  * makes every level ending in 3 or 8 from 23 on a breather.
@@ -51,9 +51,9 @@ export interface BreatherConfig {
   readonly every: number;
   readonly offset: number;
   readonly fewerColors: number;
-  /** From `late.from`, a breather has `late.fewerColors` fewer colours instead (D110). Absent: no late step. */
+  /** From `late.from`, a breather has `late.fewerColors` fewer colours instead (D111). Absent: no late step. */
   readonly late?: { readonly from: number; readonly fewerColors: number };
-  /** The most special jars a breather may have; extra rolled ones are dropped, last first (D110). Absent: no cap. */
+  /** The most special jars a breather may have; extra rolled ones are dropped, last first (D111). Absent: no cap. */
   readonly maxMechanics?: number;
 }
 
@@ -66,7 +66,7 @@ export interface GameConfig {
   /** Extra-jar uses allowed per level; null means no cap (decision D5). */
   readonly extraJarsPerLevel: number | null;
   readonly curve: readonly CurveRow[];
-  /** Breather levels (D106). Absent: none. */
+  /** Breather levels (D107). Absent: none. */
   readonly breather?: BreatherConfig;
   readonly ramp: RampConfig;
   readonly challenge: ChallengeConfig;
@@ -107,32 +107,32 @@ export interface PourBand {
 /**
  * Every jar mechanic. Each one has an intro card, a Jar guide entry and player-facing strings,
  * so the UI's lookup tables are keyed by this type. The hourglass (D96) joined in sprint 13 M1,
- * the sieve (D96) in sprint 13 M2.
+ * the sieve (D96) in sprint 13 M2 and the clam (D96) in sprint 13 M3.
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam';
 
 /**
- * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass
- * and the sieve ride in their own flags, `LevelSpec.hourglass` and `LevelSpec.sieve`, so the
- * generator's placement stream and every board from before them stay byte-identical. They are
+ * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass,
+ * the sieve and the clam ride in their own flags, `LevelSpec.hourglass`, `.sieve` and `.clam`, so
+ * the generator's placement stream and every board from before them stay byte-identical. They are
  * also the daily's Saturday rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve'>;
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam'>;
 
-/** @deprecated Since sprint 13 M2 every mechanic is a `MechanicId`; kept as an alias for older branches. */
+/** @deprecated Since sprint 13 M3 (the clam's UI) every mechanic is a `MechanicId`; kept as an alias for older branches. */
 export type BoardMechanicId = MechanicId;
 
 /**
- * True for the four original mechanics (`ClassicMechanicId`), false for the hourglass and the sieve.
- * Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
+ * True for the four original mechanics (`ClassicMechanicId`), false for the hourglass, the sieve
+ * and the clam. Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
  */
 export function isClassicMechanic(id: MechanicId): id is ClassicMechanicId {
-  return id !== 'hourglass' && id !== 'sieve';
+  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam';
 }
 
 /**
- * True for a mechanic with an intro card, Jar guide entry and strings. Since sprint 13 M2 (the
- * sieve's UI) that is every mechanic. Kept for older branches. Example: `hasMechanicCard('sieve') // true`.
+ * True for a mechanic with an intro card, Jar guide entry and strings. Since sprint 13 M3 (the
+ * clam's UI) that is every mechanic again. Kept for older branches. Example: `hasMechanicCard('clam') // true`.
  */
 export function hasMechanicCard(id: MechanicId): id is MechanicId {
   return typeof id === 'string';
@@ -143,10 +143,15 @@ export const isCardMechanic = isClassicMechanic;
 
 /**
  * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
- * the hourglass, then the sieve, each when it has one. Example: level 141 gives `['sieve']`.
+ * the hourglass, the sieve and the clam, each when it has one. Example: level 181 gives `['clam']`.
  */
-export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve'>): MechanicId[] {
-  return [...spec.mechanics, ...(spec.hourglass ? ['hourglass' as const] : []), ...(spec.sieve ? ['sieve' as const] : [])];
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam'>): MechanicId[] {
+  return [
+    ...spec.mechanics,
+    ...(spec.hourglass ? ['hourglass' as const] : []),
+    ...(spec.sieve ? ['sieve' as const] : []),
+    ...(spec.clam ? ['clam' as const] : []),
+  ];
 }
 
 /** One mechanic's schedule and tuning in game-config.json. */
@@ -165,6 +170,11 @@ export interface MechanicConfig {
    * in its colour, else the first proven one. Default 3; 1 keeps the drawn colour.
    */
   readonly colorTries?: number;
+  /**
+   * Clam: how many successful pours on the board it stays closed for (D96, §2.6). Its count starts
+   * here and the pour that reaches zero opens it. Default 6; at least 1.
+   */
+  readonly opensAfter?: number;
 }
 
 /** Fully resolved parameters for one level. */
@@ -181,14 +191,21 @@ export interface LevelSpec {
   readonly hourglass?: boolean;
   /** One filled jar is a sieve (D96, sprint 13 M2). Absent or false: none. See `ClassicMechanicId`. */
   readonly sieve?: boolean;
+  /** One filled jar is a closed clam (D96, sprint 13 M3). Absent or false: none. See `ClassicMechanicId`. */
+  readonly clam?: boolean;
 }
 
-/** Splits rolled mechanics into the classic mechanics and the hourglass and sieve flags of a `LevelSpec`. */
-function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true } {
+/**
+ * Splits mechanics into the classic mechanics and the hourglass, sieve and clam flags of a `LevelSpec`,
+ * the one path every board recipe (levels, the daily, the weekly; sprint 13 W1) uses.
+ * Example: `splitMechanics(['sieve']) // { mechanics: [], sieve: true }`.
+ */
+export function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
     ...(ids.includes('sieve') ? { sieve: true as const } : {}),
+    ...(ids.includes('clam') ? { clam: true as const } : {}),
   };
 }
 
@@ -231,13 +248,13 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     spare = row.spare ?? spare;
     buriedDepth = row.buriedDepth ?? buriedDepth;
   }
-  // Decisions D106, D110: a breather is the same recipe with fewer colours and at most
+  // Decisions D107, D111: a breather is the same recipe with fewer colours and at most
   // `maxMechanics` special jars, and it never gets the swap below.
   const breather = isBreather(level, config);
   const br = breather ? config.breather : undefined;
   if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
   const rolled = pickMechanics(level, config);
-  const { mechanics, hourglass, sieve } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
+  const { mechanics, hourglass, sieve, clam } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
@@ -253,11 +270,11 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}) };
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}) };
 }
 
 /**
- * True when `level` is a breather (decision D106): an ordinary level at or past
+ * True when `level` is a breather (decision D107): an ordinary level at or past
  * `breather.from` whose number fits the `every`/`offset` rhythm. Tall-jar levels are never
  * breathers. Example: `isBreather(23, config) // true`, `isBreather(20, config) // false`.
  */

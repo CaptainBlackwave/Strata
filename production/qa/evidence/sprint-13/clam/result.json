@@ -1,0 +1,246 @@
+{
+  "introShown": true,
+  "introText": "6Clam jarA clam jar stays shut under its shell until the count runs out: every pour on the board counts down. Then it opens and plays like any jar.",
+  "seenAfterIntro": [
+    "narrow",
+    "frozen",
+    "locked",
+    "funnel",
+    "hourglass",
+    "sieve",
+    "clam"
+  ],
+  "start": {
+    "index": 6,
+    "closed": true,
+    "opening": false,
+    "count": "6",
+    "shellShown": true,
+    "label": "Jar 7: clam, closed, opens in 6 pours",
+    "units": 4,
+    "unitsOnBoard": 56
+  },
+  "colourNames": [
+    "slate",
+    "sage",
+    "sky",
+    "cocoa",
+    "plum",
+    "saffron",
+    "lagoon",
+    "coral",
+    "lemon"
+  ],
+  "startLabelHidesSand": true,
+  "clearanceMidday": {
+    "pill": {
+      "w": 18,
+      "h": 18
+    },
+    "jarW": 52,
+    "fontPx": "12px",
+    "pillInsideShell": true,
+    "shellCoversGlass": true,
+    "overlapsOtherJars": false,
+    "overlapsToolbar": false
+  },
+  "tapRefused": {
+    "toast": "This clam opens in 6 pours.",
+    "selected": 0
+  },
+  "pours": [
+    {
+      "move": {
+        "from": 0,
+        "to": 14
+      },
+      "clam": {
+        "index": 6,
+        "closed": true,
+        "opening": false,
+        "count": "5",
+        "shellShown": true,
+        "label": "Jar 7: clam, closed, opens in 5 pours",
+        "units": 4,
+        "unitsOnBoard": 56
+      }
+    },
+    {
+      "move": {
+        "from": 1,
+        "to": 0
+      },
+      "clam": {
+        "index": 6,
+        "closed": true,
+        "opening": false,
+        "count": "4",
+        "shellShown": true,
+        "label": "Jar 7: clam, closed, opens in 4 pours",
+        "units": 4,
+        "unitsOnBoard": 56
+      }
+    },
+    {
+      "move": {
+        "from": 4,
+        "to": 1
+      },
+      "clam": {
+        "index": 6,
+        "closed": true,
+        "opening": false,
+        "count": "3",
+        "shellShown": true,
+        "label": "Jar 7: clam, closed, opens in 3 pours",
+        "units": 4,
+        "unitsOnBoard": 56
+      }
+    }
+  ],
+  "pourRefused": {
+    "from": 0,
+    "toast": "This clam opens in 3 pours.",
+    "clamAfter": {
+      "index": 6,
+      "closed": true,
+      "opening": false,
+      "count": "3",
+      "shellShown": true,
+      "label": "Jar 7: clam, closed, opens in 3 pours",
+      "units": 4,
+      "unitsOnBoard": 56
+    }
+  },
+  "atOne": {
+    "index": 6,
+    "closed": true,
+    "opening": false,
+    "count": "1",
+    "shellShown": true,
+    "label": "Jar 7: clam, closed, opens after the next pour",
+    "units": 4,
+    "unitsOnBoard": 56
+  },
+  "openingMove": {
+    "from": 8,
+    "to": 9
+  },
+  "midOpening": 1,
+  "midOpeningJar": {
+    "index": 6,
+    "closed": false,
+    "opening": true,
+    "count": "",
+    "shellShown": true,
+    "label": "Jar 7: buried, buried, buried, lemon",
+    "units": 4,
+    "unitsOnBoard": 56
+  },
+  "opened": {
+    "index": 6,
+    "closed": false,
+    "opening": false,
+    "count": "",
+    "shellShown": false,
+    "label": "Jar 7: buried, buried, buried, lemon",
+    "units": 4,
+    "unitsOnBoard": 56
+  },
+  "openedAnnounce": "Poured 1 coral into jar 10. The clam opened (jar 7).",
+  "afterUndo": {
+    "index": 6,
+    "closed": true,
+    "opening": false,
+    "count": "1",
+    "shellShown": true,
+    "label": "Jar 7: clam, closed, opens after the next pour",
+    "units": 4,
+    "unitsOnBoard": 56
+  },
+  "afterUndoHidesSand": true,
+  "errors": [],
+  "guidePixel7": {
+    "entries": [
+      "Narrow jar",
+      "Frozen jar",
+      "Locked lid",
+      "One-way funnel",
+      "Hourglass jar",
+      "Sieve jar",
+      "Clam jar"
+    ],
+    "scrollTop": 0,
+    "scrollable": true,
+    "titleInView": true,
+    "okInView": true,
+    "okFocused": true,
+    "okInViewAtEnd": true
+  },
+  "errorsGuide": [],
+  "clearanceMoonlit": {
+    "pill": {
+      "w": 18,
+      "h": 18
+    },
+    "jarW": 52,
+    "fontPx": "12px",
+    "pillInsideShell": true,
+    "shellCoversGlass": true,
+    "overlapsOtherJars": false,
+    "overlapsToolbar": false
+  },
+  "errorsMoonlit": [],
+  "clearance320": {
+    "pill": {
+      "w": 26,
+      "h": 26
+    },
+    "jarW": 27,
+    "fontPx": "18px",
+    "pillInsideShell": true,
+    "shellCoversGlass": true,
+    "overlapsOtherJars": false,
+    "overlapsToolbar": false
+  },
+  "pageOverflow320": false,
+  "guide320": {
+    "entries": [
+      "Narrow jar",
+      "Frozen jar",
+      "Locked lid",
+      "One-way funnel",
+      "Hourglass jar",
+      "Sieve jar",
+      "Clam jar"
+    ],
+    "scrollTop": 0,
+    "scrollable": true,
+    "titleInView": true,
+    "okInView": true,
+    "okFocused": true,
+    "okInViewAtEnd": true
+  },
+  "errors320": [],
+  "reduced": {
+    "openingAnimations": 0,
+    "jar": {
+      "index": 6,
+      "closed": false,
+      "opening": false,
+      "count": "",
+      "shellShown": false,
+      "label": "Jar 7: buried, buried, buried, lemon",
+      "units": 4,
+      "unitsOnBoard": 56
+    },
+    "announce": "Poured 1 coral into jar 10. The clam opened (jar 7)."
+  },
+  "errorsReduced": [],
+  "win": {
+    "pours": 56,
+    "shown": true,
+    "errors": []
+  },
+  "pageErrors": 0
+}

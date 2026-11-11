@@ -1,4 +1,4 @@
-// Story: owner decision D109 (design/gdd/systems-index.md), design/gdd/save-data.md.
+// Story: owner decision D110 (design/gdd/systems-index.md), design/gdd/save-data.md.
 // When a release changes the boards behind level numbers, best pours for those levels are
 // cleared once; progress, Perfect marks and everything else are kept.
 import { describe, expect, it } from 'vitest';
@@ -20,7 +20,7 @@ const loadRaw = (raw: object) => {
 /** A save from before the gentler curve: no `boards` field. */
 const OLD = { level: 40, best: { '3': 12, [String(FROM - 1)]: 20, [String(FROM)]: 30, '39': 51 }, perfect: [3, FROM, 39], wallet: { coins: 500, boosters: {} }, tutorialDone: true, stats: { perfectClears: 3 }, shells: ['periwinkle'] };
 
-describe('save.boards (D109)', () => {
+describe('save.boards (D110)', () => {
   it('the config records the gentler curve as a board change from level 12', () => {
     expect(changes).toContainEqual({ version: 2, fromLevel: 12 });
   });

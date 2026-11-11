@@ -10,6 +10,7 @@ describe('map strings follow the config', () => {
   it('each jar mechanic has a short name for the debut badge', () => {
     // The hourglass included since sprint 13 M1 (D96).
     // The hourglass and the sieve included since sprint 13 M1 and M2 (D96).
+    // The clam included since sprint 13 M3 (D96).
     for (const m of config.mechanics.list) expect(typeof (t.map.jars as Record<string, string>)[m.id], `t.map.jars.${m.id}`).toBe('string');
   });
   it('the win card words for replays (D50)', () => {

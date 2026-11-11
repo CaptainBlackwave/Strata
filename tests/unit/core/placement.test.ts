@@ -95,8 +95,9 @@ describe('placement', () => {
 });
 
 describe('Saturday daily mechanic', () => {
-  const saturdays = Array.from({ length: 8 }, (_, i) => new Date(Date.UTC(2026, 10, 7 + 7 * i)).toISOString().slice(0, 10));
-  it('every Saturday has exactly one mechanic, rotating through all four', () => {
+  // The eight Saturdays to 2026-11-21: the classic rotation before the new jars join (2026-11-28, sprint 13 W1).
+  const saturdays = Array.from({ length: 8 }, (_, i) => new Date(Date.UTC(2026, 10, 21 - 7 * i)).toISOString().slice(0, 10));
+  it('every Saturday before 2026-11-28 has exactly one mechanic, rotating through all four', () => {
     const seen = new Set<string>();
     for (const d of saturdays) {
       const m = dailySpec(d, cfg).mechanics;
