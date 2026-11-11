@@ -99,7 +99,7 @@ function buses(ctx: FakeContext) {
 }
 
 beforeEach(() => {
-  vi.stubGlobal('window', { setInterval: () => 1, clearInterval: () => undefined }); // the music timer
+  vi.stubGlobal('window', { setInterval: () => 1, clearInterval: () => undefined, addEventListener: () => undefined }); // the music timer and focus events
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -248,6 +248,23 @@ describe('review of PR #8: music lifecycle', () => {
     Object.assign(ctx, { state: 'interrupted', resume });
     audio.unlock();
     expect(resume).toHaveBeenCalled();
+  });
+
+  it('music pauses when the window loses focus and resumes on focus, even if the page never reports hidden (P1, sprint 13)', () => {
+    // An in-app browser can leave the page "visible" in the background, so visibilitychange never fires.
+    const on: Record<string, () => void> = {};
+    vi.stubGlobal('window', { setInterval: () => 1, clearInterval: () => undefined, addEventListener: (type: string, fn: () => void) => void (on[type] = fn) });
+    const { ctx, audio } = setup({ music: true, musicVolume: 0.3 });
+    audio.unlock();
+    const musicLevel = buses(ctx).intoMaster.find((n) => n.gain.value === 0.3)!;
+    const musicBus = ctx.nodes.find((n) => n.kind === 'gain' && n.out.includes(musicLevel))!;
+    expect(musicBus.gain.target).toBe(0.5);
+    on.blur?.();
+    expect(musicBus.gain.target).toBe(0);
+    on.focus?.();
+    expect(musicBus.gain.target).toBe(0.5);
+    on.pagehide?.();
+    expect(musicBus.gain.target).toBe(0);
   });
 
   it('coming back to the page resumes a context the system interrupted', () => {

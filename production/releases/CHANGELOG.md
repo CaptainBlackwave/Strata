@@ -36,6 +36,10 @@ When a release merges, add its row here so a backfill can recreate it.
 - Owner decisions D105–D112 after players reported that levels from 20 were too hard. Median solver pours for levels 31–40 went from 44 to 34; levels 171–200 are as long as before (`production/qa/gentle-curve/difficulty-sweep.md`).
 - New config: `breather`, `challenge.maxPours`, `boardChanges`. The board-hash fixtures were re-baselined on purpose.
 
+## Unreleased
+**For players**
+- Music now pauses whenever you leave the game, also when it is open inside another app's browser, and starts again when you come back (found in the phone check).
+
 ## 0.13.0 (2026-11-11): sprint 13, three new jars and the late economy
 **For players**
 - The hourglass jar, from level 101: every third pour anywhere on the board flips its sand upside down. The number on it counts the pours left, and Undo turns it back.

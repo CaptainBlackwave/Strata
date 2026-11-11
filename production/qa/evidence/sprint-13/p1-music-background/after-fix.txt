@@ -1,0 +1,6 @@
+playing: visible rms 0.0077
+hidden (event fired): hidden rms 0.0000
+shown again: visible rms 0.0079
+window blur only (no visibility event): visible rms 0.0000
+focus again: visible rms 0.0080
+pagehide only: visible rms 0.0000

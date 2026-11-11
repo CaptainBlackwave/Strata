@@ -231,17 +231,26 @@ export class GameAudio {
     if (this.ctx && this.musicBus) this.musicBus.gain.setTargetAtTime(0, this.ctx.currentTime, 0.3);
   }
 
-  /** Music pauses while the page is hidden and resumes when it is shown, if the switch is on. */
+  /**
+   * Music pauses while the page is hidden or the window has lost focus, and resumes when it is shown
+   * and focused again, if the switch is on. Focus matters because an in-app browser (a link opened
+   * inside another app) can leave the page "visible" in the background, so visibilitychange never
+   * fires there; it still reports blur (P1 phone check, sprint 13).
+   */
   private watchVisibility(): void {
     if (this.watchingVisibility) return;
     this.watchingVisibility = true;
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) this.stopMusic();
-      else {
-        this.resumeIfNeeded(); // iOS leaves the context "interrupted" after the page was hidden
-        if (this.options.music) this.startMusic();
-      }
-    });
+    const pause = () => this.stopMusic();
+    const resume = () => {
+      if (document.hidden) return;
+      this.resumeIfNeeded(); // iOS leaves the context "interrupted" after the page was hidden
+      if (this.options.music) this.startMusic();
+    };
+    document.addEventListener('visibilitychange', () => (document.hidden ? pause() : resume()));
+    window.addEventListener('blur', pause);
+    window.addEventListener('focus', resume);
+    window.addEventListener('pagehide', pause);
+    window.addEventListener('pageshow', resume);
   }
 
   /** Follows the scene shown: the music crossfades to its variation (D65). Safe before unlock. */
