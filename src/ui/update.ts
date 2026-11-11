@@ -5,7 +5,7 @@
  * board is in play (logic/update.ts). A first install never reloads the page.
  */
 import { homeEl, layers } from './dom';
-import { reloadForUpdate } from './logic/update';
+import { reloadForUpdate, takeoverGate } from './logic/update';
 
 let updateReady = false;
 
@@ -15,13 +15,13 @@ export function applyUpdateIfSafe(): void {
 }
 
 /**
- * Wires the update checks for `container`. `hadController` is whether a worker already controlled
- * this page at boot: without one, the first `controllerchange` is the first install, not an update.
+ * Wires the update checks for `container`. On a first visit the first `controllerchange` is the
+ * install, not an update; every later one is (`takeoverGate`).
  */
 export function watchForUpdates(container: ServiceWorkerContainer, registration: Promise<ServiceWorkerRegistration | undefined>): void {
-  const hadController = !!container.controller;
+  const isUpdate = takeoverGate(!!container.controller);
   container.addEventListener('controllerchange', () => {
-    if (!hadController) return;
+    if (!isUpdate()) return;
     updateReady = true;
     applyUpdateIfSafe();
   });

@@ -28,5 +28,15 @@
   "movesKept": true,
   "afterHome": "B",
   "errors": []
+ },
+ "firstVisitLeftOpen": {
+  "afterInstall": {
+   "release": "A",
+   "loads": 1,
+   "controlled": true
+  },
+  "afterUpdate": "B",
+  "loads": 2,
+  "errors": []
  }
 }

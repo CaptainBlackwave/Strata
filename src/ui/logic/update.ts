@@ -18,3 +18,18 @@ export interface UpdateState {
 export function reloadForUpdate(s: UpdateState): boolean {
   return s.updateReady && s.onHome;
 }
+
+/**
+ * Tells updates apart from the first install among service worker takeovers (`controllerchange`).
+ * `controlledAtBoot` is whether a worker controlled the page when it loaded. On a first visit the
+ * first takeover is the install; every later one, even in the same open page, is an update (review
+ * of PR #33). Example: `const isUpdate = takeoverGate(!!navigator.serviceWorker.controller)`.
+ */
+export function takeoverGate(controlledAtBoot: boolean): () => boolean {
+  let controlled = controlledAtBoot;
+  return () => {
+    const update = controlled;
+    controlled = true;
+    return update;
+  };
+}

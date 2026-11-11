@@ -102,6 +102,24 @@ async function controlled(b, base) {
     await p.screenshot({ path: path.join(out, 'mid-board-then-home-updated.png') });
     await ctx.close();
   }
+  // 4. A first visit left open (review of PR #33): the install is not an update, the next release is.
+  {
+    served = 'a-new';
+    const ctx = await b.newContext({ ...devices['Pixel 7'], reducedMotion: 'reduce' });
+    await ctx.addInitScript(([k, v]) => { if (!localStorage.getItem(k)) localStorage.setItem(k, v); }, [KEY, JSON.stringify(SAVE)]);
+    const p = await ctx.newPage(); p.errors = []; p.on('pageerror', (e) => p.errors.push(String(e)));
+    let loads = 0;
+    p.on('load', () => loads++);
+    await p.goto(base); await p.waitForFunction(() => navigator.serviceWorker.ready.then(() => true)); await w(p, 1500);
+    const afterInstall = { release: await release(p), loads, controlled: await p.evaluate(() => !!navigator.serviceWorker.controller) };
+    served = 'b-new';
+    await p.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await p.waitForFunction(() => !!document.querySelector('meta[name="strata-release"]'), null, { timeout: 15000 }).catch(() => undefined);
+    await w(p, 800);
+    R.firstVisitLeftOpen = { afterInstall, afterUpdate: await release(p), loads, errors: p.errors };
+    await p.screenshot({ path: path.join(out, 'first-visit-left-open-updated.png') });
+    await ctx.close();
+  }
   await b.close(); server.close();
   fs.writeFileSync(path.join(out, 'result.json'), JSON.stringify(R, null, 1) + '\n');
   console.log(JSON.stringify(R, null, 1));
