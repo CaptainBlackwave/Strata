@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { isSealed, isWon, pour } from '../../../src/core/board';
 import { dealBoard, generateLevel } from '../../../src/core/generator';
-import { type GameConfig, launchLevel, levelSpec } from '../../../src/core/levels';
+import { type GameConfig, isBreather, launchLevel, levelSpec } from '../../../src/core/levels';
 import { solve } from '../../../src/core/solver';
 import { makeBoard } from '../../../src/core/board';
 
@@ -24,9 +24,9 @@ describe('levelSpec', () => {
     expect(levelSpec(10, cfg)).toMatchObject({ challenge: true, capacity: 8 });
     expect(levelSpec(11, cfg).challenge).toBe(false);
   });
-  it('the first tall-jar level is 4 x 8 and later ones stay 5 x 8 (challenge.curve, D82 R3)', () => {
+  it('the early tall-jar levels are 4 x 8 and later ones are 5 x 8 (challenge.curve, D82 R3, D108)', () => {
     expect(levelSpec(10, cfg)).toMatchObject({ challenge: true, colors: 4, capacity: 8, spare: 2, buriedDepth: 0 });
-    for (const l of [20, 30, 100, 500]) expect(levelSpec(l, cfg), `level ${l}`).toMatchObject({ challenge: true, colors: 5, capacity: 8, spare: 2 });
+    for (const l of [50, 100, 500]) expect(levelSpec(l, cfg), `level ${l}`).toMatchObject({ challenge: true, colors: 5, capacity: 8, spare: 2 });
   });
   it('tall-jar shape rows inherit omitted fields, and without rows the base shape is used', () => {
     const rows = { ...cfg, challenge: { ...cfg.challenge, curve: [{ fromLevel: 20, colors: 6 }, { fromLevel: 40, spare: 3 }] } };
@@ -42,11 +42,11 @@ describe('levelSpec', () => {
   it('rejects non-positive levels', () => {
     expect(() => levelSpec(0, cfg)).toThrow(RangeError);
   });
-  it('colour count never decreases across normal levels', () => {
+  it('colour count never decreases across normal levels (breathers aside, D106)', () => {
     let prev = 0;
-    for (let l = 1; l <= 60; l++) {
+    for (let l = 1; l <= 200; l++) {
       const s = levelSpec(l, cfg);
-      if (s.challenge) continue;
+      if (s.challenge || isBreather(l, cfg)) continue;
       expect(s.colors).toBeGreaterThanOrEqual(prev);
       prev = s.colors;
     }

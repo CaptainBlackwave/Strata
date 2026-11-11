@@ -38,12 +38,30 @@ export interface RampConfig {
   readonly mechanicChance: { readonly from: number; readonly to: number; readonly max: number };
 }
 
+/**
+ * Breather levels (owner decision D106): from `from`, every level with
+ * `level % every === offset` is an easier board with `fewerColors` fewer colours than the
+ * curve gives and no spare-jar swap. Example: `{ from: 21, every: 5, offset: 3, fewerColors: 2 }`
+ * makes every level ending in 3 or 8 from 23 on a breather.
+ */
+export interface BreatherConfig {
+  readonly from: number;
+  readonly every: number;
+  readonly offset: number;
+  readonly fewerColors: number;
+}
+
+/** The fewest colours a breather level can be cut down to: level 1's board. */
+const MIN_COLORS = 3;
+
 /** The game-config.json shape. */
 export interface GameConfig {
   readonly baseSeed: number;
   /** Extra-jar uses allowed per level; null means no cap (decision D5). */
   readonly extraJarsPerLevel: number | null;
   readonly curve: readonly CurveRow[];
+  /** Breather levels (D106). Absent: none. */
+  readonly breather?: BreatherConfig;
   readonly ramp: RampConfig;
   readonly challenge: ChallengeConfig;
   readonly generator: {
@@ -207,10 +225,13 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     spare = row.spare ?? spare;
     buriedDepth = row.buriedDepth ?? buriedDepth;
   }
+  // Decision D106: a breather is the same recipe with fewer colours, and it never gets the swap below.
+  const breather = isBreather(level, config);
+  if (breather) colors = Math.max(MIN_COLORS, colors - (config.breather?.fewerColors ?? 0));
   const { mechanics, hourglass, sieve } = splitMechanics(pickMechanics(level, config));
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
-  if (!debut && spare > 1 && spareOneChance(level, config) > 0) {
+  if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
     // Decision D1 (revised 2026-11-08): one of the two spares becomes a special jar.
     // A board with a single ordinary spare is almost never winnable, but one ordinary
     // spare plus a narrow jar or a funnel almost always is.
@@ -224,6 +245,19 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     }
   }
   return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}) };
+}
+
+/**
+ * True when `level` is a breather (decision D106): an ordinary level at or past
+ * `breather.from` whose number fits the `every`/`offset` rhythm. Tall-jar levels are never
+ * breathers. Example: `isBreather(23, config) // true`, `isBreather(20, config) // false`.
+ */
+export function isBreather(level: number, config: GameConfig): boolean {
+  const b = config.breather;
+  if (!b || b.every <= 0 || level < b.from) return false;
+  const ch = config.challenge;
+  if (ch.every > 0 && level % ch.every === 0) return false;
+  return level % b.every === b.offset;
 }
 
 const lerp = (level: number, from: number, to: number, a: number, b: number) =>

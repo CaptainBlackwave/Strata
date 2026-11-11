@@ -1,5 +1,7 @@
 # Difficulty sweep, levels 1–200 (sprint 7, B2)
 
+> **Superseded for levels 12 and up (2026-11-11).** The gentler curve (D104–D109) changed those boards. Current numbers: `production/qa/gentle-curve/difficulty-sweep.md`. This report stays as the baseline D36 was decided on.
+
 **How to run** (from the repo root, after `npm ci`):
 
 ```sh

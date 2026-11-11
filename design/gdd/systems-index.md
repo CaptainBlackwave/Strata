@@ -163,6 +163,13 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D102 | Hourglass jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/VP9f1xzygmbx9AaPJNaSsd): the badge, the flip, its sand fully shown, and levels from 101 rerolled | jar-mechanics | sprint 13 M1 |
 | D103 | Sieve jar art and choices | **Approved** as reviewed (https://claude.ai/artifact/JaoZuxTRHtDPvjgjGGESci): the meshed collar, the refusal message, and levels from 141 rerolled | jar-mechanics | sprint 13 M2 |
 
+| D104 | Difficulty complaints from level 20 | **Levels are endless and that is enough**: no level count, chapters or hand-made packs. Fix the climb between levels 20 and 45 instead (interview 2026-11-11) | level-generation | built (gentler curve) |
+| D105 | How fast colours climb | **Stretch to level ~100**: 8 colours at 18, 9 at 30, 10 at 45, 11 at 65, 12 at 95, 13 at 130, 14 at 170 (before: 12 by level 45). The late game ends as hard as before | level-generation | built (gentler curve) |
+| D106 | Breather levels | **Every 5th**: from level 21, every level ending in 3 or 8 has two fewer colours and both ordinary spare jars | level-generation | built (gentler curve) |
+| D107 | Hidden sand early | **Less of it**: one buried layer until level 30 (before: two from level 12); three layers from 110 (before: 75) | level-generation | built (gentler curve) |
+| D108 | Tall-jar levels under the gentler curve | **Soften them too**: 4 × 8 through level 40, 5 × 8 from level 50; levels 21–40 capped at 48 pours and 41–100 at 58 (before: 58 and 70) | level-generation | built (gentler curve) |
+| D109 | Saved records on changed boards | **Keep marks, reset best pours**: progress, coins, shells and Perfect marks stay; best pours are cleared once for levels whose board changed, with a line in What's new at 0.13.0 | save-data, level-map | built (gentler curve) |
+
 **Defaults accepted by the owner (2026-11-08, sprint 6):**
 - GA-LG-6: a fallback level that loses its debut mechanic doesn't show the intro card; the card waits for the next level that has the mechanic (`level-generation.md`).
 - GA-DP-5: after the device clock moves back, Home shows today's real state, not "Solved today" (`daily-puzzle.md`).

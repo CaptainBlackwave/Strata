@@ -5,14 +5,18 @@ import { type Board } from '../../../src/core/board';
 import { type DailyConfig } from '../../../src/core/daily';
 import { generateLevel } from '../../../src/core/generator';
 import { solve } from '../../../src/core/solver';
-import { type GameConfig, isClassicMechanic, levelSpec } from '../../../src/core/levels';
+import { type GameConfig, isBreather, isClassicMechanic, levelSpec } from '../../../src/core/levels';
 
 const cfg = config as unknown as GameConfig & DailyConfig;
 const has = (b: Board, id: string) =>
   id === 'narrow' ? b.jars.some((j) => j.cap !== undefined) : id === 'frozen' ? b.jars.some((j) => j.frozen) : id === 'locked' ? b.jars.some((j) => j.lock !== undefined) : b.jars.some((j) => j.funnel);
 
 describe('difficulty ramp past level 45 (D1)', () => {
-  const normal = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => levelSpec(from + i, cfg)).filter((x) => !x.challenge);
+  // Ordinary levels: no tall jars and no breathers, which never get the spare-jar swap (D106).
+  const normal = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => from + i).filter((l) => !isBreather(l, cfg)).map((l) => levelSpec(l, cfg)).filter((x) => !x.challenge);
+  it('breather levels always have 2 spare jars (D106)', () => {
+    for (let l = 60; l <= 400; l++) if (isBreather(l, cfg)) expect(levelSpec(l, cfg).spare, `level ${l}`).toBe(2);
+  });
   it('levels before 60 always have 2 spare jars', () => {
     for (const s of normal(1, 59)) expect(s.spare).toBe(2);
   });
@@ -27,14 +31,14 @@ describe('difficulty ramp past level 45 (D1)', () => {
   it('tall-jar levels keep 2 spare jars', () => {
     for (let l = 60; l <= 400; l += 10) expect(levelSpec(l, cfg).spare).toBe(2);
   });
-  it('buried sand goes to 3 layers from level 75', () => {
-    expect(levelSpec(74, cfg).buriedDepth).toBe(2);
-    expect(levelSpec(75, cfg).buriedDepth).toBe(3);
+  it('buried sand goes to 3 layers from level 110 (75 before the gentler curve, D107)', () => {
+    expect(levelSpec(109, cfg).buriedDepth).toBe(2);
+    expect(levelSpec(111, cfg).buriedDepth).toBe(3);
   });
-  it('colours rise to 13 at level 90 and 14 at level 130, using new palette colours', () => {
-    expect(levelSpec(89, cfg).colors).toBe(12);
-    expect(levelSpec(91, cfg).colors).toBe(13);
-    expect(levelSpec(131, cfg).colors).toBe(14);
+  it('colours rise to 13 at level 130 and 14 at level 170 (D105), using new palette colours', () => {
+    expect(levelSpec(129, cfg).colors).toBe(12);
+    expect(levelSpec(131, cfg).colors).toBe(13);
+    expect(levelSpec(171, cfg).colors).toBe(14);
     expect(cfg.palette.length).toBeGreaterThanOrEqual(14);
     expect(new Set(cfg.palette.map((p) => p.hex.toLowerCase())).size).toBe(cfg.palette.length);
   });
@@ -61,11 +65,11 @@ describe('spare-jar swap and generation fallback (D1 revised, sweep regressions)
       if (l < 81) expect(s.mechanics, `level ${l}`).not.toContain('funnel');
     }
   });
-  it('most levels from 150 really play with one ordinary spare jar', () => {
+  it('most ordinary levels from 150 really play with one ordinary spare jar', () => {
     let n = 0;
     let one = 0;
     for (let l = 150; l <= 260; l++) {
-      if (levelSpec(l, cfg).challenge) continue;
+      if (levelSpec(l, cfg).challenge || isBreather(l, cfg)) continue;
       n++;
       const g = generateLevel(l, cfg);
       const ordinarySpares = g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel).length;

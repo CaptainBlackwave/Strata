@@ -70,10 +70,11 @@ describe('save storage', () => {
   });
   it('migrates v1 progress and prefs, skipping the tutorial for returning players', () => {
     const s = memoryStore();
-    s.setItem('strata.progress.v1', JSON.stringify({ level: 15, best: { '14': 20 } }));
+    s.setItem('strata.progress.v1', JSON.stringify({ level: 15, best: { '9': 20, '14': 20 } }));
     s.setItem('strata.prefs.v1', JSON.stringify({ patterns: true }));
     const save = loadSave(econ, s);
-    expect(save).toMatchObject({ level: 15, best: { '14': 20 }, tutorialDone: true, settings: { patterns: true } });
+    expect(save).toMatchObject({ level: 15, best: { '9': 20 }, tutorialDone: true, settings: { patterns: true } });
+    expect(save.best['14'], 'best pours of a changed board are dropped (D109)').toBeUndefined();
   });
   it('repairs invalid fields individually', () => {
     const s = memoryStore();

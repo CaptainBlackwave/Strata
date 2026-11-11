@@ -40,6 +40,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 |---|---|---|
 | `level` | The next level to play (furthest cleared + 1) | `level-generation.md` |
 | `best` | Fewest pours per cleared level | `session-boosters.md` |
+| `boards` | The newest board change this save has been through (D109); an older save loads as 1 | `level-generation.md` |
 | `wallet` | `coins` and booster charges | `economy.md` |
 | `tutorialDone` | Tutorial finished | `feel-audio-ui.md` |
 | `settings` | `sound`, `music`, `haptics`, `patterns` | `feel-audio-ui.md` |
@@ -60,6 +61,8 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 **Writes**: after every state change: at boot (after the profile repair), after every win and daily solve, purchase, setting change (including the "Match my clock" toggle), tutorial completion, intro card, profile save, and restore.
 
 **Migration**: with no `strata.save.v2`, the older `strata.progress.v1` (level, best) and `strata.prefs.v1` (colour patterns) are read; a v1 player past level 1 is marked tutorial-done.
+
+**Board changes** (D109, `boardChanges` in config): when a release changes the boards behind level numbers, it adds a row `{ version, fromLevel, keep }`. On load or import, a save whose `boards` is older loses its `best` entries for levels from `fromLevel` on, except the levels `keep` names (every `every`th level from `from`), whose boards did not change. This happens once: the save then carries the newest version. The level, Perfect marks, the Perfect stat, coins, shells and everything else are kept. A Perfect mark on a changed level stays, so a replay can't earn it twice. Version 2 is the gentler curve: best pours go for levels 12 and up, except the tall-jar levels from 50.
 
 **Repair** (on every load and every import). A bad or missing value falls back to its default without discarding the rest:
 - `level` must be a whole number ≥ 1; coins and charges must be whole numbers ≥ 0; settings must be booleans; the streak date must look like `YYYY-MM-DD`.
@@ -171,4 +174,5 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9` |
 | 2026-11-08 | Claude (sprint 6, F9) | `profile` and `stats` fields and their repair added (GB-SD-1); export/import rules written down (GB-SD-2); restore reset on edit recorded as building (GB-SD-3, GX-14); repair describes what the code really checks (GB-SD-4); full write list (GB-SD-5); dependencies listed explicitly, incl. player-profile (GB-SD-6); AC cites the profile and export tests (GB-SD-7); versioning note covers save codes (GB-SD-8) |
 | 2026-11-09 | Claude (sprint 9, M4) | One active tab (D57, TD-14): the newest tab takes over; older tabs pause writes and show "Strata is open in another tab" with Play here, which reloads the save and takes over. A refused write shows one toast per session. Tests: `tests/unit/ui/tab-lock.test.ts`, `tests/unit/ui/layers.test.ts`; two-tab evidence: `production/qa/evidence/sprint-9/README-m4.md` |
+| 2026-11-11 | Claude (gentler curve, D109) | `boards` field and the `boardChanges` rule: best pours of changed boards are cleared once; everything else is kept (`tests/unit/map/save-boards.test.ts`) |
 | 2026-11-09 | Claude (sprint 12, S2) | `styles` field (`jar-styles.md` §3.5): `owned` as `slot:id`, `worn` per slot, repaired by `stylesOf` against the catalog; old saves get defaults; round-trips through the save code. Tests: `tests/unit/styles/styles-save.test.ts` |

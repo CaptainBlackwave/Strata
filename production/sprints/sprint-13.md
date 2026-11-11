@@ -13,8 +13,9 @@ Keep the late game teaching something new: three original jar mechanics, the hou
 | M2 | **Sieve jar** (PR 3, level 141): banded in one colour; only that colour may be poured in | D96, D97 | Same as M1 |
 | M3 | **Clam jar** (PR 4, level 181): closed and untouchable until a set number of pours, then shows its sand | D96, D97 | Same as M1 |
 | W1 | **Daily and weekly** (with each mechanic): add it to the weekly themes and a daily weekday from a set start date | D98 | No live daily or weekly board changes before its start date (fixture test); the current week's boards are byte-identical |
+| D1 | **Gentler difficulty curve** (added 2026-11-11 after complaints that levels from 20 were too hard): slower colour steps, breather levels, less hidden sand early, smaller early tall jars, lower pour caps; best pours reset once for changed boards. **Built 2026-11-11** | D104–D109 | Sweep in `production/qa/gentle-curve/`; tests seen failing first; levels 1–11 byte-identical; screenshots in `production/qa/evidence/gentle-curve/` |
 | P1 | **Phone checklist** findings (when the owner has run it) | D74, D101 | Each failed item fixed or filed |
-| R1 | **0.13.0** (last PR): What's new, changelog, version | D56, D60 | Upgrade play-through; tag and release after the merge |
+| R1 | **0.13.0** (last PR): What's new, changelog, version. What's new must carry the D109 line: "Levels from 12 are gentler, with an easier board every few levels. Best pours on those levels start fresh; your progress and Perfect marks are kept." | D56, D60, D109 | Upgrade play-through; tag and release after the merge |
 
 ## Design notes to settle in the GDD (M1–M3)
 - The hourglass's flip counts every successful pour on the board (Undo reverses it); the solver must model the flip so every board stays winnable and hints stay correct.

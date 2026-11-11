@@ -50,6 +50,11 @@ export interface SaveData {
    * Counted from the M3 update on: an older save loads it as `[]` and keeps its Perfect stat.
    */
   perfect: number[];
+  /**
+   * The newest `boardChanges` version this save has been through (D109). A save on an older one
+   * loses its best pours for the changed levels on load, once. An older save loads as 1.
+   */
+  boards: number;
   wallet: Wallet;
   tutorialDone: boolean;
   settings: Settings;
@@ -173,9 +178,38 @@ function perfectOf(v: unknown): number[] {
 /** A de-duplicated list of the strings in `v`, or [] if it isn't an array. */
 const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : []);
 
+/**
+ * One release that changed the boards behind level numbers (D109): every level from `fromLevel`
+ * on, except each `keep.every`th level from `keep.from`, whose boards stayed the same.
+ */
+interface BoardChange {
+  readonly version: number;
+  readonly fromLevel: number;
+  readonly keep?: { readonly every: number; readonly from: number };
+}
+
+/** Releases that changed the boards behind level numbers: `boardChanges` in the config (D109). */
+const BOARD_CHANGES: readonly BoardChange[] = (gameConfig as unknown as { boardChanges?: BoardChange[] }).boardChanges ?? [];
+/** The boards version a save has before any change. */
+const FIRST_BOARDS = 1;
+/** The newest boards version; a save written today carries it. */
+const LATEST_BOARDS = Math.max(FIRST_BOARDS, ...BOARD_CHANGES.map((c) => c.version));
+
+/**
+ * `best` without the levels whose boards changed after boards version `seen` (D109): the best
+ * pours of a board that no longer exists are dropped; nothing else in the save is touched.
+ * Example: a save on version 1 with the version-2 change from level 12 keeps `best` for 1-11
+ * and for the tall-jar levels the change kept (50, 60, …).
+ */
+function bestOnCurrentBoards(best: Record<string, number>, seen: number): Record<string, number> {
+  const missed = BOARD_CHANGES.filter((c) => c.version > seen);
+  const changed = (level: number) => missed.some((c) => level >= c.fromLevel && !(c.keep && c.keep.every > 0 && level >= c.keep.from && level % c.keep.every === 0));
+  return Object.fromEntries(Object.entries(best).filter(([level]) => !changed(Number(level))));
+}
+
 /** A brand-new player's save. */
 export function freshSave(econ: EconomyConfig): SaveData {
-  return { level: 1, best: {}, perfect: [], wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding(), weekly: emptyWeekly(), styles: defaultStyles(gameConfig as unknown as StylesConfig) };
+  return { level: 1, best: {}, perfect: [], boards: LATEST_BOARDS, wallet: newWallet(econ), tutorialDone: false, settings: { ...DEFAULT_SETTINGS }, daily: { ...NO_STREAK }, shells: [], seenMechanics: [], themes: { owned: [DEFAULT_THEME], selected: DEFAULT_THEME, auto: false }, profile: { ...NO_PROFILE }, stats: emptyStats(), dailyShare: null, seenWhatsNew: WHATS_NEW_VERSION, seenShells: 0, badges: [], scenesPlayed: [], onboarding: freshOnboarding(), weekly: emptyWeekly(), styles: defaultStyles(gameConfig as unknown as StylesConfig) };
 }
 
 /**
@@ -190,7 +224,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
     const prefs = read(store, LEGACY_PREFS);
     if (isObj(v1)) {
       base.level = levelOf(v1.level);
-      base.best = bestOf(v1.best);
+      base.best = bestOnCurrentBoards(bestOf(v1.best), FIRST_BOARDS);
       base.tutorialDone = base.level > 1; // returning players skip the tutorial
       base.seenWhatsNew = ''; // a returning player is updating, so the card shows once
     }
@@ -208,8 +242,9 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const shells = strings(v2.shells);
   return {
     level,
-    best: bestOf(v2.best),
+    best: bestOnCurrentBoards(bestOf(v2.best), Math.max(FIRST_BOARDS, nonNegInt(v2.boards, FIRST_BOARDS))),
     perfect: perfectOf(v2.perfect),
+    boards: LATEST_BOARDS,
     wallet: {
       coins: nonNegInt(w.coins, base.wallet.coins),
       boosters: Object.fromEntries(BOOSTERS.map((id) => [id, nonNegInt(b[id], base.wallet.boosters[id])])) as Record<BoosterId, number>,
