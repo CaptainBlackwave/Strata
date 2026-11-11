@@ -199,6 +199,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.17.0',
+        name: 'A softer touch',
+        lines: [
+          'Sand now streams in grains and settles into a soft pile, and the pour sound follows how much you move.',
+          'Corks drop in with a sparkle, and the chime climbs with each jar you seal on a board. A win lights up your sealed jars before the card.',
+          'Snow falls during Winter Tide, with its own winter music.',
+          'New in Settings: Your stats, to copy and send us with your feedback.',
+        ],
+      },
+      {
         version: '0.16.0',
         name: 'Winter Tide',
         lines: [
@@ -696,6 +706,25 @@ const en = {
     winBonus: (coins: number) => `All of today\u2019s goals done \u00b7 +${coins}`,
   },
   /** Seasonal events (sprint 17, D141-D147; design/gdd/events.md): Home card, chooser, board label, win card, prize. */
+  /** The "Your stats" sheet (sprint 18 S1, D150): text a player copies and sends; nothing is sent automatically. */
+  stats: {
+    button: 'Your stats',
+    heading: 'Your stats',
+    intro: 'Copy these and send them to us with your feedback. Nothing is sent automatically.',
+    copy: 'Copy',
+    copied: 'Copied. Paste it into your message.',
+    copyFailed: "Couldn't copy. Select the text and copy it yourself.",
+    labels: {
+      title: 'Strata stats',
+      progress: 'Progress',
+      today: 'Today',
+      boosters: 'Boosters and coins',
+      device: 'Device',
+      yes: 'yes',
+      no: 'no',
+      rows: { level: 'Level', streak: 'Streak', bestStreak: 'Best streak', perfectClears: 'Perfect clears', dailiesSolved: 'Dailies solved', shells: 'Shells', badges: 'Badges', jarsSealed: 'Jars sealed', date: 'Date (UTC)', goals: "Today's goals done", dailyToday: 'Daily solved today', event: 'Event', boostersUsed: 'Boosters used', coinsEarned: 'Coins earned', coins: 'Coins now', pours: 'Pours', version: 'Version', browser: 'Browser', screen: 'Screen' },
+    },
+  },
   event: {
     /** Event names by `events[].id` in game-config.json. */
     names: { wintertide: 'Winter Tide' } as Readonly<Record<string, string>>,

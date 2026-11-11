@@ -209,8 +209,8 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D145 | Event board pace | **Advent: 24 boards, one opens each day**; any open board can be caught up until the event ends | events | built |
 | D146 | Winter Tide prize | **Frost jar glass + Winter Tide badge** for all 24; 50 coins after every 6th board | events, economy | built |
 | D147 | Event engine | **One reusable engine**: an event is a config entry (dates, boards, prize); later events add entries | events | built |
-| D148 | Next focus after 0.16 | **Feel and polish**: no known complaints (owner interview 2026-11-11) | feel-audio-ui | planned |
-| D149 | What to polish | **The pour, the seal, the win, and screens and menus**; no new rules | feel-audio-ui | planned |
-| D150 | Player feedback | **A local "Your stats" sheet players copy and send**: progress, today, boosters and coins, version and device; nothing is sent automatically | feel-audio-ui | planned |
-| D151 | Winter touches | **Snowfall and a winter music variation** while Winter Tide runs | events, feel-audio-ui | planned |
-| D152 | Release | **One release, 0.17.0, before 1 December** | release | planned |
+| D148 | Next focus after 0.16 | **Feel and polish**: no known complaints (owner interview 2026-11-11) | feel-audio-ui | built |
+| D149 | What to polish | **The pour, the seal, the win, and screens and menus**; no new rules | feel-audio-ui | built |
+| D150 | Player feedback | **A local "Your stats" sheet players copy and send**: progress, today, boosters and coins, version and device; nothing is sent automatically | feel-audio-ui | built |
+| D151 | Winter touches | **Snowfall and a winter music variation** while Winter Tide runs | events, feel-audio-ui | built |
+| D152 | Release | **One release, 0.17.0, before 1 December** | release | built |

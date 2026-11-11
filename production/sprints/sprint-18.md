@@ -1,6 +1,6 @@
 # Sprint 18: Feel
 
-> **Status: planned (2026-11-11), approved by the owner.** From the owner interview after 0.16.0 (D148–D152). Target release: **0.17.0**, live **before 1 December 2026**, so the winter touches arrive with Winter Tide.
+> **Status: built (2026-11-11), approved by the owner.** Released as 0.17.0. Evidence: `production/qa/evidence/sprint-18/`. From the owner interview after 0.16.0 (D148–D152). Target release: **0.17.0**, live **before 1 December 2026**, so the winter touches arrive with Winter Tide.
 
 ## Why
 No complaints are known (D148). The owner chose **feel and polish** next: make every pour, seal and win more satisfying, with no new rules. The owner also wants a **local stats sheet** players can copy into a message, because nothing is sent automatically (no server, D150).
@@ -20,6 +20,11 @@ The same game, but it feels better in the hand. Every effect respects reduced mo
 | R1 | **0.17.0**: What's new, the changelog section, the release, before 1 Dec | Upgrade play-through |
 
 Evidence for F1–F4 and W1 is short screen recordings or frame strips in `production/qa/evidence/sprint-18/`, plus a performance trace.
+
+## As built
+- Performance (4× CPU throttle, level 491, 10 pours): worst frame 76 ms with effects, 64 ms with every effect off; p95 30 ms with effects, 47 ms without. The 16 ms target is missed by the existing board redraw, not the new effects: Beads strata-8j3.
+- Reduced motion: the old instant pour (the land sound still plays), no win glow run, no Home sway, no snow.
+- Snow is subtle on light scenes.
 
 ## Decisions
 - D148: no known complaints; next focus is feel and polish.

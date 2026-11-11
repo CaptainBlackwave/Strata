@@ -4,5 +4,46 @@
     "snowCanvas": false,
     "identicalAfter1200ms": true,
     "runningAnimations": 0
-  }
+  },
+  "perf": {
+    "level": 491,
+    "jars": 16,
+    "pours": 10,
+    "cpuThrottle": 4,
+    "frames": 104,
+    "median": 16,
+    "p95": 30,
+    "p99": 43,
+    "worst": 76,
+    "over20": 18,
+    "over34": 3,
+    "longTasks": [
+      52
+    ]
+  },
+  "perfReducedBaseline": {
+    "level": 491,
+    "jars": 16,
+    "pours": 10,
+    "cpuThrottle": 4,
+    "frames": 105,
+    "median": 16,
+    "p95": 47,
+    "p99": 61,
+    "worst": 64,
+    "over20": 21,
+    "over34": 8,
+    "longTasks": []
+  },
+  "winStrip": [
+    "strip-win-1.png",
+    "strip-win-2.png",
+    "strip-win-3.png",
+    "strip-win-4.png",
+    "strip-win-5.png",
+    "strip-win-6.png",
+    "strip-win-7.png",
+    "strip-win-8.png"
+  ],
+  "winCardOpen": true
 }

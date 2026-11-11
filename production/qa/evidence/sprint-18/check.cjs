@@ -34,6 +34,7 @@ async function seeded(browser, base, url, date, { reduced = false, level = 80 } 
   }, [KEY, level, MECHANICS]);
   await page.goto(base + url);
   await page.waitForTimeout(1200);
+  if (process.env.DEBUG) console.log('loaded', url, await page.evaluate(() => [...document.querySelectorAll('#app > [id]:not([hidden])')].map((e) => e.id).join(',')));
   const want = /level=(\d+)/.exec(url);
   if (want && base === DEV)
     await page.waitForFunction(async (n) => {
@@ -75,14 +76,20 @@ async function pourBy(page, [from, to]) {
   await tapJar(page, from);
   await page.waitForTimeout(60);
   await tapJar(page, to);
-  await waitPoured(page, before);
+  try {
+    await waitPoured(page, before);
+  } catch {
+    // a tap missed (a jar still settling): deselect and let the caller solve again from the board as it is
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+  }
 }
 /** Waits until the pour counted (moves went up) and the jar is home. */
 function waitPoured(page, before) {
   return page.waitForFunction(async (n) => {
     const { state } = await import('/src/ui/state.ts');
     return state.session.moves > n && !state.busy && state.returning.size === 0;
-  }, before, { polling: 50, timeout: 20000 });
+  }, before, { polling: 50, timeout: 6000 });
 }
 async function strip(page, name, n, every, clip) {
   const files = [];
@@ -102,7 +109,8 @@ async function strip(page, name, n, every, clip) {
 
   // 1. Performance at 4x CPU throttle: 10 pours on level 491.
   if (PARTS.includes('perf')) {
-    const { context, page } = await seeded(browser, DEV, '/?level=491', '2026-11-20', { level: 491 });
+    const base = !!process.env.PERF_REDUCED; // the same pours with every effect off: the board's own cost
+    const { context, page } = await seeded(browser, DEV, '/?level=491', '2026-11-20', { level: 491, reduced: base });
     const jars = await page.locator('#board .jar').count();
     const moves = (await solvePath(page)).slice(0, 10);
     const cdp = await context.newCDPSession(page);
@@ -127,7 +135,7 @@ async function strip(page, name, n, every, clip) {
       return { frames: f.length, median: pct(0.5), p95: pct(0.95), p99: pct(0.99), worst: f[f.length - 1], over20: f.filter((x) => x > 20).length, over34: f.filter((x) => x > 34).length, longTasks: window.__perf.long };
     });
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
-    report.perf = { level: 491, jars, pours: moves.length, cpuThrottle: 4, ...perf };
+    report[base ? 'perfReducedBaseline' : 'perf'] = { level: 491, jars, pours: moves.length, cpuThrottle: 4, ...perf };
     await context.close();
   }
 
@@ -169,13 +177,17 @@ async function strip(page, name, n, every, clip) {
   // the win glow run on a short level: every move but the last, then the last with shots until the card
   if (PARTS.includes('win')) {
     const { context, page } = await seeded(browser, DEV, '/?level=12', '2026-11-20', { level: 12 });
-    let moves = await solvePath(page);
-    if (process.env.DEBUG) console.log('win moves', moves.length);
-    while (moves.length > 1) {
-      await pourBy(page, moves[0]);
-      moves = await solvePath(page);
-    }
-    const last = moves[0];
+    // Every move but the last straight through the game session (the reduced-motion path: no animation),
+    // then the last one by real taps, so the strip shows the glow run as a player sees it.
+    const last = await page.evaluate(async () => {
+      const { state } = await import('/src/ui/state.ts');
+      const { solve } = await import('/src/core/solver.ts');
+      const path = solve(state.session.board, 400000).path;
+      for (const m of path.slice(0, -1)) state.session.pour(m.from, m.to);
+      const l = path[path.length - 1];
+      return [l.from, l.to];
+    });
+    await page.waitForTimeout(1500);
     await tapJar(page, last[0]);
     await page.waitForTimeout(80);
     await tapJar(page, last[1]);

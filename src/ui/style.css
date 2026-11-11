@@ -4562,3 +4562,32 @@ body[data-theme='harvestmoon']::before {
   outline-offset: 2px;
 }
 
+
+/* Sprint 18 S1 (D150): the "Your stats" sheet, label/value rows that wrap at large text. */
+.stats-list section + section {
+  margin-top: 12px;
+}
+.stats-list h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+.stats-list dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 0.9375rem;
+}
+.stats-list dt {
+  color: var(--ink-soft);
+  min-width: 0;
+}
+.stats-list dd {
+  margin: 0;
+  font-weight: 800;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.stats-sheet .primary {
+  margin-top: 8px;
+}
