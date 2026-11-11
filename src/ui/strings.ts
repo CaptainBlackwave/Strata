@@ -199,6 +199,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.15.0',
+        name: 'Come back tomorrow',
+        lines: [
+          'Streak rewards: keep your daily streak going to earn boosters on days 3 and 7, then a frame, a jar glass, a name plate and a night scene you can only get this way.',
+          'Rewards are yours to keep, even if a streak ends.',
+          "Today's goals: three small goals each day on Home, worth coins, with a bonus when all three are done.",
+        ],
+      },
+      {
         version: '0.14.1',
         name: 'An easier climb',
         lines: [
@@ -619,11 +628,13 @@ const en = {
   /** The streak reward track (sprint 16, D136; daily-puzzle.md §2.4): Home's next reward, win card rows, locked pieces. */
   track: {
     /** The daily card's line, e.g. "Next streak reward: Tide Line frame · 4 days". */
-    next: (name: string, days: number) => `Next streak reward: ${name} \u00b7 ${days === 1 ? '1 day' : `${days} days`}`,
+    next: (name: string, days: number) => `Next streak reward: ${name} \u00b7 ${days === 1 ? '1\u00a0day' : `${days}\u00a0days`}`,
+    /** A streak that already passed unclaimed days (a player who updated mid-streak, D140). */
+    catchUp: 'Your next daily solve collects your streak rewards',
     /** A win card row, e.g. "Day 7 streak reward: Hint ×2, Shuffle, Jar". */
     row: (day: number, name: string) => `Day ${day} streak reward: ${name}`,
     /** A streak-only scene or jar piece not earned yet, e.g. "Streak reward · day 100". */
-    locked: (day: number) => `Streak reward \u00b7 day ${day}`,
+    locked: (day: number) => `Streak reward \u00b7 day\u00a0${day}`,
     frame: (name: string) => `${name} frame`,
     plate: (name: string) => `${name} name plate`,
     /** A jar piece with its slot, e.g. "Sea Lantern glass". */

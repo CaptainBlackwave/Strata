@@ -54,7 +54,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
     // 1. Home: goals card and the next streak reward line.
     {
       const { context, page } = await seeded(browser, PREVIEW, size, base(13, [3, 7], { date: '2026-11-15', progress: [1, 12, 0], done: [], bonus: false }));
-      await page.evaluate(() => document.getElementById('goals-card').scrollIntoView({ block: 'center' }));
+      await page.evaluate(() => document.getElementById('btn-daily').scrollIntoView({ block: 'start' }));
       await shot(page, `home-goals-${size.tag}`);
       await context.close();
     }

@@ -1,6 +1,6 @@
 # Sprint 16: come back tomorrow
 
-> **Status: planned (2026-11-11), approved by the owner.** From the owner interview after the bug sweep (D135–D140 in `design/gdd/systems-index.md`). Target release: **0.15.0**, with a What's new card.
+> **Status: built (2026-11-11), approved by the owner.** Released as 0.15.0. Evidence: `production/qa/evidence/sprint-16/`. From the owner interview after the bug sweep (D135–D140 in `design/gdd/systems-index.md`). Target release: **0.15.0**, with a What's new card.
 
 ## Why
 Live players say the game plays better since 0.14.1. The next goal is **bringing players back** (D135). Strata already gives reasons to return: the daily puzzle with growing streak coins and tide passes, and the weekly set of five. But a long streak earns nothing a player can keep, and a short visit that skips the daily earns little.
@@ -28,7 +28,7 @@ There are **no reminders** (D138), and the release ships as **one release, 0.15.
 
 - **Counting** (D140): the track counts the **current** streak. On each counted daily solve, every track day up to the new streak that is not yet claimed is claimed and paid. A player who already holds a 20-day streak claims days 3, 7 and 14 on the next solve.
 - **Rewards are earned once and kept for good.** A missed day resets the streak, but no reward is lost, and a claimed day never pays again.
-- **Placement.** The daily card on Home shows the next reward and the days left ("Next: Tide Line frame in 4 days"). The daily win card shows a claimed reward in its unlocks row. A small sheet opened from the daily card shows the whole track.
+- **Placement.** The daily card on Home shows the next reward and the days left ("Next: Tide Line frame in 4 days"). The daily win card shows a claimed reward in its unlocks row. ~~A small sheet opened from the daily card shows the whole track.~~ Not built: the daily card's next-reward line and the locked "Streak reward · day N" items in the Scenes and Jar styles sheets show the track instead (follow-up in Beads).
 - **Streak-only items** never appear for sale: the Scenes and Jar styles sheets show them as "Streak reward · day 100". The existing coral frame (best streak 14) and the existing badges stay as they are.
 
 ### Daily goals (`design/gdd/daily-goals.md`, new)
@@ -61,6 +61,11 @@ There are **no reminders** (D138), and the release ships as **one release, 0.15.
 | G3 | **Goals UI**: Home card, win card row | Screenshots at 390 and at 320 with 150% text |
 | D1 | **Docs**: `daily-goals.md` (8 sections), `daily-puzzle.md` §2.4, `economy.md` coin sources, `save-data.md`, decisions D135–D140 | As before |
 | R1 | **0.15.0**: version bump and What's new ("Streak rewards", "Daily goals") | Upgrade play-through; card shown once |
+
+## Notes from the build
+- Streak-only items are stored with `price: 0` and an `earned` day; `isOwned`, `buyTheme`, `buyStyle` and the sheets check `earned`, so they are never free and never sold.
+- Lighthouse Night is kind `sky` with no hours, so Auto never picks it: it shows only when chosen.
+- A player who updates mid-streak sees "Your next daily solve collects your streak rewards" and catches up on that solve (D140).
 
 ## Out of scope
 - Reminders, notifications and app badges (D138).

@@ -38,7 +38,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 14 | Weekly set | Progression | Full Vision | Implemented (sprint 11 W1, W2, D77) | [weekly-set.md](weekly-set.md) | 2, 3, 6, 9, 10, 13 |
 | 15 | Jar styles | Economy | Full Vision | Implemented (sprint 12, D85–D94) | [jar-styles.md](jar-styles.md) | 5, 8, 9, 10 |
 | 16 | Sharing | Meta | Full Vision | Designed and signed off (D116–D124), building in sprint 14 | [sharing.md](sharing.md) | 6, 7, 8, 9, 11, 12, 13, 14, 15 |
-| 17 | Daily goals | Progression | Full Vision | Designed (sprint 16, D137), building | [daily-goals.md](daily-goals.md) | 4, 5, 6, 10, 12, 14 |
+| 17 | Daily goals | Progression | Full Vision | Implemented (sprint 16, D137) | [daily-goals.md](daily-goals.md) | 4, 5, 6, 10, 12, 14 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -195,9 +195,9 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D132 | Measuring "gentle" | **A simulated player** that sees only visible sand and gives up after a patience limit, plus booster counts; replaces solver pours as the target | level-generation | built (0.14.1) |
 | D133 | Shipping | **One PR as 0.14.1**, best pours reset once for changed levels (D110 rule), after the owner approves the plan | — | built (0.14.1) |
 | D134 | A challenge on the receiver's own next level | **Pays as a normal first clear**: it is their own next level; only an already-cleared level plays as a replay with no coins (bug sweep, strata-8s1) | sharing | built |
-| D135 | Next focus after the bug sweep | **Bring players back**: more reasons to return each day, inside the brief's anti-pillars (owner interview 2026-11-11) | daily-puzzle, daily-goals | planned |
-| D136 | Streak reward track | **Fixed rewards on streak days 3, 7, 14, 30, 60, 100**: boosters on 3 and 7, then streak-only cosmetics (Tide Line frame, Sea Lantern glass, Lighthouse plate, Lighthouse Night scene), never for sale | daily-puzzle | planned |
-| D137 | Daily goals | **Three goals a UTC day, the same for everyone**, picked from the date; each pays 20-40 coins once, all three +50 | daily-goals | planned |
-| D138 | Reminders | **None**: no notifications, app badges or calendar events; the reasons to return live in the game | daily-goals | planned |
-| D139 | Release size | **One sprint, one release: 0.15.0** with a What's new card | release | planned |
-| D140 | A missed day and the track | **The track counts the current streak; rewards are kept and each day is claimed once.** A solve claims every unclaimed day up to the new streak (catch-up) | daily-puzzle | planned |
+| D135 | Next focus after the bug sweep | **Bring players back**: more reasons to return each day, inside the brief's anti-pillars (owner interview 2026-11-11) | daily-puzzle, daily-goals | built |
+| D136 | Streak reward track | **Fixed rewards on streak days 3, 7, 14, 30, 60, 100**: boosters on 3 and 7, then streak-only cosmetics (Tide Line frame, Sea Lantern glass, Lighthouse plate, Lighthouse Night scene), never for sale | daily-puzzle | built |
+| D137 | Daily goals | **Three goals a UTC day, the same for everyone**, picked from the date; each pays 20-40 coins once, all three +50 | daily-goals | built |
+| D138 | Reminders | **None**: no notifications, app badges or calendar events; the reasons to return live in the game | daily-goals | built |
+| D139 | Release size | **One sprint, one release: 0.15.0** with a What's new card | release | built |
+| D140 | A missed day and the track | **The track counts the current streak; rewards are kept and each day is claimed once.** A solve claims every unclaimed day up to the new streak (catch-up) | daily-puzzle | built |

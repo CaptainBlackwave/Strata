@@ -43,12 +43,16 @@ export function trackRewardName(reward: TrackReward, names: TrackNames): string 
 }
 
 /**
- * The daily card's line: "Next streak reward: Tide Line frame · 4 days", or '' once every track
+ * The daily card's line: "Next streak reward: Tide Line frame · 4 days", the catch-up line when the
+ * streak already passed an unclaimed day, or '' once every track
  * day is claimed. `streak` is the live streak (`streakStatus(...).current`).
  */
 export function nextRewardLine(claimed: readonly number[], streak: number, track: readonly TrackStep[], names: TrackNames): string {
   const next = nextTrackStep(claimed, streak, track);
-  return next ? t.track.next(trackRewardName(next.step.reward, names), next.daysLeft) : '';
+  if (!next) return '';
+  // The streak already passed an unclaimed day (updated mid-streak): the next counted solve pays it (D140).
+  if (next.step.day <= streak) return t.track.catchUp;
+  return t.track.next(trackRewardName(next.step.reward, names), next.daysLeft);
 }
 
 /**

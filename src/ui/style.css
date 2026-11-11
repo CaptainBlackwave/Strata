@@ -2880,7 +2880,7 @@ body[data-theme='lighthousenight'] :is(.tool, .daily-card, .profile-chip) {
   inherits: false;
   initial-value: 100deg;
 }
-/* A soft warm beam from a lamp at the top left, behind everything (z -1, no input). It sweeps slowly
+/* A soft warm beam from a lamp at the left, clear of the profile chip, behind everything (z -1, no input). It sweeps slowly
    with motion allowed, and holds still under reduced motion. */
 body[data-theme='lighthousenight'] .home::before {
   content: '';
@@ -2889,8 +2889,8 @@ body[data-theme='lighthousenight'] .home::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 8% 9%, rgba(255, 232, 180, 0.9) 0 4px, rgba(255, 210, 130, 0.35) 9px, transparent 26px),
-    conic-gradient(from var(--beam-a) at 8% 9%, transparent 0deg, rgba(255, 214, 140, 0.16) 8deg, rgba(255, 214, 140, 0.05) 20deg, transparent 26deg, transparent 360deg);
+    radial-gradient(circle at 9% 24%, rgba(255, 232, 180, 0.9) 0 4px, rgba(255, 210, 130, 0.35) 9px, transparent 26px),
+    conic-gradient(from var(--beam-a) at 9% 24%, transparent 0deg, rgba(255, 214, 140, 0.16) 8deg, rgba(255, 214, 140, 0.05) 20deg, transparent 26deg, transparent 360deg);
 }
 @media (prefers-reduced-motion: no-preference) {
   body[data-theme='lighthousenight'] .home::before {

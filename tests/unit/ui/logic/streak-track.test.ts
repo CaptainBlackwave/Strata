@@ -23,9 +23,12 @@ describe('trackRewardName', () => {
 
 describe('nextRewardLine', () => {
   it('names the lowest unclaimed day and the days left', () => {
-    expect(nextRewardLine([3, 7], 10, track, names)).toBe('Next streak reward: Tide Line frame · 4 days');
-    expect(nextRewardLine([3, 7], 13, track, names)).toBe('Next streak reward: Tide Line frame · 1 day');
-    expect(nextRewardLine([], 0, track, names)).toBe('Next streak reward: Hint, Shuffle · 3 days');
+    expect(nextRewardLine([3, 7], 10, track, names)).toBe('Next streak reward: Tide Line frame · 4\u00a0days');
+    expect(nextRewardLine([3, 7], 13, track, names)).toBe('Next streak reward: Tide Line frame · 1\u00a0day');
+    expect(nextRewardLine([], 0, track, names)).toBe('Next streak reward: Hint, Shuffle · 3\u00a0days');
+  });
+  it('says the next solve collects when the streak already passed an unclaimed day (D140 catch-up)', () => {
+    expect(nextRewardLine([], 20, track, names)).toBe('Your next daily solve collects your streak rewards');
   });
   it('is empty once the whole track is claimed', () => {
     expect(nextRewardLine(track.map((s) => s.day), 120, track, names)).toBe('');
