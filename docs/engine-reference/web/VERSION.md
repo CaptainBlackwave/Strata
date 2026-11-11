@@ -13,5 +13,5 @@
 
 - APIs used are long-stable web platform features: `Element.animate()`, `matchMedia('(prefers-reduced-motion)')`,
   `localStorage` (always wrapped in try/catch), CSS custom properties, `env(safe-area-inset-*)`.
-- No framework and no runtime dependencies. All three packages are dev-only.
+- No framework. One runtime dependency from sprint 19: PixiJS v8 for the board renderer only (ADR-0001, `docs/architecture/adr-0001-gpu-sand-board.md`); the DOM board stays as the fallback.
 - `src/core/` must stay DOM-free so it can be unit-tested in Node and ported to an engine later.
