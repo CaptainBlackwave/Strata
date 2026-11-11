@@ -8,7 +8,11 @@ import type { UiThemeTokens } from '../theme-tokens';
 
 /** The share picture's settings in game-config.json (`sharing`). */
 export interface SharingConfig {
-  readonly sharing: { readonly card: { readonly width: number; readonly height: number }; readonly jars: number };
+  readonly sharing: {
+    readonly card: { readonly width: number; readonly height: number };
+    readonly jars: number;
+    readonly challenge: { readonly maxPours: number; readonly maxLevel: number };
+  };
 }
 
 /** The words on a card. `name` is the profile name, shown only when the player switches it on (D122). */

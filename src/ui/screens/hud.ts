@@ -8,6 +8,13 @@ import { boosterHintShown } from './onboarding';
 export function updateHud(): void {
   movesEl.textContent = String(state.session.moves);
   $('moves-label').textContent = t.poursLabel(state.session.moves);
+  // A friend's pours to beat (sharing §3.2), only on the challenged level.
+  const versus = state.mode === 'level' && state.versus && state.versus.level === state.level ? state.versus : null;
+  $('versus').hidden = !versus;
+  if (versus) {
+    $('versus-text').textContent = t.friend.target(versus.pours);
+    $('versus-sr').textContent = t.friend.targetSr(versus.pours);
+  }
   coinsEl.textContent = String(state.save.wallet.coins);
   const over = state.session.status === 'won';
   for (const btn of toolButtons) {

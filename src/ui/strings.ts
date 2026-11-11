@@ -93,6 +93,27 @@ const en = {
   shareFailed: 'Couldn\u2019t share. Try again.',
   shareText: (date: string, difficulty: string, moves: number, streak: number, url: string) =>
     `Strata Daily ${date} (${difficulty})\nSolved in ${moves} pours · ${streak}-day streak\n${url}`,
+  /** A friend's challenge on a numbered level (sharing §3.2, D121). `challenge` is the tall-jar tag. */
+  friend: {
+    title: 'A friend\u2019s challenge',
+    beatText: (level: number, pours: number) => `A friend cleared level ${level} in ${pours} ${pours === 1 ? 'pour' : 'pours'}. Beat it?`,
+    aheadText: (level: number, mine: number) => `A friend is on level ${level}. You\u2019re on level ${mine}.`,
+    play: 'Play',
+    notNow: 'Not now',
+    playLevel: (level: number) => `Play level ${level}`,
+    /** Beside the pour counter while a challenge is played. */
+    target: (pours: number) => `Beat ${pours}`,
+    targetSr: (pours: number) => `Your friend's score to beat: ${pours} pours`,
+    verdict: (v: { kind: 'beat' | 'matched' | 'behind'; by: number }, mine: number) =>
+      `${mine} ${mine === 1 ? 'pour' : 'pours'}: ` + (v.kind === 'beat' ? `you beat it by ${v.by}` : v.kind === 'matched' ? 'you matched it' : `${v.by} more than your friend`),
+    /** The win card's Share on a numbered level, and the map card's button. */
+    challengeFriend: 'Challenge a friend',
+    sendBack: 'Send it back',
+    /** The tutorial's win card when a challenge link arrived before it (D82). */
+    sharedReady: 'Your friend\u2019s challenge is waiting.',
+    playShared: 'See the challenge',
+    shareText: (level: number, pours: number, url: string) => `Can you beat my ${pours} ${pours === 1 ? 'pour' : 'pours'} on Strata level ${level}?\n${url}`,
+  },
   /** The share picture and its preview sheet (sharing §3.1, D122). */
   shareCard: {
     title: 'Share your result',
@@ -106,6 +127,11 @@ const en = {
       headline: `Daily \u00b7 ${shortDate(date)}`,
       sub: difficulty.charAt(0).toUpperCase() + difficulty.slice(1), // config names are lowercase, as the HUD shows them uppercased
       lines: [`Solved in ${pours} ${pours === 1 ? 'pour' : 'pours'}`, `${streak}-day streak`],
+    }),
+    level: (level: number, pours: number, perfect: boolean) => ({
+      headline: `Level ${level}`,
+      sub: perfect ? 'Perfect \u2713' : '',
+      lines: [`${pours} ${pours === 1 ? 'pour' : 'pours'}`, 'Can you beat it?'],
     }),
     weekly: (week: string, theme: string, pours: readonly (number | null)[]) => ({
       headline: `Weekly set \u00b7 ${week.slice(week.indexOf('-') + 1)}`,

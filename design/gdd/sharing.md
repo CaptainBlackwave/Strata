@@ -1,5 +1,5 @@
 ---
-status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview (H1) live, §3.1 share card built (H2), §3.2 and §3.4 not built
+status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview (H1) and §3.1 share card (H2) live, §3.2 challenge links built (H3), §3.4 not built
 owner: game-designer / ux-designer
 decisions: D114, D116–D118, D120–D124
 verified-by: owner interview 2026-11-11
@@ -54,6 +54,7 @@ verified-by: owner interview 2026-11-11
 | Has not reached level N | A card: "A friend is on level N. You're on level M." with **Play level M**. The challenge is not kept |
 | New player (tutorial not done) | The tutorial first, then the card above (as for daily links, D82) |
 
+- **While playing**: "Beat P" sits beside the pour counter, with a fuller label for screen readers. It shows only on the challenged level.
 - **The result**: the win card says "N pours: you beat it by X", "you matched it" or "X more than your friend", and offers **Send it back** (a new challenge link with the receiver's pours).
 - **Rules that do not change**: a replay pays no coins (M1); it can earn a missing Perfect mark and a better best (D50). A challenge never unlocks a level (D3).
 - **Honesty**: `P` is whatever the link says. There is no ranking, so a made-up number harms nobody; it is clamped to 1–999.
@@ -134,5 +135,6 @@ No questions are open.
 |------|--------|---------|
 | 2026-11-11 | Claude (sprint 14 draft) | First draft from the owner interview (D114, D116–D118) |
 | 2026-11-11 | Claude (sprint 14 H0) | Signed off: the five open questions answered (D120–D124) |
+| 2026-11-11 | Claude (sprint 14 H3) | §3.2 built: `?challenge=N&pours=P` (logic/launch.ts, logic/challenge.ts), the receiver's card, "Beat P" beside the pour counter, the verdict and Send it back on the win card, Challenge a friend on the map card. A challenge waits through the tutorial like daily links. Limits in `sharing.challenge` |
 | 2026-11-11 | Claude (sprint 14 H2) | §3.1 built: `src/ui/logic/share-card.ts` (plan, fallbacks), `src/ui/share-card.ts` (canvas), the preview sheet; daily and weekly Share use it. Jars use scene glass, not jar styles |
 | 2026-11-11 | Claude (sprint 14 H1) | §3.3 built: title, description, Open Graph and Twitter tags, `public/og.png` from `tools/share/link-preview.cjs`; tests in `tests/unit/share/link-preview.test.ts` |

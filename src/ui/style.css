@@ -1261,6 +1261,22 @@ button {
   display: none;
 }
 
+/* A friend's score to beat, beside the pour counter (sharing §3.2). */
+.versus {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--accent-text);
+  font-weight: 800;
+}
+.versus[hidden] {
+  display: none;
+}
+.stone-card .stone-challenge {
+  margin: 10px 0 4px;
+}
+
 /* Share preview (sharing §3.1, D122): the picture as it will be sent, the name switch, Share. */
 .share-sheet {
   display: flex;

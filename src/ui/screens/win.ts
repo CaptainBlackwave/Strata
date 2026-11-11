@@ -4,6 +4,8 @@ import { sharePours, streakStep } from '../../core/daily';
 import { type ShareKey, shareLink } from '../logic/launch';
 import { type ShareNavigator, shareChannel } from '../logic/share-card';
 import { openShare } from './sheets/share';
+import { activeVersus, shareChallenge } from './friend';
+import { challengeVerdict } from '../logic/challenge';
 import { homeHintDue, takeShare } from '../logic/onboarding';
 import { openShared } from './onboarding';
 import { type ShellAward, type WinCard, type WinNote, applyWin } from '../../core/win';
@@ -122,6 +124,7 @@ export function openWin(): void {
   audio.play('win');
   $('win-shell').hidden = true;
   $('btn-share').hidden = true;
+  $('btn-share').textContent = t.share;
   $('win-unlocks').replaceChildren();
   $('share-status').textContent = '';
   $('btn-win-home').hidden = state.mode !== 'level'; // a level card can stop here (UX-win-2); the daily's Continue is already Home
@@ -166,10 +169,10 @@ export function winTutorial(): void {
   if (sharedOffer) {
     state.save.onboarding = taken.onboarding;
     writeSave(state.save);
-    const daily = 'daily' in sharedOffer;
-    $('win-note').textContent = daily ? t.onboarding.sharedDailyReady : t.onboarding.sharedWeeklyReady;
+    const kind = 'daily' in sharedOffer ? 'daily' : 'weekly' in sharedOffer ? 'weekly' : 'challenge';
+    $('win-note').textContent = kind === 'daily' ? t.onboarding.sharedDailyReady : kind === 'weekly' ? t.onboarding.sharedWeeklyReady : t.friend.sharedReady;
     const btn = $('btn-win-shared');
-    btn.textContent = daily ? t.onboarding.playSharedDaily : t.onboarding.playSharedWeekly;
+    btn.textContent = kind === 'daily' ? t.onboarding.playSharedDaily : kind === 'weekly' ? t.onboarding.playSharedWeekly : t.friend.playShared;
     btn.hidden = false;
   }
 }
@@ -219,6 +222,11 @@ export function winLevel(): void {
     writeSave(state.save);
     $('win-note').textContent = [$('win-note').textContent, t.onboarding.homeHint].filter(Boolean).join(' \u00b7 ');
   }
+  // A friend's challenge (sharing §3.2): how this clear compares, and Share as "Send it back".
+  const versus = activeVersus();
+  if (versus) $('win-note').textContent = [$('win-note').textContent, t.friend.verdict(challengeVerdict(card.moves, versus.pours), card.moves)].filter(Boolean).join(' \u00b7 ');
+  $('btn-share').textContent = versus ? t.friend.sendBack : t.friend.challengeFriend;
+  $('btn-share').hidden = false;
   btnNext.textContent = state.replay ? t.map.backToMap : t.next;
   renderRewards(card);
   // What the map shows when it next opens (sprint 10 F5): the new stretch, or a replay's Perfect mark.
@@ -295,5 +303,11 @@ export function wireWin(): void {
     closeLayer(winEl, false);
     if (share) openShared(share);
   });
-  $('btn-share').addEventListener('click', () => (state.mode === 'weekly' ? shareWeekly($('btn-share'), boardColors()) : shareDaily()));
+  $('btn-share').addEventListener('click', () => {
+    if (state.mode === 'weekly') return shareWeekly($('btn-share'), boardColors());
+    if (state.mode === 'daily') return shareDaily();
+    // A numbered level: Send it back carries this clear's pours, Challenge a friend the best (sharing §3.2).
+    const pours = activeVersus() ? state.session.moves : (state.save.best[String(state.level)] ?? state.session.moves);
+    shareChallenge(state.level, pours, $('btn-share'), boardColors());
+  });
 }

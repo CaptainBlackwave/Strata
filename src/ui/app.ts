@@ -23,6 +23,7 @@ import { wireSettings } from './screens/sheets/settings';
 import { wireTransfer } from './screens/sheets/transfer';
 import { wireWeekly } from './screens/sheets/weekly';
 import { wireShare } from './screens/sheets/share';
+import { wireFriend } from './screens/friend';
 import { applyStyles, wireStyles } from './screens/sheets/styles';
 import { wireWin } from './screens/win';
 import { BOOSTER_NAMES, config, state } from './state';
@@ -50,7 +51,7 @@ function applyStrings(): void {
 
 /** Starts Strata: fills the labels, repairs the save, wires every screen, then shows Home (or the QA level). */
 export function boot(): void {
-  const launch = parseLaunch(location.search); // ?level=N (QA, D3), ?daily=YYYY-MM-DD (O3), ?weekly=YYYY-Www (D82)
+  const launch = parseLaunch(location.search); // ?level=N (QA, D3), ?daily=YYYY-MM-DD (O3), ?weekly=YYYY-Www (D82), ?challenge=N&pours=P (sharing §3.2)
   applyStrings();
   state.save.shells = knownShells(state.save.shells, config); // D26: before the profile repair counts them
   repairSaveProfile();
@@ -74,7 +75,7 @@ export function boot(): void {
     startLevel(state.level, true);
     showHome();
     if (launch.kind !== 'none') history.replaceState(history.state, '', location.pathname + location.hash); // a reload or the installed app opens Home
-    const shared = launch.kind === 'daily' ? { daily: launch.date } : launch.kind === 'weekly' ? { weekly: launch.week } : null;
+    const shared = launch.kind === 'daily' ? { daily: launch.date } : launch.kind === 'weekly' ? { weekly: launch.week } : launch.kind === 'challenge' ? { challenge: launch.level, pours: launch.pours } : null;
     if (shared && state.save.tutorialDone) openShared(shared);
     else if (whatsNewDue(state.save)) openWhatsNew($('btn-play')); // once per version, never on a first install (D52)
     // A new player's shared link opens Home: the tutorial comes first, and keepShare (above) offers the
@@ -92,6 +93,7 @@ function wireAll(): void {
   wireCabinet();
   wireWeekly();
   wireShare();
+  wireFriend();
   wireStyles();
   wireProfile();
   wireEditProfile();
