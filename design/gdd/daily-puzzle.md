@@ -74,6 +74,25 @@ All have 2 spare jars. The board is seeded from the date key and a salt (Formula
 
 **Share**: native share sheet, else the clipboard: `Strata Daily <date> (<difficulty>)`, `Solved in N pours · S-day streak`, then the game's address. Contains no board spoilers. **N is the pour count of the first counted solve of that date** (GA-DP-6, owner default 2026-11-08, *built in sprint 6*; the count is stored with the solve). A replay can't share a better count than the solve that counted.
 
+### 2.4 Streak reward track (sprint 16, D136, D140)
+
+Fixed rewards on streak days, shown in advance, never random and never sold (`daily.track` in config, `src/core/streak-track.ts`):
+
+| Day | Reward |
+|---|---|
+| 3 | Hint ×1, Shuffle ×1 |
+| 7 | Hint ×2, Shuffle ×1, Jar ×1 |
+| 14 | Tide Line avatar frame |
+| 30 | Sea Lantern jar glass |
+| 60 | Lighthouse name plate |
+| 100 | Lighthouse Night scene |
+
+- **Counting** (D140): on each **counted** solve (not a replay of today, not out of order), every track day up to the new streak that is not yet claimed is claimed and paid (`claimTrack`). A player who arrives with a long streak catches up at once.
+- **Kept for good**: a missed day resets the streak as before, but no reward is taken back and a claimed day (`save.track`) never pays again.
+- **Granting**: boosters are added as charges; the glass is added to `styles.owned` and the scene to `themes.owned`; the frame and plate unlock through the profile's `trackDay` progress (the highest day claimed).
+- **Shown**: the daily card names the next reward and the streak days left (`nextTrackStep`); the daily win card has a row per claimed reward. Streak-only items show in their shop as "Streak reward · day N" and cannot be bought.
+- **Not changed**: streak coins, tide passes, the coral frame (best streak 14) and the streak badges stay as they are.
+
 ### 2.2 State and Data
 
 - `StreakState`: `last` (date key or null), `streak`, `best`, `passes`.

@@ -63,7 +63,31 @@
       "longSteps": [{ "fromDay": 30, "coins": 25 }, { "fromDay": 60, "coins": 50 }],
       "passEvery": 7,
       "maxPasses": 2
-    }
+    },
+    "track": [
+      { "day": 3, "reward": { "kind": "boosters", "boosters": { "hint": 1, "shuffle": 1 } } },
+      { "day": 7, "reward": { "kind": "boosters", "boosters": { "hint": 2, "shuffle": 1, "extraJar": 1 } } },
+      { "day": 14, "reward": { "kind": "frame", "id": "tideline" } },
+      { "day": 30, "reward": { "kind": "style", "piece": "glass:sealantern" } },
+      { "day": 60, "reward": { "kind": "plate", "id": "lighthouse" } },
+      { "day": 100, "reward": { "kind": "scene", "id": "lighthousenight" } }
+    ]
+  },
+  "goals": {
+    "$comment": "Daily goals (sprint 16, D137, design/gdd/daily-goals.md): perDay goals of different kinds a UTC day, picked from the date with seedSalt, each a size of its kind from pool. A goal pays its coins once when reached; all of a day's goals pay bonus. NEVER change seedSalt or reorder pool once released: today's goals would change for every player.",
+    "seedSalt": 4421,
+    "perDay": 3,
+    "bonus": 50,
+    "pool": [
+      { "kind": "seal", "target": 15, "coins": 20 },
+      { "kind": "seal", "target": 25, "coins": 30 },
+      { "kind": "clear", "target": 2, "coins": 20 },
+      { "kind": "clear", "target": 4, "coins": 40 },
+      { "kind": "perfect", "target": 1, "coins": 30 },
+      { "kind": "daily", "target": 1, "coins": 20 },
+      { "kind": "weekly", "target": 1, "coins": 30 },
+      { "kind": "beatBest", "target": 1, "coins": 40 }
+    ]
   },
   "weekly": {
     "$comment": "The weekly set (design/gdd/weekly-set.md, D77, sprint 11 W1). Five boards a week, ISO weeks from Monday 00:00 UTC. Boards borrow the daily's Monday-to-Friday recipes; bandLevel picks the generator.pourBands row that caps each board's length (45, 58, 58, 70, 70 pours; the levels moved from 21 and 41 to 41 and 101 with the gentler curve, D109, so the caps and the boards did not change). One theme a week, rotating: a mechanic on all five boards, or buriedBonus extra buried layers (capped at maxBuried). Single boards pay nothing; clearing all five pays completeBonus once per week (D83: about five level clears, see design/gdd/economy.md). NEVER change seedSalt once released: every player's boards for the current week would change.",
@@ -663,11 +687,42 @@
           "glow": "196, 172, 255",
           "glowCore": "234, 224, 255"
         }
+      },
+      {
+        "id": "lighthousenight",
+        "name": "Lighthouse Night",
+        "price": 0,
+        "earned": 100,
+        "kind": "sky",
+        "tier": 1,
+        "tokens": {
+          "bgTop": "#0b1424",
+          "bgBottom": "#16233a",
+          "sea": "#12324a",
+          "ink": "#f4ecd8",
+          "inkSoft": "#b9c3d0",
+          "glass": "rgba(255, 255, 255, 0.1)",
+          "glassEdge": "rgba(220, 226, 240, 0.6)",
+          "card": "#172238",
+          "accent": "#f2b84b",
+          "accentInk": "#0b1424",
+          "accentText": "#f2b84b",
+          "coralText": "#ff9a85",
+          "focus": "#8cc0ff",
+          "surface": "rgba(255, 255, 255, 0.1)",
+          "surface2": "#22304a",
+          "toastBg": "#f4ecd8",
+          "toastFg": "#172238",
+          "sky": "#27406a",
+          "themeColor": "#0b1424",
+          "glow": "255, 214, 140",
+          "glowCore": "255, 240, 210"
+        }
       }
     ]
   },
   "profile": {
-    "$comment": "Player profile (design/gdd/player-profile.md). The first item of each list is its default. unlock is null for start items, else {kind, count} with kind one of levels, perfectClears, bestStreak, dailiesSolved, shells, sets. Ids are stored in saves: never rename one. Plate ink must reach 4.5:1 on bg and bg2 (unit-tested).",
+    "$comment": "Player profile (design/gdd/player-profile.md). The first item of each list is its default. unlock is null for start items, else {kind, count} with kind one of levels, perfectClears, bestStreak, dailiesSolved, shells, sets, trackDay (the highest streak-track day claimed, sprint 16: items only the track gives). Ids are stored in saves: never rename one. Plate ink must reach 4.5:1 on bg and bg2 (unit-tested).",
     "name": { "min": 2, "max": 16 },
     "avatars": [
       { "id": "sand-jar", "name": "Sand Jar", "bg": "#f6dcb4", "unlock": null },
@@ -685,7 +740,8 @@
       { "id": "sea-glass", "name": "Sea Glass", "unlock": null },
       { "id": "driftwood", "name": "Driftwood", "unlock": { "kind": "perfectClears", "count": 10 } },
       { "id": "coral", "name": "Coral", "unlock": { "kind": "bestStreak", "count": 14 } },
-      { "id": "gold", "name": "Gold", "unlock": { "kind": "shells", "count": 40 } }
+      { "id": "gold", "name": "Gold", "unlock": { "kind": "shells", "count": 40 } },
+      { "id": "tideline", "name": "Tide Line", "unlock": { "kind": "trackDay", "count": 14 } }
     ],
     "plates": [
       { "id": "cream", "name": "Cream", "bg": "#fffaf1", "edge": "#e0cfb2", "ink": "#4a3b2c", "unlock": null },
@@ -693,7 +749,8 @@
       { "id": "sea-glass", "name": "Sea Glass", "bg": "#d4efe9", "bg2": "#b4dfd5", "edge": "#7cbfb1", "ink": "#1d4a44", "unlock": null },
       { "id": "driftwood", "name": "Driftwood Sign", "bg": "#8a5f3e", "bg2": "#75502f", "edge": "#55381f", "ink": "#fff6e6", "unlock": { "kind": "levels", "count": 75 } },
       { "id": "wave", "name": "Wave Ribbon", "bg": "#1f7a70", "bg2": "#18665d", "edge": "#114c45", "ink": "#ffffff", "unlock": { "kind": "dailiesSolved", "count": 30 } },
-      { "id": "gold-leaf", "name": "Gold Leaf", "bg": "#f4d57e", "bg2": "#e2b552", "edge": "#a87a22", "ink": "#3f2b0e", "unlock": { "kind": "sets", "count": 4 } }
+      { "id": "gold-leaf", "name": "Gold Leaf", "bg": "#f4d57e", "bg2": "#e2b552", "edge": "#a87a22", "ink": "#3f2b0e", "unlock": { "kind": "sets", "count": 4 } },
+      { "id": "lighthouse", "name": "Lighthouse", "bg": "#23354f", "bg2": "#1b2a40", "edge": "#c9a24a", "ink": "#fff3d6", "unlock": { "kind": "trackDay", "count": 60 } }
     ]
   },
   "badges": {
@@ -835,7 +892,8 @@
         { "id": "seaglass", "price": 1700 },
         { "id": "amber", "price": 2050 },
         { "id": "cobalt", "price": 2450 },
-        { "id": "pearl", "price": 2950 }
+        { "id": "pearl", "price": 2950 },
+        { "id": "sealantern", "price": 0, "earned": 30 }
       ],
       "cork": [
         { "id": "cork", "price": 0 },

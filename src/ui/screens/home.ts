@@ -3,6 +3,10 @@ import { applyUpdateIfSafe } from '../update';
 import { allShells } from '../../core/collection';
 import { streakStatus, weekday } from '../../core/daily';
 import { byIdOr, isOwned } from '../../core/themes';
+import { type TrackConfig, trackOf } from '../../core/streak-track';
+import { type GoalsConfig } from '../../core/goals';
+import { goalsCard } from '../logic/goals-card';
+import { type TrackNames, nextRewardLine } from '../logic/streak-track';
 import { scenesNewDue } from '../logic/onboarding';
 import { whatsNewReleases } from '../logic/whats-new';
 import { type FocusTarget } from '../layers';
@@ -35,7 +39,11 @@ export function showHome(): void {
   $('daily-streak').textContent = status.passAtRisk ? t.passAtRisk : status.current > 0 ? `${t.streakDays(status.current)}${state.save.daily.passes ? ` · ${t.passes(state.save.daily.passes)}` : ''}` : t.noStreak;
   $('btn-daily').classList.toggle('solved', status.solvedToday);
   $('btn-daily').hidden = !state.save.tutorialDone;
+  const next = nextRewardLine(state.save.track, status.current, trackOf(config as unknown as TrackConfig), trackNames()); // sprint 16: the next streak reward
+  $('daily-next').textContent = next;
+  $('daily-next').hidden = next === '';
   renderWeeklyCard(); // sprint 11 W2: the weekly set's card, under the daily
+  renderGoalsCard(today); // sprint 16: today's goals, under the weekly card
   const total = allShells(config).length;
   $('shells-label').textContent = t.shellCount(state.save.shells.length, total);
   const last = byIdOr(allShells(config), state.save.shells.at(-1) ?? '');
@@ -52,12 +60,58 @@ export function showHome(): void {
   applyUpdateIfSafe(); // a new release that took over while a board was in play loads now
 }
 
+/** Names for the streak track's words, from the config: frames, plates and scenes by id. */
+export function trackNames(): TrackNames {
+  const name = (list: readonly { id: string; name: string }[], id: string) => list.find((x) => x.id === id)?.name ?? id;
+  return {
+    frame: (id) => name(config.profile.frames, id),
+    plate: (id) => name(config.profile.plates, id),
+    scene: (id) => name(config.themes.list, id),
+  };
+}
+
+/**
+ * Fills Home's "Today's goals" card (sprint 16, D137): each goal with its progress ("12/25") or a
+ * tick, and the bonus line. Hidden until the tutorial is done. A save for another day shows zeros.
+ */
+export function renderGoalsCard(today: string): void {
+  const el = $('goals-card');
+  el.hidden = !state.save.tutorialDone;
+  if (el.hidden) return;
+  const card = goalsCard(state.save.goals, today, config as unknown as GoalsConfig);
+  $('goals-title').textContent = t.goals.title;
+  $('goals-list').replaceChildren(
+    ...card.rows.map((row) => {
+      const li = document.createElement('li');
+      li.className = row.done ? 'goal-row done' : 'goal-row';
+      const text = document.createElement('span');
+      text.className = 'goal-text';
+      text.textContent = row.text;
+      const prog = document.createElement('span');
+      prog.className = 'goal-progress';
+      if (row.done) {
+        const tick = document.createElement('span');
+        tick.setAttribute('aria-hidden', 'true');
+        tick.textContent = '\u2713';
+        const sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = t.goals.done;
+        prog.append(tick, sr);
+      } else prog.textContent = row.progress;
+      li.append(text, prog);
+      return li;
+    }),
+  );
+  $('goals-foot').textContent = card.foot;
+  el.classList.toggle('solved', card.allDone);
+}
+
 /**
  * The quiet "New" mark on Scenes (D82 R4): shown from the first Home where the cheapest scene not
  * owned is affordable, until the player opens Scenes once.
  */
 export function renderScenesMark(): void {
-  const unowned = config.themes.list.filter((th) => !isOwned(th, state.save.themes.owned)).map((th) => th.price);
+  const unowned = config.themes.list.filter((th) => th.earned === undefined && !isOwned(th, state.save.themes.owned)).map((th) => th.price); // streak-only scenes are never for sale
   $('scenes-new').hidden = !scenesNewDue(state.save.onboarding, state.save.wallet.coins, unowned);
 }
 

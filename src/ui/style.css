@@ -2865,6 +2865,48 @@ body:is([data-theme='winterlights'], [data-theme='meteorshower'], [data-theme='a
     radial-gradient(100% 20% at 62% 36%, rgba(160, 130, 230, 0.5), transparent 70%);
 }
 
+/* Lighthouse Night (sprint 16, streak day 100): the dark-scene touches, a lighthouse beam on Home and the swatch. */
+body[data-theme='lighthousenight'] {
+  color-scheme: dark;
+}
+body[data-theme='lighthousenight'] .glass::before {
+  background: rgba(255, 255, 255, 0.15);
+}
+body[data-theme='lighthousenight'] :is(.tool, .daily-card, .profile-chip) {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+@property --beam-a {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 100deg;
+}
+/* A soft warm beam from a lamp at the left, clear of the profile chip, behind everything (z -1, no input). It sweeps slowly
+   with motion allowed, and holds still under reduced motion. */
+body[data-theme='lighthousenight'] .home::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 9% 24%, rgba(255, 232, 180, 0.9) 0 4px, rgba(255, 210, 130, 0.35) 9px, transparent 26px),
+    conic-gradient(from var(--beam-a) at 9% 24%, transparent 0deg, rgba(255, 214, 140, 0.16) 8deg, rgba(255, 214, 140, 0.05) 20deg, transparent 26deg, transparent 360deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  body[data-theme='lighthousenight'] .home::before {
+    animation: lighthouse-beam 14s ease-in-out infinite alternate;
+  }
+}
+@keyframes lighthouse-beam {
+  from { --beam-a: 70deg; }
+  to { --beam-a: 140deg; }
+}
+.scene-swatch[data-scene='lighthousenight']::after {
+  background:
+    radial-gradient(circle at 18% 18%, #fff1cc 0 2px, transparent 3px),
+    conic-gradient(from 100deg at 18% 18%, transparent 0deg, rgba(255, 214, 140, 0.55) 6deg, transparent 22deg, transparent 360deg);
+}
+
 /* Sea fog (tier 1): static mist low over the sea, on the board and the home screen */
 body[data-theme='seafog']::before,
 body[data-theme='seafog'] .home::before {
@@ -3874,7 +3916,17 @@ body[data-theme='harvestmoon']::before {
   --style-shine: linear-gradient(180deg, rgba(255, 238, 250, 0.8), rgba(226, 236, 255, 0.5) 45%, rgba(255, 248, 232, 0.12));
   --style-shine-w: 17%;
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .jar > .glass {
+[data-glass='sealantern'] {
+  /* Sea Lantern (sprint 16, streak day 30): deep blue-green lantern glass with a warm glow held inside. */
+  --style-edge: color-mix(in srgb, var(--glass-edge) 30%, rgb(18, 92, 98));
+  --style-body: color-mix(in srgb, var(--glass) 65%, rgba(28, 96, 104, 0.32));
+  --style-band: rgba(255, 196, 110, 0.34);
+  --style-rim: color-mix(in srgb, var(--glass) 35%, rgba(24, 104, 110, 0.8));
+  --style-shine: linear-gradient(180deg, rgba(255, 226, 170, 0.85), rgba(255, 196, 120, 0.1));
+  --style-shine-w: 11%;
+  --style-shine-x: 17%;
+}
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .jar > .glass {
   border-color: var(--style-edge);
   background-color: var(--style-body);
   box-shadow:
@@ -3882,14 +3934,22 @@ body[data-theme='harvestmoon']::before {
     inset 0 -6px 10px rgba(255, 255, 255, 0.35),
     0 6px 0 rgba(90, 70, 50, 0.08);
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .jar > .glass::before {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .jar > .glass::before {
   border-color: var(--style-edge);
   background: var(--style-rim);
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .jar .shine {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .jar .shine {
   left: var(--style-shine-x, 16%);
   width: var(--style-shine-w, 14%);
   background: var(--style-shine);
+}
+/* Sea Lantern's warm inner glow: a soft amber light low in the empty glass (static; never animates). */
+[data-glass='sealantern'] .jar > .glass {
+  box-shadow:
+    inset 0 0 0 3px var(--style-band),
+    inset 0 -10px 18px rgba(255, 190, 100, 0.42),
+    inset 0 0 14px rgba(255, 214, 150, 0.22),
+    0 6px 0 rgba(90, 70, 50, 0.08);
 }
 /* Sea glass is frosted: a fine white speckle on the empty glass above the sand (the funnel keeps its stripes). */
 [data-glass='seaglass'] .jar:not(.funnel) > .glass {
@@ -3898,7 +3958,7 @@ body[data-theme='harvestmoon']::before {
   background-size: 3px 3px;
 }
 /* Home art: the outline and a highlight streak (the art has no rim). */
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl']) .logo-jars i {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern']) .logo-jars i {
   border-color: var(--style-edge);
   background:
     var(--style-shine) 18% 30% / var(--style-shine-w, 14%) 58% no-repeat,
@@ -4059,3 +4119,58 @@ body[data-theme='harvestmoon']::before {
   background-position: 0px 0px, 0px 0px, 0px 0px, 3px 2px;
 }
 /* style-art:sand:end */
+
+/* ==== Sprint 16: streak reward track and daily goals (D136, D137) ==== */
+.daily-next {
+  font-size: 0.75rem !important;
+  font-weight: 700;
+  color: var(--accent-text) !important;
+}
+.daily-next[hidden] {
+  display: none;
+}
+.goals-card {
+  margin-top: 10px;
+  cursor: default;
+}
+.goals-text {
+  flex: 1;
+  gap: 4px;
+}
+.goals-list {
+  display: grid;
+  gap: 3px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.goal-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.8125rem;
+  color: var(--ink);
+}
+.goals-text .goal-text {
+  min-width: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.goals-text .goal-progress {
+  flex: none;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.goal-row.done .goal-text {
+  color: var(--ink-soft);
+}
+.goals-text .goal-row.done .goal-progress {
+  color: var(--accent-text);
+}
+.scene-status.locked {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}

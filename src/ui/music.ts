@@ -105,6 +105,7 @@ const DORIAN = [0, 2, 3, 5, 7, 9, 10];
  * | winterlights | G4 major pentatonic | 680 ms | bell (sine + 2.76× partial) | none |
  * | meteorshower | C♯4 minor pentatonic | 780 ms | sine | an occasional falling streak |
  * | auroranight | A♭3 major hexatonic | 840 ms | sine | a high sparkle |
+ * | lighthousenight | F3 minor pentatonic | 880 ms | dark triangle | none: slow, like the beam |
  *
  * An id not in the table (a scene added later) plays midday's variation (`musicFor`).
  */
@@ -125,6 +126,7 @@ export const MUSIC: Readonly<Record<string, SceneVariation>> = {
   winterlights: { root: 392.0, scale: MAJOR_PENT, stepMs: 680, lead: { type: 'sine', partial: 2.76, partialLevel: 0.28 }, vol: 0.0776, swell: 0.0388 },
   meteorshower: { root: 277.18, scale: MINOR_PENT, stepMs: 780, lead: { type: 'sine' }, vol: 0.0856, swell: 0.0406, layer: 'streak', layerLevel: 0.0162 },
   auroranight: { root: 207.65, scale: MAJOR_HEX, stepMs: 840, lead: { type: 'sine' }, vol: 0.0871, swell: 0.0392, layer: 'sparkle', layerLevel: 0.0139 },
+  lighthousenight: { root: 174.61, scale: MINOR_PENT, stepMs: 880, lead: { type: 'triangle', filter: 800 }, vol: 0.0879, swell: 0.044 },
 };
 
 /** Scenes that knowingly use the fallback (midday). Empty: every scene has its own variation. */

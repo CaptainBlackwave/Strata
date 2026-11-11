@@ -24,7 +24,7 @@ export function renderScenes(): void {
   $<HTMLInputElement>('set-auto').checked = state.save.themes.auto;
   const grid = $('scene-grid');
   grid.replaceChildren(
-    ...[...config.themes.list].sort((a, b) => a.price - b.price).map((theme) => {
+    ...[...config.themes.list].sort((a, b) => (a.earned ?? 0) - (b.earned ?? 0) || a.price - b.price).map((theme) => { // streak-only scenes last
       const owned = isOwned(theme, state.save.themes.owned);
       const card = document.createElement('button');
       card.type = 'button';
@@ -49,9 +49,11 @@ export function renderScenes(): void {
       }
       const status = card.querySelector('.scene-status') as HTMLElement;
       const inUse = owned && currentTheme() === theme.id;
-      status.textContent = inUse ? t.sceneInUse : owned ? t.sceneOwned : String(theme.price);
-      status.classList.toggle('price', !owned);
-      if (!owned) {
+      const locked = !owned && theme.earned !== undefined; // streak-only (sprint 16): never a price
+      status.textContent = inUse ? t.sceneInUse : owned ? t.sceneOwned : locked ? t.track.locked(theme.earned!) : String(theme.price);
+      status.classList.toggle('price', !owned && !locked);
+      status.classList.toggle('locked', locked);
+      if (!owned && !locked) {
         const unit = document.createElement('span'); // "300 coins", not a bare number (UX-scenes-3)
         unit.className = 'sr-only';
         unit.textContent = ` ${t.coins}`;
@@ -73,8 +75,9 @@ export function renderScenes(): void {
   const inUse = owned && currentTheme() === theme.id;
   btn.hidden = inUse;
   $('scene-previewing').textContent = previewing !== currentTheme() ? t.scenePreviewing(theme.name) : ''; // UX-scenes-4
-  btn.disabled = !owned && state.save.wallet.coins < theme.price;
-  btn.textContent = owned ? t.sceneUse(theme.name) : state.save.wallet.coins >= theme.price ? t.sceneBuy(theme.name, theme.price) : t.sceneNeed(theme.price, state.save.wallet.coins);
+  const locked = !owned && theme.earned !== undefined;
+  btn.disabled = locked || (!owned && state.save.wallet.coins < theme.price);
+  btn.textContent = owned ? t.sceneUse(theme.name) : locked ? t.track.locked(theme.earned!) : state.save.wallet.coins >= theme.price ? t.sceneBuy(theme.name, theme.price) : t.sceneNeed(theme.price, state.save.wallet.coins);
   $('scenes-auto-note').textContent = t.matchClockNote;
 }
 
@@ -82,6 +85,7 @@ export function confirmScene(): void {
   if (!previewing) return;
   const theme = themeById(config, previewing);
   const owned = isOwned(theme, state.save.themes.owned);
+  if (!owned && theme.earned !== undefined) return; // streak-only: granted by the track, never bought
   if (!owned) {
     const r = buyTheme(state.save.wallet, state.save.themes.owned, theme.id, config);
     if (!r.ok) return;

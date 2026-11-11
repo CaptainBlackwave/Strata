@@ -18,6 +18,7 @@ export function progressNow(): Progress {
     shellsOwned: state.save.shells.length,
     setsCompleted: setProgress(state.save.shells, config).filter((p) => p.complete).length,
     stats: state.save.stats,
+    track: state.save.track,
   });
 }
 

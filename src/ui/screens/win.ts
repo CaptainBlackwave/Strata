@@ -1,6 +1,8 @@
 /** The win card for a level, the daily and the tutorial. The rules are the pure core/win.ts; this shows them. */
 import { isSealed } from '../../core/board';
-import { sharePours, streakStep } from '../../core/daily';
+import { sharePours, streakStep, utcDateKey } from '../../core/daily';
+import { goalWinRows } from '../logic/goals-card';
+import { trackWinRows } from '../logic/streak-track';
 import { type ShareKey, shareLink } from '../logic/launch';
 import { type ShareNavigator, shareChannel } from '../logic/share-card';
 import { openShare } from './sheets/share';
@@ -21,7 +23,7 @@ import { writeSave } from '../storage';
 import { currentTheme } from '../theme';
 import { t } from '../strings';
 import { $, btnNext, closeLayer, hideToast, openLayer, reducedMotion, winEl } from '../dom';
-import { showHome } from './home';
+import { showHome, trackNames } from './home';
 import { coach, updateHud } from './hud';
 import { plateEl, portraitOf } from './sheets/profile';
 import { badgeRow } from './sheets/badges';
@@ -66,6 +68,27 @@ export function showUnlocks(items: SlotItem[], badges: readonly string[] = []): 
       return row;
     }),
     ...(badgeEl ? [badgeEl] : []),
+  );
+}
+
+/**
+ * Win card rows for streak-track days this win claimed (boosters, a jar style, a scene; frames and
+ * plates already show as unlock rows), then for daily goals it reached and the all-goals bonus
+ * (sprint 16, D136, D137). They join #win-unlocks, so the card's description covers them.
+ */
+export function showTrackAndGoals(card: WinCard): void {
+  const lines = [...trackWinRows(card.track, trackNames()), ...goalWinRows(card.goals.paid, card.goals.bonus)];
+  if (!lines.length) return;
+  if ($('win-unlocks').childElementCount === 0) audio.play('unlock', { delay: UNLOCK_SOUND_DELAY }); // once, as for unlocks
+  $('win-unlocks').append(
+    ...lines.map((line) => {
+      const row = document.createElement('div');
+      row.className = 'win-shell win-unlock win-earned';
+      const text = document.createElement('span');
+      text.textContent = line;
+      row.append(text);
+      return row;
+    }),
   );
 }
 
@@ -142,7 +165,7 @@ export function applyWinToSave(): WinCard {
   const board = state.session.board;
   const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length; // counted at the win, so Undo can't farm it (badges.md §3.2)
   const weekly = state.mode === 'weekly' ? { week: state.weeklyWeek, index: state.weeklyIndex } : undefined;
-  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists, sealed, scene: currentTheme(), weekly }, config);
+  const r = applyWin(state.save, { mode: state.mode, level: state.level, challenge: state.challenge, dailyDate: state.dailyDate, moves: state.session.moves, assists: state.session.assists, sealed, scene: currentTheme(), weekly, today: utcDateKey(state.clock()) }, config);
   Object.assign(state.save, r.state);
   writeSave(state.save);
   return r.card;
@@ -181,10 +204,13 @@ function renderMoments(card: WinCard): void {
 export function renderRewards(card: WinCard): void {
   if (card.shell) renderShell(card.shell);
   showUnlocks(card.unlocks, card.badges);
+  showTrackAndGoals(card);
   renderMoments(card);
   $('win-reward').hidden = !card.rewardShown;
   if (card.rewardShown) countUp($('win-coins'), card.reward, reducedMotion() ? 0 : ANIM.winDelay); // counts on the open card
   $('win-reward-sr').textContent = `${t.reward(card.reward)} ${t.coins}`;
+  // Goal coins with no reward row (a replay, a weekly board): the count-up won't update the HUD, so do it now.
+  if (!card.rewardShown && (card.goals.paid.length > 0 || card.goals.bonus > 0)) updateHud();
 }
 
 /** The link kept from before the tutorial, handed to the card's shared button (D82 R2). */

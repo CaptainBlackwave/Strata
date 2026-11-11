@@ -13,6 +13,9 @@ import { type DailyConfig, type DailyShareRecord, type StreakState, recordDailyS
 import { type EconomyConfig, type Wallet, addBoosters, addCoins, clearReward } from './economy';
 import { type WeeklyConfig, type WeeklyState, emptyWeekly, recordWeeklyClear } from './weekly';
 import { type ProfileConfig, type Progress, type SlotItem, type Stats, bumpStats, newlyUnlocked, progressOf } from './profile';
+import { type Goal, type GoalsConfig, type GoalsState, emptyGoals, goalsFor, recordGoals } from './goals';
+import { type TrackConfig, type TrackStep, claimTrack, trackOf } from './streak-track';
+import type { StyleState } from './styles';
 
 /** The slice of the save a win reads and writes. `SaveData` satisfies it structurally. */
 export interface WinState {
@@ -36,10 +39,16 @@ export interface WinState {
   readonly themes: { readonly owned: readonly string[] };
   /** The weekly set's progress (weekly-set.md §3.10). Optional so older callers need not carry it. */
   readonly weekly?: WeeklyState;
+  /** Streak-track days claimed (sprint 16, daily-puzzle.md §2.4). */
+  readonly track?: readonly number[];
+  /** Today's goals progress (sprint 16, daily-goals.md). */
+  readonly goals?: GoalsState;
+  /** Jar styles; a track day can add a streak-only piece to `owned`. */
+  readonly styles?: StyleState;
 }
 
 /** The config a win needs. */
-export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig & BadgeSourceConfig & WeeklyConfig;
+export type WinConfig = EconomyConfig & DailyConfig & CollectionConfig & ProfileConfig & BadgeSourceConfig & WeeklyConfig & TrackConfig & Partial<GoalsConfig>;
 
 export type WinMode = 'tutorial' | 'daily' | 'level' | 'weekly';
 
@@ -60,6 +69,8 @@ export interface WinResult {
   readonly scene: string;
   /** The weekly board played (weekly mode): its week key and 0-based index (weekly-set.md §3.5). */
   readonly weekly?: { readonly week: string; readonly index: number };
+  /** Today's UTC date key, for the daily goals (sprint 16). Without it no goal moves. */
+  readonly today?: string;
 }
 
 /** The shell row of the win card. */
@@ -94,6 +105,10 @@ export interface WinCard {
   readonly badges: string[];
   /** What a weekly win did to the set (weekly mode only, weekly-set.md §3.8). */
   readonly weekly?: WeeklyCard;
+  /** Streak-track days this daily solve claimed, in day order (sprint 16, D140). */
+  readonly track: TrackStep[];
+  /** Goals reached by this win and the all-goals bonus paid now (sprint 16, D137). */
+  readonly goals: { readonly paid: readonly { readonly index: number; readonly goal: Goal; readonly coins: number }[]; readonly bonus: number };
 }
 
 /** The weekly part of the win card (weekly-set.md §3.8). */
@@ -125,6 +140,7 @@ function progressOfState(s: WinState, config: WinConfig): Progress {
     shellsOwned: s.shells.length,
     setsCompleted: setProgress(s.shells, config).filter((p) => p.complete).length,
     stats: s.stats,
+    track: s.track,
   });
 }
 
@@ -152,18 +168,48 @@ function awardShell(s: WinState, config: WinConfig): { state: WinState; award: S
 }
 
 function emptyCard(result: WinResult): WinCard {
-  return { mode: result.mode, perfect: false, rewardShown: false, reward: 0, prevBest: undefined, perfectEarned: false, newBest: false, moves: result.moves, streak: 0, note: 'none', shell: null, unlocks: [], badges: [] };
+  return { mode: result.mode, perfect: false, rewardShown: false, reward: 0, prevBest: undefined, perfectEarned: false, newBest: false, moves: result.moves, streak: 0, note: 'none', shell: null, unlocks: [], badges: [], track: [], goals: { paid: [], bonus: 0 } };
+}
+
+/** How a win reads for the daily goals. */
+interface GoalFacts {
+  /** False for a daily already solved today or out of order: the goals ignore it. */
+  readonly counted: boolean;
+  /** A replay that beat the level's best pours. */
+  readonly beatBest: boolean;
 }
 
 /**
  * What every counted win (level or daily, replays included) adds for the badges: the jars sealed,
- * the scene, then any badge now met (badges.md §3.2, §3.4). Credits nothing (D76).
+ * the scene, then any badge now met (badges.md §3.2, §3.4). Credits nothing (D76). Then today's goals
+ * (sprint 16, D137): a goal reached pays its coins, all of them the bonus.
  */
-function finishWin(s: WinState, result: WinResult, config: WinConfig): { state: WinState; badges: string[] } {
+function finishWin(s: WinState, result: WinResult, config: WinConfig, facts: GoalFacts = { counted: true, beatBest: false }): { state: WinState; badges: string[]; goals: WinCard['goals'] } {
   const scenesPlayed = result.scene && !s.scenesPlayed.includes(result.scene) ? [...s.scenesPlayed, result.scene] : s.scenesPlayed;
-  const state: WinState = { ...s, scenesPlayed, stats: bumpStats(s.stats, { jarsSealed: result.sealed }) };
+  let state: WinState = { ...s, scenesPlayed, stats: bumpStats(s.stats, { jarsSealed: result.sealed }) };
   const r = awardBadges(state.badges, badgeProgressOf(state, config), config);
-  return { state: { ...state, badges: r.badges }, badges: r.fresh };
+  state = { ...state, badges: r.badges };
+  let goals: WinCard['goals'] = { paid: [], bonus: 0 };
+  if (result.today && config.goals && result.mode !== 'tutorial') {
+    const g = recordGoals(state.goals ?? emptyGoals(), result.today, { mode: result.mode, jarsSealed: result.sealed, perfect: result.assists === 0, beatBest: facts.beatBest, counted: facts.counted }, config as GoalsConfig);
+    const list = goalsFor(result.today, config as GoalsConfig);
+    goals = { paid: g.paid.map((p) => ({ ...p, goal: list[p.index] })), bonus: g.bonus };
+    state = earn({ ...state, goals: g.state }, g.paid.reduce((a, p) => a + p.coins, 0) + g.bonus);
+  }
+  return { state, badges: r.fresh, goals };
+}
+
+/** Pays the streak-track days a counted daily solve claims (sprint 16, D140): boosters, a jar style, a scene. Frames and plates unlock through `trackDay` progress. */
+function payTrack(s: WinState, streak: number, config: WinConfig): { state: WinState; steps: TrackStep[] } {
+  const c = claimTrack(s.track ?? [], streak, trackOf(config));
+  let state: WinState = { ...s, track: c.claimed };
+  for (const step of c.rewards) {
+    const rw = step.reward;
+    if (rw.kind === 'boosters') state = { ...state, wallet: addBoosters(state.wallet, rw.boosters) };
+    else if (rw.kind === 'style' && state.styles && !state.styles.owned.includes(rw.piece)) state = { ...state, styles: { ...state.styles, owned: [...state.styles.owned, rw.piece] } };
+    else if (rw.kind === 'scene' && !state.themes.owned.includes(rw.id)) state = { ...state, themes: { ...state.themes, owned: [...state.themes.owned, rw.id] } };
+  }
+  return { state, steps: c.rewards };
 }
 
 function winTutorial(s: WinState, result: WinResult): WinOutcome {
@@ -182,10 +228,16 @@ function winDaily(s: WinState, result: WinResult, config: WinConfig): WinOutcome
     state = { ...a.state, dailyShare: { date: result.dailyDate, pours: result.moves } }; // Share reports this solve, not a replay (GA-DP-6)
     shell = a.award;
   }
+  let track: TrackStep[] = [];
+  if (counts) {
+    const t = payTrack(state, r.state.streak, config);
+    state = t.state;
+    track = t.steps;
+  }
   const note: WinNote = r.outOfOrder ? 'outOfOrder' : r.alreadySolved ? 'dailyReplay' : r.usedPass ? 'usedPass' : r.earnedPass ? 'earnedPass' : 'none';
-  const f = finishWin(state, result, config);
+  const f = finishWin(state, result, config, { counted: counts, beatBest: false });
   state = f.state;
-  const card: WinCard = { ...emptyCard(result), badges: f.badges, rewardShown: counts, reward: r.reward, streak: r.state.streak, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  const card: WinCard = { ...emptyCard(result), badges: f.badges, goals: f.goals, track, rewardShown: counts, reward: r.reward, streak: r.state.streak, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
   return { state, card };
 }
 
@@ -205,7 +257,7 @@ function winWeekly(s: WinState, result: WinResult, config: WinConfig): WinOutcom
   const f = finishWin(state, result, config);
   state = f.state;
   const weekly: WeeklyCard = { index: played.index, cleared: r.state.cleared.length, total: config.weekly.boards.length, firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, completedNow: r.completedNow, outOfDate: r.outOfDate };
-  const card: WinCard = { ...emptyCard(result), rewardShown: bonus > 0, reward: bonus, badges: [...weeklyBadges, ...f.badges], weekly, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  const card: WinCard = { ...emptyCard(result), rewardShown: bonus > 0, reward: bonus, badges: [...weeklyBadges, ...f.badges], goals: f.goals, weekly, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
   return { state, card };
 }
 
@@ -232,9 +284,9 @@ function winLevel(s: WinState, result: WinResult, config: WinConfig): WinOutcome
     shell = a.award;
   }
   const note: WinNote = !firstClear ? 'replay' : perfect ? 'perfect' : 'none';
-  const f = finishWin(state, result, config);
+  const f = finishWin(state, result, config, { counted: true, beatBest: newBest });
   state = f.state;
-  const card: WinCard = { ...emptyCard(result), badges: f.badges, perfect, rewardShown: firstClear, reward, prevBest, perfectEarned, newBest, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
+  const card: WinCard = { ...emptyCard(result), badges: f.badges, goals: f.goals, perfect, rewardShown: firstClear, reward, prevBest, perfectEarned, newBest, note, shell, unlocks: newlyUnlocked(config, before, progressOfState(state, config)) };
   return { state, card };
 }
 

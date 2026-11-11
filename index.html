@@ -315,12 +315,15 @@
           <button id="btn-play" class="primary play" type="button">Play</button>
           <button id="btn-daily" class="daily-card" type="button">
             <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
-            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
+            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span><span id="daily-next" class="daily-next" hidden></span></span>
           </button>
           <button id="btn-weekly" class="daily-card weekly-card" type="button" hidden>
             <span id="weekly-jars" class="weekly-jars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
             <span class="daily-text"><strong id="weekly-title" data-s="weekly.title">Weekly set</strong><span id="weekly-sub"></span><span id="weekly-progress" class="daily-streak"></span></span>
           </button>
+          <section id="goals-card" class="daily-card goals-card" role="group" aria-labelledby="goals-title" hidden>
+            <span class="daily-text goals-text"><strong id="goals-title" data-s="goals.title">Today's goals</strong><ul id="goals-list" class="goals-list"></ul><span id="goals-foot" class="daily-streak"></span></span>
+          </section>
           <div class="home-row">
             <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
             <button id="btn-scenes" class="secondary shells-btn" type="button"><span class="scene-ico" aria-hidden="true"></span><span id="scenes-label" data-s="scenes">Scenes</span><span id="scenes-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>

@@ -40,8 +40,8 @@ describe('the scene ladder (scenes.md 2.1a, sprint 7 B5)', () => {
     ]);
   });
   it('appends the other eight rungs after them (sprint 8 P1), with their kinds, tiers and windows', () => {
-    expect(ids.slice(8)).toEqual(['highsummer', 'springblossom', 'autumnshore', 'rainbowafterrain', 'softrain', 'winterlights', 'meteorshower', 'auroranight']);
-    const rows = ids.slice(8).map((id) => {
+    expect(ids.slice(8, 16)).toEqual(['highsummer', 'springblossom', 'autumnshore', 'rainbowafterrain', 'softrain', 'winterlights', 'meteorshower', 'auroranight']);
+    const rows = ids.slice(8, 16).map((id) => {
       const t = byId(id);
       return [id, t.name, t.price, t.kind, t.tier, t.window ? `${t.window.from}..${t.window.to}` : null];
     });
@@ -63,8 +63,8 @@ describe('the scene ladder (scenes.md 2.1a, sprint 7 B5)', () => {
     expect(RUNGS.map((id) => byId(id).price)).toEqual(expected);
     expect(RUNGS.reduce((sum, id) => sum + byId(id).price, 0)).toBe(51250);
   });
-  it('the picker lists all 16 scenes by price with no ties, so the order is stable', () => {
-    const prices = cfg.themes.list.map((t) => t.price);
+  it('the picker lists the 16 sold scenes by price with no ties, so the order is stable (streak-only scenes sort last, sprint 16)', () => {
+    const prices = cfg.themes.list.filter((t) => t.earned === undefined).map((t) => t.price);
     expect(new Set(prices).size).toBe(prices.length);
   });
   it('the original four keep their prices and stay plain time-of-day scenes', () => {
