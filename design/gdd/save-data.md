@@ -60,7 +60,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 
 **Writes**: after every state change: at boot (after the profile repair), after every win and daily solve, purchase, setting change (including the "Match my clock" toggle), tutorial completion, intro card, profile save, and restore.
 
-**Migration**: with no `strata.save.v2`, the older `strata.progress.v1` (level, best) and `strata.prefs.v1` (colour patterns) are read; a v1 player past level 1 is marked tutorial-done.
+**Migration**: with no `strata.save.v2` at all (an unreadable or `null` one counts as present and gives a fresh save, so old v1 progress never comes back: strata-wry), the older `strata.progress.v1` (level, best) and `strata.prefs.v1` (colour patterns) are read; a v1 player past level 1 is marked tutorial-done.
 
 **Board changes** (D110, `boardChanges` in config): when a release changes the boards behind level numbers, it adds a row `{ version, fromLevel }`. On load or import, a save whose `boards` is older loses its `best` entries for levels from `fromLevel` on. This happens once: the save then carries the newest version. The level, Perfect marks, the Perfect stat, coins, shells and everything else are kept. A Perfect mark on a changed level stays, so a replay can't earn it twice. Version 2 is the gentler curve (0.13.1): best pours go for levels 12 and up. Version 3 is the gentle climb to level 500 (0.14.1, D133): best pours go for levels 30 and up. A few tall-jar levels in that range kept their boards and lose their best pours anyway; the rule stays one line on purpose.
 

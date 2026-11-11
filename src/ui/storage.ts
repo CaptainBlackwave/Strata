@@ -130,6 +130,15 @@ function defaultStore(): KeyValueStore | null {
   }
 }
 
+/** Whether `key` holds anything at all, readable or not. */
+function hasKey(store: KeyValueStore | null, key: string): boolean {
+  try {
+    return (store?.getItem(key) ?? null) !== null;
+  } catch {
+    return false;
+  }
+}
+
 function read(store: KeyValueStore | null, key: string): unknown {
   try {
     const raw = store?.getItem(key);
@@ -214,6 +223,9 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
   const base = freshSave(econ);
   const v2 = read(store, KEY);
   if (!isObj(v2)) {
+    // A v2 save that exists but is unreadable gives a fresh save (save-data.md): never fall back to
+    // the v1 keys, which a phone may still hold from before the v2 format (strata-wry).
+    if (hasKey(store, KEY)) return base;
     const v1 = read(store, LEGACY_PROGRESS);
     const prefs = read(store, LEGACY_PREFS);
     if (isObj(v1)) {
