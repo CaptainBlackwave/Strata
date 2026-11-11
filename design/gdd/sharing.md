@@ -1,5 +1,5 @@
 ---
-status: designed and signed off (owner interview 2026-11-11, D116–D124); not built
+status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview built (sprint 14 H1), the rest not built
 owner: game-designer / ux-designer
 decisions: D114, D116–D118, D120–D124
 verified-by: owner interview 2026-11-11
@@ -133,3 +133,4 @@ No questions are open.
 |------|--------|---------|
 | 2026-11-11 | Claude (sprint 14 draft) | First draft from the owner interview (D114, D116–D118) |
 | 2026-11-11 | Claude (sprint 14 H0) | Signed off: the five open questions answered (D120–D124) |
+| 2026-11-11 | Claude (sprint 14 H1) | §3.3 built: title, description, Open Graph and Twitter tags, `public/og.png` from `tools/share/link-preview.cjs`; tests in `tests/unit/share/link-preview.test.ts` |

@@ -1,0 +1,18 @@
+{
+ "tags": {
+  "title": "Strata: a calm seaside sand-sort puzzle",
+  "description": "A calm seaside sand-sort puzzle: pour the sand, sort the colours, seal the jars. Free, no ads, and it plays offline.",
+  "ogTitle": "Strata: a calm seaside sand-sort puzzle",
+  "ogDescription": "A calm seaside sand-sort puzzle: pour the sand, sort the colours, seal the jars. Free, no ads, and it plays offline.",
+  "ogUrl": "https://captainblackwave.github.io/Strata/",
+  "ogImage": "https://captainblackwave.github.io/Strata/og.png",
+  "ogAlt": "The word Strata beside five glass jars of coloured sand on a pale beach.",
+  "twitterCard": "summary_large_image"
+ },
+ "image": {
+  "status": 200,
+  "type": "image/png",
+  "bytes": 110826
+ },
+ "errors": []
+}

@@ -1,7 +1,7 @@
 {
   "name": "Strata",
   "short_name": "Strata",
-  "description": "A calm seaside sand-sort puzzle.",
+  "description": "A calm seaside sand-sort puzzle: pour the sand, sort the colours, seal the jars. Free, no ads, and it plays offline.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

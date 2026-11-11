@@ -25,6 +25,10 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.13.0 | `ebf60b7` (sprint 13, PR #23) |
 | v0.13.1 | `252cc05` (gentler curve, PR #25) |
 
+## Unreleased
+**For players**
+- A link to Strata pasted into a chat or a post now shows a proper preview: the game's name, one line about it and a picture (sprint 14 H1).
+
 ## 0.13.1 (2026-11-11): a gentler climb
 **For players**
 - Levels get harder more slowly. Colours used to reach 12 by level 45; now there are 9 at level 30, 10 at 45, 11 at 65 and 12 at 95 (13 at 130, 14 at 170).
