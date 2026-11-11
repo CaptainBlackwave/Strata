@@ -802,6 +802,11 @@
   "hint": {
     "solverNodeBudget": 40000
   },
+  "sharing": {
+    "$comment": "Sharing (design/gdd/sharing.md, sprint 14). card: the share picture's size in pixels (portrait, 4:5); jars: how many small sealed jars it shows.",
+    "card": { "width": 1080, "height": 1350 },
+    "jars": 3
+  },
   "palette": [
     { "id": "terracotta", "hex": "#c8553d" },
     { "id": "saffron", "hex": "#f2a541" },

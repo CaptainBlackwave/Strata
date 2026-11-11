@@ -10,6 +10,7 @@ import type { BoosterId, EconomyConfig } from '../core/economy';
 import type { GameConfig } from '../core/levels';
 import type { MapConfig } from '../core/map';
 import type { OnboardingConfig } from './logic/onboarding';
+import type { SharingConfig } from './logic/share-card';
 import type { ProfileConfig } from '../core/profile';
 import type { GameSession } from '../core/session';
 import type { StylesConfig } from '../core/styles';
@@ -21,7 +22,7 @@ import { type SaveData, loadSave } from './storage';
 import { t } from './strings';
 
 /** The whole tuning file, typed. */
-export const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig & ProfileConfig & MapConfig & BadgeConfig & WeeklyConfig & StylesConfig & { onboarding: OnboardingConfig };
+export const config = rawConfig as unknown as GameConfig & EconomyConfig & DailyConfig & CollectionConfig & ThemeConfig & ProfileConfig & MapConfig & BadgeConfig & WeeklyConfig & StylesConfig & SharingConfig & { onboarding: OnboardingConfig };
 /** Presentation-only timings (ms) and tilt angle: animation feel, not gameplay. */
 export const ANIM = { lift: 210, streamIn: 90, flow: 230, streamOut: 90, back: 220, tilt: 100, winDelay: 650 } as const;
 /** The booster names shown on the tools and in their labels. */

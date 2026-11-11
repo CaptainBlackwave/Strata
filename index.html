@@ -205,6 +205,15 @@
           <p id="weekly-share-status" class="share-status" role="status"></p>
         </div>
       </div>
+      <div id="share-sheet" class="cabinet" hidden>
+        <div class="cabinet-card share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">
+          <div class="cabinet-head"><h2 id="share-sheet-title" data-s="shareCard.title">Share your result</h2><button id="btn-close-share" data-s-title="close" data-s-label="close" class="icon-btn" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+          <img id="share-card-img" class="share-card-img" alt="" width="1080" height="1350" />
+          <label class="toggle share-name"><span data-s="shareCard.showName">Show my name</span><input type="checkbox" id="share-name" /></label>
+          <button id="btn-share-send" data-s="shareCard.share" class="primary share-send" type="button">Share</button>
+          <p id="share-sheet-status" class="share-status" role="status"></p>
+        </div>
+      </div>
       <div id="profile" class="cabinet" hidden>
         <div class="cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
           <div class="cabinet-head"><h2 id="profile-title" data-s="profileTitle">Profile</h2><button id="btn-close-profile" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>

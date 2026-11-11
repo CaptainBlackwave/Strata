@@ -25,6 +25,10 @@ export interface WhatsNewRelease {
 /** A count with thousands separators, as the stats grid shows it: 1200 → "1,200". */
 const n0 = (n: number) => n.toLocaleString('en');
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** `2026-11-01` -> `1 Nov`: the daily's date on the share card. */
+const shortDate = (key: string) => `${Number(key.slice(8, 10))} ${MONTHS[Number(key.slice(5, 7)) - 1]}`;
+
 const en = {
   brand: 'Strata',
   tagline: 'Sort the sand. Seal the jars.',
@@ -89,6 +93,26 @@ const en = {
   shareFailed: 'Couldn\u2019t share. Try again.',
   shareText: (date: string, difficulty: string, moves: number, streak: number, url: string) =>
     `Strata Daily ${date} (${difficulty})\nSolved in ${moves} pours · ${streak}-day streak\n${url}`,
+  /** The share picture and its preview sheet (sharing §3.1, D122). */
+  shareCard: {
+    title: 'Share your result',
+    /** The name across the top of the share picture. */
+    brand: 'STRATA',
+    showName: 'Show my name',
+    share: 'Share',
+    /** The preview image's text alternative: the card's words in one line. */
+    alt: (headline: string, lines: readonly string[]) => `Share card: ${headline}. ${lines.join('. ')}.`,
+    daily: (date: string, difficulty: string, pours: number, streak: number) => ({
+      headline: `Daily \u00b7 ${shortDate(date)}`,
+      sub: difficulty.charAt(0).toUpperCase() + difficulty.slice(1), // config names are lowercase, as the HUD shows them uppercased
+      lines: [`Solved in ${pours} ${pours === 1 ? 'pour' : 'pours'}`, `${streak}-day streak`],
+    }),
+    weekly: (week: string, theme: string, pours: readonly (number | null)[]) => ({
+      headline: `Weekly set \u00b7 ${week.slice(week.indexOf('-') + 1)}`,
+      sub: theme,
+      lines: [pours.map((p) => (p === null ? '\u2013' : String(p))).join(' \u00b7 '), `${pours.filter((p) => p !== null).length} of ${pours.length} cleared`],
+    }),
+  },
   shellCount: (n: number, total: number) => `Shells ${n}/${total}`,
   cabinetTitle: 'Shell cabinet',
   newShell: (name: string) => `New shell: ${name}`,

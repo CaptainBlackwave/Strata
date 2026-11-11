@@ -1,5 +1,5 @@
 ---
-status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview built (sprint 14 H1), the rest not built
+status: designed and signed off (owner interview 2026-11-11, D116–D124); §3.3 link preview (H1) live, §3.1 share card built (H2), §3.2 and §3.4 not built
 owner: game-designer / ux-designer
 decisions: D114, D116–D118, D120–D124
 verified-by: owner interview 2026-11-11
@@ -27,7 +27,8 @@ verified-by: owner interview 2026-11-11
 ### 3.1 Share card (image)
 
 - A share makes a picture on the device and hands it to the phone's share sheet together with the existing text and link.
-- **What it shows**: the Strata name, the result (below), three small sealed jars in the player's current scene colours and jar style, and the game's address. It never shows the board or the solution.
+- **What it shows**: the Strata name, the result (below), three small sealed jars in the board's sand colours on the player's current scene, and the game's address. It never shows the board or the solution. The jars use the scene's glass colours, not the player's jar style: styles are CSS textures the canvas does not reproduce (decided while building H2; the card stays readable and on-brand without them). Text sits only on the scene's card colour, where ink, soft ink and accent text all reach 4.5:1 in every scene.
+- **The preview**: Share opens a small sheet with the picture as it will be sent, the **Show my name** switch (off each time it opens, D122) and **Share**. Escape and Close return to where Share was pressed.
 
 | Share from | Headline | Detail lines |
 |---|---|---|
@@ -133,4 +134,5 @@ No questions are open.
 |------|--------|---------|
 | 2026-11-11 | Claude (sprint 14 draft) | First draft from the owner interview (D114, D116–D118) |
 | 2026-11-11 | Claude (sprint 14 H0) | Signed off: the five open questions answered (D120–D124) |
+| 2026-11-11 | Claude (sprint 14 H2) | §3.1 built: `src/ui/logic/share-card.ts` (plan, fallbacks), `src/ui/share-card.ts` (canvas), the preview sheet; daily and weekly Share use it. Jars use scene glass, not jar styles |
 | 2026-11-11 | Claude (sprint 14 H1) | §3.3 built: title, description, Open Graph and Twitter tags, `public/og.png` from `tools/share/link-preview.cjs`; tests in `tests/unit/share/link-preview.test.ts` |
