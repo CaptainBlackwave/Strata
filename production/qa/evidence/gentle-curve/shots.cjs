@@ -8,16 +8,16 @@ const KEY = 'strata.save.v2';
 const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
 // A returning player from before the change: level 60, best pours on old boards, no `boards` field.
 const OLD_SAVE = {
-  level: 60, best: { 5: 14, 11: 27, 12: 30, 23: 36, 30: 48, 40: 56, 50: 45 }, perfect: [5, 23, 30],
+  level: 110, best: { 5: 14, 11: 27, 12: 30, 23: 36, 30: 48, 40: 56, 50: 45 }, perfect: [5, 23, 30],
   wallet: { coins: 900, boosters: { undo: 0, shuffle: 3, extraJar: 3, hint: 3 } }, tutorialDone: true,
   settings: { sound: false, music: false, haptics: false, patterns: false, southern: false },
-  seenMechanics: ['narrow', 'frozen'], seenWhatsNew: require('../../../../package.json').version,
+  seenMechanics: ['narrow', 'frozen'], seenWhatsNew: '0.12.0',
   onboarding: { home: true, map: true, daily: true, weekly: true, scenes: true },
 };
 (async () => {
   const b = await chromium.launch();
   const result = { errors: [], levels: {} };
-  for (const level of [21, 23, 30, 33, 40, 45]) {
+  for (const level of [21, 23, 30, 33, 40, 45, 60, 103]) {
     const ctx = await b.newContext({ ...PHONE, reducedMotion: 'reduce' });
     await ctx.addInitScript(([k, v]) => { if (!sessionStorage.getItem('s')) { localStorage.setItem(k, v); sessionStorage.setItem('s', '1'); } }, [KEY, JSON.stringify(OLD_SAVE)]);
     const p = await ctx.newPage();
@@ -31,6 +31,14 @@ const OLD_SAVE = {
     }
     result.levels[level] = { jars: await p.locator('#board .jar').count() };
     await p.screenshot({ path: path.join(out, `level-${level}.png`) });
+    if (level === 21) {
+      // The same returning player on Home: the What's new card for this version, shown once.
+      const home = await ctx.newPage();
+      await home.goto(base); await home.waitForTimeout(1200);
+      await home.screenshot({ path: path.join(out, 'whats-new-card.png') });
+      result.whatsNewText = (await home.locator('body').innerText()).includes('A gentler climb');
+      await home.close();
+    }
     if (level === 21) result.saveAfterLoad = await p.evaluate((k) => { const s = JSON.parse(localStorage.getItem(k)); return { level: s.level, best: s.best, perfect: s.perfect, boards: s.boards, coins: s.wallet.coins }; }, KEY);
     await ctx.close();
   }

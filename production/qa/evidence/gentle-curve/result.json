@@ -18,14 +18,20 @@
   },
   "45": {
    "jars": 12
+  },
+  "60": {
+   "jars": 7
+  },
+  "103": {
+   "jars": 12
   }
  },
+ "whatsNewText": true,
  "saveAfterLoad": {
-  "level": 60,
+  "level": 110,
   "best": {
    "5": 14,
-   "11": 27,
-   "50": 45
+   "11": 27
   },
   "perfect": [
    5,

@@ -8,7 +8,7 @@ import { type KeyValueStore, exportSave, freshSave, importSave, loadSave } from 
 
 const econ = config as unknown as EconomyConfig;
 const KEY = 'strata.save.v2';
-const changes = (config as unknown as { boardChanges: { version: number; fromLevel: number; keep?: { every: number; from: number } }[] }).boardChanges;
+const changes = (config as unknown as { boardChanges: { version: number; fromLevel: number }[] }).boardChanges;
 const LATEST = Math.max(...changes.map((c) => c.version));
 const FROM = Math.min(...changes.map((c) => c.fromLevel));
 
@@ -22,11 +22,7 @@ const OLD = { level: 40, best: { '3': 12, [String(FROM - 1)]: 20, [String(FROM)]
 
 describe('save.boards (D109)', () => {
   it('the config records the gentler curve as a board change from level 12', () => {
-    expect(changes).toContainEqual({ version: 2, fromLevel: 12, keep: { every: 10, from: 50 } });
-  });
-  it('keeps best pours for the tall-jar levels from 50, whose boards did not change', () => {
-    const save = loadRaw({ ...OLD, level: 80, best: { '40': 56, '49': 50, '50': 47, '55': 52, '60': 44 } });
-    expect(save.best).toEqual({ '50': 47, '60': 44 });
+    expect(changes).toContainEqual({ version: 2, fromLevel: 12 });
   });
   it('a fresh save is on the latest boards', () => {
     expect(freshSave(econ).boards).toBe(LATEST);

@@ -726,14 +726,16 @@
     { "fromLevel": 170, "colors": 14 }
   ],
   "breather": {
-    "$comment": "Breather levels (D106, design/gdd/level-generation.md 2.1): from `from`, every level with level % every === offset (levels ending in 3 or 8) is an easier board: `fewerColors` fewer colours than the curve gives, and no spare-jar swap. With every 5 and offset 3 it never lands on a tall-jar level, a shell milestone (every 5th) or a mechanic debut (levels ending in 1).",
+    "$comment": "Breather levels (D106, design/gdd/level-generation.md 2.1): from `from`, every level with level % every === offset (levels ending in 3 or 8) is an easier board: `fewerColors` fewer colours than the curve gives, and no spare-jar swap. From `late.from` it has `late.fewerColors` fewer colours instead, and a breather never has more than `maxMechanics` special jars (D110: from 101 a two-fewer breather with a combo was as long as its neighbours). With every 5 and offset 3 it never lands on a tall-jar level, a shell milestone (every 5th) or a mechanic debut (levels ending in 1).",
     "from": 21,
     "every": 5,
     "offset": 3,
-    "fewerColors": 2
+    "fewerColors": 2,
+    "late": { "from": 101, "fewerColors": 3 },
+    "maxMechanics": 1
   },
-  "$commentBoardChanges": "Releases that changed the boards behind level numbers (D109, design/gdd/save-data.md). A save on an older `version` loses its best pours for levels from `fromLevel` on, once; everything else is kept. `keep` names levels inside that range whose boards did not change (every `every`th level from `from`), so they keep their best pours. Version 2 is the gentler curve (D104-D108): levels 1-11 and the tall-jar levels from 50 are unchanged. Add a row, never edit one.",
-  "boardChanges": [{ "version": 2, "fromLevel": 12, "keep": { "every": 10, "from": 50 } }],
+  "$commentBoardChanges": "Releases that changed the boards behind level numbers (D109, design/gdd/save-data.md). A save on an older `version` loses its best pours for levels from `fromLevel` on, once; everything else is kept. Version 2 is the gentler curve (D104-D111): levels 1-11 are unchanged. Add a row, never edit one.",
+  "boardChanges": [{ "version": 2, "fromLevel": 12 }],
   "ramp": {
     "$comment": "Difficulty past level 45 (decision D1, design/gdd/level-generation.md). spareOne: chance a normal level has 1 spare jar instead of 2, linear from `chanceFrom` at `from` to `chanceTo` at `to`; if no 1-spare deal is proven winnable in `maxAttempts`, the level falls back to 2 spares.",
     "spareOne": { "from": 60, "to": 150, "chanceFrom": 0.2, "chanceTo": 0.75, "salt": 4411, "maxAttempts": 12 },
@@ -754,6 +756,8 @@
     "spare": 2,
     "buriedDepth": 0,
     "mechanicsFrom": 100,
+    "$commentMaxPours": "Tall-jar levels are capped at this many solver pours when it is below their generator.pourBands row (D111): levels 60 and 70 took 55 and 58 pours against about 40 around them. Numbered levels only; the daily's tall Sunday board is not affected.",
+    "maxPours": 50,
     "$commentCurve": "Tall-jar shape rows (D82, R3), same rules as the main curve: a row applies from fromLevel, omitted fields inherit. Level 10, the first tall-jar level, is 4 x 8 so it is a smooth step after level 9 (5 x 8 needed 42 solver pours against 25); from level 20 tall jars were 5 x 8 again. The gentler curve (D108) keeps 4 x 8 through level 40 and starts 5 x 8 at level 50, because 5 x 8 at 20, 30 and 40 took 44, 48 and 56 solver pours against about 34 around them. Rationale: design/gdd/level-generation.md 2.1.",
     "curve": [{ "fromLevel": 10, "colors": 4 }, { "fromLevel": 50, "colors": 5 }]
   },

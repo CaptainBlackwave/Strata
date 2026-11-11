@@ -1,6 +1,6 @@
 # Sprint 13: puzzle variety, and the late economy
 
-> **Status: in progress (2026-11-09).** E1 merged (PR #16). M1 (hourglass) merged and live (PR #17, deploy fix #18). M2 (sieve) approved by the owner (D103), in review. Chosen in the owner interview after 0.12.0 (D95–D101 in `design/gdd/systems-index.md`). Target release: **0.13.0**. One PR per item (D80).
+> **Status: in progress (2026-11-09). Paused 2026-11-11 after D1: growth and reach comes first (D113); M3, W1, P1 and R1 are still open.** E1 merged (PR #16). M1 (hourglass) merged and live (PR #17, deploy fix #18). M2 (sieve) approved by the owner (D103), in review. Chosen in the owner interview after 0.12.0 (D95–D101 in `design/gdd/systems-index.md`). Target release: **0.13.0**. One PR per item (D80).
 
 ## Sprint Goal
 Keep the late game teaching something new: three original jar mechanics, the hourglass at level 101, the sieve at 141 and the clam at 181 (D96, D97), also in the daily and weekly (D98). Bring the top scene prices back to about two weeks each for a regular player (D99, D100).
@@ -13,9 +13,9 @@ Keep the late game teaching something new: three original jar mechanics, the hou
 | M2 | **Sieve jar** (PR 3, level 141): banded in one colour; only that colour may be poured in | D96, D97 | Same as M1 |
 | M3 | **Clam jar** (PR 4, level 181): closed and untouchable until a set number of pours, then shows its sand | D96, D97 | Same as M1 |
 | W1 | **Daily and weekly** (with each mechanic): add it to the weekly themes and a daily weekday from a set start date | D98 | No live daily or weekly board changes before its start date (fixture test); the current week's boards are byte-identical |
-| D1 | **Gentler difficulty curve** (added 2026-11-11 after complaints that levels from 20 were too hard): slower colour steps, breather levels, less hidden sand early, smaller early tall jars, lower pour caps; best pours reset once for changed boards. **Built 2026-11-11** | D104–D109 | Sweep in `production/qa/gentle-curve/`; tests seen failing first; levels 1–11 byte-identical; screenshots in `production/qa/evidence/gentle-curve/` |
+| D1 | **Gentler difficulty curve** (added 2026-11-11 after complaints that levels from 20 were too hard): slower colour steps, breather levels, less hidden sand early, smaller early tall jars, lower pour caps, late breathers and a tall-jar cap; best pours reset once for changed boards. **Built 2026-11-11, released as 0.12.1** with its own What's new card (D112) | D104–D112 | Sweep in `production/qa/gentle-curve/`; tests seen failing first; levels 1–11 byte-identical; screenshots in `production/qa/evidence/gentle-curve/` |
 | P1 | **Phone checklist** findings (when the owner has run it) | D74, D101 | Each failed item fixed or filed |
-| R1 | **0.13.0** (last PR): What's new, changelog, version. What's new must carry the D109 line: "Levels from 12 are gentler, with an easier board every few levels. Best pours on those levels start fresh; your progress and Perfect marks are kept." | D56, D60, D109 | Upgrade play-through; tag and release after the merge |
+| R1 | **0.13.0** (last PR): What's new, changelog, version. | D56, D60 | Upgrade play-through; tag and release after the merge |
 
 ## Design notes to settle in the GDD (M1–M3)
 - The hourglass's flip counts every successful pour on the board (Undo reverses it); the solver must model the flip so every board stays winnable and hints stay correct.

@@ -21,6 +21,8 @@ export interface ChallengeConfig {
   readonly capacity: number;
   readonly spare: number;
   readonly buriedDepth: number;
+  /** A tall-jar level's own length cap in solver pours, used when below its pour band's (D111). Absent: the band's. */
+  readonly maxPours?: number;
   /** Tall-jar levels from this level on can get mechanics (decision D8). */
   readonly mechanicsFrom?: number;
   /**
@@ -49,6 +51,10 @@ export interface BreatherConfig {
   readonly every: number;
   readonly offset: number;
   readonly fewerColors: number;
+  /** From `late.from`, a breather has `late.fewerColors` fewer colours instead (D110). Absent: no late step. */
+  readonly late?: { readonly from: number; readonly fewerColors: number };
+  /** The most special jars a breather may have; extra rolled ones are dropped, last first (D110). Absent: no cap. */
+  readonly maxMechanics?: number;
 }
 
 /** The fewest colours a breather level can be cut down to: level 1's board. */
@@ -225,10 +231,13 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
     spare = row.spare ?? spare;
     buriedDepth = row.buriedDepth ?? buriedDepth;
   }
-  // Decision D106: a breather is the same recipe with fewer colours, and it never gets the swap below.
+  // Decisions D106, D110: a breather is the same recipe with fewer colours and at most
+  // `maxMechanics` special jars, and it never gets the swap below.
   const breather = isBreather(level, config);
-  if (breather) colors = Math.max(MIN_COLORS, colors - (config.breather?.fewerColors ?? 0));
-  const { mechanics, hourglass, sieve } = splitMechanics(pickMechanics(level, config));
+  const br = breather ? config.breather : undefined;
+  if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
+  const rolled = pickMechanics(level, config);
+  const { mechanics, hourglass, sieve } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {

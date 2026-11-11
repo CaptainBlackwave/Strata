@@ -178,14 +178,10 @@ function perfectOf(v: unknown): number[] {
 /** A de-duplicated list of the strings in `v`, or [] if it isn't an array. */
 const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : []);
 
-/**
- * One release that changed the boards behind level numbers (D109): every level from `fromLevel`
- * on, except each `keep.every`th level from `keep.from`, whose boards stayed the same.
- */
+/** One release that changed the boards behind level numbers (D109): every level from `fromLevel` on. */
 interface BoardChange {
   readonly version: number;
   readonly fromLevel: number;
-  readonly keep?: { readonly every: number; readonly from: number };
 }
 
 /** Releases that changed the boards behind level numbers: `boardChanges` in the config (D109). */
@@ -198,13 +194,11 @@ const LATEST_BOARDS = Math.max(FIRST_BOARDS, ...BOARD_CHANGES.map((c) => c.versi
 /**
  * `best` without the levels whose boards changed after boards version `seen` (D109): the best
  * pours of a board that no longer exists are dropped; nothing else in the save is touched.
- * Example: a save on version 1 with the version-2 change from level 12 keeps `best` for 1-11
- * and for the tall-jar levels the change kept (50, 60, …).
+ * Example: a save on version 1 with the version-2 change from level 12 keeps `best` for 1-11.
  */
 function bestOnCurrentBoards(best: Record<string, number>, seen: number): Record<string, number> {
-  const missed = BOARD_CHANGES.filter((c) => c.version > seen);
-  const changed = (level: number) => missed.some((c) => level >= c.fromLevel && !(c.keep && c.keep.every > 0 && level >= c.keep.from && level % c.keep.every === 0));
-  return Object.fromEntries(Object.entries(best).filter(([level]) => !changed(Number(level))));
+  const from = Math.min(...BOARD_CHANGES.filter((c) => c.version > seen).map((c) => c.fromLevel));
+  return Object.fromEntries(Object.entries(best).filter(([level]) => Number(level) < from));
 }
 
 /** A brand-new player's save. */

@@ -37,14 +37,18 @@ export class NoDealError extends Error {
  * largest `from` at or below `level`. A level below every band, which is the daily
  * (level 0), gets the last band's max, because the daily's hardest weekday boards are
  * late-game sized. `Infinity` when no bands are configured.
- * Example: `maxPoursFor(153, config) // 70`
+ * A numbered tall-jar level is capped at `challenge.maxPours` when that is lower (D111).
+ * Example: `maxPoursFor(153, config) // 70`, `maxPoursFor(60, config) // 50`
  */
 export function maxPoursFor(level: number, config: GameConfig): number {
   const bands = [...(config.generator.pourBands ?? [])].sort((a, b) => a.from - b.from);
   if (!bands.length) return Infinity;
   let band = bands[bands.length - 1];
   if (level >= bands[0].from) for (const b of bands) if (b.from <= level) band = b;
-  return band.max;
+  // Decision D111: a numbered tall-jar level has its own cap when that is lower.
+  const ch = config.challenge;
+  const tall = level > 0 && ch.every > 0 && level % ch.every === 0;
+  return tall && ch.maxPours !== undefined ? Math.min(band.max, ch.maxPours) : band.max;
 }
 
 /**
