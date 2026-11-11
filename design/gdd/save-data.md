@@ -43,6 +43,8 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 | `boards` | The newest board change this save has been through (D110); an older save loads as 1 | `level-generation.md` |
 | `wallet` | `coins` and booster charges | `economy.md` |
 | `tutorialDone` | Tutorial finished | `feel-audio-ui.md` |
+| `track` | Streak-track days claimed, ascending, each once (sprint 16, D140); bad entries dropped | `daily-puzzle.md` §2.4 |
+| `goals` | Today's goals: `{ date, progress[], done[], bonus }`, repaired field by field (`repairGoals`); a bad date gives none | `daily-goals.md` |
 | `settings` | `sound`, `music`, `haptics`, `patterns` | `feel-audio-ui.md` |
 | `daily` | `last`, `streak`, `best`, `passes` | `daily-puzzle.md` |
 | `shells` | Owned shell ids in earn order | `shell-collection.md` |

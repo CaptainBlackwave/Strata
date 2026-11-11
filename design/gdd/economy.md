@@ -55,6 +55,8 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 | Set reward | 150 coins + 1 Shuffle, 1 Jar, 1 Hint charge (D19 removes the Undo charge) | the shell that completes a set: 8 sets in total | yes: 1,200 coins and 8 charges of each booster, lifetime |
 | Post-collection bonus | **none** (removed by D38, `collection.coinsWhenComplete: 0`) | — | — |
 | Weekly set bonus (D83) | 100 coins (`weekly.completeBonus`) | once per ISO week, on the win that completes all five boards (`weekly-set.md` §3.7); single boards pay nothing | no |
+| Daily goals (sprint 16, D137) | 20–40 coins per goal, 3 goals a day, +50 when all three are done (`goals` config, `daily-goals.md`) | once per goal per UTC date; at most about 150 a day | no |
+| Streak track (sprint 16, D136) | boosters on streak days 3 (Hint, Shuffle) and 7 (2 Hint, Shuffle, Jar); streak-only cosmetics on 14, 30, 60, 100 | each day once, lifetime (D140) | yes: 3 Hint, 2 Shuffle, 1 Jar charge lifetime |
 | Starting wallet | 100 coins, 3 / 3 / 3 charges | once | yes |
 
 A daily pays **only** its streak coins (and its shell). It pays no level reward, Perfect bonus or tall-jar bonus, even on the tall-jar Sunday (`challenge: true`).
