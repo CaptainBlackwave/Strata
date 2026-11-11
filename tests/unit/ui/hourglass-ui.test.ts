@@ -48,7 +48,7 @@ describe('specMechanics: the intro cards of a level', () => {
     expect(specMechanics({ mechanics: [], hourglass: false })).toEqual([]);
   });
   it('earlier debut levels are unchanged', () => {
-    for (const m of cfg.mechanics.list.filter((x) => x.id !== 'hourglass' && x.id !== 'sieve')) expect(specMechanics(levelSpec(m.unlockAt, cfg)), m.id).toEqual([m.id]);
+    for (const m of cfg.mechanics.list.filter((x) => x.id !== 'hourglass' && x.id !== 'sieve' && x.id !== 'clam')) expect(specMechanics(levelSpec(m.unlockAt, cfg)), m.id).toEqual([m.id]);
   });
 });
 

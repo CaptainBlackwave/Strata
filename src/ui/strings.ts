@@ -111,6 +111,7 @@ const en = {
     funnel: { name: 'One-way funnel', rule: 'You can pour in, but never out. Fill it with a single colour!', tap: 'Funnel: pour in only. Nothing comes out.' },
     hourglass: { name: 'Hourglass jar', rule: 'Every third pour on the board, the hourglass flips: its sand turns upside down. The number on it counts the pours left.', tap: 'Hourglass: it flips after every third pour.' },
     sieve: { name: 'Sieve jar', rule: 'A sieve jar only lets its own colour in: the colour of its band. Anything can be poured out.', tap: 'Sieve: only the colour of its band goes in.' },
+    clam: { name: 'Clam jar', rule: 'A clam jar stays shut under its shell until the count runs out: every pour on the board counts down. Then it opens and plays like any jar.', tap: 'Clam: shut until the count on its shell runs out.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -225,7 +226,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',
@@ -249,6 +250,8 @@ const en = {
     hourglass: (left: number) => (left === 1 ? 'hourglass, flips after the next pour' : `hourglass, flips in ${left} pours`),
     /** A sieve jar's state (D96): `c` is its band colour's name. */
     sieve: (c: string) => `sieve, ${c} only`,
+    /** A closed clam's state (D96, §2.6): `left` is the pours until it opens (1..opensAfter). An open clam has no state. */
+    clam: (left: number) => (left === 1 ? 'clam, closed, opens after the next pour' : `clam, closed, opens in ${left} pours`),
   },
   scenes: 'Scenes',
   sceneOwned: 'Owned',
@@ -316,6 +319,10 @@ const en = {
   flipAnnounce: (jar: number) => `The hourglass flipped (jar ${jar}).`,
   /** Shown when a pour into a sieve jar is refused because of its colour (D96). `colour` is the band colour's name. */
   sieveRefused: (colour: string) => `Only ${colour} sand can go in this sieve.`,
+  /** Shown when a closed clam is tapped or poured into (D96, §2.6). `left` is the pours until it opens. */
+  clamRefused: (left: number) => (left === 1 ? 'This clam opens after the next pour.' : `This clam opens in ${left} pours.`),
+  /** Said after the pour that opened a clam (D96, §2.6). `jar` is 1-based. */
+  clamAnnounce: (jar: number) => `The clam opened (jar ${jar}).`,
   jarEmpty: 'empty',
   buried: 'buried',
   sealed: 'sealed',

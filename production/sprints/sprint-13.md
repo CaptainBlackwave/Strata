@@ -1,6 +1,6 @@
 # Sprint 13: puzzle variety, and the late economy
 
-> **Status: in progress (2026-11-09).** E1 merged (PR #16). M1 (hourglass) merged and live (PR #17, deploy fix #18). M2 (sieve) approved by the owner (D103), in review. Chosen in the owner interview after 0.12.0 (D95–D101 in `design/gdd/systems-index.md`). Target release: **0.13.0**. One PR per item (D80).
+> **Status: in progress (2026-11-09).** E1 merged (PR #16). M1 (hourglass) merged and live (PR #17, deploy fix #18). M2 (sieve) merged and live (PR #19, deploy fix #20). M3 (clam) approved by the owner (D104), in review. Chosen in the owner interview after 0.12.0 (D95–D101 in `design/gdd/systems-index.md`). Target release: **0.13.0**. One PR per item (D80).
 
 ## Sprint Goal
 Keep the late game teaching something new: three original jar mechanics, the hourglass at level 101, the sieve at 141 and the clam at 181 (D96, D97), also in the daily and weekly (D98). Bring the top scene prices back to about two weeks each for a regular player (D99, D100).

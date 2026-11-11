@@ -25,6 +25,7 @@ export const SOUND_EVENTS = [
   'sceneBought',
   'playHere',
   'flip',
+  'clamOpen',
 ] as const;
 
 /** One sound event (see {@link SOUND_EVENTS}). */
@@ -205,6 +206,16 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
       return out;
     },
   },
+  // A clam opening (sprint 13 M3, D96): a low, soft hinge sweeping up, a brief wash of water as the
+  // shell lifts, then one quiet pearl-bright note. Drawn for Strata; quieter than a pour.
+  clamOpen: {
+    capDb: -16,
+    voices: () => [
+      noise('lowpass', 380, 900, 0, 0.22, 0.05, 0.8, 0.05), // the hinge
+      noise('bandpass', 1400, 2600, 0.08, 0.3, 0.08, 0.7, 0.035), // the wash
+      ...bell(note(7), 0.22, 0.045, 0.5), // the pearl
+    ],
+  },
 };
 
 /** A vibration pattern in milliseconds (navigator.vibrate), or `null` for an explicit none. */
@@ -232,6 +243,7 @@ export const HAPTICS: Record<SoundEvent, Haptic> = {
   sceneBought: [10, 40, 20],
   playHere: 10,
   flip: [4, 24, 8], // a light tap and a settle, softer than the land
+  clamOpen: [6, 30, 10], // a soft give and a settle as the shell lifts
 };
 
 /** A voice's envelope level at `t` seconds: the same exponential ramps audio.ts schedules. */

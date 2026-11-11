@@ -21,6 +21,8 @@ export type SessionEvent =
       readonly sealed: boolean;
       /** Hourglass jars that flipped right after this pour (D96). Absent when none did. */
       readonly flipped?: readonly number[];
+      /** Clam jars that opened right after this pour (D96, §2.6). Absent when none did. */
+      readonly opened?: readonly number[];
     }
   | { readonly type: 'undo' }
   | { readonly type: 'restart' }
@@ -166,7 +168,8 @@ export class GameSession {
     this.moveCount++;
     const sealed = isSealed(result.board.jars[to], result.board.capacity);
     const flipped = result.flipped.length ? { flipped: result.flipped } : {};
-    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped });
+    const opened = result.opened.length ? { opened: result.opened } : {};
+    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped, ...opened });
     this.emitStatus();
     return true;
   }
@@ -339,13 +342,14 @@ export function searchHint(board: Board, budget: number): HintSearch {
 /**
  * Finds a re-deal of `board`'s free jars that the solver proves winnable, or `null`. Only
  * free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand. An unsealed
- * hourglass is a free jar: its sand is re-dealt and its count is kept (a shuffle is not a pour, D96). Pure and
+ * hourglass is a free jar: its sand is re-dealt and its count is kept (a shuffle is not a pour, D96). A closed clam keeps its sand and its count (D96, §2.6): it is shut,
+ * and a shuffle is not a pour; once open it is a free jar like any other. Pure and
  * deterministic for a given `rng`, so a worker given the same seed finds the same board
  * (TD-13). All attempts together spend at most `shuffleTotalNodeBudget` states (F7, GA-SB-4).
  * Example: `findShuffle(board, sessionOptions(config), createRng(seed))`
  */
 export function findShuffle(board: Board, options: SessionOptions, rng: Rng): Board | null {
-  const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.funnel ? -1 : i)).filter((i) => i >= 0);
+  const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.clam !== undefined || j.funnel ? -1 : i)).filter((i) => i >= 0);
   const pool = open.flatMap((i) => board.jars[i].units);
   const before = exactKey(board);
   const attempts = options.shuffleAttempts ?? 40;
