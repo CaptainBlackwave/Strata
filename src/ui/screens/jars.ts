@@ -9,9 +9,10 @@ import { FLIP_MS } from '../logic/flip';
 import { jarSummary } from '../logic/jar-label';
 import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { DRY_MS, wetHex, wetLeft } from '../logic/wet';
+import { TIDE_MS, riseFrom, tideCount } from '../logic/tide';
 import { audio, config, state } from '../state';
 import { type DomDrawKeys, domDrawKeys, domRedraw } from '../board-gpu/dirty';
-import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuHop, gpuInvalidate, gpuLayout, gpuNope, gpuSeal } from '../board-gpu/hooks';
+import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuHop, gpuInvalidate, gpuLayout, gpuNope, gpuSeal, gpuTide } from '../board-gpu/hooks';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
@@ -49,6 +50,15 @@ export const WET_MARK =
   '<i class="wet-mark" aria-hidden="true"><svg viewBox="0 0 10 13" focusable="false">' +
   '<path d="M5 .8C3.6 3.3 1.3 5.9 1.3 8.4a3.7 3.7 0 0 0 7.4 0C8.7 5.9 6.4 3.3 5 .8z"/></svg><b></b></i>';
 
+/**
+ * The tide jar's mark (D194, §2.8): a pill on the jar's base with a small wave and the pours left
+ * until the tide turns, in the empty `<b>`; a sealed tide jar (D195) shows the wave alone, faded.
+ * Drawn for Strata: two rolling wave lines, nothing more.
+ */
+export const TIDE_MARK =
+  '<span class="tide-mark" aria-hidden="true"><svg viewBox="0 0 14 10" focusable="false">' +
+  '<path d="M1 3.6c2-2.2 4-2.2 6 0s4 2.2 6 0M1 7.6c2-2.2 4-2.2 6 0s4 2.2 6 0"/></svg><b></b></span>';
+
 let tapHandler: (i: number) => void = () => {};
 
 /** Registers what a tap on jar `i` does. The board sets it at boot, so this file need not import the board. */
@@ -82,6 +92,7 @@ export function buildJars(): void {
       '<span class="glass"><span class="sand"></span><span class="ice" aria-hidden="true"></span><span class="shine"></span></span>' +
       '<span class="hint-badge" aria-hidden="true"></span>' +
       HOURGLASS_MARK +
+      TIDE_MARK +
       SIEVE_BAND +
       CLAM_SHELL;
     jar.addEventListener('click', () => tapHandler(i));
@@ -185,6 +196,14 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   if (el.dataset.left !== left) {
     el.dataset.left = left;
     (el.querySelector('.hourglass-mark b') as HTMLElement).textContent = left;
+  }
+  // The tide jar's wave and count (D194, §2.8): sealed, it is still (D195), so the wave shows alone, faded.
+  el.classList.toggle('tide', jar.tide !== undefined);
+  const turnsIn = tideCount(jar, state.session.board.capacity);
+  el.classList.toggle('tide-still', jar.tide !== undefined && turnsIn === '');
+  if (el.dataset.tide !== turnsIn) {
+    el.dataset.tide = turnsIn;
+    (el.querySelector('.tide-mark b') as HTMLElement).textContent = turnsIn;
   }
   // The sieve's band is jar state too (it never changes in play, but a rebuilt board may differ).
   el.classList.toggle('sieve', jar.sieve !== undefined);
@@ -320,6 +339,44 @@ export function dryFx(i: number, units: readonly number[], delay: number): void 
       flips.delete(a);
       sweep.remove();
     };
+    a.addEventListener('finish', done);
+    a.addEventListener('cancel', done);
+  }
+}
+
+/**
+ * The tide turning on jar `i` (D194, §2.8): the jar already shows its new order. After `delay` ms
+ * (the pour around it done, as the hourglass flip) its top unit, which came from the bottom, slides
+ * up through the column while every other unit drops one place, so it starts exactly like the old
+ * order (`fill: 'backwards'`). Wet counts and colour patterns are on the unit spans, so they move
+ * with their sand. The wave on the mark bobs once. The caller plays it only when the turn can be
+ * seen (`risesVisibly`). Reduced motion: no motion, the new order is simply drawn. The `flip`
+ * sound (sand sliding) plays either way. A board change cancels it with the flips.
+ */
+export function tideFx(i: number, delay: number): void {
+  const el = state.jarEls[i];
+  if (!el) return;
+  audio.play('flip', { delay: delay / 1000 });
+  if (reducedMotion()) return;
+  gpuTide(i, delay); // the canvas board lifts its sand too
+  const spans = [...el.querySelectorAll<HTMLElement>('.sand > .unit')];
+  const n = spans.length;
+  const timing: KeyframeAnimationOptions = { duration: TIDE_MS, delay, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'backwards' };
+  const runs: Animation[] = [];
+  spans.forEach((u, k) => {
+    const from = riseFrom(k, n);
+    if (k === n - 1) {
+      u.style.position = 'relative';
+      u.style.zIndex = '1'; // the rising unit slides over the rest
+    }
+    // Units are laid bottom first (column-reverse), so "up" is a negative translate.
+    runs.push(u.animate([{ transform: `translateY(calc(${-from} * var(--unit-h)))` }, { transform: 'translateY(0)' }], timing));
+  });
+  const glyph = el.querySelector('.tide-mark svg') as SVGElement | null;
+  if (glyph) runs.push(glyph.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-22%)' }, { transform: 'translateY(0)' }], { ...timing, fill: 'none' }));
+  for (const a of runs) {
+    flips.add(a);
+    const done = () => flips.delete(a);
     a.addEventListener('finish', done);
     a.addEventListener('cancel', done);
   }

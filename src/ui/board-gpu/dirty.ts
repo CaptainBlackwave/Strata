@@ -63,19 +63,19 @@ export interface DomDrawInput {
 export interface DomDrawKeys {
   /** The units, bottom first, the hidden count, the patterns setting and the wet counts (drawn on the units). */
   readonly sand: string;
-  /** The mechanics with their counts (hourglass, clam), the seal, the patterns setting and the unit height. */
+  /** The mechanics with their counts (hourglass, clam, tide), the seal, the patterns setting and the unit height. */
   readonly rest: string;
 }
 
 /**
  * The keys the DOM board compares to skip redrawing a jar that did not change (strata-8j3: a pour
- * redrew all 16 jars of a 16-jar board). Unlike `jarKey` it carries the hourglass and clam counts,
+ * redrew all 16 jars of a 16-jar board). Unlike `jarKey` it carries the hourglass, clam and tide counts,
  * which the DOM draws as text. Pure.
  * Example: `domDrawKeys({ units: [0, 2], hidden: 0 }, { sealed: false, patterns: false, unitHeight: 30 }).sand // '0,2|0|p0'`
  */
 export function domDrawKeys(jar: Jar, d: DomDrawInput): DomDrawKeys {
   const p = d.patterns ? 'p1' : 'p0';
-  const counts = `${jar.hourglass ? `h${jar.hourglass.left}/${jar.hourglass.every}` : ''}${jar.clam !== undefined ? `c${jar.clam}` : ''}`;
+  const counts = `${jar.hourglass ? `h${jar.hourglass.left}/${jar.hourglass.every}` : ''}${jar.clam !== undefined ? `c${jar.clam}` : ''}${jar.tide ? `t${jar.tide.left}/${jar.tide.every}` : ''}`;
   return {
     sand: `${jar.units.join(',')}|${jar.hidden}|${p}${jar.wet ? `|w${jar.wet.join('.')}` : ''}`,
     rest: `${jarKey(jar)}|${counts}|${d.sealed ? 's' : ''}|${p}|u${d.unitHeight}`,

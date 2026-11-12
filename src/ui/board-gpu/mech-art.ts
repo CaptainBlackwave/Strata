@@ -450,8 +450,10 @@ export function drawGlow(w: number, h: number, core: string, halo: string, res: 
   return { canvas: c, pad };
 }
 
-/** The look of the DOM's hourglass count pill, read from it so it matches the text size. */
+/** The look of the DOM's hourglass or tide count pill, read from it so it matches the text size. */
 export interface PillLook {
+  /** Which glyph the pill carries: the hourglass's bulbs, or the tide jar's wave (§2.8). Default hourglass. */
+  readonly glyph?: 'hourglass' | 'wave';
   readonly width: number;
   readonly height: number;
   readonly bg: string;
@@ -461,7 +463,7 @@ export interface PillLook {
   readonly text: string;
 }
 
-/** The hourglass count pill (`.hourglass-mark`), redrawn so it can travel with a pouring jar (strata-5lq). */
+/** The hourglass or tide count pill (`.hourglass-mark`, `.tide-mark`), redrawn so it can travel with a pouring jar (strata-5lq). */
 export function drawPill(p: PillLook, res: number): HTMLCanvasElement {
   const [c, g] = canvas(p.width, p.height, res);
   const r = p.height / 2;
@@ -471,19 +473,28 @@ export function drawPill(p: PillLook, res: number): HTMLCanvasElement {
   g.strokeStyle = p.border;
   g.lineWidth = 1.5;
   g.stroke();
-  // The glyph: two bulbs and a waist, as HOURGLASS_MARK.
-  const gh = p.height * 0.62;
-  const gw = gh * 0.72;
+  const wave = p.glyph === 'wave';
+  // The glyph: two bulbs and a waist, as HOURGLASS_MARK, or two wave lines, as TIDE_MARK.
+  const gh = p.height * (wave ? 0.5 : 0.62);
+  const gw = wave ? gh * 1.4 : gh * 0.72;
   const gx = p.height * 0.32;
   const gy = (p.height - gh) / 2;
   g.strokeStyle = p.fg;
   g.fillStyle = p.fg;
   g.lineWidth = 1.3;
   g.beginPath();
-  g.moveTo(gx, gy); g.lineTo(gx + gw, gy);
-  g.moveTo(gx, gy + gh); g.lineTo(gx + gw, gy + gh);
-  g.moveTo(gx + gw * 0.15, gy); g.lineTo(gx + gw * 0.85, gy + gh);
-  g.moveTo(gx + gw * 0.85, gy); g.lineTo(gx + gw * 0.15, gy + gh);
+  if (wave) {
+    for (const y of [gy + gh * 0.3, gy + gh * 0.8]) {
+      g.moveTo(gx, y);
+      g.bezierCurveTo(gx + gw * 0.15, y - gh * 0.3, gx + gw * 0.35, y - gh * 0.3, gx + gw * 0.5, y);
+      g.bezierCurveTo(gx + gw * 0.65, y + gh * 0.3, gx + gw * 0.85, y + gh * 0.3, gx + gw, y);
+    }
+  } else {
+    g.moveTo(gx, gy); g.lineTo(gx + gw, gy);
+    g.moveTo(gx, gy + gh); g.lineTo(gx + gw, gy + gh);
+    g.moveTo(gx + gw * 0.15, gy); g.lineTo(gx + gw * 0.85, gy + gh);
+    g.moveTo(gx + gw * 0.85, gy); g.lineTo(gx + gw * 0.15, gy + gh);
+  }
   g.stroke();
   g.font = p.font;
   g.textBaseline = 'middle';

@@ -16,6 +16,7 @@ import type { GlassLook } from './art';
 import type { BoardLook, GpuBoard, GpuMotion } from './renderer';
 import { FLIP_MS } from '../logic/flip';
 import { CLAM_OPEN_MS } from '../logic/clam';
+import { TIDE_MS } from '../logic/tide';
 import { FX_MS } from '../fx-plan';
 import { boardAfterContext } from './events';
 import type { PillLook } from './mech-art';
@@ -122,7 +123,7 @@ function relayoutSoon(): void {
 /** The board's motion timings, from the DOM board's, so the canvas feels the same (also the Home hero's, D173). */
 export function gpuMotion(): GpuMotion {
   return {
-    liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS, flipMs: FLIP_MS, clamOpenMs: CLAM_OPEN_MS, thawMs: THAW_MS, unlockMs: UNLOCK_MS,
+    liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS, flipMs: FLIP_MS, tideMs: TIDE_MS, clamOpenMs: CLAM_OPEN_MS, thawMs: THAW_MS, unlockMs: UNLOCK_MS,
     corkMs: CORK_MS, nopeMs: NOPE_MS, hopMs: HOP_MS, hopStagger: HOP_STAGGER, glowMs: FX_MS.winGlowEach,
   };
 }
@@ -298,10 +299,12 @@ export function gpuWinGlow(steps: readonly { readonly jar: number; readonly at: 
   return active && gpu ? gpu.winGlow(steps) : null;
 }
 
-/** The DOM's hourglass count pill on jar `i`, measured so the canvas can carry it in a pour. */
+/** The DOM's hourglass or tide count pill on jar `i`, measured so the canvas can carry it in a pour. */
 function pillOf(i: number): (PillLook & { left: number; top: number }) | null {
-  const el = state.jarEls[i]?.querySelector('.hourglass-mark') as HTMLElement | null;
-  if (!el || !state.session.board.jars[i].hourglass) return null;
+  const jar = state.session.board.jars[i];
+  const glyph = jar.hourglass ? 'hourglass' : jar.tide ? 'wave' : null;
+  const el = glyph ? (state.jarEls[i]?.querySelector(glyph === 'hourglass' ? '.hourglass-mark' : '.tide-mark') as HTMLElement | null) : null;
+  if (!el || !glyph) return null;
   const r = el.getBoundingClientRect();
   if (!r.width) return null;
   const css = getComputedStyle(el);
@@ -310,13 +313,18 @@ function pillOf(i: number): (PillLook & { left: number; top: number }) | null {
   return {
     left: r.left, top: r.top - ty, width: r.width, height: r.height,
     bg: css.backgroundColor, fg: css.color, border: css.borderTopColor,
-    font: `${css.fontWeight} ${css.fontSize} ${css.fontFamily}`, text: el.textContent ?? '',
+    font: `${css.fontWeight} ${css.fontSize} ${css.fontFamily}`, text: el.textContent ?? '', glyph,
   };
 }
 
 /** The hourglass flip on the canvas (from `flipFx`). */
 export function gpuFlip(i: number, delay: number): void {
   if (active && gpu) gpu.flip(i, delay);
+}
+
+/** The tide turning on the canvas (from `tideFx`, D194 §2.8). */
+export function gpuTide(i: number, delay: number): void {
+  if (active && gpu) gpu.tide(i, delay);
 }
 
 /** The clam opening on the canvas (from `clamOpenFx`). */

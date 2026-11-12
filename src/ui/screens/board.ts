@@ -20,10 +20,11 @@ import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coach
 import { showHome } from './home';
 import { screenOut } from '../fx';
 import { coach, scheduleHud, updateHud } from './hud';
-import { buildJars, cancelFlips, clamOpenFx, dryFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
+import { buildJars, cancelFlips, clamOpenFx, dryFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, tideFx, updateJar } from './jars';
 import { flipDelay, grownFrom } from '../logic/flip';
 import { clamOpenDelay } from '../logic/clam';
 import { driedUnits, dryDelay } from '../logic/wet';
+import { risesVisibly } from '../logic/tide';
 import { refusalNote, tapMechanic } from '../logic/refusal';
 import { animatePour, recoverPour } from './pour';
 import { gpuInvalidate } from '../board-gpu/hooks';
@@ -255,8 +256,11 @@ export function onSessionEvent(e: SessionEvent): void {
   switch (e.type) {
     case 'pour': {
       const flipped = e.flipped ?? [];
+      // Tide jars that turned (D194, §2.8); only a turn that moves visible sand plays the rise.
+      const turned = e.turned ?? [];
+      const rises = turned.filter((i) => risesVisibly(state.session.board.jars[i]));
       updateJar(e.move.from);
-      updateJar(e.move.to, grownFrom(e.move.to, state.session.board.jars[e.move.to].units.length, e.moved, flipped));
+      updateJar(e.move.to, grownFrom(e.move.to, state.session.board.jars[e.move.to].units.length, e.moved, flipped, rises));
       // A seal can thaw or unlock jars anywhere on the board and an hourglass anywhere counts down, so the
       // rest are checked too; `updateJar` touches only those that changed (strata-8j3).
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
@@ -274,13 +278,16 @@ export function onSessionEvent(e: SessionEvent): void {
       // A clam that just opened swings its shell open once the sand has landed (D96, §2.6).
       const opened = e.opened ?? [];
       for (const i of opened) clamOpenFx(i, clamOpenDelay(reducedMotion(), ANIM));
+      // The tide rises once the pour around it is done, last, as the rules run (§2.8 rule 8).
+      for (const i of rises) tideFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
       announce(
         t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
           (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
           flipped.map((i) => ` ${t.flipAnnounce(i + 1)}`).join('') +
           opened.map((i) => ` ${t.clamAnnounce(i + 1)}`).join('') +
           dried.map((d) => ` ${t.dryAnnounce(d.jar + 1)}`).join('') +
-          sealedDry.map((i) => ` ${t.sealAnnounce(i + 1)}`).join(''),
+          sealedDry.map((i) => ` ${t.sealAnnounce(i + 1)}`).join('') +
+          turned.map((i) => ` ${t.tideAnnounce(i + 1)}`).join(''),
       );
       break;
     }

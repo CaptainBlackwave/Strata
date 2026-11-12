@@ -9,7 +9,9 @@ const path = require('path');
 const BASE = `http://localhost:${process.env.PORT || 5182}`;
 const LEVEL = Number(process.env.LEVEL || 12);
 const KEY = 'strata.save.v2';
-const MECHANICS = ['narrow', 'frozen', 'locked', 'funnel', 'hourglass', 'sieve', 'clam', 'wet'];
+const MECHANICS = ['narrow', 'frozen', 'locked', 'funnel', 'hourglass', 'sieve', 'clam', 'wet', 'tide'];
+// Where screenshots and play-results.json go (default: beside this script).
+const OUT = process.env.OUT ? path.resolve(process.env.OUT) : __dirname;
 
 /** Mismatches between the DOM jars and the session's board (empty when they agree). */
 const domVsBoard = (page) =>
@@ -100,11 +102,11 @@ async function play(browser, board) {
   await pour(path0[1]);
   await page.click('[data-booster="undo"]');
   await check('undo');
-  await page.screenshot({ path: path.join(__dirname, `play-${board}-after-undo.png`) });
+  await page.screenshot({ path: path.join(OUT, `play-${board}-after-undo.png`) });
   await page.click('[data-booster="shuffle"]');
   await page.waitForTimeout(1500);
   await check('shuffle');
-  await page.screenshot({ path: path.join(__dirname, `play-${board}-after-shuffle.png`) });
+  await page.screenshot({ path: path.join(OUT, `play-${board}-after-shuffle.png`) });
   path0 = await solve();
   let sealedShot = false;
   for (const m of path0) {
@@ -112,13 +114,13 @@ async function play(browser, board) {
     const sealed = await page.locator('#board .jar.sealed').count();
     if (sealed && !sealedShot) {
       sealedShot = true;
-      await page.screenshot({ path: path.join(__dirname, `play-${board}-sealed.png`) });
+      await page.screenshot({ path: path.join(OUT, `play-${board}-sealed.png`) });
     }
   }
   await page.waitForTimeout(2500);
   log.won = await page.evaluate(async () => (await import('/src/ui/state.ts')).state.session.status === 'won');
   log.winCard = await page.locator('#win:not([hidden])').count();
-  await page.screenshot({ path: path.join(__dirname, `play-${board}-win.png`) });
+  await page.screenshot({ path: path.join(OUT, `play-${board}-win.png`) });
   log.allMatched = log.steps.every((s) => s.mismatches.length === 0);
   await context.close();
   return log;
@@ -128,7 +130,7 @@ async function play(browser, board) {
   const browser = await chromium.launch();
   const out = {};
   for (const board of ['dom', 'gpu']) out[board] = await play(browser, board);
-  fs.writeFileSync(path.join(__dirname, 'play-results.json'), JSON.stringify(out, null, 2) + '\n');
+  fs.writeFileSync(path.join(OUT, 'play-results.json'), JSON.stringify(out, null, 2) + '\n');
   for (const [b, l] of Object.entries(out)) console.log(b, 'render', l.render, 'steps', l.steps.length, 'allMatched', l.allMatched, 'won', l.won, 'winCard', l.winCard, 'errors', l.errors.length, 'ignored', JSON.stringify(l.ignored), JSON.stringify(l.steps.filter((s) => s.mismatches.length).slice(0, 3)));
   await browser.close();
 })();

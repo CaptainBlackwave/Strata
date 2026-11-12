@@ -12,7 +12,8 @@ import { t } from '../strings';
  * only its states, "clam, closed, opens in 4 pours", and no colour or burial is listed. An open
  * clam is an ordinary jar and has no state of its own. A wet unit (D189, §2.7) names its pours
  * left, "wet lagoon, dries in 3 pours", and the units are then listed with semicolons so its own
- * comma reads as part of it; a full jar of one colour still wet says "full, seals when dry".
+ * comma reads as part of it; a full jar of one colour still wet says "full, seals when dry". A tide
+ * jar (D194, §2.8) names its pours left, "tide jar, turns in 3 pours", or, sealed, "tide jar, still".
  * `capacity` is the board's (a complete jar is full at it). Example: `jarSummary({ units: [], hidden: 0 }, false, name) // 'empty'`
  */
 export function jarSummary(jar: Jar, sealed: boolean, colour: (c: number) => string, capacity = Infinity): string {
@@ -24,6 +25,7 @@ export function jarSummary(jar: Jar, sealed: boolean, colour: (c: number) => str
     jar.funnel ? t.jarStates.funnel : '',
     jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
     jar.sieve !== undefined ? t.jarStates.sieve(colour(jar.sieve)) : '',
+    jar.tide ? (sealed ? t.jarStates.tideStill : t.jarStates.tide(jar.tide.left)) : '',
     !sealed && jar.wet && isComplete(jar, capacity) ? t.jarStates.wet : '',
     sealed ? t.sealed : '',
   ].filter(Boolean);

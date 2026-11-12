@@ -4,6 +4,7 @@
  * unit spans (src/ui/screens/jars.ts) and the Realistic board's sand texels (src/ui/board-gpu/).
  */
 import type { Board, Jar } from '../../core/board';
+import { afterTurn } from './tide';
 
 /** How long the drying shimmer sweeps over a unit that just dried (ms): presentation only. */
 export const DRY_MS = 620;
@@ -71,6 +72,7 @@ export interface DryPour {
   readonly moved: number;
   readonly flipped?: readonly number[];
   readonly dried?: readonly number[];
+  readonly turned?: readonly number[];
 }
 
 /**
@@ -78,7 +80,8 @@ export interface DryPour {
  * board after the pour, so the shimmer plays on them. `before` is the board as shown before the
  * pour. Every unit's count before the pour's drying tick is rebuilt from `before` by the same path
  * as `pour()` (§2.7 rule 4): the source keeps its bottom units, the target gains the moved ones with
- * their counts, and a flipped hourglass turns its counts over; a unit dried if it was wet then and
+ * their counts, a flipped hourglass turns its counts over and a turned tide jar (§2.8 rule 7) lifts
+ * them by one; a unit dried if it was wet then and
  * is dry now (the winning pour dries everything, so this covers it too). A board whose jar count
  * changed gives nothing. Example: `driedUnits(before, after, { move: { from: 0, to: 1 }, moved: 1, dried: [1] }) // [{ jar: 1, units: [2] }]`
  */
@@ -94,6 +97,7 @@ export function driedUnits(before: Board, after: Board, e: DryPour): { jar: numb
     if (!now) continue;
     let pre = i === from ? src.slice(0, keep) : i === to ? [...counts(before.jars[to]), ...src.slice(keep)] : counts(before.jars[i]);
     if (e.flipped?.includes(i)) pre = [...pre].reverse();
+    if (e.turned?.includes(i)) pre = afterTurn(pre);
     const units = now.units.map((_, k) => k).filter((k) => (pre[k] ?? 0) > 0 && wetLeft(now, k) === 0);
     if (units.length) out.push({ jar: i, units });
   }

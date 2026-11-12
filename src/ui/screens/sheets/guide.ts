@@ -5,7 +5,7 @@ import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
-import { CLAM_SHELL, HOURGLASS_MARK, SIEVE_BAND, WET_MARK } from '../jars';
+import { CLAM_SHELL, HOURGLASS_MARK, SIEVE_BAND, TIDE_MARK, WET_MARK } from '../jars';
 import { wetHex } from '../../logic/wet';
 
 /** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
@@ -24,7 +24,9 @@ export function miniJar(id: MechanicId): string {
   const top = id === 'locked' ? `<span class="padlock" style="--lock:${lockC}"></span>` : id === 'funnel' ? '<span class="funnel-mark"></span>' : '';
   // The hourglass shows its full count, like a freshly dealt one.
   const every = config.mechanics.list.find((m) => m.id === 'hourglass')?.every ?? 3;
-  const mark = id === 'hourglass' ? HOURGLASS_MARK.replace('></b>', `>${every}</b>`) : '';
+  // The tide jar (D194, §2.8) shows its full count too, over mixed sand that a turn would lift.
+  const tideEvery = config.mechanics.list.find((m) => m.id === 'tide')?.every ?? 4;
+  const mark = id === 'hourglass' ? HOURGLASS_MARK.replace('></b>', `>${every}</b>`) : id === 'tide' ? TIDE_MARK.replace('<b></b>', `<b>${tideEvery}</b>`) : '';
   const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) : '';
   // The clam is shut and shows its full count, like a freshly dealt one.
   const opensAfter = config.mechanics.list.find((m) => m.id === 'clam')?.opensAfter ?? 6;

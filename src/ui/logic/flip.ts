@@ -27,9 +27,10 @@ export function flipDelay(jar: number, from: number, reduced: boolean, anim: Pou
 
 /**
  * The first unit of target jar `to` that grows in after a pour of `moved` units, given its
- * new length. A target that flipped holds the poured units at its bottom now, so none grows.
+ * new length. A target that flipped holds the poured units at its bottom now, so none grows; a
+ * target whose tide turned (§2.8) plays its rise instead, so none grows either.
  * Example: `grownFrom(1, 4, 2, []) // 2`.
  */
-export function grownFrom(to: number, length: number, moved: number, flipped: readonly number[]): number {
-  return flipped.includes(to) ? Infinity : length - moved;
+export function grownFrom(to: number, length: number, moved: number, flipped: readonly number[], turned: readonly number[] = []): number {
+  return flipped.includes(to) || turned.includes(to) ? Infinity : length - moved;
 }
