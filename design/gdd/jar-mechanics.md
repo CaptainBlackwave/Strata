@@ -222,7 +222,7 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 
 **Daily, weekly, events (D197)**: not in their rotation. `isClassicMechanic('tide')` is false, so the Saturday rotation never picks it; no weekly theme names it; event boards have no special jars (D144).
 
-**Player-facing**: `'tide'` is a `MechanicId` from T2, so the UI tables keyed by it compile. Placeholder strings are in `src/ui/strings.ts` (`mechanics.tide`, `map.jars.tide`, `jarStates.tide(left)`). T4 draws the wave mark, the count and the rise animation (`turned`). T5 writes the intro card, Jar guide entry, map badge and tap text. There is no refusal reason of its own: a tide jar refuses pours exactly like an ordinary jar. **The core must not ship to players without that UI**: a jar whose sand moves by itself, with no mark, would look like a bug.
+**Player-facing** (sprint 24 T4, T5): a wave mark with the pours left on the jar's base (the accent colour at 1; faded, with no number, once sealed). When the tide turns, the bottom unit slides up to the top, narrowing as it passes the others, while they drop one place (instant under reduced motion; Undo, Restart and Shuffle cancel it). Wet counts, drop marks and colour-blind patterns move with their units. The label reads "tide jar, turns in N pours" ("tide jar, still" once sealed) and each turn announces "The tide turned (jar N)." The intro card shows on level 241; the Jar guide, the map badge and the tap text cover it. The turn reuses the hourglass's sand-slide sound. There is no refusal reason of its own: a tide jar refuses pours exactly like an ordinary jar.
 
 ### 2.2 State and Data
 

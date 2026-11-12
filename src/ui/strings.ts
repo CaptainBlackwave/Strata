@@ -210,6 +210,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.22.0',
+        name: 'The tide jar',
+        lines: [
+          'A new jar from level 241: the tide jar, with a wave and a number on it.',
+          'Every fourth pour on the board the tide turns: its sand rises one layer, and the bottom layer comes up to the top.',
+          'Plan for the turn: a sealed tide jar stays still.',
+          'You will meet it on about one level in eight from level 241.',
+        ],
+      },
+      {
         version: '0.21.0',
         name: 'Wet sand',
         lines: [

@@ -1,6 +1,6 @@
 # Sprint 24: Tide jar (0.22.0)
 
-> **Status: planned (2026-11-12), awaiting the owner's approval.** From the owner interview after 0.21.0 (D193–D197). Target release: **0.22.0, whenever it's ready** (D197).
+> **Status: built (2026-11-12), approved by the owner (look approved from screenshots); released as 0.22.0.** Evidence: `production/qa/evidence/sprint-24/tide/`. From the owner interview after 0.21.0 (D193–D197). Target release: **0.22.0, whenever it's ready** (D197).
 
 ## Why
 One new mechanic every 40 levels from 201 (D190). Wet sand debuted on 201; the next debuts on **241**. The owner chose the **Tide jar** (D193).

@@ -30,6 +30,17 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.22.0 (2026-11-12): sprint 24, the tide jar
+**For players**
+- A new jar mechanic, the **tide jar**, from level 241 (its intro card shows there; the Jar guide and the map list it). It carries a wave mark with the pours left.
+- Every fourth successful pour on the board the tide turns: the jar's sand rises one layer and its bottom layer comes up to the top. A sealed tide jar stays still.
+- About one level in eight from 241 has a tide jar. Levels 1-240 are unchanged; wet sand still appears on about one level in eight from 201; daily, weekly and Winter Tide boards have neither.
+
+**Under the hood**
+- Owner decisions D193-D198 (`production/sprints/sprint-24.md`, `design/gdd/jar-mechanics.md` section 2.8). `Jar.tide` count, `turned` on the pour event, tide last in the pour order, sealed jars never turn, solver, hints and shuffle know it. It comes only from its own roll (`shared: false`), so the other mechanics' shares are unchanged.
+- Levels 1-240 are pinned by a hash fixture made before the change. The 301-400 stuck-rate gate now samples every 3rd level (34 boards) instead of every 10th.
+- Screen-reader label and turn announcement; reduced motion skips the rise. Layout guard: 48 screens, 0 overflow.
+
 ## 0.21.0 (2026-11-12): sprint 23, wet sand
 **For players**
 - A new jar mechanic, **wet sand**, from level 201 (its intro card shows there, and the Jar guide and the map list it). Wet units are darker, with a drop and the pours left until they dry.
