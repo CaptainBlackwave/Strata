@@ -1,0 +1,126 @@
+{
+  "days": {
+    "2026-11-30": {
+      "card": false,
+      "title": "",
+      "sub": "",
+      "days": "",
+      "todayCard": false,
+      "todaySub": "",
+      "todayDays": "",
+      "snowing": false,
+      "snowCanvas": 0,
+      "snowParent": null,
+      "musicEvent": null,
+      "musicKey": "midday",
+      "errors": []
+    },
+    "2026-12-01": {
+      "card": true,
+      "title": "Winter Tide",
+      "sub": "0 of 24 cleared",
+      "days": "Ends in 30 days",
+      "todayCard": false,
+      "todaySub": "",
+      "todayDays": "",
+      "snowing": true,
+      "snowCanvas": 1,
+      "snowParent": "home",
+      "musicEvent": null,
+      "musicKey": "midday",
+      "chooser": {
+        "sub": "Board 1 open · 0 of 24 cleared · Ends in 30 days",
+        "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+        "open": 1,
+        "cleared": 0,
+        "locked": 23,
+        "firstLocked": "Board 2, opens Dec 2"
+      },
+      "errors": []
+    },
+    "2026-12-12": {
+      "card": true,
+      "title": "Winter Tide",
+      "sub": "0 of 24 cleared",
+      "days": "Ends in 19 days",
+      "todayCard": false,
+      "todaySub": "",
+      "todayDays": "",
+      "snowing": true,
+      "snowCanvas": 1,
+      "snowParent": "home",
+      "musicEvent": null,
+      "musicKey": "midday",
+      "chooser": {
+        "sub": "Board 12 open · 0 of 24 cleared · Ends in 19 days",
+        "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+        "open": 12,
+        "cleared": 0,
+        "locked": 12,
+        "firstLocked": "Board 13, opens Dec 13"
+      },
+      "errors": []
+    },
+    "2026-12-24": {
+      "card": true,
+      "title": "Winter Tide",
+      "sub": "0 of 24 cleared",
+      "days": "Ends in 7 days",
+      "todayCard": false,
+      "todaySub": "",
+      "todayDays": "",
+      "snowing": true,
+      "snowCanvas": 1,
+      "snowParent": "home",
+      "musicEvent": null,
+      "musicKey": "midday",
+      "chooser": {
+        "sub": "All 24 boards open · 0 of 24 cleared · Ends in 7 days",
+        "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+        "open": 24,
+        "cleared": 0,
+        "locked": 0,
+        "firstLocked": null
+      },
+      "errors": []
+    },
+    "2026-12-31": {
+      "card": true,
+      "title": "Winter Tide",
+      "sub": "0 of 24 cleared",
+      "days": "Last day",
+      "todayCard": false,
+      "todaySub": "",
+      "todayDays": "",
+      "snowing": true,
+      "snowCanvas": 1,
+      "snowParent": "home",
+      "musicEvent": null,
+      "musicKey": "midday",
+      "chooser": {
+        "sub": "All 24 boards open · 0 of 24 cleared · Last day",
+        "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+        "open": 24,
+        "cleared": 0,
+        "locked": 0,
+        "firstLocked": null
+      },
+      "errors": []
+    },
+    "2027-01-01": {
+      "card": false,
+      "title": "",
+      "sub": "",
+      "days": "",
+      "todayCard": false,
+      "todaySub": "",
+      "todayDays": "",
+      "snowing": false,
+      "snowCanvas": 0,
+      "snowParent": null,
+      "musicEvent": null,
+      "musicKey": "midday",
+      "errors": []
+    }
+  }
+}
