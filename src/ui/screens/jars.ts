@@ -9,7 +9,7 @@ import { FLIP_MS } from '../logic/flip';
 import { jarSummary } from '../logic/jar-label';
 import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { audio, config, state } from '../state';
-import { gpuInvalidate, gpuLayout } from '../board-gpu/hooks';
+import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuInvalidate, gpuLayout } from '../board-gpu/hooks';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
@@ -198,6 +198,7 @@ export function flipFx(i: number, delay: number): void {
   if (!el) return;
   audio.play('flip', { delay: delay / 1000 });
   if (reducedMotion()) return;
+  gpuFlip(i, delay); // sprint 19 S3: the canvas board turns its sand over too
   const timing: KeyframeAnimationOptions = { duration: FLIP_MS, delay, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'backwards' };
   const sand = el.querySelector('.sand') as HTMLElement;
   const glyph = el.querySelector('.hourglass-mark svg') as SVGElement | null;
@@ -224,6 +225,7 @@ export function clamOpenFx(i: number, delay: number): void {
   if (!el) return;
   audio.play('clamOpen', { delay: delay / 1000 });
   if (reducedMotion()) return;
+  gpuClamOpen(i, delay); // sprint 19 S3: and swings its shell open
   const shell = el.querySelector('.clam-shell') as HTMLElement;
   el.classList.add('clam-opening');
   const a = shell.animate(
@@ -246,6 +248,7 @@ export function clamOpenFx(i: number, delay: number): void {
 /** Stops every flip and clam-opening animation: the board was redrawn by something other than a pour. */
 export function cancelFlips(): void {
   for (const a of [...flips]) a.cancel();
+  gpuCancelFlips();
 }
 
 export function setSelected(i: number | null): void {

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Board } from '../../../../src/core/board';
-import { chooseBoardMode, detectWebGL, needsDomBoard } from '../../../../src/ui/board-gpu/switch';
+import { chooseBoardMode, detectWebGL } from '../../../../src/ui/board-gpu/switch';
 
 const base = { search: '', storedFlag: null, dev: false, webgl: true };
 
@@ -40,27 +39,5 @@ describe('detectWebGL', () => {
   it('with WebGL stubbed out, the switch gives the DOM board', () => {
     const webgl = detectWebGL(() => ({ getContext: () => null }));
     expect(chooseBoardMode({ ...base, search: '?board=gpu', webgl })).toBe('dom');
-  });
-});
-
-describe('needsDomBoard', () => {
-  const plain: Board = { capacity: 4, jars: [{ units: [0, 1], hidden: 1 }, { units: [], hidden: 0 }] };
-  it('keeps a plain board on the canvas', () => {
-    expect(needsDomBoard(plain, false)).toBe(false);
-  });
-  it('falls back for colour-blind patterns (S3)', () => {
-    expect(needsDomBoard(plain, true)).toBe(true);
-  });
-  it.each([
-    ['narrow', { cap: 2 }],
-    ['frozen', { frozen: true }],
-    ['locked', { lock: 1 }],
-    ['funnel', { funnel: true }],
-    ['hourglass', { hourglass: { every: 3, left: 2 } }],
-    ['sieve', { sieve: 0 }],
-    ['clam', { clam: 2 }],
-  ])('falls back for a %s jar (S3)', (_name, extra) => {
-    const board = { ...plain, jars: [...plain.jars, { units: [], hidden: 0, ...extra }] } as Board;
-    expect(needsDomBoard(board, false)).toBe(true);
   });
 });

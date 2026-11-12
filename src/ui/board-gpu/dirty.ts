@@ -3,9 +3,21 @@
  */
 import type { Jar } from '../../core/board';
 
-/** A jar's drawn state as a string: its units, bottom first, and how many are hidden. Example: `'0,2,2|1'` */
+/**
+ * A jar's drawn state as a string: its units, bottom first, how many are hidden, and its mechanics
+ * (narrow, funnel, frozen, lock, sieve, clam; the hourglass count is DOM text). Example: `'0,2,2|1'`
+ */
 export function jarKey(jar: Jar): string {
-  return `${jar.units.join(',')}|${jar.hidden}`;
+  const m = [
+    jar.cap !== undefined ? `n${jar.cap}` : '',
+    jar.funnel ? 'f' : '',
+    jar.frozen ? 'i' : '',
+    jar.lock !== undefined ? `l${jar.lock}` : '',
+    jar.sieve !== undefined ? `s${jar.sieve}` : '',
+    jar.clam !== undefined ? 'c' : '',
+    jar.hourglass ? 'h' : '',
+  ].join('');
+  return `${jar.units.join(',')}|${jar.hidden}${m ? `|${m}` : ''}`;
 }
 
 /** Remembers the last key drawn per jar and reports which ones changed. */

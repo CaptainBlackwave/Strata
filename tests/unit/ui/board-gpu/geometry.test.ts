@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cubicBezier, jarGeometry, lipLocal, pourLip, pourSide, restRect } from '../../../../src/ui/board-gpu/geometry';
+import { cubicBezier, jarGeometry, lipLocal, mouthRow, pourLip, pourSide, restRect } from '../../../../src/ui/board-gpu/geometry';
 
 const DIMS = { cols: 32, rows: 72 };
 const glassAt = (left: number, top = 300) => ({ left, top, width: 68, height: 189 });
@@ -71,5 +71,25 @@ describe('cubicBezier', () => {
       }
     }
     expect(cubicBezier(0, 0, 1, 1)(0.3)).toBeCloseTo(0.3, 3);
+  });
+});
+
+describe('narrow jars', () => {
+  it('a full-height jar has its mouth at row 0', () => {
+    expect(mouthRow(jarGeometry(glassAt(0), 42, 4, DIMS), DIMS.rows)).toBe(0);
+  });
+  it('a narrow jar (2 of 4 units, shorter glass) has its mouth inside the grid, above its sand', () => {
+    // style.css: a narrow glass is unitHeight × cap + round(unitHeight × 0.45) tall.
+    const g = jarGeometry({ left: 12, top: 400, width: 44, height: 42 * 2 + 19 }, 42, 4, DIMS, { left: 0, top: 380, width: 68, height: 201 });
+    const mouth = mouthRow(g, DIMS.rows);
+    expect(mouth).toBeGreaterThan(0);
+    expect((DIMS.rows - mouth) * g.cellH).toBeLessThanOrEqual(g.innerHeight + 1e-6);
+    expect(DIMS.rows - mouth).toBeGreaterThanOrEqual(2 * 18); // room for its two units
+    expect(g.lift).toBeCloseTo(68 * 0.32); // the lift follows the button, as the DOM's --lift
+  });
+  it('the lip waits airRows above a narrow target mouth', () => {
+    const g = jarGeometry({ left: 12, top: 400, width: 44, height: 103 }, 42, 4, DIMS);
+    const mouth = mouthRow(g, DIMS.rows);
+    expect(pourLip(g, 1, 24, mouth).y).toBeCloseTo(g.y - (DIMS.rows - mouth) * g.cellH - 24 * g.cellH);
   });
 });

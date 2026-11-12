@@ -9,15 +9,23 @@ import { pourAmount } from '../../core/board';
 import { defaultDims } from '../sand';
 import { boardEl, reducedMotion } from '../dom';
 import { ANIM, audio, config, state } from '../state';
-import { GPU_FLAG_KEY, type BoardMode, chooseBoardMode, detectWebGL, needsDomBoard } from './switch';
+import { GPU_FLAG_KEY, type BoardMode, chooseBoardMode, detectWebGL } from './switch';
 import { type JarGeometry, jarGeometry, restRect } from './geometry';
 import { hexToRgb } from './paint';
-import type { GpuBoard } from './renderer';
+import type { GlassLook } from './art';
+import type { BoardLook, GpuBoard } from './renderer';
+import { FLIP_MS } from '../logic/flip';
+import { CLAM_OPEN_MS } from '../logic/clam';
 
 /** Today's `.jar` selection transition (style.css), mirrored on the canvas. */
 const SELECT_MS = 160;
 /** The `--buried` colour in style.css, used if the custom property can't be read. */
 const BURIED_FALLBACK = '#b9a88d';
+/** style.css `thaw` and `unlock` keyframes (ms). */
+const THAW_MS = 760;
+const UNLOCK_MS = 800;
+/** Night scenes, where the DOM dims the clam shell (style.css). */
+const NIGHT_SCENES = new Set(['moonlit', 'harvestmoon', 'newyear']);
 
 function storedFlag(): string | null {
   try {
@@ -45,6 +53,14 @@ export function initBoardMode(): BoardMode {
   if (mode === 'gpu') {
     window.addEventListener('resize', relayoutSoon);
     window.addEventListener('orientationchange', relayoutSoon);
+    // A scene change (tokens on <html>, data-theme on <body>) or a worn style (data-* on #board) redraws the glass.
+    const watch = new MutationObserver(() => {
+      tokens = null;
+      relayoutSoon();
+    });
+    watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+    watch.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+    watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand'] });
   }
   return mode;
 }
@@ -66,7 +82,8 @@ function load(): Promise<void> {
       host: document.getElementById('app') ?? document.body,
       palette: config.palette.map((c) => hexToRgb(c.hex)),
       neutral: hexToRgb(neutral),
-      motion: { liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS },
+      paletteHex: config.palette.map((c) => c.hex),
+      motion: { liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS, flipMs: FLIP_MS, clamOpenMs: CLAM_OPEN_MS, thawMs: THAW_MS, unlockMs: UNLOCK_MS },
       reducedMotion,
       dims: defaultDims(),
     });
@@ -77,15 +94,61 @@ function load(): Promise<void> {
   return loading;
 }
 
-/** Each jar's drawing geometry from its button, at rest (the selection lift taken out). */
+/** Each jar's drawing geometry from its button and glass, at rest (the selection lift taken out). */
 function readGeometry(): JarGeometry[] {
   const capacity = state.session.board.capacity;
   return state.jarEls.map((el) => {
     const glass = (el.querySelector('.glass') as HTMLElement).getBoundingClientRect();
     const tf = getComputedStyle(el).transform;
     const ty = tf && tf !== 'none' ? new DOMMatrixReadOnly(tf).m42 : 0;
-    return jarGeometry(restRect(glass, ty), state.unitHeight, capacity, defaultDims());
+    return jarGeometry(restRect(glass, ty), state.unitHeight, capacity, defaultDims(), restRect(el.getBoundingClientRect(), ty));
   });
+}
+
+/** The scene's and the worn glass's resolved colours; `null` until read (and after a change). */
+let tokens: { glass: GlassLook; ink: string } | null = null;
+
+/**
+ * Resolves the glass colours the DOM uses: the worn piece's `--style-*` over the scene's `--glass-edge`
+ * and `--glass` (style.css), read through a hidden probe in `#board` so `color-mix()` resolves.
+ */
+function readTokens(): { glass: GlassLook; ink: string } {
+  const probe = document.createElement('i');
+  probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;color:transparent';
+  boardEl.appendChild(probe);
+  const read = (expr: string, fallback: string): string => {
+    probe.style.color = 'transparent';
+    probe.style.color = expr;
+    const v = getComputedStyle(probe).color;
+    return v && v !== 'rgba(0, 0, 0, 0)' ? v : fallback;
+  };
+  const body = read('var(--glass)', 'rgba(255,255,255,0.38)');
+  const edge = read('var(--style-edge, var(--glass-edge))', 'rgba(90,70,50,0.55)');
+  const glass: GlassLook = {
+    edge,
+    body: read('var(--style-body, var(--glass))', body),
+    band: read('var(--style-band, transparent)', 'rgba(0,0,0,0)'),
+    rim: read('var(--style-rim, var(--glass))', body),
+    shadow: 'rgb(60,44,24)',
+    night: NIGHT_SCENES.has(document.body.dataset.theme ?? '') || isDark(read('var(--bg-bottom)', '#f1dfc1')),
+  };
+  const ink = read('var(--ink)', '#4a3b2c');
+  probe.remove();
+  return { glass: { ...glass, shadow: glass.night ? 'rgb(0,0,0)' : 'rgb(60,44,24)' }, ink };
+}
+
+/** True for a dark CSS colour (`rgb(…)`): a night scene's background. */
+function isDark(color: string): boolean {
+  const m = /rgba?\(([^)]+)\)/.exec(color);
+  if (!m) return false;
+  const [r, g, b] = m[1].split(',').map((x) => parseFloat(x));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 90;
+}
+
+/** The look now: tokens (cached), the worn sand piece and the patterns setting. */
+function currentLook(): BoardLook {
+  tokens ??= readTokens();
+  return { glass: tokens.glass, ink: tokens.ink, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns };
 }
 
 /**
@@ -99,16 +162,41 @@ export function gpuLayout(): void {
     return;
   }
   const board = state.session.board;
-  // TODO(sprint 19 S3): special jars and patterns on the canvas; until then such a board is DOM.
-  active = !needsDomBoard(board, state.save.settings.patterns) && state.jarEls.length === board.jars.length;
+  active = state.jarEls.length === board.jars.length;
   boardEl.dataset.render = active ? 'gpu' : 'dom';
   gpu.setVisible(active);
-  if (active) gpu.layout(readGeometry(), board, state.selected);
+  if (!active) return;
+  gpu.setLook(currentLook());
+  gpu.layout(readGeometry(), board, state.selected);
 }
 
 /** A jar was redrawn or the selection changed: the canvas catches up (only changed jars redraw). */
 export function gpuInvalidate(): void {
-  if (active && gpu) gpu.sync(state.session.board, state.selected);
+  if (!active || !gpu) return;
+  gpu.setLook(currentLook()); // the patterns setting or the sand piece may have changed
+  gpu.sync(state.session.board, state.selected);
+  markAway();
+}
+
+/** The hourglass flip on the canvas (from `flipFx`). */
+export function gpuFlip(i: number, delay: number): void {
+  if (active && gpu) gpu.flip(i, delay);
+}
+
+/** The clam opening on the canvas (from `clamOpenFx`). */
+export function gpuClamOpen(i: number, delay: number): void {
+  if (active && gpu) gpu.clamOpen(i, delay);
+}
+
+/** Stops the canvas's flips and clam openings (from `cancelFlips`). */
+export function gpuCancelFlips(): void {
+  if (active && gpu) gpu.cancelFlips();
+}
+
+/** The jar a pour carries away keeps its DOM text marks (hourglass count) off its empty button. */
+function markAway(): void {
+  const away = gpu?.away ?? null;
+  state.jarEls.forEach((el, i) => el.classList.toggle('gpu-away', i === away));
 }
 
 /** True when the canvas plays this pour. Reduced motion never simulates: the DOM path snaps. */
@@ -135,6 +223,7 @@ export function gpuPour(from: number, to: number, ends: GpuPourEnds): Promise<vo
   const moved = pourAmount(board, from, to);
   const targetLen = board.jars[to].units.length;
   const seed = (state.session.moves + 1) * 7919 + from * 131 + to;
+  state.jarEls[from]?.classList.add('gpu-away');
   return gpu!
     .playPour(from, to, board, seed, {
       spill: () => audio.play('pour', { units: moved }),
@@ -149,6 +238,7 @@ export function gpuPour(from: number, to: number, ends: GpuPourEnds): Promise<vo
       },
     })
     .then(() => {
+      markAway();
       state.returning.delete(from);
       if (state.pendingWin) ends.win();
     });

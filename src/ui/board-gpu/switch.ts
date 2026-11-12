@@ -2,8 +2,6 @@
  * Which board draws the jars (sprint 19 S2, docs/architecture/adr-0001-gpu-sand-board.md decision 5).
  * Pure: the caller passes the address, the stored flag and whether WebGL works.
  */
-import type { Board } from '../../core/board';
-
 /** The DOM board (today's, the default) or the PixiJS board. */
 export type BoardMode = 'gpu' | 'dom';
 
@@ -47,17 +45,4 @@ export function detectWebGL(make: () => ContextSource | null): boolean {
   } catch {
     return false;
   }
-}
-
-/**
- * True when this board must stay on the DOM for now: a jar with a special mechanic, or
- * colour-blind patterns turned on.
- * TODO(sprint 19 S3): draw narrow, frozen, locked, funnel, hourglass, sieve and clam jars, and the
- * grain-anchored patterns, on the canvas, then remove this fallback.
- */
-export function needsDomBoard(board: Board, patterns: boolean): boolean {
-  if (patterns) return true;
-  return board.jars.some(
-    (j) => j.cap !== undefined || j.frozen === true || j.lock !== undefined || j.funnel === true || j.hourglass !== undefined || j.sieve !== undefined || j.clam !== undefined,
-  );
 }

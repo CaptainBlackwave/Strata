@@ -7,6 +7,15 @@ describe('jarKey', () => {
     expect(jarKey({ units: [0, 2, 2], hidden: 0 })).not.toBe(jarKey({ units: [0, 2, 2], hidden: 1 }));
     expect(jarKey({ units: [], hidden: 0 })).toBe('|0');
   });
+  it('changes with each mechanic, so a thaw, an unlock or a clam opening redraws the jar', () => {
+    const plain = jarKey({ units: [0], hidden: 0 });
+    const keys = [
+      { cap: 2 }, { funnel: true }, { frozen: true }, { lock: 1 }, { lock: 2 }, { sieve: 0 }, { clam: 3 }, { hourglass: { every: 3, left: 2 } },
+    ].map((m) => jarKey({ units: [0], hidden: 0, ...m }));
+    expect(new Set([plain, ...keys]).size).toBe(keys.length + 1);
+    // The clam's and the hourglass's counts are DOM text: counting down needs no redraw.
+    expect(jarKey({ units: [0], hidden: 0, clam: 3 })).toBe(jarKey({ units: [0], hidden: 0, clam: 2 }));
+  });
 });
 
 describe('DirtyTracker', () => {
