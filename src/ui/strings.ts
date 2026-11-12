@@ -696,6 +696,56 @@ const en = {
     /** One booster in a list: "Hint ×2", or "Shuffle" for one. */
     booster: (name: string, n: number) => (n === 1 ? name : `${name} \u00d7${n}`),
   },
+  /** The new Home (sprint 20, D166-D172; design/ux/home.md): the tab bar, the hero, the Today strip and the tabs' cards. */
+  homeScreen: {
+    /** The tab bar: its name, each tab, and the spoken "new" dot. */
+    tabsLabel: 'Home sections',
+    tabs: { play: 'Play', today: 'Today', collection: 'Collection', profile: 'Profile' } as Readonly<Record<string, string>>,
+    newSr: ', something new',
+    /** The small line over the hero's level. */
+    eyebrow: 'Strata',
+    /** The Today strip under Play, and its link to the Today tab. */
+    today: 'Today',
+    seeAll: 'See all',
+    seeAllLabel: 'See all of today',
+    /** The Play mini card for an event, e.g. "9 of 24 cleared". */
+    eventCleared: (cleared: number, total: number) => (cleared >= total ? 'All cleared \u2713' : `${cleared} of ${total} cleared`),
+    /** The streak reward card (D171). */
+    streak: {
+      eyebrow: 'Next streak reward',
+      /** The booster rewards' names: day 3 and day 7. */
+      pair: 'Booster pair',
+      bundle: 'Booster bundle',
+      /** What kind of reward a cosmetic is, after "Day N ·". */
+      kinds: { frame: 'Avatar frame', plate: 'Name plate', style: 'Jar style', scene: 'Scene' } as Readonly<Record<string, string>>,
+      day: (n: number) => `Day ${n}`,
+      /** Kept on one line: the space is non-breaking. */
+      inDays: (n: number) => (n === 1 ? 'in 1\u00a0day' : `in ${n}\u00a0days`),
+      label: (reward: string, lead: string) => `Next streak reward: ${reward}. ${lead}. See all streak rewards`,
+      trackLabel: (streak: number, got: readonly number[], next: number | null) =>
+        [streak > 0 ? `Streak ${streak === 1 ? '1 day' : `${streak} days`}` : 'No streak yet', got.length ? `collected: day ${got.join(', ')}` : '', next !== null ? `next: day ${next}` : 'all collected'].filter(Boolean).join('; '),
+    },
+    /** The Today tab. */
+    dailyEyebrow: 'Daily puzzle',
+    dailyTitle: (weekday: string, difficulty: string) => `${weekday}, ${difficulty}`,
+    dailyNotYet: 'Not solved yet',
+    playPill: 'Play',
+    streakRewards: 'Streak rewards',
+    eventEyebrow: 'Event',
+    /** The Collection tab's tiles. */
+    count: (n: number, total: number) => `${n} of ${total}`,
+    countNew: (n: number, total: number, fresh: number) => `${n} of ${total} \u00b7 ${fresh} new`,
+    mapTitle: 'Beach path',
+    mapSub: (level: number) => `Level ${level}`,
+    /** The Profile tab. */
+    edit: 'Edit',
+    moreStats: 'All stats and badges',
+    settingsTitle: 'Settings',
+    allSettings: 'All settings',
+    saveCodeHelp: 'Move your progress to another device',
+    open: 'Open',
+    whatsNewHelp: (version: string) => `Version ${version}`,
+  },
   /** Daily goals (sprint 16, D137; design/gdd/daily-goals.md): the Home card and the win card rows. */
   goals: {
     title: 'Today\u2019s goals',
