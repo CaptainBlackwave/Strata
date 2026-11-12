@@ -47,8 +47,9 @@ export function renderWeeklyCard(): void {
   btn.hidden = !state.save.tutorialDone;
   const set = currentSet();
   const total = config.weekly.boards.length;
-  $('weekly-title').textContent = t.weekly.title;
-  $('weekly-sub').textContent = t.weekly.cardSub(weeklyThemeName(set.week), t.weekly.daysLeft(daysLeft(set.week, state.clock())));
+  // The eyebrow already says "Weekly set", so the title is this week's theme and the line below its days left.
+  $('weekly-title').textContent = weeklyThemeName(set.week);
+  $('weekly-sub').textContent = t.weekly.daysLeft(daysLeft(set.week, state.clock()));
   $('weekly-progress').textContent = t.weekly.progress(set.cleared.length, total);
   btn.classList.toggle('solved', set.cleared.length >= total);
   [...$('weekly-jars').children].forEach((jar, i) => jar.classList.toggle('on', set.cleared.includes(i)));

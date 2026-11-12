@@ -28,6 +28,15 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.20.1 (2026-11-12): a tidier Today
+**For players**
+- The weekly set card on the Today tab shows its five jars in a row inside the card (they had stacked into a column running out of it).
+- The card's title is the week's theme ("Lock and Key") with the days left below, instead of "Weekly set" twice.
+- At 320px with 150% text, the Today cards no longer run past the right edge of the screen.
+
+**Under the hood**
+- `.mini-ico` (a grid, declared later) overrode `.weekly-jars`' flex; `.home .weekly-jars` now sets `display: flex`. `.home-panel` gets `grid-template-columns: minmax(0, 1fr)`. Evidence: `production/qa/evidence/0.20.1/weekly/`. Issue strata-26v (owner report).
+
 ## 0.20.0 (2026-11-12): sprint 21, feels like an app
 **For players**
 - An install card on Home after your 5th level: the browser's install on Android and desktop, step pictures on iPhone (Share, Add to Home Screen, Add). Shown at most twice, a week apart, and never once installed.
