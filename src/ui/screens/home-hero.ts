@@ -36,7 +36,7 @@ function readLook(): { glass: GlassLook; sand: string; patterns: boolean } {
     probe.style.color = 'transparent';
     probe.style.color = expr;
     const v = getComputedStyle(probe).color;
-    return v && v !== 'rgba(0, 0, 0, 0)' ? v : fallback;
+    return v && v !== 'rgba(0, 0, 0, 0)' && v !== 'transparent' ? v : fallback; // an unset token resolves to transparent in every browser form
   };
   const body = read('var(--glass)', 'rgba(255,255,255,0.38)');
   const night = NIGHT_SCENES.has(document.body.dataset.theme ?? '');

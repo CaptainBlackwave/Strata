@@ -315,7 +315,7 @@ export class HeroScene {
     const g = cv.getContext('2d')!;
     const img = g.createImageData(cv.width, cv.height);
     for (let i = 0; i < cv.width * cv.height; i++) {
-      const s = grainShade(91 + color, i);
+      const s = grainShade(91 + color, i); // 91: a seed offset so the funnel's grain pattern never repeats a jar's (jars seed from their own index)
       const k = 0.87 + 0.2 * (s / 255);
       const glint = s > 250 ? 90 : 0;
       img.data[i * 4] = Math.min(255, c.r * k + glint);
