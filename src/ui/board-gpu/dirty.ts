@@ -46,3 +46,56 @@ export class DirtyTracker {
     this.keys = [];
   }
 }
+
+/** What the Classic (DOM) board draws a jar from, besides the jar itself (sprint 21 P2, strata-8j3). */
+export interface DomDrawInput {
+  /** The jar is sealed (full of one colour). */
+  readonly sealed: boolean;
+  /** The colour-blind patterns setting. */
+  readonly patterns: boolean;
+  /** One unit's height in px (a narrow jar's glass height follows it). */
+  readonly unitHeight: number;
+}
+
+/** A DOM jar's drawn state in two parts: its sand column, and everything else on the button. */
+export interface DomDrawKeys {
+  /** The units, bottom first, the hidden count and the patterns setting. */
+  readonly sand: string;
+  /** The mechanics with their counts (hourglass, clam), the seal, the patterns setting and the unit height. */
+  readonly rest: string;
+}
+
+/**
+ * The keys the DOM board compares to skip redrawing a jar that did not change (strata-8j3: a pour
+ * redrew all 16 jars of a 16-jar board). Unlike `jarKey` it carries the hourglass and clam counts,
+ * which the DOM draws as text. Pure.
+ * Example: `domDrawKeys({ units: [0, 2], hidden: 0 }, { sealed: false, patterns: false, unitHeight: 30 }).sand // '0,2|0|p0'`
+ */
+export function domDrawKeys(jar: Jar, d: DomDrawInput): DomDrawKeys {
+  const p = d.patterns ? 'p1' : 'p0';
+  const counts = `${jar.hourglass ? `h${jar.hourglass.left}/${jar.hourglass.every}` : ''}${jar.clam !== undefined ? `c${jar.clam}` : ''}`;
+  return {
+    sand: `${jar.units.join(',')}|${jar.hidden}|${p}`,
+    rest: `${jarKey(jar)}|${counts}|${d.sealed ? 's' : ''}|${p}|u${d.unitHeight}`,
+  };
+}
+
+/** Which parts of a DOM jar to redraw. */
+export interface DomRedraw {
+  /** Rebuild the sand column (its unit spans). */
+  readonly sand: boolean;
+  /** Redraw the mechanics, the seal and the label. */
+  readonly rest: boolean;
+  /** Refresh the selection state (class and `aria-pressed`). */
+  readonly selection: boolean;
+}
+
+/**
+ * What changed since a DOM jar was last drawn. `prev` is `null` for a jar never drawn (a new
+ * button): everything is drawn. `grow` (units animating in after a pour) always rebuilds the sand.
+ * Pure. Example: `domRedraw(keys, keys, false, true, false) // { sand: false, rest: false, selection: true }`
+ */
+export function domRedraw(prev: DomDrawKeys | null, next: DomDrawKeys, wasSelected: boolean, selected: boolean, grow: boolean): DomRedraw {
+  if (!prev) return { sand: true, rest: true, selection: true };
+  return { sand: grow || prev.sand !== next.sand, rest: prev.rest !== next.rest, selection: wasSelected !== selected };
+}

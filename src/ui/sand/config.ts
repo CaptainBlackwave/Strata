@@ -53,6 +53,11 @@ export interface SandConfig {
   readonly settleSteps: number;
   /** Hard cap on the steps of one pour. */
   readonly maxSteps: number;
+  /**
+   * Drawing only (strata-2en): an upright jar's top surface is drawn smoothed over this many
+   * columns each side (`surfaceLine` in board-gpu/paint.ts). 0 draws the cells as they are.
+   */
+  readonly surfaceSmooth: number;
 }
 
 /** The shipped tuning, read from game-config.json. */

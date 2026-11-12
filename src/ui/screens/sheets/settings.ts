@@ -7,6 +7,9 @@ import { audio, state } from '../../state';
 import { needsLeaveConfirm } from '../../logic/leave';
 import { applyTheme, currentTheme } from '../../theme';
 import { t } from '../../strings';
+import { canVibrate, prefersReducedMotion } from '../../audio';
+import { hapticsSwitch } from '../../logic/haptics';
+import { offlineReady } from '../../update';
 
 let leaveAction: (() => void) | null = null;
 
@@ -58,9 +61,24 @@ function syncRealistic(): void {
   $('realistic-help').textContent = ok ? t.realisticHelp : t.realisticUnavailable;
 }
 
+/**
+ * The Vibration switch (sprint 21 A4): hidden where the browser cannot vibrate (every iPhone
+ * browser), and off and disabled with a note while the device asks for reduced motion.
+ */
+function syncHaptics(): void {
+  const view = hapticsSwitch({ enabled: state.save.settings.haptics, reducedMotion: prefersReducedMotion(), supported: canVibrate() });
+  const input = $<HTMLInputElement>('set-haptics');
+  $('set-haptics-row').hidden = !view.shown;
+  input.disabled = view.disabled;
+  input.checked = view.checked;
+  $('haptics-help').hidden = !(view.shown && view.disabled);
+}
+
 export function openSettings(): void {
-  for (const key of ['sound', 'music', 'haptics', 'patterns', 'southern'] as const) $<HTMLInputElement>(`set-${key}`).checked = state.save.settings[key];
+  for (const key of ['sound', 'music', 'patterns', 'southern'] as const) $<HTMLInputElement>(`set-${key}`).checked = state.save.settings[key];
+  syncHaptics();
   syncRealistic();
+  $('offline-status').hidden = !offlineReady(); // A3: once the service worker has cached the game
   for (const v of VOLUMES) syncSlider(v);
   $('btn-home').hidden = layers.has(homeEl); // already Home when opened from Home
   openLayer(settingsEl, $('set-sound'));

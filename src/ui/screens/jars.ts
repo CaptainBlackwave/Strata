@@ -9,6 +9,7 @@ import { FLIP_MS } from '../logic/flip';
 import { jarSummary } from '../logic/jar-label';
 import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { audio, config, state } from '../state';
+import { type DomDrawKeys, domDrawKeys, domRedraw } from '../board-gpu/dirty';
 import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuHop, gpuInvalidate, gpuLayout, gpuNope, gpuSeal } from '../board-gpu/hooks';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
@@ -95,12 +96,43 @@ export function unitColor(color: number, buried: boolean): string {
   return buried ? 'var(--buried)' : config.palette[color].hex;
 }
 
-/** Redraws jar `i`. Units at index `growFrom` and above animate in. */
+/** What each jar button was last drawn from (sprint 21 P2). A rebuilt button starts unknown, so it is drawn in full. */
+const drawn = new WeakMap<HTMLElement, { keys: DomDrawKeys; selected: boolean }>();
+
+/**
+ * Redraws jar `i`. Units at index `growFrom` and above animate in. Only what changed since the
+ * button was last drawn is touched (strata-8j3): an unchanged jar costs no DOM writes, so a pour
+ * on a 16-jar board restyles and repaints the jars it moved, not all of them.
+ */
 export function updateJar(i: number, growFrom = Infinity): void {
   const board: Board = state.session.board;
   const jar = board.jars[i];
   const el = state.jarEls[i];
   if (!el) return;
+  const sealed = isSealed(jar, board.capacity);
+  const selected = state.selected === i;
+  const keys = domDrawKeys(jar, { sealed, patterns: state.save.settings.patterns, unitHeight: state.unitHeight });
+  const last = drawn.get(el);
+  const todo = domRedraw(last?.keys ?? null, keys, last?.selected ?? false, selected, growFrom < jar.units.length);
+  if (!todo.sand && !todo.rest && !todo.selection) return;
+  drawn.set(el, { keys, selected });
+  if (todo.sand) drawSand(el, jar, growFrom);
+  if (todo.rest) {
+    el.classList.toggle('sealed', sealed);
+    if (!sealed) el.classList.remove('just-sealed');
+    renderMechanics(el, jar);
+    // A closed clam's sand is hidden from the screen reader too (D96, §2.6).
+    el.setAttribute('aria-label', t.jarLabel(i, jarSummary(jar, sealed, (c) => config.palette[c].id)));
+  }
+  if (todo.selection) {
+    el.classList.toggle('selected', selected);
+    el.setAttribute('aria-pressed', String(selected));
+  }
+  gpuInvalidate(); // sprint 19 S2: redraws this jar on the canvas board, if it changed
+}
+
+/** Rebuilds jar button `el`'s sand column from `jar`. Units at index `growFrom` and above animate in. */
+function drawSand(el: HTMLElement, jar: Jar, growFrom: number): void {
   const sand = el.querySelector('.sand') as HTMLElement;
   sand.replaceChildren(
     ...jar.units.map((color, k) => {
@@ -119,15 +151,6 @@ export function updateJar(i: number, growFrom = Infinity): void {
       return u;
     }),
   );
-  const sealed = isSealed(jar, board.capacity);
-  el.classList.toggle('sealed', sealed);
-  if (!sealed) el.classList.remove('just-sealed');
-  renderMechanics(el, jar);
-  el.classList.toggle('selected', state.selected === i);
-  el.setAttribute('aria-pressed', String(state.selected === i));
-  // A closed clam's sand is hidden from the screen reader too (D96, §2.6).
-  el.setAttribute('aria-label', t.jarLabel(i, jarSummary(jar, sealed, (c) => config.palette[c].id)));
-  gpuInvalidate(); // sprint 19 S2: redraws this jar on the canvas board, if it changed
 }
 
 /** Draws a jar's mechanic state, and plays the thaw/unlock effect when one ends. */
@@ -261,8 +284,14 @@ export function setSelected(i: number | null): void {
 
 export function renderSelectedState(): void {
   state.jarEls.forEach((el, i) => {
-    el.classList.toggle('selected', state.selected === i);
-    el.setAttribute('aria-pressed', String(state.selected === i));
+    const selected = state.selected === i;
+    const last = drawn.get(el);
+    if (last) {
+      if (last.selected === selected) return; // already drawn this way
+      drawn.set(el, { ...last, selected });
+    }
+    el.classList.toggle('selected', selected);
+    el.setAttribute('aria-pressed', String(selected));
   });
   gpuInvalidate();
 }

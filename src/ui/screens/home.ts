@@ -79,8 +79,8 @@ export function showHome(tab?: HomeTab): void {
   renderHero(); // sprint 20 H2: the live sand scene, or its still
   winterSnow('home', running); // sprint 18 W1: light snow behind Home while Winter Tide runs
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
-  maybeShowInstall(); // once, after a few levels, never on the first visit (O1, D78)
-  applyUpdateIfSafe(); // a new release that took over while a board was in play loads now
+  maybeShowInstall(); // after the 5th clear, at most twice, a week apart (O1, A1 D179)
+  applyUpdateIfSafe(); // A3: the update bar for a release that took over while away, or the silent fallback
 }
 
 /** Names for the streak track's words, from the config: frames, plates and scenes by id. */

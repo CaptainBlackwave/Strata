@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { NEUTRAL, gridFromJar } from '../../../../src/ui/sand';
-import { cornerMask, hexToRgb, paintGrid, paintParticles } from '../../../../src/ui/board-gpu/paint';
+import { cornerMask, hexToRgb, paintGrid, paintParticles, surfaceLine, surfaceTops } from '../../../../src/ui/board-gpu/paint';
+import { createGrid, countGrains } from '../../../../src/ui/sand';
 
 const DIMS = { cols: 8, rows: 8 };
 const PALETTE = [hexToRgb('#c8553d'), hexToRgb('#2a9d8f')];
@@ -114,5 +115,65 @@ describe('colour patterns and sand textures on the canvas (S3)', () => {
     const { sandOverlay } = await import('../../../../src/ui/board-gpu/patterns');
     expect(sandOverlay(space, 'plain')).toBeNull();
     for (const id of ['fine', 'glint', 'layered', 'ripple']) expect(Array.from(sandOverlay(space, id)!.keep).some((k) => k < 1)).toBe(true);
+  });
+});
+
+/** A 45 degree pile: column x filled from row `x` down (a one-cell stair-step per column). */
+function staircase(cols: number, rows: number) {
+  const grid = createGrid({ cols, rows });
+  for (let x = 0; x < cols; x++) for (let y = x; y < rows; y++) grid.cells[y * cols + x] = 1;
+  return grid;
+}
+
+describe('smoothed surface while a pile settles (sprint 21 P1, strata-2en)', () => {
+  it('surfaceTops finds each column\'s resting top and skips a falling grain', () => {
+    const grid = gridFromJar({ units: [0], hidden: 0 }, 2, DIMS, 3); // rows 4..7
+    expect([...surfaceTops(grid)]).toEqual(new Array(8).fill(4));
+    grid.cells[1 * 8 + 2] = 1; // a grain in the air above column 2
+    expect(surfaceTops(grid)[2]).toBe(4);
+    expect(surfaceTops(createGrid(DIMS))[0]).toBe(8); // an empty column
+  });
+  it('a flat surface stays exactly flat, and painting it smoothed changes no texel', () => {
+    const grid = gridFromJar({ units: [0, 1], hidden: 0 }, 4, DIMS, 5);
+    expect([...surfaceLine(grid, 3)]).toEqual([...surfaceTops(grid)]);
+    const plain = new Uint32Array(256);
+    const smooth = new Uint32Array(256);
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, plain, 2);
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, smooth, 2, { smooth: 3 });
+    expect(smooth).toEqual(plain);
+  });
+  it('a staircase becomes a straight slope away from the ends', () => {
+    const line = surfaceLine(staircase(8, 8), 2);
+    for (let x = 2; x < 6; x++) expect(line[x]).toBeCloseTo(x, 5);
+    for (let x = 1; x < 8; x++) expect(line[x]).toBeGreaterThanOrEqual(line[x - 1]); // still downhill all the way
+  });
+  it('smoothing draws without touching the grid: same grains before and after', () => {
+    const grid = staircase(8, 8);
+    const before = grid.cells.slice();
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, new Uint32Array(256), 2, { smooth: 3 });
+    expect(grid.cells).toEqual(before);
+    expect(countGrains(grid)).toBe(36);
+  });
+  it('the painted top edge of a staircase steps by at most one texel between texel columns', () => {
+    const grid = staircase(8, 8);
+    const out = new Uint32Array(256);
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, out, 2, { smooth: 2 });
+    // The first texel with any sand in each texel column, inside the smoothed part (x 2..5).
+    const edge = (tx: number) => {
+      for (let ty = 0; ty < 16; ty++) if (alpha(out[ty * 16 + tx]) > 0) return ty;
+      return 16;
+    };
+    for (let tx = 5; tx < 11; tx++) expect(Math.abs(edge(tx + 1) - edge(tx))).toBeLessThanOrEqual(1);
+    // Unsmoothed, the same pile steps two texels at every column boundary.
+    const raw = new Uint32Array(256);
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, raw, 2);
+    expect(alpha(raw[(2 * 2 - 1) * 16 + 2 * 2])).toBe(0);
+  });
+  it('is deterministic', () => {
+    const a = new Uint32Array(256);
+    const b = new Uint32Array(256);
+    paintGrid(staircase(8, 8), PALETTE, NEUTRAL_RGB, a, 2, { smooth: 3 });
+    paintGrid(staircase(8, 8), PALETTE, NEUTRAL_RGB, b, 2, { smooth: 3 });
+    expect(a).toEqual(b);
   });
 });

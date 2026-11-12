@@ -2,7 +2,8 @@
  * Install and onboarding on screen (sprint 11, D78): the one-time Add to Home Screen card (O1).
  * The rules are the DOM-free src/ui/logic/onboarding.ts; this reads the browser and shows them.
  */
-import { type InstallPlatform, countVisit, installCardDue, installPlatform, isOfflineReady, offlineNotice } from '../logic/onboarding';
+import { type InstallPlatform, countVisit, installCardDue, installPlatform, isOfflineReady, offlineNotice, recordInstallAsk, recordInstalled } from '../logic/onboarding';
+import { noteOfflineReady } from '../update';
 import { type ShareKey, dailyLaunch } from '../logic/launch';
 import { dailyKey } from '../clock';
 import { saveStored, whatsNewDue, writeSave } from '../storage';
@@ -17,8 +18,17 @@ import { openFriend } from './friend';
 
 /** How long Home settles before the card may open over it (ms): presentation only (D31). */
 const INSTALL_ARRIVE_MS = 700;
-/** Safari's share icon, drawn after the first iPhone step. */
-const SHARE_SVG = '<svg class="install-share-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12" /><path d="m8 7 4-4 4 4" /><path d="M7 10H5v10h14V10h-2" /></svg>';
+/**
+ * The iPhone step pictures (sprint 21 A1, D179), one per step in `t.onboarding.iosSteps`: Safari's
+ * toolbar with Share ringed, the share sheet with Add to Home Screen ringed, then the Add button.
+ * Drawn for Strata in SVG with no words, so the captions beside them carry the (localised) text.
+ * `.ip-hi` is the part to tap, in the scene's accent.
+ */
+const IOS_STEP_SVGS = [
+  '<svg class="install-pic" viewBox="0 0 64 44" aria-hidden="true"><rect class="ip-frame" x="2" y="2" width="60" height="40" rx="7" /><path class="ip-line" d="M2 30h60" /><path class="ip-soft" d="M10 36h6M48 36h6" /><circle class="ip-ring" cx="32" cy="36" r="6.5" /><path class="ip-hi" d="M32 39.5v-7m-2.6 2.4 2.6-2.6 2.6 2.6M29 34.5h-1.2v5.5h8.4v-5.5H35" /><path class="ip-soft" d="M10 10h30M10 17h22" /></svg>',
+  '<svg class="install-pic" viewBox="0 0 64 44" aria-hidden="true"><rect class="ip-frame" x="2" y="2" width="60" height="40" rx="7" /><path class="ip-soft" d="M10 9h26M10 34h22" /><rect class="ip-ring" x="5" y="15" width="54" height="12" rx="4" /><rect class="ip-hi" x="44" y="17.5" width="7" height="7" rx="1.6" /><path class="ip-hi" d="M47.5 19.3v3.4M45.8 21h3.4M11 21h24" /></svg>',
+  '<svg class="install-pic" viewBox="0 0 64 44" aria-hidden="true"><rect class="ip-frame" x="2" y="2" width="60" height="40" rx="7" /><path class="ip-line" d="M2 16h60" /><path class="ip-soft" d="M9 9h10M24 9h14" /><rect class="ip-ring" x="43" y="4" width="15" height="10" rx="5" /><path class="ip-hi" d="M48 9h5" /><rect class="ip-soft" x="10" y="22" width="12" height="12" rx="3" /><path class="ip-soft" d="M28 26h24M28 31h16" /></svg>',
+];
 
 /** Chrome's `beforeinstallprompt` event, which is not in the DOM typings. */
 interface InstallPromptEvent extends Event {
@@ -56,11 +66,11 @@ export function maybeShowInstall(): void {
     if (layers.top() !== homeEl || whatsNewDue(state.save)) return;
     const platform = currentPlatform();
     if (platform !== 'ios' && platform !== 'prompt') return;
-    if (installCardDue(state.save.onboarding, state.save.level - 1, config.onboarding.installAfterLevels, platform)) openInstall(platform);
+    if (installCardDue(state.save.onboarding, state.save.level - 1, config.onboarding, platform, state.clock().getTime())) openInstall(platform);
   }, INSTALL_ARRIVE_MS);
 }
 
-/** Fills and opens the card for `platform`, and remembers that it was shown. */
+/** Fills and opens the card for `platform`, and remembers the ask (A1: at most twice, a week apart). */
 export function openInstall(platform: 'ios' | 'prompt'): void {
   hideToast(); // a toast (e.g. the offline notice) must not sit over the card; the card says it plays offline
   const steps = $('install-steps');
@@ -68,17 +78,26 @@ export function openInstall(platform: 'ios' | 'prompt'): void {
   steps.replaceChildren(
     ...(platform === 'ios' ? t.onboarding.iosSteps : []).map((text, i) => {
       const li = document.createElement('li');
-      li.textContent = text;
-      if (i === 0) li.insertAdjacentHTML('beforeend', SHARE_SVG);
+      li.innerHTML = IOS_STEP_SVGS[i] ?? '';
+      const caption = document.createElement('span');
+      caption.className = 'install-step-text';
+      caption.textContent = text;
+      li.append(caption);
       return li;
     }),
   );
   $('install-note').hidden = platform !== 'ios';
   $('btn-install-later').hidden = platform === 'ios'; // iPhone has nothing to accept: one button closes
   $('btn-install').textContent = platform === 'ios' ? t.gotIt : t.onboarding.installButton;
-  state.save.onboarding.installShown = true; // shown once, whatever the player picks
+  state.save.onboarding = recordInstallAsk(state.save.onboarding, state.clock().getTime()); // an ask, whatever the player picks
   writeSave(state.save);
   openLayer($('install'), $('btn-install'), $('btn-play'));
+}
+
+/** Strata is on the home screen: the card never asks again (A1). */
+function markInstalled(): void {
+  state.save.onboarding = recordInstalled(state.save.onboarding);
+  writeSave(state.save);
 }
 
 /** The card's main button: the browser's install prompt where there is one, else just close. */
@@ -89,7 +108,7 @@ async function install(): Promise<void> {
   deferred = null; // a prompt can be used once
   try {
     await prompt.prompt();
-    await prompt.userChoice;
+    if ((await prompt.userChoice).outcome === 'accepted') markInstalled();
   } catch {
     /* the browser refused the prompt; the card has been shown, so nothing more */
   }
@@ -144,10 +163,15 @@ export function noticeOffline(): void {
  */
 export function listenForOffline(container: ServiceWorkerContainer): void {
   container.addEventListener('message', (e) => {
-    if (isOfflineReady(e.data)) noticeOffline();
+    if (!isOfflineReady(e.data)) return;
+    noteOfflineReady(); // Settings shows "Works offline" from now on (A3)
+    noticeOffline();
   });
   container.startMessages();
-  if (container.controller) noticeOffline();
+  if (container.controller) {
+    noteOfflineReady(); // a controlled page was fully cached: sw.js only installs when complete
+    noticeOffline();
+  }
 }
 
 /** Whether the booster line shows on this board: level 1, the first time it is played (O2). */
@@ -196,8 +220,7 @@ export function wireOnboarding(): void {
   });
   window.addEventListener('appinstalled', () => {
     deferred = null;
-    state.save.onboarding.installShown = true;
-    writeSave(state.save);
+    markInstalled();
     if (!$('install').hidden) closeLayer($('install'));
   });
   $('btn-install').addEventListener('click', () => void install());

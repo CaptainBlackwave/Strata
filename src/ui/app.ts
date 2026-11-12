@@ -29,6 +29,7 @@ import { wireEvent } from './screens/sheets/event';
 import { wireShare } from './screens/sheets/share';
 import { wireFriend } from './screens/friend';
 import { watchForUpdates } from './update';
+import { wireNativeFeel } from './native-feel';
 import { applyStyles, wireStyles } from './screens/sheets/styles';
 import { wireWin } from './screens/win';
 import { BOOSTER_NAMES, config, state } from './state';
@@ -112,6 +113,7 @@ function wireAll(): void {
   wireGuide();
   wireOnboarding();
   wireKeys();
+  wireNativeFeel(); // sprint 21 A4: no zoom or long-press menus on the board
   wireOtherTab(); // last: a newer tab may make this one yield at once (D57)
 }
 

@@ -235,3 +235,10 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D171 | Next streak reward on Home | **Its own card with a track**: the reward's picture and name, "Day N · … in K days", and a track of the six reward days (collected ticked, the streak marked, the next highlighted); tap opens the full list (owner, mock-up review 2026-11-12) | feel-audio-ui, daily-puzzle | built |
 | D172 | Goals on Home | **Moved to the Today tab**; Play keeps the hero, Play, the daily and event cards and the streak card | feel-audio-ui, daily-goals | built |
 | D173 | Home hero, revised | **A tiny game playing itself**: 4-5 jars of mixed sand; a jar lifts, tips and pours its top colour onto a match about every 2-3 s until a jar seals with its cork and sparkle, then the scene re-mixes and loops; tapping it starts the player's level. Replaces the 3 jars and funnel of D167 (owner, 2026-11-12) | feel-audio-ui | built |
+| D174 | Realistic phone frame-rate check | **Closed without a test**: no complaints known (strata-1q0) (owner, 2026-11-12) | feel-audio-ui | decided |
+| D175 | Home hero, revised again | **Back to the pre-0.19 logo jars**, larger and drawn with Realistic sand and matte glass; replaces D173 (owner, 2026-11-12) | feel-audio-ui | built (sprint 21 H1) |
+| D176 | Hero motion | **Still**, with only a rare soft sparkle on the sand; none under reduced motion (owner, 2026-11-12) | feel-audio-ui | built (sprint 21 H1) |
+| D177 | Sand polish | Fix the settling pile's pixel steps (strata-2en) and the board redraw cost (strata-8j3) (owner, 2026-11-12) | feel-audio-ui | built (sprint 21 P1, P2) |
+| D178 | Winter Tide | A dress rehearsal of all 24 boards with a faked December date before 1 December (owner, 2026-11-12) | events | built |
+| D179 | App polish | Install prompt, icon and splash, offline note and update prompt, native feel (zoom, selection, status bar, haptics) (owner, 2026-11-12) | feel-audio-ui | install prompt, offline note and update bar, native feel built in sprint 21 (A1, A3, A4); icon and splash (A2) built too |
+| D180 | Release | Everything in one release, **0.20.0** (owner, 2026-11-12) | — | built |

@@ -41,6 +41,7 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 
 **Screens**:
 - **Home**: the profile chip (top-left, own row above the logo, after the tutorial; `player-profile.md` §3.1), logo, coins, Play, Daily card, Shells, Scenes. A **Settings button** on Home, in the top row opposite the profile chip (F8, *decided 2026-11-08, built in sprint 6*).
+- **Home hero** (sprint 21 H1, D175, D176; *built*, replaces D173's self-playing game): the three pre-0.19 logo jars (middle one taller, three layers each of terracotta, saffron and lagoon, permuted), larger, as a button that starts the player's level ("Play level N"). On Realistic the board's renderer draws them once as a still in Realistic sand and matte glass, with a rare soft sparkle on the sand (the first after 4 s, then about every 12 s ± 4 s; `game-config.json` `homeHero`); between sparkles nothing ticks, and Pixi's system ticker is stopped. On Classic, without WebGL and before the renderer loads they are the CSS logo jars (`.hero-logo`), in the same place. Under reduced motion there is no sparkle. Rules: `src/ui/logic/home-hero.ts`; controller `src/ui/screens/home-hero.ts`.
 - **Board**: HUD, jars, boosters, restart.
 - **Win card**: result, coins, the small avatar in its frame (not in the tutorial), the shell row, set line and profile unlock rows (`player-profile.md` §3.7).
 - **Sheets and dialogs**: Settings, Scenes, Shell cabinet, Jar guide / intro card, Profile, Edit Profile (Avatar / Frame / Name tabs with radio grids), "Discard changes?", Save code (`save-data.md` §2.1), Tutorial.
@@ -94,10 +95,16 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 
 **Offline**: a service worker caches the app on the first visit; the page is network-first (latest deploy when online, cached copy offline) and built files are cache-first.
 
+**App polish** (sprint 21, D179; *built*):
+- **Install card** (A1): after the 5th level clear, on Home, "Add Strata to your home screen". Android and desktop Chrome use the captured `beforeinstallprompt`; iPhone and iPad Safari get three pictured steps (Share, Add to Home Screen, Add), drawn in SVG with the words in the captions. At most `installMaxAsks` (2) asks, at least `installGapDays` (7) days apart, never when standalone, after `appinstalled` or an accepted prompt (`installCardDue`, `game-config.json` `onboarding`).
+- **Offline and updates** (A3): Settings shows "Works offline" once the worker has cached the game (a controlled boot, or sw.js's offline-ready message). A new version taking over shows a calm bar on Home, "New version ready · Update"; Update reloads, only with Home on top. A bar passed by (a board started, or the app sent to the background) falls back to the silent reload of 0.14.1 on the next return to Home (`updateStep` in `src/ui/logic/update.ts`). A sheet over Home keeps the bar.
+- **Icon and splash** (A2): the icon is the three logo jars of layered sand on sand cream (#f6ecd9), drawn in `public/icon.svg` and rendered by `tools/icons/render.cjs` to icon-192, icon-512, a maskable 512 (art at 76%, inside the 80% safe zone), the Apple touch icon (180) and a 32 px favicon. The splash is an inline-styled `#splash` in `index.html` (the logo jars on the daylight scene), painted before any stylesheet, so no unstyled page shows; `src/ui/splash.ts` removes it two frames after boot (a 180 ms fade, none under reduced motion).
+- **Native feel** (A4): the board takes `touch-action: none` (no pinch or double-tap zoom there; Safari's `gesturestart` is cancelled too); the rest of the page keeps pinch zoom (D44). No long-press callouts on controls (`-webkit-touch-callout: none`, no context menu on the board); text selection stays off except in inputs. The `theme-color` meta takes the scene's `bgTop`. Haptics come from `haptics.patterns` in `game-config.json` (a pour is felt on its land, a seal double tap, a win triple), through `hapticFor`: off when the Vibration switch is off, under reduced motion (the switch then shows off and disabled with a note), and where the browser cannot vibrate (the row is hidden).
+
 ### 2.2 State and Data
 
 - UI-only state: selected jar, busy flag, returning jars, current mode (`level`, `daily`, `tutorial`), preview scene, restore armed (Save code).
-- Saved settings: `sound`, `music`, `haptics`, `patterns` (`save-data.md`).
+- Saved settings: `sound`, `music`, `haptics`, `patterns` (`save-data.md`). Install asks: `onboarding.installAsks`, `installLastAsk`, `installed` (A1).
 
 ### 2.3 Integration Points
 
@@ -180,3 +187,4 @@ verified-by: pending review (sprint 6 fixes F1–F6, F8 approved by the owner 20
 | 2026-11-08 | Claude (sprint 6, F9) | Profile, Edit Profile, Discard and Save code screens, win-card avatar and unlock rows, Save code in Settings, per-layer keyboard table (GB-FA-1); 14 colours and patterns (GB-FA-2, GX-9); text scaling moved to Handled (GB-FA-3); jars 11+ by Tab (GB-FA-4); full reduced-motion list (GB-FA-5); screen check with a pass condition (GB-FA-6); depends on player-profile (GX-10); decided sprint 6 items recorded: stuck banner naming Restart (GX-1), refused-pour toast, visible and announced hint, dialogs holding focus, 44 px targets, Settings on Home, leave-level confirmation |
 | 2026-11-08 | Claude (sprint 7, B6) | Presentation timings recorded as exempt from the config rule (D31, GB-FA-8) |
 | 2026-11-09 | Claude (sprint 10, F8) | Sound, music, volume and vibration lines updated for sprint 10 (D64–D66, D68): new events, per-scene music, sliders, the haptics table |
+| 2026-11-12 | Claude (sprint 21, A1/A3/A4) | App polish: install card rules and iPhone step pictures, Works offline and the update bar, native feel (board zoom, callouts, status bar colour, haptics plan from config) |

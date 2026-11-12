@@ -191,6 +191,14 @@ describe('GameAudio.play (F1)', () => {
     quiet.audio.play('seal');
     expect(quiet.buzz).toEqual([]);
   });
+  it('reduced motion keeps every haptic off, sound or not (sprint 21 A4)', () => {
+    const ctx = new FakeContext();
+    const buzz: (number | number[])[] = [];
+    const audio = new GameAudio(OPTS, { createContext: () => ctx as unknown as BaseAudioContext, vibrate: (p) => void buzz.push(p), reducedMotion: () => true, random: () => 0.5 });
+    audio.play('seal');
+    audio.play('win');
+    expect(buzz).toEqual([]);
+  });
   it('an event whose haptic is none does not vibrate', () => {
     const { audio, buzz } = setup();
     audio.play('coin');

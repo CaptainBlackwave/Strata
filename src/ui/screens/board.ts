@@ -249,7 +249,8 @@ export function onSessionEvent(e: SessionEvent): void {
       const flipped = e.flipped ?? [];
       updateJar(e.move.from);
       updateJar(e.move.to, grownFrom(e.move.to, state.session.board.jars[e.move.to].units.length, e.moved, flipped));
-      // A seal can thaw or unlock jars anywhere on the board, so redraw the rest too.
+      // A seal can thaw or unlock jars anywhere on the board and an hourglass anywhere counts down, so the
+      // rest are checked too; `updateJar` touches only those that changed (strata-8j3).
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
       if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex, sealedOnBoard() - 1); // F2: the chime climbs per seal
       // The hourglass turns over once the pour around it is done (D96).

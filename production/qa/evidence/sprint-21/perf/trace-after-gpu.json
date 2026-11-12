@@ -1,0 +1,106 @@
+{
+  "label": "after-gpu",
+  "board": "gpu",
+  "reducedMotion": true,
+  "level": 491,
+  "pours": 10,
+  "cpuThrottle": 4,
+  "perEvent": {
+    "RunTask": {
+      "count": 12901,
+      "totalMs": 5431,
+      "worstMs": 117.9
+    },
+    "PrePaint": {
+      "count": 257,
+      "totalMs": 40,
+      "worstMs": 2.2
+    },
+    "EventDispatch": {
+      "count": 357,
+      "totalMs": 215,
+      "worstMs": 34.4
+    },
+    "UpdateLayoutTree": {
+      "count": 149,
+      "totalMs": 91,
+      "worstMs": 4.3
+    },
+    "Layout": {
+      "count": 41,
+      "totalMs": 56,
+      "worstMs": 3.5
+    },
+    "Paint": {
+      "count": 111,
+      "totalMs": 58,
+      "worstMs": 2.2
+    },
+    "Layerize": {
+      "count": 86,
+      "totalMs": 30,
+      "worstMs": 2.3
+    },
+    "Commit": {
+      "count": 86,
+      "totalMs": 1956,
+      "worstMs": 115.4
+    }
+  },
+  "tasksOver16ms": [
+    117.9,
+    110.9,
+    110.1,
+    107.8,
+    107.4,
+    107,
+    105,
+    103.7,
+    103.2,
+    103,
+    101.3,
+    99.5,
+    97.5,
+    95.2,
+    95,
+    94.2,
+    93.6,
+    92.5,
+    91.5,
+    91.4,
+    90.9,
+    90.8,
+    89.9,
+    89.8,
+    87.8,
+    86.9,
+    86.5,
+    86.5,
+    86.4,
+    85.2,
+    83.3,
+    81.8,
+    81.5,
+    79.5,
+    77.4,
+    74.7,
+    74.1,
+    73.7,
+    73.5,
+    68.1,
+    46,
+    45,
+    30.8,
+    28.7,
+    27.6,
+    25.7,
+    24.7,
+    24.3,
+    23.3,
+    20.9,
+    18.3,
+    17.2,
+    17.1,
+    16.1
+  ]
+}

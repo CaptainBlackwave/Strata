@@ -931,7 +931,7 @@
     }
   },
   "sand": {
-    "$comment": "Falling-sand pour for the GPU board (sprint 19 S1, docs/architecture/adr-0001-gpu-sand-board.md; code in src/ui/sand/). Units are grid cells and simulation steps. cols, rows: cells per jar grid; one unit is floor(rows / capacity) rows, so grainsPerUnit = cols * that, and any leftover rows are headroom. stepsPerSecond: simulation rate the renderer aims for (frame-rate independent). maxStepsPerFrame: most steps one frame may run; a longer frame drops the backlog instead of stalling. maxTiltDeg: the source jar's largest tilt. tiltPerStepDeg, returnPerStepDeg: how fast it tips toward the target and back. flowEndDeg: the flow direction at full tilt, in degrees below the horizontal toward the lip; negative points up the tipped wall and out of the mouth (it passes 0, sliding along the floor to the lip wall, on the way). Keep it within reposeDeg of straight up (-44 to -90 for 46) so every loose grain can always rise and the pour completes. reposeDeg: a grain only moves within this angle of the flow direction (45 is classic falling sand; a little over keeps exact diagonals). slideChance: chance a loose grain in the tilted source tries to move each step (lower is a lazier, grainier flow). flowPassesPerStep: flow passes per step in the tilted source, so a loose grain can move up to this many cells a step (a faster pour). spillPerStep: most grains that leave the source in one step. fallCellsPerStep: cells a grain can drop per step inside a grid (gravity). airRows: the drop from the lip to the target's mouth, in cells. airGravity: a falling grain's speed gain per step in the air, in cells per step. streamSpread: share of the target's width the stream lands across. levelReach: how far, in columns, a resting surface grain may creep to a lower spot, so piles level out flatter than 45 degrees. levelChance: chance per step a resting grain tries that long creep (otherwise it only tries the diagonal). quietSteps: steps without movement that count as settled. settleSteps: most steps spent settling once every grain has landed and the jar is upright. maxSteps: hard cap on a whole pour; done() is true from then on.",
+    "$comment": "Falling-sand pour for the GPU board (sprint 19 S1, docs/architecture/adr-0001-gpu-sand-board.md; code in src/ui/sand/). Units are grid cells and simulation steps. cols, rows: cells per jar grid; one unit is floor(rows / capacity) rows, so grainsPerUnit = cols * that, and any leftover rows are headroom. stepsPerSecond: simulation rate the renderer aims for (frame-rate independent). maxStepsPerFrame: most steps one frame may run; a longer frame drops the backlog instead of stalling. maxTiltDeg: the source jar's largest tilt. tiltPerStepDeg, returnPerStepDeg: how fast it tips toward the target and back. flowEndDeg: the flow direction at full tilt, in degrees below the horizontal toward the lip; negative points up the tipped wall and out of the mouth (it passes 0, sliding along the floor to the lip wall, on the way). Keep it within reposeDeg of straight up (-44 to -90 for 46) so every loose grain can always rise and the pour completes. reposeDeg: a grain only moves within this angle of the flow direction (45 is classic falling sand; a little over keeps exact diagonals). slideChance: chance a loose grain in the tilted source tries to move each step (lower is a lazier, grainier flow). flowPassesPerStep: flow passes per step in the tilted source, so a loose grain can move up to this many cells a step (a faster pour). spillPerStep: most grains that leave the source in one step. fallCellsPerStep: cells a grain can drop per step inside a grid (gravity). airRows: the drop from the lip to the target's mouth, in cells. airGravity: a falling grain's speed gain per step in the air, in cells per step. streamSpread: share of the target's width the stream lands across. levelReach: how far, in columns, a resting surface grain may creep to a lower spot, so piles level out flatter than 45 degrees. levelChance: chance per step a resting grain tries that long creep (otherwise it only tries the diagonal). quietSteps: steps without movement that count as settled. settleSteps: most steps spent settling once every grain has landed and the jar is upright. maxSteps: hard cap on a whole pour; done() is true from then on. surfaceSmooth: drawing only (sprint 21 P1, strata-2en): the top surface of an upright jar is drawn as each column's top averaged over this many columns each side, so a settling pile shows a smooth slope instead of one-cell stair-steps; a flat surface is unchanged; 0 turns it off.",
     "cols": 32,
     "rows": 72,
     "stepsPerSecond": 240,
@@ -952,29 +952,48 @@
     "levelChance": 0.5,
     "quietSteps": 6,
     "settleSteps": 600,
-    "maxSteps": 4000
+    "maxSteps": 4000,
+    "surfaceSmooth": 3
   },
   "homeHero": {
-    "$comment": "The Home hero (sprint 20, D167, D173; design/ux/home.md): a tiny sorting game playing itself on the board's own renderer. Each loop deals a seeded board of colors colours, capacity units each, into colors full jars plus empty empty ones, keeps it only if no jar starts sealed and the solver (src/core/solver.ts, within solveBudget nodes) solves it in minMoves..maxMoves pours, and plays one pour every paceMs. When solved it rests solvedMs, then fades out and in over fadeMs with the next seed (mixSeed(seed, loop)). stepsPerSecond: the hero's sand simulation rate (the board's is faster), for a calm pour. maxTiltDeg, airRows: a lower tilt and a shorter drop than the board's, so the tipped jar stays inside the hero. glassShare: the jars' glass height as a share of the hero's drawing area at rest; the rest above is room for the lifted, tipped jar. palette: the colour ids deals draw from.",
-    "colors": 3,
-    "capacity": 4,
-    "empty": 2,
-    "seed": 20261112,
-    "paceMs": 2400,
-    "solvedMs": 1600,
-    "fadeMs": 600,
-    "minMoves": 6,
-    "maxMoves": 14,
-    "solveBudget": 20000,
-    "stepsPerSecond": 150,
-    "maxTiltDeg": 95,
-    "airRows": 14,
-    "glassShare": 0.65,
-    "palette": [0, 1, 3, 5, 6, 7]
+    "$comment": "The Home hero (sprint 21 H1, D175, D176; design/ux/home.md): the three pre-0.19 logo jars, larger, drawn still with the Realistic renderer (the CSS logo jars on Classic, without WebGL and before the renderer loads). jars: each jar's colour ids, bottom first (terracotta 0, saffron 1, lagoon 3: the logo's red, amber and teal, permuted); the middle jar is the taller one. The only motion is a rare soft sparkle on the sand, never under reduced motion: the first firstSparkleMs after Home shows, then one about every sparkleEveryMs, give or take sparkleJitterMs (seeded by seed); each lasts sparkleMs. Nothing runs between sparkles but one timer.",
+    "jars": [[0, 1, 3], [3, 0, 1], [1, 3, 0]],
+    "firstSparkleMs": 4000,
+    "sparkleEveryMs": 12000,
+    "sparkleJitterMs": 4000,
+    "sparkleMs": 1400,
+    "seed": 20261112
+  },
+  "haptics": {
+    "$comment": "Haptic patterns per sound event in ms, pulse/gap/pulse (sprint 10 F4, D64; sprint 21 A4, D179). null: none. A pour's touch rides on its land; seal is a double tap, win a triple. Off under reduced motion and when the Vibration switch is off. maxPulseMs and maxSteps keep every pattern short and soft.",
+    "maxPulseMs": 40,
+    "maxSteps": 9,
+    "patterns": {
+      "select": 6,
+      "deselect": null,
+      "nope": [10, 40, 10],
+      "pour": null,
+      "land": 8,
+      "seal": [12, 40, 24],
+      "win": [16, 50, 16, 50, 36],
+      "coin": null,
+      "booster": 12,
+      "shuffle": [6, 30, 6, 30, 6],
+      "mapStone": 6,
+      "locked": [6, 30, 6],
+      "unlock": [10, 50, 10],
+      "shell": [8, 40, 16],
+      "sceneBought": [10, 40, 20],
+      "playHere": 10,
+      "flip": [4, 24, 8],
+      "clamOpen": [6, 30, 10]
+    }
   },
   "onboarding": {
-    "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
-    "installAfterLevels": 3,
+    "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1; sprint 21 A1, D179). installAfterLevels: levels cleared before the Add to Home Screen card may show on Home. installMaxAsks: the most times it ever asks. installGapDays: the fewest days between two asks. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
+    "installAfterLevels": 5,
+    "installMaxAsks": 2,
+    "installGapDays": 7,
     "homeHintLevel": 3
   }
 }

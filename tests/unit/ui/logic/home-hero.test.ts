@@ -1,129 +1,120 @@
-// Story: production/sprints/sprint-20.md, D167, D169, D173: the Home hero, a tiny sorting game playing itself.
+// Story: production/sprints/sprint-21.md H1, D175, D176: the Home hero is the three logo jars, still, with a rare sparkle.
 import { describe, expect, it } from 'vitest';
-import { canPour, isSealed, isWon, pour } from '../../../../src/core/board';
+import { isSealed } from '../../../../src/core/board';
+import rawConfig from '../../../../src/config/game-config.json';
 import {
-  HERO_START, type HeroLoop, boardAfter, fallbackDeal, heroDeal, heroLayout, heroMode, heroRuns, heroStill, heroTuning, nextPhase, phaseMs, remixSeed,
+  type HeroTuning, LOGO, heroLayout, heroMode, heroTuning, logoBoard, sparkleDelay, sparkleRuns, sparkleSpot,
 } from '../../../../src/ui/logic/home-hero';
 
-const deal = heroDeal(heroTuning, remixSeed(heroTuning, 0));
+/** The pre-0.19 logo's colours, bottom first, per jar (git 15cb9c0 style.css `.logo-jars i:nth-child`). */
+const LOGO_HEX = [
+  ['#c8553d', '#f2a541', '#2a9d8f'],
+  ['#2a9d8f', '#c8553d', '#f2a541'],
+  ['#f2a541', '#2a9d8f', '#c8553d'],
+];
 
-describe('heroDeal (D173)', () => {
-  it('deals colors full jars plus the empty ones, capacity units each, with no jar sealed at the start', () => {
-    expect(deal.board.capacity).toBe(heroTuning.capacity);
-    expect(deal.board.jars).toHaveLength(heroTuning.colors + heroTuning.empty);
-    expect(deal.board.jars.filter((j) => j.units.length === 0)).toHaveLength(heroTuning.empty);
-    for (const j of deal.board.jars.filter((x) => x.units.length)) {
-      expect(j.units).toHaveLength(heroTuning.capacity);
-      expect(isSealed(j, deal.board.capacity)).toBe(false);
+describe('logoBoard (D175)', () => {
+  it('is the logo: three jars of three layers, red, amber and teal permuted, none sealed', () => {
+    const b = logoBoard();
+    expect(b.capacity).toBe(3);
+    expect(b.jars.map((j) => j.units.map((c) => rawConfig.palette[c].hex))).toEqual(LOGO_HEX);
+    for (const j of b.jars) {
+      expect(j.hidden).toBe(0);
+      expect(isSealed(j, b.capacity)).toBe(false);
     }
-    expect(new Set(deal.board.jars.flatMap((j) => j.units)).size).toBe(heroTuning.colors);
-  });
-  it('every pour of the solution is legal, and they sort the board', () => {
-    let b = deal.board;
-    for (const m of deal.moves) {
-      expect(canPour(b, m.from, m.to)).toBe(true);
-      b = pour(b, m.from, m.to).board;
-    }
-    expect(isWon(b)).toBe(true);
-  });
-  it('keeps the pours between minMoves and maxMoves', () => {
-    expect(deal.moves.length).toBeGreaterThanOrEqual(heroTuning.minMoves);
-    expect(deal.moves.length).toBeLessThanOrEqual(heroTuning.maxMoves);
-  });
-  it('is deterministic, and each re-mix deals from the next seed', () => {
-    expect(heroDeal(heroTuning, remixSeed(heroTuning, 0))).toEqual(deal);
-    expect(remixSeed(heroTuning, 1)).not.toBe(remixSeed(heroTuning, 0));
-    for (let loop = 1; loop < 6; loop++) {
-      const d = heroDeal(heroTuning, remixSeed(heroTuning, loop));
-      expect(isWon(boardAfter(d, d.moves.length))).toBe(true);
-    }
-  });
-  it('the colours come from the tuning palette', () => {
-    for (const c of deal.board.jars.flatMap((j) => j.units)) expect(heroTuning.palette).toContain(c);
-  });
-  it('falls back to a fixed solvable board when no try is kept', () => {
-    const d = heroDeal({ ...heroTuning, minMoves: 999 }, 1);
-    expect(d).toEqual(fallbackDeal({ ...heroTuning, minMoves: 999 }));
-    expect(isWon(boardAfter(d, d.moves.length))).toBe(true);
-  });
-});
-
-describe('heroStill', () => {
-  it('is the board mid-sort: some pours played, not yet solved', () => {
-    const still = heroStill(deal);
-    expect(isWon(still)).toBe(false);
-    expect(still).not.toEqual(deal.board);
-  });
-});
-
-describe('the loop (nextPhase, phaseMs)', () => {
-  it('waits, pours, waits … then rests solved, fades out, deals the next loop and fades in', () => {
-    const moves = 2;
-    const seen: HeroLoop[] = [];
-    let l = HERO_START;
-    for (let i = 0; i < 8; i++) seen.push((l = nextPhase(l, moves)));
-    expect(seen.map((x) => x.phase)).toEqual(['pour', 'wait', 'pour', 'solved', 'fadeOut', 'fadeIn', 'wait', 'pour']);
-    expect(seen[5]).toEqual({ phase: 'fadeIn', loop: 1, step: 0 });
-  });
-  it('a deal with no pours goes straight to solved', () => {
-    expect(nextPhase(HERO_START, 0).phase).toBe('solved');
-  });
-  it('times come from the tuning; a pour lasts as long as it plays', () => {
-    expect(phaseMs('wait', heroTuning)).toBe(heroTuning.paceMs);
-    expect(phaseMs('solved', heroTuning)).toBe(heroTuning.solvedMs);
-    expect(phaseMs('fadeOut', heroTuning)).toBe(heroTuning.fadeMs);
-    expect(phaseMs('pour', heroTuning)).toBeNull();
-  });
-  it('the pace is calm: two to three seconds a pour', () => {
-    expect(heroTuning.paceMs).toBeGreaterThanOrEqual(2000);
-    expect(heroTuning.paceMs).toBeLessThanOrEqual(3000);
   });
 });
 
 describe('heroMode', () => {
   const on = { search: '', webgl: true, realistic: true, lost: false };
-  it('is live on Realistic with WebGL, still on Classic, without WebGL or with the context lost', () => {
-    expect(heroMode(on)).toBe('live');
-    expect(heroMode({ ...on, realistic: false })).toBe('still');
-    expect(heroMode({ ...on, webgl: false })).toBe('still');
-    expect(heroMode({ ...on, lost: true })).toBe('still');
+  it('draws the Realistic jars when the board would be Realistic', () => {
+    expect(heroMode(on)).toBe('realistic');
+    expect(heroMode({ ...on, realistic: false, search: '?board=gpu' })).toBe('realistic');
   });
-  it('follows the board switch in the address', () => {
-    expect(heroMode({ ...on, search: '?board=dom' })).toBe('still');
-    expect(heroMode({ ...on, realistic: false, search: '?board=gpu' })).toBe('live');
+  it('falls back to the CSS logo jars on Classic, without WebGL or with the context lost', () => {
+    expect(heroMode({ ...on, realistic: false })).toBe('css');
+    expect(heroMode({ ...on, search: '?board=dom' })).toBe('css');
+    expect(heroMode({ ...on, webgl: false })).toBe('css');
+    expect(heroMode({ ...on, lost: true })).toBe('css');
   });
 });
 
-describe('heroRuns (D169)', () => {
-  const all = { homeShown: true, onPlay: true, pageVisible: true, reduced: false };
-  it('plays only while Home, the Play tab and the page are visible, never under reduced motion', () => {
-    expect(heroRuns(all)).toBe(true);
-    for (const off of [{ homeShown: false }, { onPlay: false }, { pageVisible: false }, { reduced: true }]) expect(heroRuns({ ...all, ...off })).toBe(false);
+describe('sparkleRuns (D176)', () => {
+  const seen = { realistic: true, homeShown: true, onPlay: true, pageVisible: true, reduced: false };
+  it('runs only on the Realistic jars while they can be seen', () => {
+    expect(sparkleRuns(seen)).toBe(true);
+    for (const k of ['realistic', 'homeShown', 'onPlay', 'pageVisible'] as const) expect(sparkleRuns({ ...seen, [k]: false }), k).toBe(false);
+  });
+  it('never runs under reduced motion', () => {
+    expect(sparkleRuns({ ...seen, reduced: true })).toBe(false);
+  });
+});
+
+describe('sparkleDelay (D176: rare)', () => {
+  it('waits firstSparkleMs for the first, then every sparkleEveryMs give or take the jitter', () => {
+    expect(sparkleDelay(heroTuning, 0)).toBe(heroTuning.firstSparkleMs);
+    const waits = Array.from({ length: 50 }, (_, n) => sparkleDelay(heroTuning, n + 1));
+    for (const w of waits) {
+      expect(w).toBeGreaterThanOrEqual(heroTuning.sparkleEveryMs - heroTuning.sparkleJitterMs);
+      expect(w).toBeLessThanOrEqual(heroTuning.sparkleEveryMs + heroTuning.sparkleJitterMs);
+    }
+    expect(new Set(waits).size).toBeGreaterThan(10); // no fixed beat
+  });
+  it('is deterministic', () => {
+    expect(sparkleDelay(heroTuning, 7)).toBe(sparkleDelay(heroTuning, 7));
+  });
+  it('never comes sooner than a sparkle lasts, so two never overlap', () => {
+    const tight: HeroTuning = { ...heroTuning, sparkleEveryMs: 500, sparkleJitterMs: 2000, sparkleMs: 1400 };
+    for (let n = 1; n < 40; n++) expect(sparkleDelay(tight, n)).toBeGreaterThanOrEqual(1400);
+  });
+  it('is rare: the shipped tuning sparkles at most once every few seconds', () => {
+    expect(heroTuning.sparkleEveryMs - heroTuning.sparkleJitterMs).toBeGreaterThanOrEqual(4 * heroTuning.sparkleMs);
   });
 });
 
 describe('heroLayout', () => {
-  it.each([
-    [412, 353],
-    [320, 285],
-    [560, 408],
-  ])('fits %ix%i: a centred row of five jars whose glass fills most of the height, with room above for the pour', (w, h) => {
-    const jars = heroLayout(w, h, 5, 4, heroTuning.glassShare);
-    expect(jars).toHaveLength(5);
-    for (const j of jars) {
-      expect(j.left).toBeGreaterThanOrEqual(0);
-      expect(j.left + j.width).toBeLessThanOrEqual(w);
-      expect(j.top + j.height).toBeLessThanOrEqual(h);
-      expect(j.height / h).toBeGreaterThanOrEqual(0.6);
-      expect(j.height / h).toBeLessThanOrEqual(0.75);
-      expect(j.top).toBeGreaterThanOrEqual(h * 0.15);
-      expect(j.unitHeight * 4).toBeLessThan(j.height);
-    }
-    expect(jars[0].left).toBeCloseTo(w - (jars[4].left + jars[4].width));
+  for (const [w, h] of [[390, 336], [320, 285], [412, 360], [768, 408]] as const) {
+    it(`centres three jars inside ${w}×${h}, the middle taller, along the bottom`, () => {
+      const boxes = heroLayout(w, h, 3);
+      expect(boxes).toHaveLength(3);
+      const [a, m, c] = boxes;
+      expect(m.height / a.height).toBeCloseTo(LOGO.middle, 6);
+      expect(c.height).toBeCloseTo(a.height, 6);
+      for (const b of boxes) {
+        expect(b.top + b.height).toBeCloseTo(h - LOGO.foot, 6);
+        expect(b.width).toBeCloseTo(a.width, 6);
+        expect(b.top).toBeGreaterThan(0);
+        // the sand fills the glass to LOGO.fill
+        expect(b.unitHeight * 3 + 5.5).toBeCloseTo(b.height * LOGO.fill, 6);
+      }
+      expect(a.left).toBeGreaterThanOrEqual(16 - 1e-6);
+      expect(c.left + c.width).toBeLessThanOrEqual(w - 16 + 1e-6);
+      expect(a.left + (c.left + c.width)).toBeCloseTo(w, 6);
+      expect(a.height).toBeLessThanOrEqual(LOGO.maxHeight);
+    });
+  }
+  it('gives way to a narrow stage: the row stays 16 px clear of each side', () => {
+    const [a, , c] = heroLayout(200, 400, 3);
+    expect(a.left).toBeCloseTo(16, 6);
+    expect(c.left + c.width).toBeCloseTo(184, 6);
   });
-  it('tips less and drops less than the board, so the tipped jar stays inside the hero', () => {
-    expect(heroTuning.maxTiltDeg).toBeLessThan(110);
-    expect(heroTuning.maxTiltDeg).toBeGreaterThan(90);
-    expect(heroTuning.airRows).toBeLessThan(24);
+});
+
+describe('sparkleSpot', () => {
+  const boxes = heroLayout(390, 336, 3);
+  it('always lands on a jar\'s sand, inside its walls', () => {
+    for (let n = 0; n < 60; n++) {
+      const s = sparkleSpot(boxes, 3, n);
+      const b = boxes[s.jar];
+      expect(s.x).toBeGreaterThan(b.left + 5.5);
+      expect(s.x).toBeLessThan(b.left + b.width - 5.5);
+      expect(s.y).toBeGreaterThan(b.top + b.height - 5.5 - 3 * b.unitHeight);
+      expect(s.y).toBeLessThan(b.top + b.height - 5.5);
+      expect(s.size).toBeGreaterThanOrEqual(10);
+    }
+  });
+  it('visits every jar and is deterministic', () => {
+    expect(new Set(Array.from({ length: 30 }, (_, n) => sparkleSpot(boxes, 3, n).jar)).size).toBe(3);
+    expect(sparkleSpot(boxes, 3, 4)).toEqual(sparkleSpot(boxes, 3, 4));
   });
 });

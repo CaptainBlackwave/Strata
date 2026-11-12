@@ -4,5 +4,10 @@
  */
 import './style.css';
 import { boot } from './app';
+import { hideSplash } from './splash';
 
-boot();
+try {
+  boot();
+} finally {
+  hideSplash(); // sprint 21 A2: the first screen is ready (or boot failed: never leave the splash over an error)
+}

@@ -6,7 +6,7 @@
  * requestAnimationFrame loop that runs while a lift, a pour or a mechanic effect moves, and stops
  * when the tab is hidden. Loaded on demand, so the DOM board's bundle carries none of Pixi.
  */
-import { CanvasSource, Container, Sprite, Texture, WebGLRenderer } from 'pixi.js';
+import { CanvasSource, Container, Sprite, Texture, Ticker, WebGLRenderer } from 'pixi.js';
 import { type Board, type Jar, isSealed } from '../../core/board';
 import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, done, finish, gridFromJar, planPour, sandConfig, step, stepsDue } from '../sand';
 import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from './art';
@@ -279,6 +279,7 @@ export class GpuBoard {
         backgroundAlpha: 0,
         antialias: true,
       });
+      sleepSystemTicker();
       const canvas = renderer.canvas as HTMLCanvasElement;
       canvas.className = opts.className ?? 'gpu-board';
       canvas.setAttribute('aria-hidden', 'true');
@@ -739,14 +740,15 @@ export class GpuBoard {
     this.decorate(v, jar, capacity);
   }
 
-  private paintLook(v: JarView, jar: Jar | null, capacity: number): PaintLook {
+  /** How to paint jar `v`'s sand. `upright`: its surface is drawn smoothed (strata-2en); not for a tipped source. */
+  private paintLook(v: JarView, jar: Jar | null, capacity: number, upright = true): PaintLook {
     const art = this.artFor(v.geom, jar?.funnel === true).art;
     const grain = this.grainFor(v.geom, capacity, art.innerRadius);
-    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1 };
+    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1, smooth: upright ? this.config.surfaceSmooth : 0 };
   }
 
-  private paintSand(v: JarView, jar: Jar | null, capacity: number): void {
-    paintGrid(v.grid, this.opts.palette, this.opts.neutral, v.texels, SUB, this.paintLook(v, jar, capacity));
+  private paintSand(v: JarView, jar: Jar | null, capacity: number, upright = true): void {
+    paintGrid(v.grid, this.opts.palette, this.opts.neutral, v.texels, SUB, this.paintLook(v, jar, capacity, upright));
     v.ctx.putImageData(v.image, 0, 0);
     v.texture.source.update();
   }
@@ -1072,7 +1074,7 @@ export class GpuBoard {
 
   private repaintPour(p: Pour, src: JarView, dst: JarView): void {
     const cap = this.board?.capacity ?? 4;
-    this.paintSand(src, src.jar, cap);
+    this.paintSand(src, src.jar, cap, p.sim.tilt === 0);
     paintGrid(dst.grid, this.opts.palette, this.opts.neutral, dst.texels, SUB, this.paintLook(dst, dst.jar, cap));
     // Grains already inside the target fall behind its glass, in its own texture.
     paintParticles(p.sim.particles, this.opts.dims.cols, 0, this.opts.dims.rows, this.opts.palette, this.opts.neutral, dst.texels, SUB, false, p.targetMouth);
@@ -1148,4 +1150,15 @@ function padlockMetrics(w: number): { width: number; height: number; boxTop: num
   const { bw, bh } = padlockBox(w);
   const pad = 2;
   return { width: bw + 2 * pad, height: bh * 0.7 + bh + 2 * pad, boxTop: pad + bh * 0.7, boxHeight: bh };
+}
+
+/**
+ * Pixi's WebGLRenderer starts `Ticker.system` (its SchedulerSystem's texture GC), a requestAnimationFrame
+ * every frame for as long as the page lives. This renderer draws only on change with its own frame loop and
+ * frees its own textures, so the system ticker is stopped and kept from restarting (ADR-0001 §6: nothing
+ * draws while idle). Called after every `init`, so the Home hero and the board both sleep.
+ */
+function sleepSystemTicker(): void {
+  Ticker.system.autoStart = false;
+  Ticker.system.stop();
 }
