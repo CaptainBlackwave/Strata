@@ -28,6 +28,15 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.19.0 (2026-11-12): sprint 20, a new Home
+**For players**
+- A calmer Home: a live Realistic-sand scene (a still picture on Classic), the level and one big Play button, then today's daily, the event when one runs, and a card for your next streak reward with a track of every reward day.
+- A tab bar at the bottom: Play, Today (daily, weekly, goals, event, streak rewards), Collection (shells, badges, jar styles, scenes, the map) and Profile (profile, stats, Settings). Tabs appear as they fill up; a dot marks something new.
+- Today's goals moved to the Today tab.
+
+**Under the hood**
+- Owner decisions D166–D172, approved from a clickable mock-up (`prototypes/home-redesign/`). Pure, tested helpers for the hero, the tab unlocks and the streak card (`src/ui/logic/home-*.ts`, `streak-card.ts`); the tab bar is a full ARIA tablist with arrow keys.
+
 ## 0.18.0 (2026-11-12): sprint 19, real sand
 **For players**
 - A new Realistic board, on by default: soft matte glass jars and real grains of sand that slide to the lip, spill in a thin stream and pile up as they land.

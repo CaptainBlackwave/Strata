@@ -388,7 +388,7 @@ function hangString(): void {
   const home = document.getElementById('home');
   const onHome = !!home && !home.hidden;
   const hud = document.querySelector(onHome ? '#home .home-top' : '.hud');
-  const below = document.querySelector(onHome ? '#home .logo-jars' : '#board');
+  const below = document.querySelector(onHome ? '#home .hero-stage' : '#board');
   const hudBottom = hud ? hud.getBoundingClientRect().bottom : 0;
   hookY = Math.round(hudBottom + HUD_CLEAR);
   // Aurora night: the top band's highest lit pixel (thickest slice at full ripple lift, at the top of its sway).

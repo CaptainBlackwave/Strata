@@ -1,6 +1,6 @@
 # Sprint 20: A new Home
 
-> **Status: mock-up approved (2026-11-12) with changes D171–D172; building.** Mock-up first, then the build. Target release: **0.19.0**.
+> **Status: built and released as 0.19.0 (2026-11-12).** Mock-up approved with D171–D172. Evidence: `production/qa/evidence/sprint-20/`. Mock-up first, then the build. Target release: **0.19.0**.
 
 ## Why
 Home grew one card at a time: logo jars, Play, daily, streak line, weekly, event, goals, then shells, scenes and styles below. It is busy, it doesn't match the new Realistic sand look, players miss features, and it doesn't sell the game to a newcomer (D166).

@@ -18,8 +18,8 @@ import { sceneSwatchEl } from './scenes';
 import { styleSwatchEl } from './styles';
 import { audio, config, state } from '../../state';
 
-/** A reward's small art: a portrait in the frame, the plate, a jar in the glass, the scene, or the boosters' toolbar icons. */
-function artOf(reward: TrackReward): HTMLElement {
+/** A reward's small art (the track sheet, and Home's streak card and list): a portrait in the frame, the plate, a jar in the glass, the scene, or the boosters' toolbar icons. */
+export function trackArtEl(reward: TrackReward): HTMLElement {
   const art = document.createElement('span');
   art.className = `track-art track-art-${reward.kind}`;
   art.setAttribute('aria-hidden', 'true');
@@ -55,7 +55,7 @@ export function renderTrack(): void {
       status.className = 'track-status';
       status.textContent = row.status;
       text.append(name, status);
-      li.append(artOf(row.step.reward), text);
+      li.append(trackArtEl(row.step.reward), text);
       return li;
     }),
   );

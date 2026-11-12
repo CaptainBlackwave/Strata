@@ -125,10 +125,15 @@ export function heroLayout(width: number, height: number, airRows: number, rows:
   };
 }
 
-/** The two-jar board one loop pours: the funnel holding the loop's colour, and the middle jar. */
+/**
+ * The two-jar board one loop pours: the funnel holding the loop's colour, and an empty jar. The pour
+ * is planned into an empty jar so it is always legal (a band never matches the colour under it);
+ * the scene then lays the middle jar's own bands (`tuning.middle`) into the target grid before the
+ * first step, so the grains pile on them.
+ */
 export function heroBoard(tuning: HeroTuning, cycle: number): Board {
   const top = tuning.tops[((cycle % tuning.tops.length) + tuning.tops.length) % tuning.tops.length];
-  return { capacity: HERO_CAPACITY, jars: [{ units: [top], hidden: 0 }, { units: [...tuning.middle], hidden: 0 }] };
+  return { capacity: HERO_CAPACITY, jars: [{ units: [top], hidden: 0 }, { units: [], hidden: 0 }] };
 }
 
 /** Where the loop is: the funnel pouring, the settled scene resting, or the cross-fade back to the start. */

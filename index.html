@@ -328,44 +328,133 @@
         </div>
       </div>
       <div id="home" class="home" hidden>
-        <div class="home-tide" aria-hidden="true"><i></i></div>
-        <div class="home-top">
+        <header class="home-top">
           <button id="btn-profile" class="profile-chip" type="button" hidden aria-label="Profile">
             <span id="profile-chip-art" class="portrait portrait-sm" aria-hidden="true"></span>
             <span id="profile-chip-plate" class="profile-chip-plate" aria-hidden="true"></span>
           </button>
-          <button id="btn-home-settings" data-s-title="settings" data-s-label="settings" class="icon-btn home-settings" type="button" title="Settings" aria-label="Settings">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>
-          </button>
-        </div>
-        <div class="home-inner">
-          <div class="logo-jars" aria-hidden="true"><i></i><i></i><i></i></div>
-          <h1 id="home-title" data-s="brand" class="home-title">Strata</h1>
-          <p id="home-tagline" data-s="tagline" class="home-tagline">Sort the sand. Seal the jars.</p>
-          <div class="coins home-coins"><i class="coin" aria-hidden="true"></i><span id="home-coins">0</span><span class="sr-only coins-sr"> coins</span></div>
-          <button id="btn-play" class="primary play" type="button">Play</button>
-          <button id="btn-daily" class="daily-card" type="button">
-            <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
-            <span class="daily-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub">Today: hard</span><span id="daily-streak" class="daily-streak">Start a streak today</span></span>
-          </button>
-          <button id="btn-track" class="track-link" type="button" hidden><span id="track-link-text"></span><span class="track-link-arrow" aria-hidden="true">›</span></button>
-          <button id="btn-weekly" class="daily-card weekly-card" type="button" hidden>
-            <span id="weekly-jars" class="weekly-jars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-            <span class="daily-text"><strong id="weekly-title" data-s="weekly.title">Weekly set</strong><span id="weekly-sub"></span><span id="weekly-progress" class="daily-streak"></span></span>
-          </button>
-          <button id="btn-event" class="daily-card weekly-card event-card" type="button" hidden>
-            <span class="event-ico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M10 4l2 2 2-2M10 20l2-2 2 2M4.6 10.3l2.7-.7-.7-2.7M19.4 13.7l-2.7.7.7 2.7M4.6 13.7l2.7.7-.7 2.7M19.4 10.3l-2.7-.7.7-2.7" /></svg></span>
-            <span class="daily-text"><strong id="event-title"></strong><span id="event-sub"></span><span id="event-days" class="daily-streak"></span></span>
-          </button>
-          <section id="goals-card" class="daily-card goals-card" role="group" aria-labelledby="goals-title" hidden>
-            <span class="daily-text goals-text"><strong id="goals-title" data-s="goals.title">Today's goals</strong><ul id="goals-list" class="goals-list"></ul><span id="goals-foot" class="daily-streak"></span></span>
-          </section>
-          <div class="home-row">
-            <button id="btn-shells" class="secondary shells-btn" type="button"><span class="shell-ico" id="shell-ico" aria-hidden="true"></span><span id="shells-label">Shells 0/20</span></button>
-            <button id="btn-scenes" class="secondary shells-btn" type="button"><span class="scene-ico" aria-hidden="true"></span><span id="scenes-label" data-s="scenes">Scenes</span><span id="scenes-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>
+          <h1 id="home-heading" class="home-heading" hidden></h1>
+          <div class="home-top-right">
+            <div class="coins home-coins"><i class="coin" aria-hidden="true"></i><span id="home-coins">0</span><span class="sr-only coins-sr"> coins</span></div>
+            <button id="btn-home-settings" data-s-title="settings" data-s-label="settings" class="icon-btn home-settings" type="button" title="Settings" aria-label="Settings">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg>
+            </button>
           </div>
-          <button id="btn-styles" class="secondary shells-btn styles-btn" type="button" hidden><span class="styles-ico" aria-hidden="true"><i></i></span><span id="styles-label" data-s="styles.title">Jar styles</span><span id="styles-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>
+        </header>
+        <div id="home-views" class="home-views">
+          <section id="home-panel-play" class="home-panel home-panel-play" role="tabpanel" aria-labelledby="home-level" tabindex="-1">
+            <div id="home-hero" class="hero" data-mode="still">
+              <div class="hero-sky" aria-hidden="true"><span class="hero-moon"></span></div>
+              <div class="hero-sea" aria-hidden="true"><i class="w1"></i><i class="w2"></i><i class="glint"></i></div>
+              <div class="hero-beach" aria-hidden="true"></div>
+              <div class="hero-head">
+                <span id="home-eyebrow" data-s="homeScreen.eyebrow" class="hero-eyebrow">Strata</span>
+                <h1 id="home-level" class="hero-level">Strata</h1>
+              </div>
+              <div id="hero-stage" class="hero-stage" aria-hidden="true"></div>
+              <div class="hero-sweep" aria-hidden="true"></div>
+            </div>
+            <div class="play-wrap"><button id="btn-play" data-s="playTutorial" class="primary play" type="button">Play</button></div>
+            <section id="today-strip" class="today-strip" aria-labelledby="strip-title" hidden>
+              <div class="strip-head">
+                <h2 id="strip-title" data-s="homeScreen.today">Today</h2>
+                <button id="btn-see-today" data-s-label="homeScreen.seeAllLabel" class="link-btn" type="button" aria-label="See all of today"><span data-s="homeScreen.seeAll">See all</span><svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" /></svg></button>
+              </div>
+              <div class="strip-row">
+                <button id="btn-daily" class="hcard mini daily-card" type="button">
+                  <span class="daily-cal" aria-hidden="true"><b id="daily-dow">Sun</b><i id="daily-dom">8</i></span>
+                  <span class="mini-text"><strong id="daily-title">Daily puzzle</strong><span id="daily-date-sr" class="sr-only"></span><span id="daily-sub" class="soft">Today: hard</span><span id="daily-streak" class="accent">Start a streak today</span></span>
+                </button>
+                <button id="btn-event" class="hcard mini event-card" type="button" hidden>
+                  <span class="mini-ico ice" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M10 4l2 2 2-2M10 20l2-2 2 2M4.6 10.3l2.7-.7-.7-2.7M19.4 13.7l-2.7.7.7 2.7M4.6 13.7l2.7.7-.7 2.7M19.4 10.3l-2.7-.7.7-2.7" /></svg></span>
+                  <span class="mini-text"><strong id="event-title"></strong><span id="event-sub" class="soft"></span><span id="event-days" class="accent"></span></span>
+                </button>
+              </div>
+              <button id="btn-track" class="hcard streak-card" type="button" hidden>
+                <span class="streak-top">
+                  <span id="streak-art" class="reward-art" aria-hidden="true"></span>
+                  <span class="mini-text" aria-hidden="true"><span data-s="homeScreen.streak.eyebrow" class="eyebrow">Next streak reward</span><strong id="streak-title"></strong><span class="soft"><span id="streak-line"></span> <span id="streak-when" class="nowrap"></span></span></span>
+                  <svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" /></svg>
+                </span>
+                <span id="streak-track" class="strk" aria-hidden="true"></span>
+              </button>
+            </section>
+          </section>
+          <section id="home-panel-today" class="home-panel page" role="tabpanel" aria-labelledby="home-tab-today" tabindex="-1" hidden>
+            <button id="btn-today-daily" class="hcard big-daily" type="button">
+              <span class="daily-cal daily-cal-lg" aria-hidden="true"><b id="today-dow">Sun</b><i id="today-dom">8</i></span>
+              <span class="mini-text"><span data-s="homeScreen.dailyEyebrow" class="eyebrow">Daily puzzle</span><strong id="today-daily-title" class="lg"></strong><span id="today-daily-sub" class="soft"></span></span>
+              <span data-s="homeScreen.playPill" class="pill" aria-hidden="true">Play</span>
+            </button>
+            <section id="home-streak" class="hcard section" aria-labelledby="home-streak-title" tabindex="-1">
+              <div class="sec-head"><h2 id="home-streak-title" data-s="homeScreen.streakRewards">Streak rewards</h2><span id="home-streak-now" class="accent"></span></div>
+              <span id="home-streak-track" class="strk" role="img"></span>
+              <ul id="home-streak-list" class="reward-list"></ul>
+              <p id="home-streak-passes" class="soft small"></p>
+              <p data-s="track.keep" class="soft small">Rewards are yours to keep, even if a streak ends.</p>
+            </section>
+            <section id="goals-card" class="hcard section goals-card" role="group" aria-labelledby="goals-title" hidden>
+              <div class="sec-head"><h2 id="goals-title" data-s="goals.title">Today's goals</h2></div>
+              <ul id="goals-list" class="goals-list"></ul>
+              <span id="goals-foot" class="soft small goals-foot"></span>
+            </section>
+            <button id="btn-weekly" class="hcard row-card weekly-card" type="button" hidden>
+              <span id="weekly-jars" class="mini-ico weekly-jars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="mini-text"><span data-s="weekly.title" class="eyebrow">Weekly set</span><strong id="weekly-title" data-s="weekly.title">Weekly set</strong><span id="weekly-sub" class="soft"></span><span id="weekly-progress" class="accent"></span></span>
+              <svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" /></svg>
+            </button>
+            <button id="btn-today-event" class="hcard row-card event-row" type="button" hidden>
+              <span class="mini-ico ice" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10M10 4l2 2 2-2M10 20l2-2 2 2M4.6 10.3l2.7-.7-.7-2.7M19.4 13.7l-2.7.7.7 2.7M4.6 13.7l2.7.7-.7 2.7M19.4 10.3l-2.7-.7.7-2.7" /></svg></span>
+              <span class="mini-text"><span data-s="homeScreen.eventEyebrow" class="eyebrow">Event</span><strong id="today-event-title"></strong><span id="today-event-sub" class="soft"></span><span class="bar" aria-hidden="true"><i id="today-event-bar"></i></span><span id="today-event-days" class="accent"></span></span>
+              <svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" /></svg>
+            </button>
+          </section>
+          <section id="home-panel-collection" class="home-panel page" role="tabpanel" aria-labelledby="home-tab-collection" tabindex="-1" hidden>
+            <div class="tile-grid">
+              <button id="btn-shells" class="hcard tile" type="button"><span id="shell-ico" class="tile-art shells-art" aria-hidden="true"></span><strong data-s="homeScreen.shells">Shells</strong><span id="shells-label" class="soft">Shells 0/20</span><span id="shells-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>
+              <button id="btn-badges" class="hcard tile" type="button"><span id="badges-art" class="tile-art medals-art" aria-hidden="true"></span><strong data-s="badgesTitle">Badges</strong><span id="badges-label" class="soft"></span></button>
+              <button id="btn-styles" class="hcard tile styles-btn" type="button" hidden><span class="tile-art styles-art" aria-hidden="true"><i class="mj a"></i><i class="mj b"></i><i class="mj c"></i></span><strong id="styles-label" data-s="styles.title">Jar styles</strong><span id="styles-count" class="soft"></span><span id="styles-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>
+              <button id="btn-scenes" class="hcard tile" type="button"><span id="scenes-art" class="tile-art scenes-art" aria-hidden="true"></span><strong id="scenes-label" data-s="scenes">Scenes</strong><span id="scenes-count" class="soft"></span><span id="scenes-new" class="new-mark" hidden><span class="sr-only">, </span><span data-s="onboarding.newMark">New</span></span></button>
+              <button id="btn-map-tile" class="hcard tile wide" type="button" hidden>
+                <span class="tile-art map-art" aria-hidden="true"><svg viewBox="0 0 300 70" preserveAspectRatio="none"><path class="m-sea" d="M0 52c40-8 70 8 110 0s70-10 110-2 60 6 80 2v18H0z" /><path class="m-path" d="M14 44C60 20 90 50 140 32s90 10 146-18" /><circle class="m-stone" cx="14" cy="44" r="5" /><circle class="m-stone" cx="58" cy="30" r="5" /><circle class="m-stone" cx="100" cy="42" r="5" /><circle class="m-stone" cx="140" cy="32" r="5" /><circle class="m-stone here" cx="190" cy="34" r="7" /><circle class="m-stone" cx="238" cy="26" r="5" /><circle class="m-stone" cx="286" cy="14" r="5" /></svg></span>
+                <span class="tile-text"><strong data-s="homeScreen.mapTitle">Beach path</strong><span id="map-tile-sub" class="soft"></span></span>
+              </button>
+            </div>
+          </section>
+          <section id="home-panel-profile" class="home-panel page" role="tabpanel" aria-labelledby="home-tab-profile" tabindex="-1" hidden>
+            <section class="hcard me" aria-labelledby="me-name">
+              <span id="me-art" class="portrait portrait-lg" aria-hidden="true"></span>
+              <span class="me-text"><strong id="me-name" class="lg"></strong><span id="me-plate"></span></span>
+              <button id="btn-edit-me" data-s="homeScreen.edit" class="ghost" type="button">Edit</button>
+            </section>
+            <section class="hcard section" aria-labelledby="me-stats-title">
+              <div class="sec-head"><h2 id="me-stats-title" data-s="statsTitle">Stats</h2></div>
+              <dl id="me-stats" class="me-stats"></dl>
+              <button id="btn-me-more" data-s="homeScreen.moreStats" class="ghost wide-btn" type="button">All stats and badges</button>
+            </section>
+            <section id="me-settings" class="hcard section" aria-labelledby="me-settings-title">
+              <div class="sec-head"><h2 id="me-settings-title"><svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" /></svg><span data-s="homeScreen.settingsTitle">Settings</span></h2></div>
+              <ul class="me-settings">
+                <li><span class="me-set-text"><b id="me-set-sound-label" data-s="sound">Sound effects</b></span><button class="hs-switch" type="button" role="switch" data-setting="sound" aria-labelledby="me-set-sound-label" aria-checked="false"><i></i></button></li>
+                <li><span class="me-set-text"><b id="me-set-music-label" data-s="music">Music</b></span><button class="hs-switch" type="button" role="switch" data-setting="music" aria-labelledby="me-set-music-label" aria-checked="false"><i></i></button></li>
+                <li><span class="me-set-text"><b id="me-set-realistic-label" data-s="realistic">Realistic sand</b><span id="me-set-realistic-help" class="soft small"></span></span><button class="hs-switch" type="button" role="switch" data-setting="realistic" aria-labelledby="me-set-realistic-label" aria-describedby="me-set-realistic-help" aria-checked="false"><i></i></button></li>
+                <li><span class="me-set-text"><b id="me-set-patterns-label" data-s="patterns">Colour patterns</b><span data-s="patternsTitle" class="soft small"></span></span><button class="hs-switch" type="button" role="switch" data-setting="patterns" aria-labelledby="me-set-patterns-label" aria-checked="false"><i></i></button></li>
+                <li><span class="me-set-text"><b id="me-savecode-label" data-s="saveCode">Save code</b><span data-s="homeScreen.saveCodeHelp" class="soft small">Move your progress to another device</span></span><button id="btn-me-savecode" data-s="homeScreen.open" class="ghost" type="button" aria-describedby="me-savecode-label">Open</button></li>
+                <li><span class="me-set-text"><b id="me-whatsnew-label" data-s="whatsNew.button">What's new</b></span><button id="btn-me-whatsnew" class="ghost" type="button" aria-describedby="me-whatsnew-label"></button></li>
+                <li><span class="me-set-text"><b id="me-stats-label" data-s="stats.button">Your stats</b></span><button id="btn-me-stats" data-s="homeScreen.open" class="ghost" type="button" aria-describedby="me-stats-label">Open</button></li>
+              </ul>
+              <button id="btn-me-settings" data-s="homeScreen.allSettings" class="ghost wide-btn" type="button">All settings</button>
+            </section>
+          </section>
         </div>
+        <nav id="home-tabbar" class="home-tabbar" aria-label="Home" hidden>
+          <div id="home-tablist" class="home-tabs" role="tablist" data-s-label="homeScreen.tabsLabel" aria-label="Home sections">
+            <button id="home-tab-play" class="home-tab" type="button" role="tab" data-tab="play" aria-controls="home-panel-play" aria-selected="true"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3.5h7" /><rect x="7" y="5.5" width="10" height="15" rx="3" /><path d="M7 14.5c2 1 8 1 10 0" /></svg><span data-s="homeScreen.tabs.play">Play</span><i class="new-dot" aria-hidden="true" hidden></i><span class="sr-only tab-new" hidden></span></button>
+            <button id="home-tab-today" class="home-tab" type="button" role="tab" data-tab="today" aria-controls="home-panel-today" aria-selected="false" tabindex="-1"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /><path d="M9.5 15l2 2 3.5-4" /></svg><span data-s="homeScreen.tabs.today">Today</span><i class="new-dot" aria-hidden="true" hidden></i><span class="sr-only tab-new" hidden></span></button>
+            <button id="home-tab-collection" class="home-tab" type="button" role="tab" data-tab="collection" aria-controls="home-panel-collection" aria-selected="false" tabindex="-1"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5c-4.6 0-8-2.8-8-6.6C4 9.5 7.6 5 12 5s8 4.5 8 8.9c0 3.8-3.4 6.6-8 6.6z" /><path d="M12 20.5V7.5M8.6 19.6 7.3 9.4M15.4 19.6l1.3-10.2" /></svg><span data-s="homeScreen.tabs.collection">Collection</span><i class="new-dot" aria-hidden="true" hidden></i><span class="sr-only tab-new" hidden></span></button>
+            <button id="home-tab-profile" class="home-tab" type="button" role="tab" data-tab="profile" aria-controls="home-panel-profile" aria-selected="false" tabindex="-1"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6" /><path d="M5 20c.9-3.9 3.7-6 7-6s6.1 2.1 7 6" /></svg><span data-s="homeScreen.tabs.profile">Profile</span><i class="new-dot" aria-hidden="true" hidden></i><span class="sr-only tab-new" hidden></span></button>
+          </div>
+        </nav>
       </div>
       <div id="map" class="map" hidden>
         <div class="map-top">
