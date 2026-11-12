@@ -10,8 +10,16 @@ import { type Launch, type ShareKey, isChallengeLevel, isChallengePours, isDateK
 export interface Onboarding {
   /** Boots of the app on this device, this one included. 1 means the first visit. */
   visits: number;
-  /** The Add to Home Screen card has been shown (O1). Shown once, whatever the player chose. */
-  installShown: boolean;
+  /**
+   * How many times the Add to Home Screen card has asked (O1; sprint 21 A1, D179: at most
+   * `installMaxAsks`, whatever the player chose). A save from before 0.20 that saw the old
+   * one-time card (`installShown`) loads as 1.
+   */
+  installAsks: number;
+  /** When the card last asked, in epoch ms (A1: asks are `installGapDays` apart), or null. */
+  installLastAsk: number | null;
+  /** The browser reported Strata installed (`appinstalled`) or the player accepted its prompt: never ask again (A1). */
+  installed: boolean;
   /** The offline-ready toast has been shown (O4). */
   offlineNoticed: boolean;
   /** The one-time line that explains the beach path on its first open (O2). */
@@ -30,8 +38,12 @@ export interface Onboarding {
 
 /** Tuning for the card: `onboarding` in game-config.json. */
 export interface OnboardingConfig {
-  /** Cleared levels before the Add to Home Screen card may show. */
+  /** Cleared levels before the Add to Home Screen card may show (A1: after the 5th clear). */
   readonly installAfterLevels: number;
+  /** The most times the card ever asks (A1: twice). */
+  readonly installMaxAsks: number;
+  /** The fewest days between two asks (A1: 7). */
+  readonly installGapDays: number;
   /** The level whose first clear shows the one-time Home hint on the win card (R1, D81). */
   readonly homeHintLevel: number;
 }
@@ -53,12 +65,16 @@ export interface InstallEnv {
 
 /** Highest visit count kept; past it the counter stops, which no rule can tell apart. */
 const MAX_VISITS = 1_000_000;
+/** Highest ask count kept: far above any `installMaxAsks`, so a repaired count never wraps. */
+const MAX_ASKS = 99;
+/** One day in milliseconds. */
+const DAY_MS = 86_400_000;
 /** In-app browsers (Instagram, Facebook, Line, ...) that cannot add a page to the home screen. */
 const IN_APP = /FBAN|FBAV|Instagram|Line\/|GSA\/|Snapchat|TikTok/i;
 
 /** A new device's onboarding: no visits yet and nothing shown. */
 export function freshOnboarding(): Onboarding {
-  return { visits: 0, installShown: false, offlineNoticed: false, mapHintSeen: false, boosterHintSeen: false, homeHintSeen: false, scenesNewSeen: false, stylesNewSeen: false, pendingShare: null };
+  return { visits: 0, installAsks: 0, installLastAsk: null, installed: false, offlineNoticed: false, mapHintSeen: false, boosterHintSeen: false, homeHintSeen: false, scenesNewSeen: false, stylesNewSeen: false, pendingShare: null };
 }
 
 /**
@@ -74,7 +90,9 @@ export function onboardingOf(v: unknown, returning: boolean): Onboarding {
   const flag = (k: keyof Onboarding) => o?.[k] === true;
   return {
     visits: Number.isInteger(visits) && (visits as number) >= 0 ? Math.min(visits as number, MAX_VISITS) : returning ? 1 : base.visits,
-    installShown: flag('installShown'),
+    installAsks: asksOf(o?.installAsks, o?.installShown === true),
+    installLastAsk: typeof o?.installLastAsk === 'number' && Number.isFinite(o.installLastAsk) && o.installLastAsk >= 0 ? o.installLastAsk : null,
+    installed: flag('installed'),
     offlineNoticed: flag('offlineNoticed'),
     mapHintSeen: flag('mapHintSeen'),
     boosterHintSeen: flag('boosterHintSeen'),
@@ -83,6 +101,12 @@ export function onboardingOf(v: unknown, returning: boolean): Onboarding {
     stylesNewSeen: flag('stylesNewSeen'),
     pendingShare: shareKeyOf(o?.pendingShare),
   };
+}
+
+/** A saved ask count; a pre-0.20 save that saw the one-time card (`legacyShown`) counts one ask. */
+function asksOf(v: unknown, legacyShown: boolean): number {
+  if (Number.isInteger(v) && (v as number) >= 0) return Math.min(v as number, MAX_ASKS);
+  return legacyShown ? 1 : 0;
 }
 
 /** A saved share key, or null when it is missing or not a real date or week (no free text is kept). */
@@ -114,12 +138,27 @@ export function installPlatform(env: InstallEnv): InstallPlatform {
 }
 
 /**
- * Whether the Add to Home Screen card shows now: not shown before, not the first visit,
- * at least `afterLevels` levels cleared, and a way to install.
- * Example: `installCardDue(save.onboarding, save.level - 1, 3, 'ios')`.
+ * Whether the Add to Home Screen card shows now (sprint 21 A1, D179): never once installed
+ * (`installed` platform, or the saved `installed` flag after `appinstalled`); only with a way to
+ * install; after `installAfterLevels` cleared levels; at most `installMaxAsks` times, and at least
+ * `installGapDays` days after the last ask. A clock set back before the last ask waits, so a changed
+ * date can never bring the second ask early. `now` is epoch ms from the app clock.
+ * Example: `installCardDue(save.onboarding, save.level - 1, config.onboarding, 'ios', Date.now())`.
  */
-export function installCardDue(o: Onboarding, cleared: number, afterLevels: number, platform: InstallPlatform): boolean {
-  return !o.installShown && o.visits >= 2 && cleared >= afterLevels && (platform === 'ios' || platform === 'prompt');
+export function installCardDue(o: Onboarding, cleared: number, cfg: OnboardingConfig, platform: InstallPlatform, now: number): boolean {
+  if (o.installed || (platform !== 'ios' && platform !== 'prompt')) return false;
+  if (cleared < cfg.installAfterLevels || o.installAsks >= cfg.installMaxAsks) return false;
+  return o.installLastAsk === null || now - o.installLastAsk >= cfg.installGapDays * DAY_MS;
+}
+
+/** The onboarding after the card has asked once at `now` (epoch ms). Example: `save.onboarding = recordInstallAsk(save.onboarding, Date.now())`. */
+export function recordInstallAsk(o: Onboarding, now: number): Onboarding {
+  return { ...o, installAsks: Math.min(o.installAsks + 1, MAX_ASKS), installLastAsk: now };
+}
+
+/** The onboarding once Strata is installed: the card never asks again. */
+export function recordInstalled(o: Onboarding): Onboarding {
+  return { ...o, installed: true };
 }
 
 /** The `type` of the message sw.js posts once its install has cached every file (O4). */

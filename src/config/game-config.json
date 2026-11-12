@@ -964,8 +964,10 @@
     "seed": 20261112
   },
   "onboarding": {
-    "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
-    "installAfterLevels": 3,
+    "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1; sprint 21 A1, D179). installAfterLevels: levels cleared before the Add to Home Screen card may show on Home. installMaxAsks: the most times it ever asks. installGapDays: the fewest days between two asks. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
+    "installAfterLevels": 5,
+    "installMaxAsks": 2,
+    "installGapDays": 7,
     "homeHintLevel": 3
   }
 }
