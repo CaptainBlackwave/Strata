@@ -739,14 +739,15 @@ export class GpuBoard {
     this.decorate(v, jar, capacity);
   }
 
-  private paintLook(v: JarView, jar: Jar | null, capacity: number): PaintLook {
+  /** How to paint jar `v`'s sand. `upright`: its surface is drawn smoothed (strata-2en); not for a tipped source. */
+  private paintLook(v: JarView, jar: Jar | null, capacity: number, upright = true): PaintLook {
     const art = this.artFor(v.geom, jar?.funnel === true).art;
     const grain = this.grainFor(v.geom, capacity, art.innerRadius);
-    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1 };
+    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1, smooth: upright ? this.config.surfaceSmooth : 0 };
   }
 
-  private paintSand(v: JarView, jar: Jar | null, capacity: number): void {
-    paintGrid(v.grid, this.opts.palette, this.opts.neutral, v.texels, SUB, this.paintLook(v, jar, capacity));
+  private paintSand(v: JarView, jar: Jar | null, capacity: number, upright = true): void {
+    paintGrid(v.grid, this.opts.palette, this.opts.neutral, v.texels, SUB, this.paintLook(v, jar, capacity, upright));
     v.ctx.putImageData(v.image, 0, 0);
     v.texture.source.update();
   }
@@ -1072,7 +1073,7 @@ export class GpuBoard {
 
   private repaintPour(p: Pour, src: JarView, dst: JarView): void {
     const cap = this.board?.capacity ?? 4;
-    this.paintSand(src, src.jar, cap);
+    this.paintSand(src, src.jar, cap, p.sim.tilt === 0);
     paintGrid(dst.grid, this.opts.palette, this.opts.neutral, dst.texels, SUB, this.paintLook(dst, dst.jar, cap));
     // Grains already inside the target fall behind its glass, in its own texture.
     paintParticles(p.sim.particles, this.opts.dims.cols, 0, this.opts.dims.rows, this.opts.palette, this.opts.neutral, dst.texels, SUB, false, p.targetMouth);

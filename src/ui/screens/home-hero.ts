@@ -74,11 +74,24 @@ function load(): Promise<void> {
           renderHero();
         },
       });
+      await sleepPixiTicker();
     })
     .catch(() => {
       gpu = null;
     });
   return loading;
+}
+
+/**
+ * Pixi's WebGLRenderer starts `Ticker.system` (its SchedulerSystem's texture GC), a requestAnimationFrame
+ * every frame for as long as the page lives. Strata's renderer draws only on change and frees its own
+ * textures, so the system ticker is stopped and kept from restarting: between sparkles nothing ticks (D176).
+ * Pixi comes from the renderer's own chunk, already loaded here.
+ */
+async function sleepPixiTicker(): Promise<void> {
+  const { Ticker } = await import('pixi.js');
+  Ticker.system.autoStart = false;
+  Ticker.system.stop();
 }
 
 /** Draws the still: one layout, then the renderer sleeps until the next change. */

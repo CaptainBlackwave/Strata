@@ -6,7 +6,7 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const URL = `http://localhost:${process.env.PORT ?? 5181}/`;
 const QUIET = { sound: false, music: false, haptics: false, patterns: false, southern: false, realistic: true };
 const ONB = { visits: 9, installShown: true, offlineNoticed: true, mapHintSeen: true, boosterHintSeen: true, homeHintSeen: true, scenesNewSeen: true, stylesNewSeen: true, pendingShare: null };
-const save = { boards: 3, level: 42, wallet: { coins: 300, boosters: { hint: 2, shuffle: 1, extraJar: 1 } }, tutorialDone: true, settings: QUIET, onboarding: ONB, seenWhatsNew: '9.9.9' };
+const save = { boards: 3, level: 42, wallet: { coins: 300, boosters: { hint: 2, shuffle: 1, extraJar: 1 } }, tutorialDone: true, settings: QUIET, onboarding: ONB, seenWhatsNew: '0.19.1' };
 const out = (f) => __dirname + '/' + f;
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });

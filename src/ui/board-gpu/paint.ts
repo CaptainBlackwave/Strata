@@ -68,6 +68,64 @@ export interface PaintLook {
   readonly patterns?: readonly (Overlay | null)[] | null;
   /** Colour saturation, 1 as is (a locked jar's glass dulls its sand to 0.85, as the DOM's filter). */
   readonly saturation?: number;
+  /**
+   * Smooth the top surface over this many columns each side (`surfaceLine`), drawing only: a pile
+   * settling after a pour shows a soft slope instead of one-cell stair-steps (strata-2en). 0 or
+   * absent draws the cells as they are. Only for an upright grid (the target, or the source at rest).
+   */
+  readonly smooth?: number;
+}
+
+/**
+ * The resting surface of each column, in cells from the top: the first filled cell that is not a
+ * falling grain, or `rows` for an empty column. Example: a flat band 4 rows deep in 8 rows gives 4s.
+ */
+export function surfaceTops(grid: SandGrid): Float32Array {
+  const { cols, rows, cells } = grid;
+  const tops = new Float32Array(cols).fill(rows);
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      const i = y * cols + x;
+      if (cells[i] === EMPTY) continue;
+      // A falling grain (empty above and below) is not the surface.
+      if (y > 0 && y < rows - 1 && cells[i - cols] === EMPTY && cells[i + cols] === EMPTY) continue;
+      tops[x] = y;
+      break;
+    }
+  }
+  return tops;
+}
+
+/**
+ * The drawn surface line (strata-2en): each column's resting top (`surfaceTops`) averaged with a
+ * triangular weight over `radius` columns each side, among the columns that hold sand. A flat
+ * surface stays exactly flat, and a 45 degree staircase becomes a straight slope through the
+ * steps' middles. Drawing only: the grid's grains are untouched. Empty columns stay `rows`.
+ * Example: `surfaceLine(grid, 3)[x] // 41.5`
+ */
+export function surfaceLine(grid: SandGrid, radius: number): Float32Array {
+  const tops = surfaceTops(grid);
+  const { cols, rows } = grid;
+  if (!(radius > 0)) return tops;
+  const r = Math.floor(radius);
+  const line = new Float32Array(cols);
+  for (let x = 0; x < cols; x++) {
+    if (tops[x] >= rows) {
+      line[x] = rows;
+      continue;
+    }
+    let sum = 0;
+    let weight = 0;
+    for (let d = -r; d <= r; d++) {
+      const nx = x + d;
+      if (nx < 0 || nx >= cols || tops[nx] >= rows) continue;
+      const w = r + 1 - Math.abs(d);
+      sum += tops[nx] * w;
+      weight += w;
+    }
+    line[x] = sum / weight;
+  }
+  return line;
 }
 
 /**
@@ -105,6 +163,51 @@ export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb,
       paintCell(grid, i, x, y, cellRgb(cells[i], palette, neutral), out, w, sub, t0, mask, true, null);
     }
   }
+  if (look.smooth) smoothSurface(grid, out, sub, surfaceLine(grid, look.smooth), mask);
+}
+
+/**
+ * Redraws the texels at the top of each column to follow `line` (in cells), interpolated between
+ * column centres at texel resolution, with one half-covered texel at the edge: texels above a
+ * column's real top are filled with that column's top texel, texels below the line are cleared.
+ * The sand below the surface is unchanged.
+ */
+function smoothSurface(grid: SandGrid, out: Uint32Array, sub: number, line: Float32Array, mask: Uint8Array | undefined): void {
+  const { cols, rows } = grid;
+  const tops = surfaceTops(grid);
+  const w = cols * sub;
+  const h = rows * sub;
+  for (let tx = 0; tx < w; tx++) {
+    const x = Math.floor(tx / sub);
+    if (tops[x] >= rows) continue; // no sand in this column: nothing to shape
+    // The line between column centres, in texels.
+    const u = (tx + 0.5) / sub - 0.5;
+    const a = Math.max(0, Math.min(cols - 1, Math.floor(u)));
+    const b = Math.min(cols - 1, a + 1);
+    const la = line[a] >= rows ? line[x] : line[a];
+    const lb = line[b] >= rows ? line[x] : line[b];
+    const f = Math.max(0, Math.min(1, u - a));
+    const want = Math.max(0, Math.min(h, (la + (lb - la) * f) * sub));
+    const top = tops[x] * sub; // the first texel of the real top cell
+    const edge = Math.floor(want);
+    const cover = 1 - (want - edge); // how much of the edge texel is sand
+    if (want < top) {
+      const src = out[top * w + tx];
+      if ((src >>> 24) === 0) continue;
+      for (let ty = edge + 1; ty < top; ty++) put(out, ty * w + tx, src, 1, mask);
+      put(out, edge * w + tx, src, cover, mask);
+    } else if (want > top) {
+      for (let ty = top; ty < edge && ty < h; ty++) out[ty * w + tx] = 0;
+      if (edge < h) put(out, edge * w + tx, out[edge * w + tx], cover, mask);
+    }
+  }
+}
+
+/** Writes texel `src` at `t` with `cover` (0..1) of its alpha, where the mask allows. */
+function put(out: Uint32Array, t: number, src: number, cover: number, mask: Uint8Array | undefined): void {
+  if (t < 0 || t >= out.length || (mask && !mask[t])) return;
+  const a = Math.round((src >>> 24) * cover);
+  out[t] = a === 0 ? 0 : ((src & 0xffffff) | (a << 24)) >>> 0;
 }
 
 /** One grain's `sub × sub` texels at `t0`. `onlyEmpty` keeps a nudged falling grain off settled sand. */
