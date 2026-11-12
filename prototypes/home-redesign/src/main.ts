@@ -32,6 +32,18 @@ const D = {
   event: { name: 'Winter Tide', board: 12, cleared: 9, of: 24, days: 19 },
   weekly: { name: 'Fine Sieve', cleared: 2, of: 5, days: 2 },
 };
+// The real streak track (game-config.json daily.track): day 3 collected, streak 4, next day 7.
+type RewardKind = 'boosters' | 'frame' | 'style' | 'plate' | 'scene';
+const TRACK: { day: number; kind: RewardKind; name: string; what: string; boosters?: [string, number][] }[] = [
+  { day: 3, kind: 'boosters', name: 'Booster pair', what: 'Hint, Shuffle', boosters: [['hint', 1], ['shuffle', 1]] },
+  { day: 7, kind: 'boosters', name: 'Booster bundle', what: 'Hint ×2, Shuffle, Jar', boosters: [['hint', 2], ['shuffle', 1], ['jar', 1]] },
+  { day: 14, kind: 'frame', name: 'Tideline frame', what: 'Tideline frame' },
+  { day: 30, kind: 'style', name: 'Sea lantern glass', what: 'Sea lantern glass' },
+  { day: 60, kind: 'plate', name: 'Lighthouse plate', what: 'Lighthouse plate' },
+  { day: 100, kind: 'scene', name: 'Lighthouse night', what: 'Lighthouse night scene' },
+];
+const STREAK = 4;
+const NEXT = TRACK.find((t) => t.day > STREAK)!;
 const SHELLS = [
   { kind: 'spiral', colors: ['#7a5038', '#c9a27e'] },
   { kind: 'scallop', colors: ['#e3b38a', '#fff1e0'] },
@@ -54,6 +66,10 @@ const I = {
   sieve: '<path d="M5 6v10a2 2 0 0 0 4 0V6M10 6v10a2 2 0 0 0 4 0V6M15 6v10a2 2 0 0 0 4 0V6"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  hint: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/>',
+  shuffle: '<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/>',
+  jar: '<path d="M8 3h8M9 3v3.5c-2 1-3 2.6-3 4.5v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8c0-1.9-1-3.5-3-4.5V3"/><path d="M12 11v6M9 14h6"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   gift: '<rect x="4" y="9" width="16" height="11" rx="2"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S10 9 12 9zM12 9c2-4 6-4 6-1.5S14 9 12 9z"/>',
 };
 const ico = (k: keyof typeof I, cls = 'ico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
@@ -62,6 +78,55 @@ const bar = (n: number, of: number, label: string) =>
   `<span class="bar" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${of}" aria-valuenow="${n}"><i style="width:${(100 * n) / of}%"></i></span>`;
 const cal = (small = false) => `<span class="cal${small ? ' cal-sm' : ''}" aria-hidden="true"><b>Thu</b><i>12</i></span>`;
 const portrait = (cls: string) => `<span class="portrait ${cls}" aria-hidden="true">${portraitSvg({ id: 'sailboat', bg: '#cde3f0' }, 'rope')}</span>`;
+
+/** The picture of a streak reward: booster icons, the frame on a portrait, a glass swatch, the plate, a scene swatch. */
+function rewardArt(r: (typeof TRACK)[number], size: 'md' | 'sm' = 'md'): string {
+  const c = `reward-art ra-${r.kind} ra-${size}`;
+  switch (r.kind) {
+    case 'boosters':
+      return `<span class="${c}" aria-hidden="true">${r.boosters!.map(([k, n]) => `<span class="boost">${ico(k as keyof typeof I)}${n > 1 ? `<b>×${n}</b>` : ''}</span>`).join('')}</span>`;
+    case 'frame':
+      return `<span class="${c}" aria-hidden="true">${portraitSvg({ id: 'sailboat', bg: '#cde3f0' }, 'tideline')}</span>`;
+    case 'style':
+      return `<span class="${c}" aria-hidden="true"><i></i></span>`;
+    case 'plate':
+      return `<span class="${c}" aria-hidden="true"><span><svg viewBox="0 0 12 14"><path d="M4.5 13 5.3 4h1.4l.8 9zM4.6 4h2.8M6 1.5V4M2 3l2 .8M10 3 8 3.8"/></svg></span></span>`;
+    case 'scene':
+      return `<span class="${c}" aria-hidden="true"><i class="moon-dot"></i></span>`;
+  }
+}
+
+/** The six reward days on one line: collected days ticked, the streak marked, the next day lit. */
+function track(): string {
+  const last = TRACK[TRACK.length - 1].day;
+  // Evenly spaced stops; the streak marker sits between the stops it falls between.
+  const pos = (d: number) => {
+    const i = TRACK.findIndex((t) => t.day >= d);
+    if (i <= 0) return (d / TRACK[0].day) * 0;
+    const a = TRACK[i - 1].day, b = TRACK[i].day;
+    return ((i - 1 + (d - a) / (b - a)) / (TRACK.length - 1)) * 100;
+  };
+  const here = pos(STREAK);
+  return `<div class="strk" role="img" aria-label="Streak ${STREAK} days. Reward days ${TRACK.map((t) => t.day).join(', ')}; day 3 collected; next day ${NEXT.day}.">
+    <span class="strk-line"><i style="width:${here}%"></i></span>
+    <span class="strk-here" style="left:${here}%"><b>Day ${STREAK}</b></span>
+    ${TRACK.map((t, i) => {
+      const st = t.day <= STREAK ? 'got' : t === NEXT ? 'next' : '';
+      return `<span class="strk-stop ${st}" style="left:${(i / (TRACK.length - 1)) * 100}%"><i>${st === 'got' ? ico('check') : ''}</i><small>${t.day}</small></span>`;
+    }).join('')}
+    <span class="sr-only">${last}</span>
+  </div>`;
+}
+
+function streakCard(): string {
+  const days = NEXT.day - STREAK;
+  return `<button class="card streak-card" type="button" data-go="today" data-anchor="streak-h" aria-label="Next streak reward: ${NEXT.name}, ${NEXT.what}, in ${days} days. Day ${STREAK} of your streak. See all streak rewards">
+    <span class="streak-top">${rewardArt(NEXT)}
+      <span class="mini-text"><span class="eyebrow">Next streak reward</span><strong>${NEXT.name}</strong><span class="soft">Day ${STREAK} · ${NEXT.what} in ${days} days</span></span>
+      ${ico('chev', 'ico chev')}</span>
+    ${track()}
+  </button>`;
+}
 
 // ---- Views ----
 function goalRows(): string {
@@ -98,22 +163,11 @@ function playView(): string {
         <span class="mini-text"><strong>${D.event.name}</strong><span class="soft">${D.event.cleared} of ${D.event.of} cleared</span><span class="accent">${D.event.days} days left</span></span>
       </button>
     </div>
-    <p class="next-reward">${ico('gift', 'ico ico-sm')}<span>Next streak reward: <b>${D.nextReward.what}</b> in ${D.nextReward.inDays} day</span></p>
-    <div class="card goals" role="group" aria-label="Today's goals">
-      <span class="goals-head"><strong>Today's goals</strong><span class="soft">+${D.goalsBonus} ${coin} for all three</span></span>
-      <ul class="goal-list">${goalRows()}</ul>
-    </div>
+    ${streakCard()}
   </section>`;
 }
 
 function todayView(): string {
-  const stops = [
-    { day: 5, what: 'Hint + Shuffle', next: true },
-    { day: 7, what: 'Cockle shell' },
-    { day: 14, what: 'Rope frame' },
-    { day: 30, what: '300 coins' },
-    { day: 60, what: 'Lighthouse plate' },
-  ];
   return `
   <div class="page">
     <button class="card big-daily" type="button" data-act="Today's daily puzzle">
@@ -124,9 +178,10 @@ function todayView(): string {
 
     <section class="card section" aria-labelledby="streak-h">
       <div class="sec-head"><h2 id="streak-h">Streak rewards</h2><span class="accent">${D.streak}-day streak</span></div>
-      <ol class="track">
-        ${stops.map((s) => `<li class="${s.next ? 'next' : ''}"><span class="dot" aria-hidden="true"></span><b>Day ${s.day}</b><span>${s.what}</span></li>`).join('')}
-      </ol>
+      ${track()}
+      <ul class="reward-list">
+        ${TRACK.map((t) => `<li class="${t.day <= STREAK ? 'got' : t === NEXT ? 'next' : ''}">${rewardArt(t, 'sm')}<span class="mini-text"><strong>${t.name}</strong><span class="soft">Day ${t.day}${t.kind === 'boosters' ? ` · ${t.what}` : ''}${t.day <= STREAK ? ' · collected' : t === NEXT ? ` · in ${NEXT.day - STREAK} days` : ''}</span></span>${t.day <= STREAK ? ico('check', 'ico tick') : ''}</li>`).join('')}
+      </ul>
       <p class="soft small">2 tide passes held: a missed day won't break the streak.</p>
     </section>
 
@@ -293,6 +348,7 @@ document.addEventListener('click', (e) => {
   if (el.dataset.go) {
     select(el.dataset.go as Tab);
     if (el.hasAttribute('data-settings')) document.getElementById('settings')?.scrollIntoView({ block: 'start' });
+    if (el.dataset.anchor) document.getElementById(el.dataset.anchor)?.closest('section')?.scrollIntoView({ block: 'start' });
     return;
   }
   if (el.classList.contains('switch')) return el.setAttribute('aria-checked', String(el.getAttribute('aria-checked') !== 'true'));
