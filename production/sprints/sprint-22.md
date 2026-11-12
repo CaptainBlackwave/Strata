@@ -1,6 +1,6 @@
 # Sprint 22: Loose ends (0.20.2)
 
-> **Status: planned (2026-11-12), awaiting the owner's approval.** From the owner interview after 0.20.1 (D181–D187). Target release: **0.20.2**, soon, before Winter Tide opens on 1 December.
+> **Status: built (2026-11-12), approved by the owner; released as 0.20.2.** L1 note: Classic p95 23–26 ms on a quiet machine (target 25), first-tap audio start-up removed. From the owner interview after 0.20.1 (D181–D187). Target release: **0.20.2**, soon, before Winter Tide opens on 1 December.
 
 ## Tasks
 | ID | Task | Acceptance criteria |
