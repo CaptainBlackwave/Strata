@@ -4425,11 +4425,13 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   z-index: 1;
   pointer-events: none;
   opacity: 0;
+  /* D183: a bright core and a soft four-point star, with a warm halo so it reads on light sand too
+     (screen blending washed out there). Still soft: no hard edges. */
   background:
-    radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(255, 252, 235, 0.5) 35%, transparent 72%),
-    conic-gradient(from 0deg, transparent 0 20deg, rgba(255, 255, 255, 0.7) 45deg, transparent 70deg 110deg, rgba(255, 255, 255, 0.7) 135deg, transparent 160deg 200deg, rgba(255, 255, 255, 0.7) 225deg, transparent 250deg 290deg, rgba(255, 255, 255, 0.7) 315deg, transparent 340deg);
+    radial-gradient(closest-side, #fff 0 14%, rgba(255, 253, 240, 0.85) 30%, rgba(255, 244, 200, 0.35) 55%, transparent 75%),
+    conic-gradient(from 0deg, transparent 0 30deg, rgba(255, 255, 255, 0.9) 45deg, transparent 60deg 120deg, rgba(255, 255, 255, 0.9) 135deg, transparent 150deg 210deg, rgba(255, 255, 255, 0.9) 225deg, transparent 240deg 300deg, rgba(255, 255, 255, 0.9) 315deg, transparent 330deg);
   border-radius: 50%;
-  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 3px rgba(255, 236, 170, 0.9)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
 }
 
 /* ---- Play and the Today strip ---- */

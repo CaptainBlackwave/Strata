@@ -157,5 +157,6 @@ export function sparkleSpot(boxes: readonly HeroJarBox[], capacity: number, n: n
   const sandH = b.unitHeight * capacity;
   const x = b.left + INSET + (b.width - 2 * INSET) * (0.2 + 0.6 * rng());
   const y = sandTop + sandH * (0.08 + 0.8 * rng());
-  return { x, y, size: Math.max(10, Math.min(22, b.width * 0.26)), jar };
+  // Large enough to read as a glint at a glance (D183): about half the jar's width, 18 to 40 px.
+  return { x, y, size: Math.max(18, Math.min(40, b.width * 0.45)), jar };
 }

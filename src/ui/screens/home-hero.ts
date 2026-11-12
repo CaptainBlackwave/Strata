@@ -69,6 +69,7 @@ function load(): Promise<void> {
         dims: defaultDims(),
         viewSize: stageSize,
         className: 'hero-canvas',
+        corkFull: true, // the logo jars wear corks, as the CSS ones do (D183)
         onContext: (isLost) => {
           lost = isLost;
           renderHero();
@@ -107,7 +108,7 @@ function sparkle(): void {
   const anim = el.animate(
     [
       { opacity: 0, transform: 'translate(-50%, -50%) scale(0.4) rotate(0deg)' },
-      { opacity: 0.95, transform: 'translate(-50%, -50%) scale(1) rotate(20deg)', offset: 0.45 },
+      { opacity: 1, transform: 'translate(-50%, -50%) scale(1) rotate(20deg)', offset: 0.45 },
       { opacity: 0, transform: 'translate(-50%, -50%) scale(0.6) rotate(45deg)' },
     ],
     { duration: heroTuning.sparkleMs, easing: 'ease-in-out' },
