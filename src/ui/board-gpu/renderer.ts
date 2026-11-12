@@ -6,7 +6,7 @@
  * requestAnimationFrame loop that runs while a lift, a pour or a mechanic effect moves, and stops
  * when the tab is hidden. Loaded on demand, so the DOM board's bundle carries none of Pixi.
  */
-import { CanvasSource, Container, Sprite, Texture, WebGLRenderer } from 'pixi.js';
+import { CanvasSource, Container, Sprite, Texture, Ticker, WebGLRenderer } from 'pixi.js';
 import { type Board, type Jar, isSealed } from '../../core/board';
 import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, done, finish, gridFromJar, planPour, sandConfig, step, stepsDue } from '../sand';
 import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from './art';
@@ -279,6 +279,7 @@ export class GpuBoard {
         backgroundAlpha: 0,
         antialias: true,
       });
+      sleepSystemTicker();
       const canvas = renderer.canvas as HTMLCanvasElement;
       canvas.className = opts.className ?? 'gpu-board';
       canvas.setAttribute('aria-hidden', 'true');
@@ -1149,4 +1150,15 @@ function padlockMetrics(w: number): { width: number; height: number; boxTop: num
   const { bw, bh } = padlockBox(w);
   const pad = 2;
   return { width: bw + 2 * pad, height: bh * 0.7 + bh + 2 * pad, boxTop: pad + bh * 0.7, boxHeight: bh };
+}
+
+/**
+ * Pixi's WebGLRenderer starts `Ticker.system` (its SchedulerSystem's texture GC), a requestAnimationFrame
+ * every frame for as long as the page lives. This renderer draws only on change with its own frame loop and
+ * frees its own textures, so the system ticker is stopped and kept from restarting (ADR-0001 §6: nothing
+ * draws while idle). Called after every `init`, so the Home hero and the board both sleep.
+ */
+function sleepSystemTicker(): void {
+  Ticker.system.autoStart = false;
+  Ticker.system.stop();
 }

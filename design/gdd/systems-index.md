@@ -238,7 +238,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D174 | Realistic phone frame-rate check | **Closed without a test**: no complaints known (strata-1q0) (owner, 2026-11-12) | feel-audio-ui | decided |
 | D175 | Home hero, revised again | **Back to the pre-0.19 logo jars**, larger and drawn with Realistic sand and matte glass; replaces D173 (owner, 2026-11-12) | feel-audio-ui | built (sprint 21 H1) |
 | D176 | Hero motion | **Still**, with only a rare soft sparkle on the sand; none under reduced motion (owner, 2026-11-12) | feel-audio-ui | built (sprint 21 H1) |
-| D177 | Sand polish | Fix the settling pile's pixel steps (strata-2en) and the board redraw cost (strata-8j3) (owner, 2026-11-12) | feel-audio-ui | planned |
+| D177 | Sand polish | Fix the settling pile's pixel steps (strata-2en) and the board redraw cost (strata-8j3) (owner, 2026-11-12) | feel-audio-ui | built (sprint 21 P1, P2) |
 | D178 | Winter Tide | A dress rehearsal of all 24 boards with a faked December date before 1 December (owner, 2026-11-12) | events | planned |
 | D179 | App polish | Install prompt, icon and splash, offline note and update prompt, native feel (zoom, selection, status bar, haptics) (owner, 2026-11-12) | feel-audio-ui | install prompt, offline note and update bar, native feel built in sprint 21 (A1, A3, A4); icon and splash (A2): planned |
 | D180 | Release | Everything in one release, **0.20.0** (owner, 2026-11-12) | — | planned |
