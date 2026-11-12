@@ -30,6 +30,12 @@ export type SessionEvent =
        * (§2.7), for the seal effect. Absent when none did.
        */
       readonly sealedDry?: readonly number[];
+      /**
+       * Tide jars that turned right after this pour (D194, §2.8): the stack rose by one and the
+       * count restarted. Includes turns that change nothing visible (an empty or one-colour jar).
+       * Absent when none did.
+       */
+      readonly turned?: readonly number[];
     }
   | { readonly type: 'undo' }
   | { readonly type: 'restart' }
@@ -180,10 +186,11 @@ export class GameSession {
     const flipped = result.flipped.length ? { flipped: result.flipped } : {};
     const opened = result.opened.length ? { opened: result.opened } : {};
     const dried = result.dried.length ? { dried: result.dried } : {};
+    const turned = result.turned.length ? { turned: result.turned } : {};
     const before = this.history[this.history.length - 1];
     const dry = result.dried.filter((i) => i !== to && isSealed(result.board.jars[i], result.board.capacity) && !isSealed(before.jars[i], before.capacity));
     const sealedDry = dry.length ? { sealedDry: dry } : {};
-    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped, ...opened, ...dried, ...sealedDry });
+    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped, ...opened, ...dried, ...sealedDry, ...turned });
     this.emitStatus();
     return true;
   }
@@ -363,7 +370,8 @@ export function searchHint(board: Board, budget: number): HintSearch {
  * free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand. An unsealed
  * hourglass is a free jar: its sand is re-dealt and its count is kept (a shuffle is not a pour, D96). A closed clam keeps its sand and its count (D96, §2.6): it is shut,
  * and a shuffle is not a pour; once open it is a free jar like any other. Wet sand (D189, §2.7)
- * keeps its count with its unit: each unit is re-dealt together with its count. Pure and
+ * keeps its count with its unit: each unit is re-dealt together with its count. An unsealed tide jar
+ * (§2.8) is a free jar like the hourglass: its sand is re-dealt and its count is kept. Pure and
  * deterministic for a given `rng`, so a worker given the same seed finds the same board
  * (TD-13). All attempts together spend at most `shuffleTotalNodeBudget` states (F7, GA-SB-4).
  * Example: `findShuffle(board, sessionOptions(config), createRng(seed))`

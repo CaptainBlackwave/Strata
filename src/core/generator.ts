@@ -118,7 +118,7 @@ export function levelSteps(spec: LevelSpec, config: GameConfig): FallbackStep[] 
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : g.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, g.maxAttempts]);
   // An hourglass, sieve or clam with classic mechanics: try the classic ones alone before dropping them all (D96).
-  if ((spec.hourglass || spec.sieve || spec.clam || spec.wet) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
+  if ((spec.hourglass || spec.sieve || spec.clam || spec.wet || spec.tide) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
   if (hasAnyMechanic(spec)) tries.push([{ ...withoutMechanics(spec), spare: 2 }, g.maxAttempts]);
   const { cap, perAttempt } = stepBudgets(config);
   return tries.map(([s, maxAttempts], i) => {
@@ -301,12 +301,12 @@ function endsSealed(board: Board, result: SolveResult, at: number): boolean {
 
 /** True when a spec asks for any jar mechanic, the hourglass, the sieve and the clam included (D96). */
 export function hasAnyMechanic(spec: LevelSpec): boolean {
-  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true || spec.wet === true;
+  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true || spec.wet === true || spec.tide === true;
 }
 
 /** The spec with every mechanic dropped, the hourglass, the sieve and the clam included: a fallback step's recipe. */
 export function withoutMechanics<S extends LevelSpec>(spec: S): S {
-  const { hourglass: _dropped, sieve: _sieve, clam: _clam, wet: _wet, ...rest } = spec;
+  const { hourglass: _dropped, sieve: _sieve, clam: _clam, wet: _wet, tide: _tide, ...rest } = spec;
   return { ...rest, mechanics: [] } as unknown as S;
 }
 
@@ -320,7 +320,10 @@ export function withoutMechanics<S extends LevelSpec>(spec: S): S {
  * or the hourglass, banded in a colour drawn from the board's `spec.colors`; its burial is kept
  * (`proveDeal` may then move the band). The clam (D96, §2.6) is placed after that, on a filled
  * jar that is not sealed, frozen, locked, narrow, a funnel, the hourglass or the sieve, closed for
- * `opensAfter` pours; its burial is kept. Wet sand (D189, §2.7) is placed last of all: `units`
+ * `opensAfter` pours; its burial is kept. The tide jar (D193, §2.8) is placed after that, on a filled
+ * jar that is not sealed, frozen, locked, narrow, a funnel, the hourglass, the sieve or the clam,
+ * counting down from `every`; its sand is shown (`hidden: 0`), since a turn brings the bottom unit
+ * to the top. Wet sand (D189, §2.7) is placed last of all (it may land on the tide jar): `units`
  * (`debutUnits` on its unlock level) distinct visible units of filled jars that are not sealed,
  * frozen, locked, a closed clam or a funnel, each wet for `dryAfter` pours, one draw per unit. The stream `rng` is only drawn from for mechanics the
  * spec has, so a spec without the hourglass, the sieve or the clam deals exactly the board it did
@@ -368,6 +371,13 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
     const i = pick(filled().filter((k) => plainJar(jars[k])));
     if (i !== undefined) jars[i] = { ...jars[i], clam: opensAfter };
   }
+  if (spec.tide) {
+    const tune = config.mechanics.list.find((m) => m.id === 'tide');
+    const every = Math.max(1, Math.floor(tune?.every ?? 4));
+    const plainJar = (j: Jar) => j.cap === undefined && !j.funnel && !j.hourglass && j.sieve === undefined && j.clam === undefined && !j.tide && !isSealed(j, board.capacity);
+    const i = pick(filled().filter((k) => plainJar(jars[k])));
+    if (i !== undefined) jars[i] = { ...jars[i], hidden: 0, tide: { every, left: every } };
+  }
   if (spec.wet) {
     const tune = config.mechanics.list.find((m) => m.id === 'wet');
     const dryAfter = Math.max(1, Math.floor(tune?.dryAfter ?? 5));
@@ -397,6 +407,7 @@ export function hasMechanics(board: Board, spec: LevelSpec): boolean {
   if (spec.sieve && !board.jars.some((j) => j.sieve !== undefined)) return false;
   if (spec.clam && !board.jars.some((j) => j.clam !== undefined)) return false;
   if (spec.wet && !board.jars.some((j) => j.wet !== undefined)) return false;
+  if (spec.tide && !board.jars.some((j) => j.tide !== undefined)) return false;
   return spec.mechanics.every((id) =>
     id === 'narrow' ? board.jars.some((j) => j.cap !== undefined)
     : id === 'frozen' ? board.jars.some((j) => j.frozen)

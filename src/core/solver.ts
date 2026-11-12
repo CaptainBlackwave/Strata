@@ -52,11 +52,11 @@ export function solve(board: Board, nodeBudget: number): SolveResult {
  * and sealed jars are never poured from), best-first by a cheap heuristic.
  */
 function orderedMoves(board: Board): Move[] {
-  // Symmetry pruning: of several empty jars of the same kind, only try the first. A sieve's band and a clam's count are part of its kind (D96).
+  // Symmetry pruning: of several empty jars of the same kind, only try the first. A sieve's band, a clam's count and a tide jar's count are part of its kind (D96, §2.8).
   const firstEmptyOfKind = new Map<string, number>();
   board.jars.forEach((j, i) => {
     if (j.units.length) return;
-    const kind = `${jarCapacity(board, i)}${j.funnel ? 'U' : ''}${j.frozen ? 'F' : ''}${j.lock ?? ''}${j.hourglass ? `H${j.hourglass.left}` : ''}${j.sieve !== undefined ? `S${j.sieve}` : ''}${j.clam !== undefined ? `C${j.clam}` : ''}`;
+    const kind = `${jarCapacity(board, i)}${j.funnel ? 'U' : ''}${j.frozen ? 'F' : ''}${j.lock ?? ''}${j.hourglass ? `H${j.hourglass.left}` : ''}${j.sieve !== undefined ? `S${j.sieve}` : ''}${j.clam !== undefined ? `C${j.clam}` : ''}${j.tide ? `T${j.tide.left}` : ''}`;
     if (!firstEmptyOfKind.has(kind)) firstEmptyOfKind.set(kind, i);
   });
   const firstEmpties = new Set(firstEmptyOfKind.values());

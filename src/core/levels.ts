@@ -108,9 +108,10 @@ export interface PourBand {
  * Every jar mechanic. Each one has an intro card, a Jar guide entry and player-facing strings,
  * so the UI's lookup tables are keyed by this type. The hourglass (D96) joined in sprint 13 M1,
  * the sieve (D96) in sprint 13 M2, the clam (D96) in sprint 13 M3 and wet sand (D189, §2.7) in
- * sprint 23 W5, with its intro card on level 201.
+ * sprint 23 W5, with its intro card on level 201. The tide jar (D193, §2.8) joined in sprint 24 T2,
+ * with its intro card on level 241 (strings from T5).
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide';
 
 /**
  * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass,
@@ -118,7 +119,7 @@ export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass'
  * the generator's placement stream and every board from before them stay byte-identical. They are
  * also the daily's Saturday rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet'>;
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide'>;
 
 
 /**
@@ -132,7 +133,7 @@ export type BoardMechanicId = MechanicId;
  * and the clam. Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
  */
 export function isClassicMechanic(id: BoardMechanicId): id is ClassicMechanicId {
-  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet';
+  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet' && id !== 'tide';
 }
 
 /** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
@@ -140,16 +141,17 @@ export const isCardMechanic = isClassicMechanic;
 
 /**
  * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
- * the hourglass, the sieve, the clam and wet sand, each when it has one. Example: level 181 gives
- * `['clam']`, level 201 `['wet']`.
+ * the hourglass, the sieve, the clam, wet sand and the tide jar, each when it has one. Example: level
+ * 181 gives `['clam']`, level 201 `['wet']`, level 241 `['tide']`.
  */
-export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet'>): MechanicId[] {
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide'>): MechanicId[] {
   return [
     ...spec.mechanics,
     ...(spec.hourglass ? ['hourglass' as const] : []),
     ...(spec.sieve ? ['sieve' as const] : []),
     ...(spec.clam ? ['clam' as const] : []),
     ...(spec.wet ? ['wet' as const] : []),
+    ...(spec.tide ? ['tide' as const] : []),
   ];
 }
 
@@ -161,7 +163,10 @@ export interface MechanicConfig {
   readonly cap?: number;
   /** How many jars get frozen. */
   readonly count?: number;
-  /** Hourglass: it flips every this many successful pours on the board (D96). Default 3. */
+  /**
+   * Hourglass: it flips every this many successful pours on the board (D96). Default 3.
+   * Tide jar: the tide turns every this many successful pours on the board (D194, §2.8). Default 4.
+   */
   readonly every?: number;
   /**
    * Sieve: how many band colours the generator may prove on one deal, starting from the one the
@@ -181,12 +186,12 @@ export interface MechanicConfig {
   /** Wet sand: the successful pours a wet unit takes to dry; its count starts here. Default 5; at least 1. */
   readonly dryAfter?: number;
   /**
-   * Wet sand: its own extra chance per level from `unlockAt`, on top of the shared mechanic roll
-   * (owner, D192: about 1 level in 8 from 201). Seeded by `ownSalt` and the level, so levels below
+   * Its own extra chance per level from `unlockAt`, on top of the shared mechanic roll (wet sand,
+   * D192: about 1 level in 8 from 201; the tide jar, D196: about 1 level in 8 from 241). Seeded by `ownSalt` and the level, so levels below
    * `unlockAt` never change. Absent or 0: only the shared roll.
    */
   readonly ownChance?: number;
-  /** Wet sand: the seed salt of `ownChance`'s roll. Never change it once released. */
+  /** The seed salt of `ownChance`'s roll, one per mechanic. Never change it once released. */
   readonly ownSalt?: number;
 }
 
@@ -208,6 +213,8 @@ export interface LevelSpec {
   readonly clam?: boolean;
   /** Some units are dealt wet (D189, sprint 23 W3, §2.7). Absent or false: none. See `ClassicMechanicId`. */
   readonly wet?: boolean;
+  /** One filled jar is a tide jar (D193, sprint 24 T3, §2.8). Absent or false: none. See `ClassicMechanicId`. */
+  readonly tide?: boolean;
 }
 
 /**
@@ -215,13 +222,14 @@ export interface LevelSpec {
  * the one path every board recipe (levels, the daily, the weekly; sprint 13 W1) uses.
  * Example: `splitMechanics(['sieve']) // { mechanics: [], sieve: true }`.
  */
-export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true } {
+export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true; tide?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
     ...(ids.includes('sieve') ? { sieve: true as const } : {}),
     ...(ids.includes('clam') ? { clam: true as const } : {}),
     ...(ids.includes('wet') ? { wet: true as const } : {}),
+    ...(ids.includes('tide') ? { tide: true as const } : {}),
   };
 }
 
@@ -284,7 +292,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
   const br = breather ? config.breather : undefined;
   if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
   const rolled = withOwnRolls(level, pickMechanics(level, config), config);
-  const { mechanics, hourglass, sieve, clam, wet } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
+  const { mechanics, hourglass, sieve, clam, wet, tide } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
@@ -300,7 +308,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}) };
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}) };
 }
 
 /**

@@ -188,6 +188,8 @@ const en = {
     sieve: { name: 'Sieve jar', rule: 'A sieve jar only lets its own colour in: the colour of its band. Anything can be poured out.', tap: 'Sieve: only the colour of its band goes in.' },
     clam: { name: 'Clam jar', rule: 'A clam jar stays shut under its shell until the count runs out: every pour on the board counts down. Then it opens and plays like any jar.', tap: 'Clam: shut until the count on its shell runs out.' },
     wet: { name: 'Wet sand', rule: 'Wet sand is darker, with a drop and a number on it. It only goes onto sand of its own colour, never into an empty jar. Every pour on the board dries it a little: at 0 it is ordinary sand. A full jar seals once its sand is dry.', tap: 'Wet sand: only onto its own colour. It dries as you pour.' },
+    /** Placeholder from sprint 24 T2 so the tables compile; T5 writes the final card and tap text. */
+    tide: { name: 'Tide jar', rule: 'Every fourth pour on the board, the tide turns: the sand in the tide jar rises by one, and its bottom layer comes up to the top. The number on it counts the pours left. A sealed tide jar stays still.', tap: 'Tide jar: its bottom layer rises to the top every fourth pour.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -445,7 +447,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',
@@ -473,6 +475,8 @@ const en = {
     clam: (left: number) => (left === 1 ? 'clam, closed, opens after the next pour' : `clam, closed, opens in ${left} pours`),
     /** A full jar of one colour that waits for its wet sand to dry before it seals (D189, §2.7). */
     wet: 'full, seals when dry',
+    /** A tide jar's state (D194, §2.8): `left` is the pours until the tide turns (1..every). Placeholder from T2; T4 owns the label. */
+    tide: (left: number) => (left === 1 ? 'tide jar, turns after the next pour' : `tide jar, turns in ${left} pours`),
   },
   /** One wet unit in a jar's screen-reader contents (D189, §2.7): `left` is the pours until it dries (1..dryAfter). */
   wetUnit: (colour: string, left: number) => (left === 1 ? `wet ${colour}, dries after the next pour` : `wet ${colour}, dries in ${left} pours`),
