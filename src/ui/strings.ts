@@ -710,6 +710,9 @@ const en = {
     tabsLabel: 'Home sections',
     tabs: { play: 'Play', today: 'Today', collection: 'Collection', profile: 'Profile' } as Readonly<Record<string, string>>,
     newSr: ', something new',
+    /** The hero is a button that plays, like Play (D173): its spoken name. */
+    heroLabel: (level: number) => `Play level ${level}`,
+    heroLabelTutorial: 'Play the tutorial',
     /** The small line over the hero's level. */
     eyebrow: 'Strata',
     /** The Today strip under Play, and its link to the Today tab. */

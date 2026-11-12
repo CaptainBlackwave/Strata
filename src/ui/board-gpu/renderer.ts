@@ -89,7 +89,17 @@ export interface GpuBoardOptions {
   readonly config?: SandConfig;
   /** WebGL lost its context (true) or got it back (false): the board falls back to the DOM and returns. */
   readonly onContext?: (lost: boolean) => void;
+  /**
+   * The drawing area's size in CSS px; the geometries are in its coordinates. Defaults to the window
+   * (the board, a fixed full-window canvas). The Home hero passes its stage (sprint 20, D173).
+   */
+  readonly viewSize?: () => { readonly width: number; readonly height: number };
+  /** The canvas's class (default `gpu-board`). */
+  readonly className?: string;
 }
+
+/** The window's size: the board's drawing area. */
+const windowSize = () => ({ width: window.innerWidth, height: window.innerHeight });
 
 interface JarView {
   readonly root: Container;
@@ -219,6 +229,11 @@ export class GpuBoard {
     canvas.addEventListener('webglcontextrestored', this.onContextRestored);
   }
 
+  /** The canvas (the Home hero shows, hides and fades it). */
+  get canvas(): HTMLCanvasElement {
+    return this.renderer.canvas as HTMLCanvasElement;
+  }
+
   /** True while the WebGL context is lost. */
   get contextLost(): boolean {
     return this.lost;
@@ -255,16 +270,17 @@ export class GpuBoard {
   static async create(opts: GpuBoardOptions): Promise<GpuBoard | null> {
     try {
       const renderer = new WebGLRenderer();
+      const size = (opts.viewSize ?? windowSize)();
       await renderer.init({
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: Math.max(1, size.width),
+        height: Math.max(1, size.height),
         resolution: Math.min(window.devicePixelRatio || 1, 2),
         autoDensity: true,
         backgroundAlpha: 0,
         antialias: true,
       });
       const canvas = renderer.canvas as HTMLCanvasElement;
-      canvas.className = 'gpu-board';
+      canvas.className = opts.className ?? 'gpu-board';
       canvas.setAttribute('aria-hidden', 'true');
       opts.host.prepend(canvas);
       return new GpuBoard(renderer, opts);
@@ -317,7 +333,8 @@ export class GpuBoard {
     this.completePour();
     this.endFx();
     const res = this.renderer.resolution;
-    this.renderer.resize(window.innerWidth, window.innerHeight);
+    const size = (this.opts.viewSize ?? windowSize)();
+    this.renderer.resize(Math.max(1, size.width), Math.max(1, size.height));
     if (res !== this.renderer.resolution) this.clearCaches();
     while (this.views.length > geoms.length) this.destroyView(this.views.pop()!);
     while (this.views.length < geoms.length) this.views.push(this.makeView(geoms[this.views.length]));
@@ -538,7 +555,7 @@ export class GpuBoard {
     this.completePour();
     const src = this.views[from];
     const dst = this.views[to];
-    const side = pourSide(src.geom, dst.geom, window.innerWidth);
+    const side = pourSide(src.geom, dst.geom, (this.opts.viewSize ?? windowSize)().width);
     const { cols, rows } = this.opts.dims;
     // The lip waits over the opening, a little in from the near wall, and the stream falls straight down from it.
     const streamCol = (side > 0 ? LIP_INSET : 1 - LIP_INSET) * cols;
