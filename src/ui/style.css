@@ -4135,6 +4135,9 @@ body[data-theme='harvestmoon']::before {
 }
 .home-panel {
   padding: 0 16px 20px;
+  /* One column no wider than the screen: an auto column grew to its widest card's min-content and pushed
+     every Today card past the edge at 320px with 150% text (0.20.1). */
+  grid-template-columns: minmax(0, 1fr);
 }
 .home-panel:focus {
   outline: none;
@@ -4766,11 +4769,16 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   align-items: center;
 }
 .home .weekly-jars {
+  /* .mini-ico (a grid, declared later) would stack the five jars into a column (strata bug, 0.19.0) */
+  display: flex;
   width: 44px;
   height: 44px;
   align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
 .home .weekly-jars i {
+  width: 6px;
   height: 18px;
 }
 .home .bar {

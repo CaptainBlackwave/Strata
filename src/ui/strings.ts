@@ -207,6 +207,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.20.1',
+        name: 'Tidier Today',
+        lines: [
+          'The weekly set card on Today shows its five little jars in a row again, filling as you clear boards.',
+          "The card's title is now this week's theme, with the days left below it.",
+          'With large text on a small phone, every Today card fits the screen again.',
+        ],
+      },
+      {
         version: '0.20.0',
         name: 'Feels like an app',
         lines: [
@@ -866,8 +875,6 @@ const en = {
     themes: { narrow: 'Narrow Necks', frozen: 'Cold Snap', locked: 'Lock and Key', funnel: 'Funnel Week', deep: 'Deep Sand', hourglass: 'Turning Tides', sieve: 'Fine Sieve', clam: 'Clam Bay' } as Readonly<Record<string, string>>,
     progress: (cleared: number, total: number) => (cleared >= total ? 'Set complete \u2713' : `${cleared} of ${total} cleared`),
     daysLeft: (n: number) => (n <= 1 ? 'Last day' : `${n} days left`),
-    /** The Home card's theme line, e.g. "Lock and Key · 6 days left". */
-    cardSub: (theme: string, left: string) => `${theme} \u00b7 ${left}`,
     /** The chooser's line under its heading, e.g. "Week 46 · Lock and Key · 2 of 5 cleared". */
     sheetSub: (week: number, theme: string, progress: string) => `Week ${week} \u00b7 ${theme} \u00b7 ${progress}`,
     board: (n: number) => `Board ${n}`,
