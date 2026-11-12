@@ -955,7 +955,7 @@
     "maxSteps": 4000
   },
   "homeHero": {
-    "$comment": "The Home hero (sprint 20, D167, D173; design/ux/home.md): a tiny sorting game playing itself on the board's own renderer. Each loop deals a seeded board of colors colours, capacity units each, into colors full jars plus empty empty ones, keeps it only if no jar starts sealed and the solver (src/core/solver.ts, within solveBudget nodes) solves it in minMoves..maxMoves pours, and plays one pour every paceMs. When solved it rests solvedMs, then fades out and in over fadeMs with the next seed (mixSeed(seed, loop)). stepsPerSecond: the hero's sand simulation rate (the board's is faster), for a calm pour. palette: the colour ids deals draw from.",
+    "$comment": "The Home hero (sprint 20, D167, D173; design/ux/home.md): a tiny sorting game playing itself on the board's own renderer. Each loop deals a seeded board of colors colours, capacity units each, into colors full jars plus empty empty ones, keeps it only if no jar starts sealed and the solver (src/core/solver.ts, within solveBudget nodes) solves it in minMoves..maxMoves pours, and plays one pour every paceMs. When solved it rests solvedMs, then fades out and in over fadeMs with the next seed (mixSeed(seed, loop)). stepsPerSecond: the hero's sand simulation rate (the board's is faster), for a calm pour. maxTiltDeg, airRows: a lower tilt and a shorter drop than the board's, so the tipped jar stays inside the hero. glassShare: the jars' glass height as a share of the hero's drawing area at rest; the rest above is room for the lifted, tipped jar. palette: the colour ids deals draw from.",
     "colors": 3,
     "capacity": 4,
     "empty": 2,
@@ -967,6 +967,9 @@
     "maxMoves": 14,
     "solveBudget": 20000,
     "stepsPerSecond": 150,
+    "maxTiltDeg": 95,
+    "airRows": 14,
+    "glassShare": 0.65,
     "palette": [0, 1, 3, 5, 6, 7]
   },
   "onboarding": {

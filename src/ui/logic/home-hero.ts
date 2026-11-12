@@ -34,6 +34,11 @@ export interface HeroTuning {
   readonly solveBudget: number;
   /** The hero's sand simulation rate (steps a second). */
   readonly stepsPerSecond: number;
+  /** The tipped jar's largest tilt (degrees) and the drop to the target (cells): lower than the board's, to stay inside the hero. */
+  readonly maxTiltDeg: number;
+  readonly airRows: number;
+  /** The glass's height as a share of the drawing area at rest. */
+  readonly glassShare: number;
   /** Colour ids the deals draw from. */
   readonly palette: readonly number[];
 }
@@ -203,24 +208,24 @@ export interface HeroJarBox {
 
 /** The glass's wall and base inset (board-gpu/geometry.ts `DOM_INSET`). */
 const INSET = 5.5;
-/** A jar's band height and gap as shares of its width, near the board's own proportions. */
-const UNIT_OF_WIDTH = 0.52;
-const GAP_OF_WIDTH = 0.55;
+/** The gap between jars as a share of their width. */
+const GAP_OF_WIDTH = 0.4;
 /** The jars never grow wider than this (CSS px). */
 const MAX_JAR_W = 62;
+/** Room under the jars for their shadows (CSS px). */
+const FOOT = 18;
 
 /**
- * The row of `count` jars of `capacity` along the bottom of a `width × height` stage, centred, with the
- * upper part left free for a lifted, tipped jar. Example: `heroLayout(412, 305, 5, 4)`.
+ * The row of `count` jars of `capacity` along the bottom of a `width × height` drawing area, centred.
+ * The glass is `glassShare` of the height, so the jars fill most of the hero at rest; the rest above is
+ * room for a lifted, tipped jar. Example: `heroLayout(412, 353, 5, 4, 0.7)`.
  */
-export function heroLayout(width: number, height: number, count: number, capacity: number): HeroJarBox[] {
-  const base = height - 20;
-  const byWidth = (width - 32) / (count + (count - 1) * GAP_OF_WIDTH);
-  // The glass may take at most half the stage's height: the rest is room for the pour.
-  const byHeight = (height * 0.5 - INSET) / (capacity * UNIT_OF_WIDTH + 0.3);
-  const w = Math.max(24, Math.min(MAX_JAR_W, byWidth, byHeight));
-  const unit = w * UNIT_OF_WIDTH;
-  const h = capacity * unit + INSET + w * 0.3;
+export function heroLayout(width: number, height: number, count: number, capacity: number, glassShare = heroTuning.glassShare): HeroJarBox[] {
+  const base = height - FOOT;
+  const w = Math.max(24, Math.min(MAX_JAR_W, (width - 32) / (count + (count - 1) * GAP_OF_WIDTH)));
+  const h = Math.max(w * 1.6, height * glassShare);
+  // The bands fill the glass up to a little under its rim, as on the board.
+  const unit = (h - INSET - w * 0.3) / capacity;
   const gap = w * GAP_OF_WIDTH;
   const left0 = (width - (count * w + (count - 1) * gap)) / 2;
   return Array.from({ length: count }, (_, i) => ({ left: left0 + i * (w + gap), top: base - h, width: w, height: h, unitHeight: unit }));

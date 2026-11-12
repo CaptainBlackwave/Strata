@@ -28,6 +28,14 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.19.1 (2026-11-12): a game on Home
+**For players**
+- The Home hero is now a tiny game of Strata playing itself: 5 jars of mixed sand, a jar lifting and pouring its top colour onto a match every couple of seconds, corks sealing full jars, then a fresh mix. Tap it to start your level.
+- A still picture on Classic, without WebGL and under reduced motion.
+
+**Under the hood**
+- Owner decision D173 (replaces the funnel scene). The hero runs a second copy of the board's own renderer, so the pour, cork and glow are the board's; seeded boards are kept only if the solver solves them in 6-14 pours (`src/ui/logic/home-hero.ts`, tuning in `homeHero`).
+
 ## 0.19.0 (2026-11-12): sprint 20, a new Home
 **For players**
 - A calmer Home: a live Realistic-sand scene (a still picture on Classic), the level and one big Play button, then today's daily, the event when one runs, and a card for your next streak reward with a track of every reward day.

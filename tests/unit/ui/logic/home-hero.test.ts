@@ -104,18 +104,26 @@ describe('heroRuns (D169)', () => {
 
 describe('heroLayout', () => {
   it.each([
-    [412, 305],
-    [320, 220],
-    [560, 360],
-  ])('fits %ix%i: the jars in a centred row in the stage, the top half free for the pour', (w, h) => {
-    const jars = heroLayout(w, h, 5, 4);
+    [412, 353],
+    [320, 285],
+    [560, 408],
+  ])('fits %ix%i: a centred row of five jars whose glass fills most of the height, with room above for the pour', (w, h) => {
+    const jars = heroLayout(w, h, 5, 4, heroTuning.glassShare);
     expect(jars).toHaveLength(5);
     for (const j of jars) {
       expect(j.left).toBeGreaterThanOrEqual(0);
       expect(j.left + j.width).toBeLessThanOrEqual(w);
       expect(j.top + j.height).toBeLessThanOrEqual(h);
-      expect(j.top).toBeGreaterThanOrEqual(h * 0.45);
+      expect(j.height / h).toBeGreaterThanOrEqual(0.6);
+      expect(j.height / h).toBeLessThanOrEqual(0.75);
+      expect(j.top).toBeGreaterThanOrEqual(h * 0.15);
+      expect(j.unitHeight * 4).toBeLessThan(j.height);
     }
     expect(jars[0].left).toBeCloseTo(w - (jars[4].left + jars[4].width));
+  });
+  it('tips less and drops less than the board, so the tipped jar stays inside the hero', () => {
+    expect(heroTuning.maxTiltDeg).toBeLessThan(110);
+    expect(heroTuning.maxTiltDeg).toBeGreaterThan(90);
+    expect(heroTuning.airRows).toBeLessThan(24);
   });
 });

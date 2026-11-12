@@ -83,7 +83,7 @@ function load(): Promise<void> {
         motion: gpuMotion(),
         reducedMotion,
         dims: defaultDims(),
-        config: { ...sandConfig, stepsPerSecond: heroTuning.stepsPerSecond },
+        config: { ...sandConfig, stepsPerSecond: heroTuning.stepsPerSecond, maxTiltDeg: heroTuning.maxTiltDeg, airRows: heroTuning.airRows },
         viewSize: stageSize,
         className: 'hero-canvas',
         onContext: (isLost) => {
