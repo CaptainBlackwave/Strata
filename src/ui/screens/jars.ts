@@ -9,7 +9,7 @@ import { FLIP_MS } from '../logic/flip';
 import { jarSummary } from '../logic/jar-label';
 import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { audio, config, state } from '../state';
-import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuInvalidate, gpuLayout } from '../board-gpu/hooks';
+import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuHop, gpuInvalidate, gpuLayout, gpuNope, gpuSeal } from '../board-gpu/hooks';
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
@@ -88,6 +88,7 @@ export function renderAllJars(shake = false): void {
     updateJar(i);
     if (shake && !reducedMotion()) state.jarEls[i].animate([{ translate: '0 0' }, { translate: '0 -6px' }, { translate: '0 0' }], { duration: 260, delay: i * 25 });
   });
+  if (shake) gpuHop(); // sprint 19 S5: the canvas jars hop too
 }
 
 export function unitColor(color: number, buried: boolean): string {
@@ -273,6 +274,7 @@ export function nope(i: number): void {
   el.classList.add('nope');
   window.clearTimeout(Number(el.dataset.nopeTimer));
   el.dataset.nopeTimer = String(window.setTimeout(() => el.classList.remove('nope'), NOPE_MS));
+  gpuNope(i); // sprint 19 S5: the canvas jar shakes with its button
   audio.play('nope');
 }
 
@@ -285,6 +287,7 @@ export function sealFx(i: number, color: string, step = 0): void {
   el.classList.remove('just-sealed');
   void el.offsetWidth;
   el.classList.add('just-sealed');
+  gpuSeal(i); // sprint 19 S5: the canvas cork drops in
   window.setTimeout(() => {
     sealShimmer(el, color); // a soft shimmer up the glass and a few motes (D68)
     sceneSealBurst(el, color); // tier 3 scenes: a firework, a meteor or an aurora ripple

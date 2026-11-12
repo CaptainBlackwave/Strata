@@ -1,4 +1,5 @@
 /** The win card for a level, the daily and the tutorial. The rules are the pure core/win.ts; this shows them. */
+import { gpuWinGlow } from '../board-gpu/hooks';
 import { isSealed } from '../../core/board';
 import { sharePours, streakStep, utcDateKey } from '../../core/daily';
 import { goalWinRows } from '../logic/goals-card';
@@ -357,7 +358,7 @@ export function showWin(): void {
     $('win-unlocks').childElementCount > 0 && 'win-unlocks',
   ].filter(Boolean);
   winEl.querySelector('.win-card')!.setAttribute('aria-describedby', described.join(' '));
-  const stopGlow = winGlowRun(state.jarEls, plan);
+  const stopGlow = gpuWinGlow(plan.steps) ?? winGlowRun(state.jarEls, plan); // sprint 19 S5: on the canvas when it draws the board
   let opened = false;
   const open = () => {
     if (opened) return;

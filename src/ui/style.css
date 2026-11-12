@@ -4619,7 +4619,9 @@ canvas.gpu-board {
 #board[data-render='gpu'] .jar .padlock,
 #board[data-render='gpu'] .jar .funnel-mark,
 #board[data-render='gpu'] .jar .sieve-band,
-#board[data-render='gpu'] .jar .clam-shell {
+#board[data-render='gpu'] .jar .clam-shell,
+#board[data-render='gpu'] .jar .cork,
+#board[data-render='gpu'] .jar .win-glow {
   visibility: hidden;
 }
 /* S3: the canvas draws the mechanic marks; their text stays here so it follows the text size. The

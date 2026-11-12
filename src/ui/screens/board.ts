@@ -25,6 +25,7 @@ import { flipDelay, grownFrom } from '../logic/flip';
 import { clamOpenDelay } from '../logic/clam';
 import { refusalNote, tapMechanic } from '../logic/refusal';
 import { animatePour, recoverPour } from './pour';
+import { gpuInvalidate } from '../board-gpu/hooks';
 import { introduce } from './sheets/guide';
 import { openMap } from './map';
 import { boosterHintOnStart } from './onboarding';
@@ -573,6 +574,7 @@ export function showHint(r: HintResult): boolean {
     void el.offsetWidth; // restart the CSS animation
     el.classList.add(cls);
   }
+  gpuInvalidate(); // sprint 19 S5: the canvas lifts the hint's from-jar too
   showToast(t.hintToast(m.from + 1, m.to + 1)); // announced politely (AX-4)
   hintTimer = window.setTimeout(clearHint, 2400);
   return true;
@@ -582,6 +584,7 @@ export function showHint(r: HintResult): boolean {
 export function clearHint(): void {
   window.clearTimeout(hintTimer);
   for (const el of state.jarEls) el.classList.remove('hint-from', 'hint-to');
+  gpuInvalidate();
 }
 
 /** Wires the board: tools, Restart, Play, Daily, Continue, jar taps and the re-layout on resize. */

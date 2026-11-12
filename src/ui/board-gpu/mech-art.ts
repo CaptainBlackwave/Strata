@@ -93,10 +93,17 @@ export interface PadlockArt {
   readonly boxHeight: number;
 }
 
+/** Smallest padlock box (CSS px): below it the shackle and keyhole stop reading (strata-5lq). */
+export const PADLOCK_MIN = { w: 17, h: 14 } as const;
+
+/** The padlock box for a jar `w` wide: style.css's 0.46w by 0.38w, never smaller than {@link PADLOCK_MIN}. */
+export function padlockBox(w: number): { bw: number; bh: number } {
+  return { bw: Math.max(PADLOCK_MIN.w, w * 0.46), bh: Math.max(PADLOCK_MIN.h, w * 0.38) };
+}
+
 /** The padlock in the key colour (`.padlock`): an ink-edged box, its shackle and keyhole; the key colour's pattern when on. */
 export function drawPadlock(w: number, color: string, ink: string, pattern: number | null, res: number): PadlockArt {
-  const bw = w * 0.46;
-  const bh = w * 0.38;
+  const { bw, bh } = padlockBox(w);
   const sh = bh * 0.7;
   const pad = 2;
   const width = bw + 2 * pad;
@@ -278,5 +285,209 @@ export function drawClamShell(width: number, height: number, w: number, night: b
     g.fillStyle = 'rgba(0,0,0,0.2)';
     g.fillRect(0, 0, width, height + 2);
   }
+  return c;
+}
+
+/** The cork pieces (config `styles.slots.cork`), as style.css draws them on a sealed jar. */
+export type CorkId = 'cork' | 'driftwood' | 'rope' | 'scallop' | 'brass';
+
+/**
+ * A sealed jar's cork (`.cork` and the `[data-cork]` pieces in style.css), `w` × `h` CSS px:
+ * the plain cork, grey driftwood with its grain and knot, cork bound with rope, a scallop shell,
+ * or a brass cap. The edge is drawn inside the box, as the DOM's 2 px border.
+ */
+export function drawCork(id: string, w: number, h: number, res: number): HTMLCanvasElement {
+  const [c, g] = canvas(w, h, res);
+  const piece = (['cork', 'driftwood', 'rope', 'scallop', 'brass'] as const).find((x) => x === id) ?? 'cork';
+  const shape = () => {
+    if (piece === 'scallop') {
+      g.beginPath();
+      g.moveTo(0, h - 3);
+      g.ellipse(w / 2, h * 0.9, w / 2, h * 0.9, 0, Math.PI, 0);
+      g.lineTo(w, h - 3);
+      g.quadraticCurveTo(w, h, w - 3, h);
+      g.lineTo(3, h);
+      g.quadraticCurveTo(0, h, 0, h - 3);
+      g.closePath();
+    } else {
+      const [rt, rb] = piece === 'driftwood' || piece === 'brass' ? [3, 2] : [5, 3];
+      rr(g, 0, 0, w, h, rt, rb);
+    }
+  };
+  const vertical = (stops: readonly (readonly [number, string])[]) => {
+    const gr = g.createLinearGradient(0, 0, 0, h);
+    for (const [at, col] of stops) gr.addColorStop(at, col);
+    return gr;
+  };
+  const dots = () => {
+    g.fillStyle = 'rgba(0,0,0,0.18)';
+    for (let y = 2; y < h; y += 4) for (let x = 2.5; x < w; x += 5) g.fillRect(x - 0.6, y - 0.6, 1.2, 1.2);
+  };
+  shape();
+  g.save();
+  g.clip();
+  const corkBase = [[0, '#d8a86b'], [1, '#b7834a']] as const;
+  let edge = '#8a6136';
+  if (piece === 'cork' || piece === 'rope') {
+    g.fillStyle = vertical(corkBase);
+    g.fillRect(0, 0, w, h);
+    dots();
+  }
+  if (piece === 'rope') {
+    // A band of twisted rope across the middle, and its knot at the right.
+    const bh = h * 0.46;
+    const by = (h - bh) * 0.45;
+    g.save();
+    g.beginPath();
+    g.rect(0, by, w, bh);
+    g.clip();
+    g.fillStyle = '#b8955c';
+    g.fillRect(0, by, w, bh);
+    g.strokeStyle = '#eedfb6';
+    g.lineWidth = 1.4 * Math.sin(Math.PI / 3);
+    for (let x = -bh; x < w + bh; x += 2.8 / Math.sin(Math.PI / 3)) {
+      g.beginPath();
+      g.moveTo(x, by + bh);
+      g.lineTo(x + bh / Math.tan(Math.PI / 3), by);
+      g.stroke();
+    }
+    g.restore();
+    g.beginPath();
+    g.arc(w * 0.86, h * 0.52, 2.4, 0, Math.PI * 2);
+    g.fillStyle = '#9c7c48';
+    g.fill();
+    g.beginPath();
+    g.arc(w * 0.86, h * 0.52, 1.6, 0, Math.PI * 2);
+    g.fillStyle = '#e9d6a6';
+    g.fill();
+  }
+  if (piece === 'driftwood') {
+    g.fillStyle = vertical([[0, '#c2bbb0'], [1, '#8f887d']]);
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(64,58,52,0.3)';
+    for (let x = 0; x < w; x += 3.5) g.fillRect(x, 0, 1, h);
+    const kn = g.createRadialGradient(w * 0.7, h * 0.55, 0, w * 0.7, h * 0.55, w * 0.22);
+    kn.addColorStop(0, 'rgba(64,58,52,0.45)');
+    kn.addColorStop(0.7, 'rgba(64,58,52,0)');
+    g.save();
+    g.translate(w * 0.7, h * 0.55);
+    g.scale(1, (h * 0.34) / (w * 0.22));
+    g.translate(-w * 0.7, -h * 0.55);
+    g.fillStyle = kn;
+    g.fillRect(0, 0, w, h * 2);
+    g.restore();
+    g.fillStyle = 'rgba(255,255,255,0.35)';
+    g.fillRect(0, 0, w, 1);
+    edge = '#5f584f';
+  }
+  if (piece === 'scallop') {
+    // Rays from the foot, pale and rose, 8° and 5° wide, and a soft shade round the rim.
+    const hx = w / 2;
+    for (let a = 0; a < 180; a += 13) {
+      for (const [from, span, col] of [[0, 8, '#fbe7d8'], [8, 5, '#e6b298']] as const) {
+        g.beginPath();
+        g.moveTo(hx, h);
+        g.arc(hx, h, Math.hypot(w, h), Math.PI + ((a + from) * Math.PI) / 180, Math.PI + ((a + from + span) * Math.PI) / 180);
+        g.closePath();
+        g.fillStyle = col;
+        g.fill();
+      }
+    }
+    const sh = g.createRadialGradient(hx, h, h * 0.55, hx, h, h * 1.05);
+    sh.addColorStop(0, 'rgba(120,60,40,0)');
+    sh.addColorStop(1, 'rgba(120,60,40,0.16)');
+    g.fillStyle = sh;
+    g.fillRect(0, 0, w, h);
+    edge = '#b17860';
+  }
+  if (piece === 'brass') {
+    g.fillStyle = vertical([[0, '#f8e1a0'], [0.15, '#f8e1a0'], [0.38, '#dcae55'], [0.7, '#bb8a33'], [1, '#9a6f22']]);
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(90,58,12,0.22)';
+    for (let x = 0; x < w; x += 3) g.fillRect(x, h * 0.62, 1, h * 0.38);
+    g.fillStyle = 'rgba(255,250,225,0.75)';
+    g.fillRect(0, 0, w, 1.5);
+    g.fillStyle = 'rgba(70,45,8,0.3)';
+    g.fillRect(0, h - 1, w, 1);
+    edge = '#6c4d18';
+  }
+  g.restore();
+  // The 2 px edge, inside the box.
+  g.save();
+  shape();
+  g.clip();
+  shape();
+  g.strokeStyle = edge;
+  g.lineWidth = 4;
+  g.stroke();
+  g.restore();
+  return c;
+}
+
+/**
+ * A jar's glow in the win run (`.glass .win-glow`): a warm light in the middle of the glass in the
+ * scene's `--glow-core`, and a soft halo round it in `--glow` (both `r, g, b`), `w` × `h` plus the halo.
+ */
+export function drawGlow(w: number, h: number, core: string, halo: string, res: number): { canvas: HTMLCanvasElement; pad: number } {
+  const pad = 17;
+  const [c, g] = canvas(w + 2 * pad, h + 2 * pad, res);
+  g.save();
+  g.filter = 'blur(7px)';
+  rr(g, pad - 2, pad - 2, w + 4, h + 4, w * 0.14, w * 0.4);
+  g.strokeStyle = `rgba(${halo},0.65)`;
+  g.lineWidth = 6;
+  g.stroke();
+  g.restore();
+  g.save();
+  rr(g, pad, pad, w, h, w * 0.12, w * 0.38);
+  g.clip();
+  const gr = g.createRadialGradient(pad + w / 2, pad + h * 0.55, 0, pad + w / 2, pad + h * 0.55, Math.max(w, h) * 0.55);
+  gr.addColorStop(0, `rgba(${core},0.55)`);
+  gr.addColorStop(1, `rgba(${core},0)`);
+  g.fillStyle = gr;
+  g.fillRect(0, 0, w + 2 * pad, h + 2 * pad);
+  g.restore();
+  return { canvas: c, pad };
+}
+
+/** The look of the DOM's hourglass count pill, read from it so it matches the text size. */
+export interface PillLook {
+  readonly width: number;
+  readonly height: number;
+  readonly bg: string;
+  readonly fg: string;
+  readonly border: string;
+  readonly font: string;
+  readonly text: string;
+}
+
+/** The hourglass count pill (`.hourglass-mark`), redrawn so it can travel with a pouring jar (strata-5lq). */
+export function drawPill(p: PillLook, res: number): HTMLCanvasElement {
+  const [c, g] = canvas(p.width, p.height, res);
+  const r = p.height / 2;
+  rr(g, 0.75, 0.75, p.width - 1.5, p.height - 1.5, r, r);
+  g.fillStyle = p.bg;
+  g.fill();
+  g.strokeStyle = p.border;
+  g.lineWidth = 1.5;
+  g.stroke();
+  // The glyph: two bulbs and a waist, as HOURGLASS_MARK.
+  const gh = p.height * 0.62;
+  const gw = gh * 0.72;
+  const gx = p.height * 0.32;
+  const gy = (p.height - gh) / 2;
+  g.strokeStyle = p.fg;
+  g.fillStyle = p.fg;
+  g.lineWidth = 1.3;
+  g.beginPath();
+  g.moveTo(gx, gy); g.lineTo(gx + gw, gy);
+  g.moveTo(gx, gy + gh); g.lineTo(gx + gw, gy + gh);
+  g.moveTo(gx + gw * 0.15, gy); g.lineTo(gx + gw * 0.85, gy + gh);
+  g.moveTo(gx + gw * 0.85, gy); g.lineTo(gx + gw * 0.15, gy + gh);
+  g.stroke();
+  g.font = p.font;
+  g.textBaseline = 'middle';
+  g.textAlign = 'left';
+  g.fillText(p.text, gx + gw + p.height * 0.12, p.height / 2 + 0.5);
   return c;
 }
