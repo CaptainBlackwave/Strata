@@ -69,6 +69,7 @@ function watchLayout(): void {
   // A scene change (tokens on <html>, data-theme on <body>) or a worn style (data-* on #board) redraws the glass.
   const watch = new MutationObserver(() => {
     tokens = null;
+    glow = null;
     relayoutSoon();
   });
   watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
@@ -96,6 +97,8 @@ export function applyBoardSetting(): BoardMode {
   mode = decide();
   if (mode === 'gpu') {
     watchLayout();
+    tokens = null; // the scene may have changed while the canvas was off and unwatched
+    glow = null;
     gpuLayout();
   } else {
     active = false;
@@ -213,8 +216,14 @@ function glowTokens(): { glow: string; glowCore: string } {
 /** The look now: tokens (cached), the worn sand and cork pieces and the patterns setting. */
 function currentLook(): BoardLook {
   tokens ??= readTokens();
-  return { glass: tokens.glass, ink: tokens.ink, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: boardEl.dataset.cork ?? 'cork', ...glowTokens() };
+  // Read once with the tokens (strata-8j3): getComputedStyle here forced a style recalculation on
+  // every jar redraw of a pour. The scene sets --glow on <html>; the observer in watchLayout clears both.
+  glow ??= glowTokens();
+  return { glass: tokens.glass, ink: tokens.ink, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: boardEl.dataset.cork ?? 'cork', ...glow };
 }
+
+/** The scene's glow colours, cached like `tokens`; `null` until read (and after a scene change). */
+let glow: { glow: string; glowCore: string } | null = null;
 
 /** The hint's "from" jar, from the DOM's `.hint-from` class (board.ts `showHint`), or `null`. */
 function hintFrom(): number | null {
@@ -235,6 +244,7 @@ function onContext(lost: boolean): void {
     return;
   }
   tokens = null;
+  glow = null;
   gpuLayout();
 }
 
