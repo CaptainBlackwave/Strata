@@ -40,7 +40,7 @@ describe('the sieve is a card mechanic (D96)', () => {
     expect(specialsOf(141, cfg).debut).toBe('sieve');
   });
   it('the Jar guide order is the config order, the hourglass and the sieve before the clam', () => {
-    expect(ids.slice(-4, -2)).toEqual(['hourglass', 'sieve']);
+    expect(ids.slice(-5, -3)).toEqual(['hourglass', 'sieve']);
   });
   it('stays out of the daily rotation and the "all four special jars" count until W1', () => {
     expect(ids.filter(isClassicMechanic)).toEqual(['narrow', 'frozen', 'locked', 'funnel']);

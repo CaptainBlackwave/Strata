@@ -190,6 +190,40 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 
 **Player-facing**: not built in the core tasks. Until W4/W5, `'wet'` is a `BoardMechanicId` but not a `MechanicId`: `hasMechanicCard('wet')` is false, `specMechanics` leaves it out, the Jar guide skips it (a one-line filter in `src/ui/screens/sheets/guide.ts`) and the map shows no "new jar" badge at 201. W4 draws wet units darker with a droplet and the count, and a drying shimmer (`dried`); W5 adds the intro card, the help entry and the `'wet'` refusal explanation, then folds it into `MechanicId`. **The core must not ship to players without that UI**: wet sand drawn as dry sand would refuse pours into empty jars with no visible reason.
 
+### 2.8 Tide jar (sprint 24 T1–T3, D193–D197)
+
+*Designed for Strata; no rule, name or art is taken from another game.*
+
+The second mechanic of the 40-level pace (D190): the tide jar debuts on level 241 (D193). Like the hourglass it is one jar with a count that every pour on the board moves, but where the hourglass turns the whole stack over, the tide **lifts it by one layer**: the sand at the bottom comes up to the top.
+
+**Rules**
+1. **One tide jar.** `Jar.tide` is `{ every, left }`, the same shape as the hourglass's count: the tide turns every `every` successful pours on the board, `left` pours from now (1 to `every`). A jar that is not a tide jar has no `tide` field, so every board without one is exactly as before.
+2. **Counting.** Every successful pour anywhere on the board counts `left` down by one, a pour into or out of the tide jar included. A refused pour changes nothing.
+3. **The turn (D194).** The pour that brings `left` to zero turns the tide, right after the pour: the jar's **bottom unit moves to the top** and every other unit moves **down one place** (`[a, b, c, d]` becomes `[b, c, d, a]`, bottom first). Then `left` restarts at `every`. The turn includes any sand that pour just added or took away. `pour()` reports the turned jars in `turned`, and the session's pour event carries `turned` when non-empty.
+4. **No buried sand.** A tide jar holds no buried units: placement shows its whole stack (`hidden: 0`), and a turn always shows it (this only matters for hand-built boards).
+5. **Turns that change nothing visible.** An empty tide jar, or one holding a single colour, looks the same after a turn. It still turns: the count restarts and the jar is listed in `turned` (as the hourglass lists every flip), so the count the player sees always runs `every … 1` and back.
+6. **Sealing stops the tide (D195).** A tide jar that is sealed (full of one colour at the normal capacity and dry, §2.7) **never turns again**: its count no longer moves and is left where it was. Its field is kept, so the UI can still draw it as a tide jar, a still one. A sealed jar can never be poured into or out of, so it is sealed for good. A pour that seals the tide jar on what would have been its turning pour does not turn it. A turn keeps the jar's colours, so it never seals or unseals a jar by itself.
+7. **With wet sand (§2.7).** A turn moves each unit's wet count with its unit (the same rotation of `Jar.wet`).
+8. **Order (decided here).** After a pour, the rules run as hourglasses, clams, drying and then the **tide, last**. Placement keeps the tide jar off the hourglass and the clam, so only the order with drying can matter: the tide sees the board as the pour leaves it, after drying. A complete tide jar whose last wet unit dries on this pour is sealed when the tide is checked, so it does not turn (rule 6 holds exactly). A tide jar that is complete but still wet is not sealed, so it turns, and its wet counts move. A rotation and "every count down by one" commute, so the counts are the same either way.
+9. **Board state.** The count lives on the board, so Undo, Restart, the solver, hint plans and saved boards keep it. It is part of the jar's solver key (`T{left}/{every}`) and of the solver's empty-jar kind, so the same sand with another count is another state.
+10. **Waiting is useful.** While a tide jar is unsealed and holds two or more colours (`hasLiveTide`), every legal pour moves the tide closer, so `usefulMoves` keeps every legal pour, swaps included (as for the hourglass). An empty, one-colour or sealed tide jar adds no waits: its turn changes nothing. A whole one-colour jar poured between the tide jar and an ordinary empty jar is not a pure swap (the tide jar is its own kind, like a sieve), so it is kept. No dead-end reason is added (D21): a turn never removes sand from reach.
+11. **Shuffle.** An unsealed tide jar is a free jar, like the hourglass: its sand is re-dealt and its count is kept (a shuffle is not a pour). A sealed tide jar keeps its sand. Each re-deal is solver-proven with the count.
+12. **Hint**: the hint follows the solver, which plays every turn through `pour()` and may spend pours waiting for the tide.
+
+**Placement** (`applyMechanics`): after the clam and before wet sand, from the same seeded placement stream. One filled jar that is not sealed, frozen, locked, narrow, a funnel, the hourglass, the sieve or the clam, picked uniformly; its sand is shown (`hidden: 0`) and its count starts at `every`. Frozen and locked jars are left out because their sand would move while the player can do nothing with it; narrow and funnel jars because a narrow jar never seals and a funnel never pours out, so the tide would be the only thing moving their sand; the other mechanics because each of them is its own jar. Wet sand is placed after it and may land on it. A deal with no candidate is re-dealt. Levels that do not roll the tide jar draw nothing extra and keep exactly their boards. Every board is then solver-proven with the turn.
+
+**Schedule**: `{ "id": "tide", "unlockAt": 241, "every": 4, "ownChance": 0.14, "ownSalt": 6173, "shared": false }` in `mechanics.list`. Level 241 is its debut: the tide jar alone, two spares, no spare swap (D28). From 242 it comes **only from its own roll** (`shared: false` keeps it out of `pickMechanics`' shared draw, D198), can combine with a rolled mechanic and the spare swap (still at most 3, D22), and tall-jar levels can roll it.
+- **Debut alone (decided here).** Wet sand's own roll would have fired on level 241 as well. `withOwnRolls` now rolls nothing extra on any mechanic's debut level (D28). It cannot change a level below 241: the only own roll before was wet sand's, and its only debut-level roll, 201, already holds wet sand.
+- **Levels that changed.** Adding a ninth mechanic changes the draw for levels 241 and up. Levels 1–240 are byte-identical: fixture `tests/fixtures/boards-1-240.json` hashes every level 1–240 at commit `bbcab89`, before the tide jar (and matches `boards-1-200.json` on 1–200). Of levels 241–400, 42 boards changed: 241, 242, 246, 257, 259, 261, 266, 268, 270, 274, 276, 278, 279, 282, 286, 287, 292, 296, 297, 302, 305, 311, 314, 323, 327, 338, 343, 345, 354, 355, 357, 358, 359, 362, 363, 364, 371, 372, 374, 375, 393, 394. The other 118 are byte-identical.
+- **Share (D196).** The shared draw alone gives the tide jar 54 of levels 241–1000 (7.1%). Its own roll, `ownChance` 0.07 per level from 241 with its own salt, raises that to **94 of 760 (12.4%)**, about 1 in 8. Measured over 0, 0.05, 0.06, 0.065, 0.07 and 0.08: 7.1%, 11.2%, 11.8%, 12.1%, 12.4% and 12.5%. Above about 0.07 the own roll mostly lands on levels the shared draw already gave it. Levels 241–400 have 12 tide levels: 241, 259, 266, 268, 305, 327, 345, 354, 359, 363, 372, 375. Every one is built with it on an early attempt and solver-proven, and its proof replays through 3–17 turns. 8 levels of 201–1000 have both wet sand and the tide jar.
+- **Own roll only (D198).** In the shared draw the tide jar split it nine ways and lowered wet sand from 12.4% to 10.5% of 201–1000. With `shared: false` the shared draw is as before, so wet sand stays at 98 of 201–1000 (12.2%) and the tide jar, from its own roll at 0.14, is on 90 of 241–1000 (11.8%, about 1 in 8). The figures in the bullet above are from the first build (shared draw plus 0.07) and are kept for the record.
+- **Balance (D198).** The tide jar makes levels slightly harder for the simulated player (`tools/balance/sim-player.ts`, a greedy player that does not plan for turns): of the 27 tide levels in 242–500, 13 are stuck with it and 11 without. Turning every 5 or even 8 pours did not change that on level 301, so the owner kept every 4 and the 301–400 stuck-rate gate now samples every 3rd level (34 boards: 32% stuck with tide jars, 29% without, limit 60%) instead of every 10th, where two boards decided it.
+- **Fallback.** The tide jar with a classic mechanic falls back first to the classic one alone (two spares), then to none; alone it falls back straight to none.
+
+**Daily, weekly, events (D197)**: not in their rotation. `isClassicMechanic('tide')` is false, so the Saturday rotation never picks it; no weekly theme names it; event boards have no special jars (D144).
+
+**Player-facing**: `'tide'` is a `MechanicId` from T2, so the UI tables keyed by it compile. Placeholder strings are in `src/ui/strings.ts` (`mechanics.tide`, `map.jars.tide`, `jarStates.tide(left)`). T4 draws the wave mark, the count and the rise animation (`turned`). T5 writes the intro card, Jar guide entry, map badge and tap text. There is no refusal reason of its own: a tide jar refuses pours exactly like an ordinary jar. **The core must not ship to players without that UI**: a jar whose sand moves by itself, with no mark, would look like a bug.
+
 ### 2.2 State and Data
 
 - `Jar.cap?: number`, `Jar.frozen?: boolean`, `Jar.lock?: Color`, `Jar.funnel?: boolean`. A thawed or unlocked jar has the field removed, not set to false.
@@ -201,6 +235,8 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 - `LevelSpec.clam?: boolean`: the level rolled the clam (kept apart from `mechanics`, like the hourglass and the sieve, so placement stays byte-identical).
 - `Jar.wet?: number[]` (§2.7): per-unit pours left until dry, parallel to `units` (0 dry); absent when every unit is dry. Part of the jar's solver key (`W{counts}`). `pour()` returns `dried` (jars where a unit dried, including every jar the winning pour dried); the session's pour event carries `dried` and `sealedDry` when non-empty. `isComplete(jar, capacity)` is full of one colour; `isSealed` is complete and dry; `isRunWet(jar)`, `isJarWet(jar)` and `hasWet(board)` answer the wet questions.
 - `LevelSpec.wet?: boolean`: the level rolled wet sand (kept apart from `mechanics`, like the hourglass, the sieve and the clam).
+- `Jar.tide?: { every: number; left: number }` (§2.8): turns every `every` pours, `left` pours from now (1 to `every`); frozen once the jar is sealed. Part of the jar's solver key (`T{left}/{every}`) and of the solver's empty-jar kind. `pour()` returns `turned` (indices of tide jars that turned, empty and one-colour turns included); the session's pour event carries it when non-empty. `riseByOne(list)` is one turn; `hasLiveTide(board)` is true while a turn would change some tide jar's sand.
+- `LevelSpec.tide?: boolean`: the level rolled the tide jar (kept apart from `mechanics`, like the others since the hourglass).
 - `BoardMechanicId` = `MechanicId | 'wet'` since sprint 23 (before that `MechanicId | 'clam'` (every id in `mechanics.list`; the sieve was folded into `MechanicId` with its UI); `hasMechanicCard(id)` is false for the clam until its UI lands; `isClassicMechanic` is false for the hourglass, the sieve and the clam.
 - `pourRefusal(board, from, to)`: why a pour is refused (`PourRefusal`), or `null`; `canPour` is `pourRefusal(...) === null`.
 - `settle(board)`: collects the colours of all sealed jars; if any jar is sealed, drops `frozen` from all jars; drops `lock` from any jar whose lock colour is in that set. Returns the same object when nothing changes.
@@ -237,7 +273,11 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 | Wet units | `units` per level that rolls it, `debutUnits` on `unlockAt`; at most the number of candidate units | `units` (3), `debutUnits` (2) | Level 201: 2 wet units; level 259: 3 |
 | Wet rule window | every wet unit is dry by pour `dryAfter`, so the rule bites only in the first `dryAfter` pours | `dryAfter` | With 5, from pour 6 on the level is ordinary sand |
 | Pace (D190) | from 201 one new mechanic every 40 levels: `unlockAt = 201 + 40·k` | | Wet sand 201; the next (D191) 241 |
-| Wet share | the shared draw (one of the unlocked mechanics) or its own roll: `rng(mixSeed(ownSalt, level)) < ownChance` from `unlockAt` | `ownChance` 0.065, plus `chance`, `ramp.mechanicChance` | Measured 12.4% of levels 201–1000 (about 1 in 8, D192) |
+| Wet share | the shared draw (one of the unlocked mechanics) or its own roll: `rng(mixSeed(ownSalt, level)) < ownChance` from `unlockAt`, not on another mechanic's debut level | `ownChance` 0.065, plus `chance`, `ramp.mechanicChance` | Measured 12.4% of levels 201–1000 (about 1 in 8, D192) before the tide jar; 10.5% since (§2.8) |
+| Tide count | after `n` successful pours from the deal, while the jar is unsealed, it has turned `floor(n / every)` times and `left = every − (n mod every)` | `every` (default 4), `n` ≥ 0 | Pours 1–3: `left` 3, 2, 1; pour 4 turns it and `left` is 4 again |
+| Tide turn | `units' = [u₁, u₂, …, u₍ₖ₋₁₎, u₀]` for `units = [u₀, …, u₍ₖ₋₁₎]` (bottom first), the same for `wet`; `k ≤ 1` unchanged | `k` = units in the jar | `[0, 1, 2]` turns to `[1, 2, 0]`; after `k` turns the stack is back as it was (if nothing was poured) |
+| Tide stop | a sealed tide jar keeps `left` for good | | Sealed with `left` 2: it shows 2 ever after (the UI draws it still) |
+| Tide share | its own roll only (`shared: false`): `rng(mixSeed(6173, level)) < 0.14` from 241, not on another mechanic's debut level | `ownChance` 0.14, `ownSalt` 6173 | Measured 90 of levels 241–1000 (11.8%, about 1 in 8, D196, D198) |
 
 **Tuning knobs (hourglass)**
 
@@ -269,6 +309,16 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 | `mechanics.list[wet].debutUnits` | 2 | 1–`units` | Wet units on the debut level only; absent: `units` |
 | `mechanics.list[wet].ownChance` | 0.065 | 0–0.2 | Its own per-level roll on top of the shared draw; 0.065 gives about 1 level in 8 from 201 (D192). Changing it changes which levels 201+ have wet sand; levels below 201 never change. `ownSalt` must never change once released |
 | `mechanics.list[wet].dryAfter` | 5 | 2–8 (at least 1 is enforced) | Pours a wet unit stays wet. 1 barely matters (any first pour dries it); high keeps the solver's wait branching (every legal pour is useful while wet) for longer and pushes plans toward the pour cap. Changing it changes wet boards from 201 |
+
+**Tuning knobs (tide jar)**
+
+| Knob | Default | Safe range | Effect |
+|---|---|---|---|
+| `mechanics.list[tide].unlockAt` | 241 | ≥ 241 (lower would change levels ≤ 240) | Debut level (D193) |
+| `mechanics.list[tide].every` | 4 | 3–6 (at least 1 is enforced) | Pours between turns (D194). 1 or 2 move the stack almost every pour (hard to read and to plan); above 6 a 4-high jar turns only a few times in a level and the jar barely matters. Changing it changes tide boards from 241 |
+| `mechanics.list[tide].ownChance` | 0.14 | 0–0.25 | Its only roll (`shared: false`); 0.14 gives about 1 level in 8 from 241 (D196, D198). Changing it changes which levels 241+ have a tide jar; levels below 241 never change |
+| `mechanics.list[*].shared` | true (false for the tide jar) | true / false | False keeps a mechanic out of the shared draw, so adding it does not thin the others' shares (D198) |
+| `mechanics.list[tide].ownSalt` | 6173 | any, distinct from other salts | Seeds the own roll. Never change it once released |
 
 ---
 
@@ -331,6 +381,20 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 - ✅ A deal with no visible candidate unit is re-dealt; fewer candidates than `units` places as many as there are (at least one).
 - ✅ Buried units are never dealt wet, so a droplet is never under burial; a unit that becomes wet-and-buried cannot happen (pours only add on top).
 
+**Tide jar (sprint 24 T2/T3)**:
+- ✅ A refused pour does not count; a pour into or out of the tide jar counts, and the turn includes the sand that pour moved.
+- ✅ An empty tide jar turns: only its count restarts (`turned` lists it). A one-colour tide jar, not full, looks the same after a turn and its count restarts.
+- ✅ A sealed tide jar never turns again, also on the pour that seals it; its count stays where it was; Shuffle keeps it as it is.
+- ✅ The winning pour can be a would-be turning pour: the sealed jars do not turn and the rest cannot unseal, so the win stands.
+- ✅ Wet sand on the same board: the turn moves each wet count with its unit. A complete tide jar that dries on this pour seals and does not turn (drying runs before the tide). A complete tide jar that is still wet is not sealed, so it turns, and only its counts move.
+- ✅ An hourglass and a clam on the same board: one pour can flip, open and turn; they are always different jars, so the order between them does not matter.
+- ✅ A sieve on the same board: never the tide jar, so a turn never brings a wrong colour into a sieve.
+- ✅ A hand-built tide jar with buried sand shows its whole stack after a turn (placement never buries one).
+- ✅ Undo restores the stack and the count, also across a turn; Restart restores the dealt count; Shuffle re-deals an unsealed tide jar and keeps its count.
+- ✅ With a mixed, unsealed tide jar every legal pour is useful (a wait), so the stuck banner appears only when no pour is left; with an empty, one-colour or sealed one the usual pruning stands.
+- ✅ No jar qualifies for placement: the deal is re-dealt; a level that never gets one falls back (§2.8).
+- ✅ A debut level never gets another mechanic's own roll (wet sand on 241).
+
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
 - ⚠️ A debut level from 60 up can also get the spare-swap narrow jar, so its new mechanic is not always alone (GA-LG-7; no rule yet).
@@ -348,9 +412,11 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 
 **Wet sand (§2.7)** also depends on `session-boosters.md` (Undo, Shuffle carry the counts; hint waits) and on the sprint 23 UI tasks W4 (look) and W5 (intro card, help), without which it must not ship.
 
+**Tide jar (§2.8)** also depends on `session-boosters.md` (Undo, Shuffle keep the count; hint waits) and on sprint 24 T4 (look, rise animation) and T5 (intro card, help), without which it must not ship.
+
 **Design Dependencies**: `pour-rules.md`, `level-generation.md`, `daily-puzzle.md`, `session-boosters.md`, `feel-audio-ui.md`, `save-data.md` (remembers which intro cards were shown).
 
-**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`, `every`, `colorTries`, `opensAfter`, `units`, `debutUnits`, `dryAfter`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
+**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`, `every`, `colorTries`, `opensAfter`, `units`, `debutUnits`, `dryAfter`, `ownChance`, `ownSalt`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
 
 ---
 
@@ -423,6 +489,23 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 - [ ] W4: darker damp sand with a droplet and the count on Classic and Realistic boards, colour-blind patterns readable, reduced motion respected, a drying shimmer (`dried`), screenshots of every state at 320 px / 150%.
 - [ ] W5: intro card on level 201, Jar guide entry, map "new jar" badge, the `'wet'` refusal explanation; then `'wet'` joins `MechanicId`.
 
+**Tide jar (sprint 24 T2/T3, core)**, covered in `tests/unit/core/tide.test.ts`:
+- ✅ Config lists the tide jar at 241 with `every: 4`, its own `ownChance` and a salt no other mechanic uses.
+- ✅ Each successful pour counts down; the fourth turns the stack (bottom unit to the top, the rest down one) and restarts the count; a pour into or out of the jar counts and the turn follows it; `turned` and the session's `turned` name it.
+- ✅ An empty or one-colour jar's turn changes nothing but the count; a sealed tide jar never turns again (also on its sealing pour); a turn never seals, and a turning pour can win.
+- ✅ Wet counts move with their units; drying comes before the tide (a jar that seals by drying does not turn); with an hourglass and a clam one pour flips, opens and turns.
+- ✅ A refused pour does nothing in a session; Undo and Restart restore the stack and the count; board keys differ by count.
+- ✅ With a mixed tide jar every legal pour is useful and the board is not stuck; a one-colour tide jar adds no waits, but moving its sand to an ordinary empty jar is kept.
+- ✅ Shuffle re-deals an unsealed tide jar and keeps its count; a sealed one is kept; the re-deal is solver-proven.
+- ✅ The solver's path replays legally through turns to a win; following hints on level 241 wins.
+- ✅ Level 241 debuts it alone with two spares (no wet sand from its own roll), one tide jar at `every` with all its sand shown, proven, no longer than its band's median. No level ≤ 240 rolls it.
+- ✅ Placement: one filled, unsealed jar that is not frozen, locked, narrow, a funnel, the hourglass, the sieve or the clam; drawn after those (their boards unchanged); wet sand may land on it; `every` tunable.
+- ✅ Fallback: tide + classic keeps the classic one alone first; tide alone falls back to none.
+- ✅ Every tide level of 241–400 is built with one tide jar, within its pour cap, and its proof replays to a win; its share of 241–1000 is 10–15% and lower without its own roll.
+- ✅ Levels 1–240 byte-identical (`boards-1-240.json`, hashed at `bbcab89`); two years of dailies, 52 weeks of weekly boards and every event board have no tide jar; no weekly theme names it.
+- [ ] T4: wave mark and count on Classic and Realistic boards, a still look when sealed, the rise animation (`turned`, instant under reduced motion), colour-blind patterns moving with their units, the screen-reader label and turn announcement, screenshots at 320 px / 150%.
+- [ ] T5: intro card on level 241, Jar guide entry, map "new jar" badge, tap text (replacing the T2 placeholders).
+
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.
 - [x] Open questions answered (2026-11-08).
@@ -434,7 +517,9 @@ Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 2
 
 ## Open Questions and Follow-Up Work
 
-None open: Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reported (D21), up to 3 mechanics (D22).
+Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reported (D21), up to 3 mechanics (D22).
+
+- **Answered (D198):** the tide jar comes only from its own roll (`shared: false`), so wet sand keeps about 1 in 8 and levels 201–240 are unchanged.
 
 ### Flagged Follow-Up Work
 - [x] Mechanics on tall-jar levels from level 100, with tests (a lock is only placed in a jar missing its key colour; otherwise the deal is re-dealt).
@@ -454,3 +539,4 @@ None open: Saturday stays as built (D2), narrow jars never seal (D4), dead ends 
 | 2026-11-09 | Claude (sprint 13 M2) | Sieve jar (D96, D97), §2.5: rules (band in, anything out, seals), the `'sieve'` refusal reason (`pourRefusal`), Shuffle re-deals a free sieve and keeps its band, placement after every other mechanic, band colour chosen by solver proof (prefers a sieve that ends sealed, `colorTries`), the levels 141+ that changed, daily and weekly held back until W1, no new dead end (D21), formulas, tuning knobs, edge cases, acceptance criteria; §2.4 hourglass counts updated |
 | 2026-11-10 | Claude (sprint 13 M3) | Clam jar (D96, D97), §2.6: rules (closed: nothing in or out, sand hidden; every pour counts down; opens for good at zero), the `'clam'` refusal reason, `opened` on the pour result and event, the stuck decision (with a closed clam every legal pour is useful, so stuck only when no pour is left; no new dead end), Shuffle keeps a closed clam, placement after every other mechanic, `opensAfter` knob, the levels 181+ that changed (fixture `boards-141-180.json`), daily and weekly held back until W1, formulas, tuning knobs, edge cases, acceptance criteria; hourglass and sieve shares updated |
 | 2026-11-12 | Claude (sprint 23 W1–W3) | Wet sand (D189, D190), §2.7: per-unit counts (`Jar.wet`), the whole-top-run rule and the `'wet'` refusal (never into an empty jar), drying on every pour (`dried`), sealing only when dry (`isComplete` vs `isSealed`, `sealedDry`), the won-when-complete decision (the winning pour dries the board), waits are useful, Shuffle keeps counts, placement on visible units after every other mechanic, `units`/`debutUnits`/`dryAfter` knobs, the 40-level pace, levels 201+ that changed (fixture `boards-1-200.json`), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |
+| 2026-11-12 | Claude (sprint 24 T1–T3) | Tide jar (D193–D197), §2.8: `Jar.tide` count like the hourglass's, the turn (bottom unit to the top, the rest down one, wet counts with their units), empty and one-colour turns still restart the count (`turned`), a sealed tide jar never turns again (count kept, frozen), the order (tide last, after drying), waits useful while mixed, Shuffle keeps the count, placement after the clam and before wet sand on a plain filled jar shown whole, debut levels roll no other own roll (D28), `every`/`ownChance`/`ownSalt` knobs, levels 241–400 that changed (fixture `boards-1-240.json`), the share (12.4% of 241–1000) and its effect on wet sand (open question), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |

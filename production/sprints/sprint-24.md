@@ -28,6 +28,7 @@ One new mechanic every 40 levels from 201 (D190). Wet sand debuted on 201; the n
 - D194: the tide turns every 4 successful pours on the board; the stack rises by one (bottom unit to the top).
 - D195: a sealed tide jar never turns again.
 - D196: about 1 level in 8 from 241 (its own roll, like wet sand).
+- D198: the tide jar comes only from its own roll (about 1 in 8), keeping wet sand at 1 in 8; every 4 pours; the 301–400 balance gate samples every 3rd level.
 - D197: release 0.22.0 whenever it's ready; wet sand and the tide jar stay on levels only (not daily, weekly or events).
 
 ## Out of scope

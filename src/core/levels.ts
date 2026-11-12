@@ -193,6 +193,11 @@ export interface MechanicConfig {
   readonly ownChance?: number;
   /** The seed salt of `ownChance`'s roll, one per mechanic. Never change it once released. */
   readonly ownSalt?: number;
+  /**
+   * False: the mechanic is left out of `pickMechanics`' shared draw and appears only through its own
+   * roll (`ownChance`), so it never changes how often the others appear (D198). Default true.
+   */
+  readonly shared?: boolean;
 }
 
 /** Fully resolved parameters for one level. */
@@ -236,10 +241,13 @@ export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: Cl
 /**
  * Adds the mechanics with their own per-level roll (`ownChance`, D192) to the shared roll's pick,
  * after it so a breather's `maxMechanics` cut keeps the shared pick first. Only levels at or past
- * a mechanic's `unlockAt` roll, so earlier levels are unchanged. Example: wet sand at 0.09 from 201.
+ * a mechanic's `unlockAt` roll, so earlier levels are unchanged. A mechanic's debut level rolls
+ * nothing extra (D28: the debut shows its mechanic alone; sprint 24 T3, so wet sand never joins the
+ * tide jar's debut on 241). Example: wet sand at 0.065 from 201, the tide jar at 0.07 from 241.
  */
 export function withOwnRolls(level: number, rolled: readonly BoardMechanicId[], config: GameConfig): BoardMechanicId[] {
   const out = [...rolled];
+  if (config.mechanics.list.some((m) => m.unlockAt === level)) return out;
   for (const m of config.mechanics.list) {
     if (!m.ownChance || level < m.unlockAt || out.includes(m.id as BoardMechanicId)) continue;
     if (createRng(mixSeed(m.ownSalt ?? 0, level))() < m.ownChance) out.push(m.id as BoardMechanicId);
@@ -357,7 +365,9 @@ export function pickMechanics(level: number, config: GameConfig): BoardMechanicI
   const m = config.mechanics;
   const debut = m.list.find((x) => x.unlockAt === level);
   if (debut) return [debut.id];
-  const unlocked = m.list.filter((x) => x.unlockAt <= level).map((x) => x.id);
+  // A mechanic with `shared: false` comes only from its own roll (`withOwnRolls`), so adding it never
+  // thins the shared draw of the mechanics before it (D198: the tide jar keeps wet sand at 1 in 8).
+  const unlocked = m.list.filter((x) => x.unlockAt <= level && x.shared !== false).map((x) => x.id);
   if (!unlocked.length) return [];
   const rng = createRng(mixSeed(m.salt, level));
   if (rng() >= mechanicChance(level, config)) return [];
