@@ -5,9 +5,9 @@
     "canvas": true,
     "splash": false,
     "scrollX": false,
-    "rafIdle1s": 64,
+    "rafIdle1s": 0,
     "sparkleSeen": 1,
-    "rafBetweenSparkles3s": 186
+    "rafBetweenSparkles3s": 0
   },
   "realistic-320-text150": {
     "mode": "realistic",
@@ -31,13 +31,13 @@
     "scrollX": false
   },
   "realistic-390-reduced-motion": {
-    "mode": "css",
-    "label": "Play",
-    "canvas": false,
-    "splash": true,
+    "mode": "realistic",
+    "label": "Play level 42",
+    "canvas": true,
+    "splash": false,
     "scrollX": false,
-    "rafIdle1s": 23,
+    "rafIdle1s": 0,
     "sparkleSeen": 0,
-    "rafBetweenSparkles3s": 117
+    "rafBetweenSparkles3s": 0
   }
 }

@@ -11,6 +11,7 @@ const path = require('path');
 const BASE = `http://localhost:${process.env.PORT || 5182}`;
 const LABEL = process.env.LABEL || 'run';
 const RUNS = Number(process.env.RUNS || 3);
+// POLL=1: wait on the game state between pours (sprint 18's method) instead of fixed waits.
 const BOARDS = (process.env.BOARDS || 'dom,gpu').split(',');
 const KEY = 'strata.save.v2';
 const VIEW = { width: 390, height: 844 };
@@ -49,7 +50,20 @@ async function tapJar(page, i) {
   const box = await page.locator('#board .jar').nth(i).boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6);
 }
-async function pourBy(page, [from, to]) {
+/**
+ * Taps from, then to, and waits until the pour is over. Without polling (the default), it waits a
+ * fixed time: the harness then runs no script in the page while frames are timed (a poll every
+ * 50 ms costs a few ms of main thread at 4x throttle and lands in the frames it measures).
+ * POLL=1 polls the game state instead, as sprint 18's check.cjs did.
+ */
+async function pourBy(page, [from, to], settleMs = 1800) {
+  if (!process.env.POLL) {
+    await tapJar(page, from);
+    await page.waitForTimeout(250);
+    await tapJar(page, to);
+    await page.waitForTimeout(settleMs);
+    return;
+  }
   const before = await page.evaluate(async () => (await import('/src/ui/state.ts')).state.session.moves);
   await tapJar(page, from);
   await page.waitForTimeout(60);
@@ -78,8 +92,9 @@ async function measure(browser, board, reduced) {
     };
     requestAnimationFrame(loop);
   });
-  for (const m of moves) await pourBy(page, m);
+  for (const m of moves) await pourBy(page, m, reduced ? 700 : 1800);
   await page.waitForTimeout(400);
+  const poured = await page.evaluate(async () => (await import('/src/ui/state.ts')).state.session.moves);
   const perf = await page.evaluate(() => {
     window.__perf.stop = true;
     const f = window.__perf.frames.slice(2).sort((a, b) => a - b);
@@ -88,7 +103,7 @@ async function measure(browser, board, reduced) {
   });
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   await context.close();
-  return { board, render, reducedMotion: reduced, level: 491, jars, pours: moves.length, cpuThrottle: 4, ...perf };
+  return { board, render, reducedMotion: reduced, level: 491, jars, pours: moves.length, poured, polled: !!process.env.POLL, cpuThrottle: 4, ...perf };
 }
 
 module.exports = { open, solvePath, pourBy };

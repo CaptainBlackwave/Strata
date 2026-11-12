@@ -30,6 +30,8 @@ const fakePrompt = (p) => p.evaluate(() => {
   e.userChoice = Promise.resolve({ outcome: 'dismissed' });
   window.dispatchEvent(e);
 });
+/** Home's Play opens the beach path; its Play starts the level. */
+const play = async (p) => { await p.click('#btn-play'); await p.waitForTimeout(700); if (await p.locator('#map:not([hidden])').count()) await p.click('#btn-map-play'); await p.waitForTimeout(900); };
 const saved = (p) => p.evaluate((k) => JSON.parse(localStorage.getItem(k)).onboarding, KEY);
 
 (async () => {
@@ -63,7 +65,7 @@ const saved = (p) => p.evaluate((k) => JSON.parse(localStorage.getItem(k)).onboa
   // ---- A4 on a phone: zoom and selection rules as computed ----
   {
     const { ctx, p } = await open(b, DEV, 'Pixel 7', { saveData: save({ onboarding: { installAsks: 2 } }) });
-    await p.click('#btn-play'); await p.waitForTimeout(900);
+    await play(p);
     r.nativeFeel = await p.evaluate(() => {
       const cs = (sel) => { const el = document.querySelector(sel); const s = el && getComputedStyle(el); return s && { touchAction: s.touchAction, userSelect: s.userSelect || s.webkitUserSelect, callout: s.webkitTouchCallout ?? 'n/a' }; };
       return { viewport: document.querySelector('meta[name=viewport]').content, themeColor: document.querySelector('meta[name=theme-color]').content, bgTop: getComputedStyle(document.documentElement).getPropertyValue('--bg-top').trim(), board: cs('#board'), jar: cs('.jar'), button: cs('#btn-hint'), body: cs('body') };
@@ -118,7 +120,7 @@ const saved = (p) => p.evaluate((k) => JSON.parse(localStorage.getItem(k)).onboa
     await ctx.setOffline(true);
     await p.reload(); await p.waitForTimeout(1500);
     await p.screenshot({ path: `${OUT}/offline-home.png` });
-    await p.click('#btn-play'); await p.waitForTimeout(1000);
+    await play(p);
     await p.screenshot({ path: `${OUT}/offline-board.png` });
     let pours = 0;
     for (let i = 0; i < 80 && !(await p.locator('#win:not([hidden])').count()); i++) {
