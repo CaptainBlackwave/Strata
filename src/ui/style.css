@@ -4155,11 +4155,14 @@ body[data-theme='harvestmoon']::before {
   line-height: 1.1;
 }
 .hero-stage {
+  --hero-reach: 48px; /* the drawing area reaches up under the heading: room for the tipped jar */
   position: relative;
   z-index: 1;
   display: block;
   width: 100%;
-  height: clamp(240px, 74vw, 360px);
+  height: calc(clamp(240px, 74vw, 360px) + var(--hero-reach));
+  margin-top: calc(-1 * var(--hero-reach));
+  container-type: size;
 }
 .hero-stage canvas {
   display: block;
@@ -4314,47 +4317,50 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   50% { opacity: 0.6; }
 }
 
-/* The still hero (Classic, no WebGL, a lost context): the board's DOM jars, the worn styles on them. */
+/* The hero's board (D173): a button that plays. The canvas fills it; the still is the board's DOM jars. */
+.hero-stage {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.hero-stage:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -6px;
+  border-radius: 18px;
+}
+.hero-stage canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease-in-out;
+}
+.hero-stage canvas.faded {
+  opacity: 0;
+}
 .hero-still {
-  --jar-w: clamp(64px, 25vw, 104px);
-  --unit-h: calc(var(--jar-w) * 0.45);
-  --jar-h: calc(var(--unit-h) * 4.25 + 6px);
+  /* The same row as the canvas (logic/home-hero.ts heroLayout): glass 65% of the area, gaps 0.4 widths. */
+  --jar-w: min(62px, (100cqw - 32px) / 6.6);
+  --jar-h: calc(65cqh - var(--jar-w) * 0.18);
+  --unit-h: calc((var(--jar-h) - 6px - var(--jar-w) * 0.3) / 4);
+  --gap-x: calc(var(--jar-w) * 0.4);
   position: absolute;
   inset: 0;
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: calc(var(--jar-w) * 0.22);
-  padding-bottom: 22px;
+  gap: var(--gap-x);
+  padding-bottom: 18px;
   pointer-events: none;
 }
 .hero-still .jar {
   flex: none;
   cursor: default;
-}
-.hero-still .jar.side {
-  --jar-w: calc(clamp(64px, 25vw, 104px) * 0.76);
-  --unit-h: calc(var(--jar-w) * 0.43);
-  --jar-h: calc(var(--unit-h) * 4.4 + 6px);
-  margin-bottom: 10px;
-}
-.hero-still .funnel {
-  position: absolute;
-  left: 50%;
-  bottom: calc(22px + var(--jar-h) + var(--jar-w) * 0.18 + 12px);
-  width: calc(var(--jar-w) * 0.56);
-  height: calc(var(--jar-w) * 0.44);
-  transform: translateX(-50%);
-  background: linear-gradient(90deg, rgba(30, 38, 44, 0.08), rgba(255, 255, 255, 0.35) 35%, rgba(30, 38, 44, 0.12));
-  border-top: 3px solid var(--glass-edge);
-  clip-path: polygon(0 0, 100% 0, 56% 72%, 56% 100%, 44% 100%, 44% 72%);
-}
-.hero-still .funnel::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 2px solid var(--glass-edge);
-  clip-path: inherit;
 }
 
 /* ---- Play and the Today strip ---- */
@@ -5058,7 +5064,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 /* Large text on a narrow phone: the hero gives up height first; nothing scrolls sideways. */
 @media (max-width: 360px) {
   .hero-stage {
-    height: clamp(220px, 74vw, 300px);
+    height: calc(clamp(220px, 74vw, 300px) + var(--hero-reach));
   }
   .home .goals-list .goal-row {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -5071,7 +5077,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 }
 @media (max-height: 620px) {
   .hero-stage {
-    height: clamp(200px, 62vw, 280px);
+    height: calc(clamp(200px, 62vw, 280px) + var(--hero-reach));
   }
 }
 

@@ -26,7 +26,7 @@ import { audio, config, state } from '../state';
 import { setHeroOnPlay } from './home-hero';
 import { trackNames } from './home';
 import { openMap } from './map';
-import { startDaily } from './board';
+import { play, startDaily } from './board';
 import { openEvent } from './sheets/event';
 import { openEditProfile } from './sheets/edit-profile';
 import { openProfile, plateEl, portraitOf } from './sheets/profile';
@@ -316,6 +316,7 @@ export function wireHomeTabs(realistic: () => boolean): void {
     selectHomeTab(visible[next], true);
   });
   $('btn-see-today').addEventListener('click', () => selectHomeTab('today', true));
+  $('hero-stage').addEventListener('click', play); // D173: the hero plays, like Play
   $('btn-today-daily').addEventListener('click', startDaily);
   $('btn-today-event').addEventListener('click', () => {
     audio.unlock();

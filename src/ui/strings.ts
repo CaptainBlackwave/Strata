@@ -201,6 +201,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.19.1',
+        name: 'A game on Home',
+        lines: [
+          'Home now shows a little game of Strata playing itself: jars pour, sort and seal, then mix up and start again.',
+          'Tap it to jump straight into your level.',
+          'On the Classic board, or with reduced motion on, it shows a still picture instead.',
+        ],
+      },
+      {
         version: '0.19.0',
         name: 'A new Home',
         lines: [
@@ -710,6 +719,9 @@ const en = {
     tabsLabel: 'Home sections',
     tabs: { play: 'Play', today: 'Today', collection: 'Collection', profile: 'Profile' } as Readonly<Record<string, string>>,
     newSr: ', something new',
+    /** The hero is a button that plays, like Play (D173): its spoken name. */
+    heroLabel: (level: number) => `Play level ${level}`,
+    heroLabelTutorial: 'Play the tutorial',
     /** The small line over the hero's level. */
     eyebrow: 'Strata',
     /** The Today strip under Play, and its link to the Today tab. */

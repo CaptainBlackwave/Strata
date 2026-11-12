@@ -1,31 +1,163 @@
 /**
- * The Home hero's rules (sprint 20 H2, D167, D169; design/ux/home.md §5.5): live or still, when it
- * draws, where its three jars and the funnel sit, and its loop. Pure and DOM-free, so they are
- * unit-tested; the Pixi scene is board-gpu/hero-scene.ts and the controller screens/home-hero.ts.
+ * The Home hero's rules (sprint 20, D167, D169, D173; design/ux/home.md): a tiny sorting game that
+ * plays itself. Which board each loop deals, the solver's moves it plays, the loop's phases, the
+ * reduced-motion still, live or still, when it runs, and where the jars sit. Pure and DOM-free, so
+ * they are unit-tested; the controller is screens/home-hero.ts and the drawing the board's own
+ * renderer (board-gpu/renderer.ts) or, for the still, the board's DOM jars.
  */
 import rawConfig from '../../config/game-config.json';
-import type { Board } from '../../core/board';
+import { type Board, type Move, isSealed, makeBoard, pour } from '../../core/board';
+import { createRng, mixSeed, shuffle } from '../../core/rng';
+import { solve } from '../../core/solver';
 import { chooseBoardMode } from '../board-gpu/switch';
 
 /** The `homeHero` block of game-config.json. */
 export interface HeroTuning {
-  readonly stepsPerSecond: number;
-  readonly spillPerStep: number;
-  readonly airRows: number;
-  readonly restMs: number;
+  /** Colours a deal uses; each fills one jar. */
+  readonly colors: number;
+  /** Units a jar holds. */
+  readonly capacity: number;
+  /** Empty jars beside the full ones. */
+  readonly empty: number;
+  /** The first loop's seed; loop n deals from `mixSeed(seed, n)`. */
+  readonly seed: number;
+  /** Time from one pour's end to the next pour (ms). */
+  readonly paceMs: number;
+  /** The solved board rests this long before the re-mix (ms). */
+  readonly solvedMs: number;
+  /** Each half of the re-mix cross-fade (ms). */
   readonly fadeMs: number;
-  /** Palette indexes, bottom first. */
-  readonly middle: readonly number[];
-  readonly tops: readonly number[];
-  readonly left: readonly number[];
-  readonly right: readonly number[];
+  /** A deal is kept only when the solver solves it in this many pours. */
+  readonly minMoves: number;
+  readonly maxMoves: number;
+  /** The solver's node budget per deal. */
+  readonly solveBudget: number;
+  /** The hero's sand simulation rate (steps a second). */
+  readonly stepsPerSecond: number;
+  /** The tipped jar's largest tilt (degrees) and the drop to the target (cells): lower than the board's, to stay inside the hero. */
+  readonly maxTiltDeg: number;
+  readonly airRows: number;
+  /** The glass's height as a share of the drawing area at rest. */
+  readonly glassShare: number;
+  /** Colour ids the deals draw from. */
+  readonly palette: readonly number[];
 }
 
 /** The shipped tuning. */
 export const heroTuning: HeroTuning = rawConfig.homeHero;
 
-/** The hero's jars hold this many bands, like a standard board jar. */
-export const HERO_CAPACITY = 4;
+/** A deal: the board and the solver's pours that sort it, in order. */
+export interface HeroDeal {
+  readonly board: Board;
+  readonly moves: readonly Move[];
+  /** The seed the deal came from. */
+  readonly seed: number;
+}
+
+/** Deals tried before the fixed fallback. */
+const DEAL_TRIES = 40;
+
+/** The deal a tuning falls back to when no seeded try is kept: a short, known-solvable board. */
+export function fallbackDeal(tuning: HeroTuning): HeroDeal {
+  const [a, b, c] = tuning.palette;
+  const board = makeBoard(4, [[a, b, a, c], [b, c, b, a], [c, a, c, b], [], []]);
+  return { board, moves: solve(board, tuning.solveBudget).path, seed: 0 };
+}
+
+/**
+ * The board for `seed`: `colors` colours (picked from the palette by the seed), each `capacity` units,
+ * shuffled into full jars, then the empty jars. Kept when no jar starts sealed and the solver sorts it
+ * in `minMoves`..`maxMoves` pours, so every pour the hero plays is legal; otherwise the next try's seed.
+ * Deterministic. Example: `heroDeal(heroTuning, heroTuning.seed).moves.length // 6..14`.
+ */
+export function heroDeal(tuning: HeroTuning, seed: number): HeroDeal {
+  for (let attempt = 0; attempt < DEAL_TRIES; attempt++) {
+    const s = mixSeed(seed, attempt);
+    const rng = createRng(s);
+    const colors = shuffle([...tuning.palette], rng).slice(0, tuning.colors);
+    const units = shuffle(colors.flatMap((c) => Array.from({ length: tuning.capacity }, () => c)), rng);
+    const jars: number[][] = [];
+    for (let j = 0; j < tuning.colors; j++) jars.push(units.slice(j * tuning.capacity, (j + 1) * tuning.capacity));
+    for (let j = 0; j < tuning.empty; j++) jars.push([]);
+    const board = makeBoard(tuning.capacity, jars);
+    if (board.jars.some((jar) => jar.units.length > 0 && isSealed(jar, board.capacity))) continue;
+    const result = solve(board, tuning.solveBudget);
+    if (result.solvable !== true || result.path.length < tuning.minMoves || result.path.length > tuning.maxMoves) continue;
+    return { board, moves: result.path, seed: s };
+  }
+  return fallbackDeal(tuning);
+}
+
+/** Loop `n`'s seed: the re-mix after each solve deals from the next one. */
+export function remixSeed(tuning: HeroTuning, loop: number): number {
+  return mixSeed(tuning.seed, loop);
+}
+
+/** The board after the first `n` pours of a deal. */
+export function boardAfter(deal: HeroDeal, n: number): Board {
+  return deal.moves.slice(0, Math.max(0, n)).reduce((b, m) => pour(b, m.from, m.to).board, deal.board);
+}
+
+/** The reduced-motion and Classic still: the first deal half sorted (a mid-sort board, a jar or so sealed). */
+export function heroStill(deal: HeroDeal): Board {
+  const n = deal.moves.length;
+  let k = Math.floor(n / 2);
+  // Prefer the first pour from the middle on that leaves a jar sealed: the still shows a cork.
+  for (let i = k; i < n; i++) {
+    const b = boardAfter(deal, i);
+    if (b.jars.some((j) => j.units.length > 0 && isSealed(j, b.capacity))) {
+      k = i;
+      break;
+    }
+  }
+  return boardAfter(deal, k);
+}
+
+/** Where the loop is: waiting between pours, a pour playing, the solved rest, or the re-mix fade out and in. */
+export interface HeroLoop {
+  readonly phase: 'wait' | 'pour' | 'solved' | 'fadeOut' | 'fadeIn';
+  /** Loops dealt; picks the seed. */
+  readonly loop: number;
+  /** The next pour's index in the deal's moves. */
+  readonly step: number;
+}
+
+/** The first loop, waiting before its first pour. */
+export const HERO_START: HeroLoop = { phase: 'wait', loop: 0, step: 0 };
+
+/** How long a phase lasts before `nextPhase` (ms); `null` for a pour, which ends when it has played. */
+export function phaseMs(phase: HeroLoop['phase'], tuning: HeroTuning): number | null {
+  switch (phase) {
+    case 'wait':
+      return tuning.paceMs;
+    case 'solved':
+      return tuning.solvedMs;
+    case 'fadeOut':
+    case 'fadeIn':
+      return tuning.fadeMs;
+    default:
+      return null;
+  }
+}
+
+/**
+ * The phase after `loop`'s, with `moves` pours in the deal: wait → pour (or solved once every pour has
+ * played) → wait …; solved → fade out → fade in, on the next loop's deal from its first pour → wait.
+ */
+export function nextPhase(loop: HeroLoop, moves: number): HeroLoop {
+  switch (loop.phase) {
+    case 'wait':
+      return loop.step < moves ? { ...loop, phase: 'pour' } : { ...loop, phase: 'solved' };
+    case 'pour':
+      return loop.step + 1 >= moves ? { ...loop, phase: 'solved', step: loop.step + 1 } : { ...loop, phase: 'wait', step: loop.step + 1 };
+    case 'solved':
+      return { ...loop, phase: 'fadeOut' };
+    case 'fadeOut':
+      return { phase: 'fadeIn', loop: loop.loop + 1, step: 0 };
+    case 'fadeIn':
+      return { ...loop, phase: 'wait' };
+  }
+}
 
 /** What decides live or still. */
 export interface HeroModeInput {
@@ -39,8 +171,8 @@ export interface HeroModeInput {
 }
 
 /**
- * `'live'` (the Realistic-sand scene) when the board would be Realistic and the context is alive;
- * `'still'` (a matching DOM picture in the Classic jar look) on Classic, without WebGL or with the
+ * `'live'` (the Realistic board playing itself) when the board would be Realistic and the context is
+ * alive; `'still'` (the mid-sort board in the DOM jar look) on Classic, without WebGL or with the
  * context lost. Example: `heroMode({ search: '', webgl: true, realistic: true, lost: false }) // 'live'`.
  */
 export function heroMode(i: HeroModeInput): 'live' | 'still' {
@@ -48,19 +180,19 @@ export function heroMode(i: HeroModeInput): 'live' | 'still' {
   return board === 'gpu' && !i.lost ? 'live' : 'still';
 }
 
-/** What decides whether the live scene animates. */
+/** What decides whether the live hero plays. */
 export interface HeroRunInput {
-  /** Home is open (not hidden behind or replaced by the board). */
+  /** Home is open. */
   readonly homeShown: boolean;
   /** The Play tab is the one shown. */
   readonly onPlay: boolean;
   /** The browser tab is visible. */
   readonly pageVisible: boolean;
-  /** The player asked for reduced motion: the scene is a settled still. */
+  /** The player asked for reduced motion: the hero is the still. */
   readonly reduced: boolean;
 }
 
-/** True when the live scene should run its frame loop: only while it can be seen, and never under reduced motion (D169). */
+/** True when the hero should play: only while it can be seen, never under reduced motion (D169). */
 export function heroRuns(i: HeroRunInput): boolean {
   return i.homeShown && i.onPlay && i.pageVisible && !i.reduced;
 }
@@ -74,87 +206,27 @@ export interface HeroJarBox {
   readonly unitHeight: number;
 }
 
-/** The funnel: its spout's bottom centre and its cone's size. */
-export interface HeroFunnelBox {
-  readonly x: number;
-  readonly y: number;
-  readonly topWidth: number;
-  readonly coneHeight: number;
-  readonly neckWidth: number;
-  readonly neckHeight: number;
-}
-
-/** Where everything sits for a stage of `width × height`. */
-export interface HeroLayout {
-  /** Left, middle, right. */
-  readonly jars: readonly [HeroJarBox, HeroJarBox, HeroJarBox];
-  readonly funnel: HeroFunnelBox;
-}
-
-/** The share of a jar's interior its four bands fill: the side jars nearly full, the middle one to the rim once poured. */
-const SIDE_FILL = 0.88;
-const MIDDLE_FILL = 0.94;
 /** The glass's wall and base inset (board-gpu/geometry.ts `DOM_INSET`). */
 const INSET = 5.5;
+/** The gap between jars as a share of their width. */
+const GAP_OF_WIDTH = 0.4;
+/** The jars never grow wider than this (CSS px). */
+const MAX_JAR_W = 62;
+/** Room under the jars for their shadows (CSS px). */
+const FOOT = 18;
 
 /**
- * The scene for a stage: a tall middle jar with a smaller one either side standing a little further
- * up the beach, and the funnel above the middle one so that the stream falls `airRows` cells into
- * it. Sizes follow the stage's width and height, whichever is tighter. Example: `heroLayout(412, 300, 10, 72)`.
+ * The row of `count` jars of `capacity` along the bottom of a `width × height` drawing area, centred.
+ * The glass is `glassShare` of the height, so the jars fill most of the hero at rest; the rest above is
+ * room for a lifted, tipped jar. Example: `heroLayout(412, 353, 5, 4, 0.7)`.
  */
-export function heroLayout(width: number, height: number, airRows: number, rows: number): HeroLayout {
-  const base = height - 22;
-  // Height budget for the middle jar: the glass (2.05 widths), the drop and the funnel above it.
-  const glassW = Math.max(40, Math.min(width * 0.26, (height - 34) / 2.75));
-  const glassH = glassW * 2.05;
-  const innerH = glassH - INSET;
-  const unit = (innerH * MIDDLE_FILL) / HERO_CAPACITY;
-  const cellH = (unit * HERO_CAPACITY) / rows;
-  const sideW = glassW * 0.76;
-  const sideH = sideW * 1.95;
-  const sideUnit = ((sideH - INSET) * SIDE_FILL) / HERO_CAPACITY;
-  const gap = glassW * 1.12;
-  const cx = width / 2;
-  const middle: HeroJarBox = { left: cx - glassW / 2, top: base - glassH, width: glassW, height: glassH, unitHeight: unit };
-  const side = (x: number): HeroJarBox => ({ left: x - sideW / 2, top: base - 10 - sideH, width: sideW, height: sideH, unitHeight: sideUnit });
-  const gridTop = base - INSET - unit * HERO_CAPACITY;
-  const topWidth = (glassW - 2 * INSET) * 0.62;
-  return {
-    jars: [side(cx - gap), middle, side(cx + gap)],
-    funnel: { x: cx, y: gridTop - airRows * cellH, topWidth, coneHeight: topWidth * 0.55, neckWidth: Math.max(4, topWidth * 0.1), neckHeight: Math.max(8, topWidth * 0.2) },
-  };
-}
-
-/**
- * The two-jar board one loop pours: the funnel holding the loop's colour, and an empty jar. The pour
- * is planned into an empty jar so it is always legal (a band never matches the colour under it);
- * the scene then lays the middle jar's own bands (`tuning.middle`) into the target grid before the
- * first step, so the grains pile on them.
- */
-export function heroBoard(tuning: HeroTuning, cycle: number): Board {
-  const top = tuning.tops[((cycle % tuning.tops.length) + tuning.tops.length) % tuning.tops.length];
-  return { capacity: HERO_CAPACITY, jars: [{ units: [top], hidden: 0 }, { units: [], hidden: 0 }] };
-}
-
-/** Where the loop is: the funnel pouring, the settled scene resting, or the cross-fade back to the start. */
-export interface HeroLoop {
-  readonly phase: 'pour' | 'rest' | 'fade';
-  /** Time spent in this phase (ms). */
-  readonly ms: number;
-  /** Loops begun; picks the colour. */
-  readonly cycle: number;
-}
-
-/** A new loop at its start. */
-export const HERO_START: HeroLoop = { phase: 'pour', ms: 0, cycle: 0 };
-
-/**
- * Moves the loop on by `dtMs`. `settled` is the pour having played out. Pour → rest once settled;
- * rest → fade (the next cycle begins) after `restMs`; fade → pour after `fadeMs`.
- */
-export function advanceLoop(loop: HeroLoop, dtMs: number, settled: boolean, tuning: HeroTuning): HeroLoop {
-  const ms = loop.ms + Math.max(0, dtMs);
-  if (loop.phase === 'pour') return settled ? { phase: 'rest', ms: 0, cycle: loop.cycle } : { ...loop, ms };
-  if (loop.phase === 'rest') return ms >= tuning.restMs ? { phase: 'fade', ms: 0, cycle: loop.cycle + 1 } : { ...loop, ms };
-  return ms >= tuning.fadeMs ? { phase: 'pour', ms: 0, cycle: loop.cycle } : { ...loop, ms };
+export function heroLayout(width: number, height: number, count: number, capacity: number, glassShare = heroTuning.glassShare): HeroJarBox[] {
+  const base = height - FOOT;
+  const w = Math.max(24, Math.min(MAX_JAR_W, (width - 32) / (count + (count - 1) * GAP_OF_WIDTH)));
+  const h = Math.max(w * 1.6, height * glassShare);
+  // The bands fill the glass up to a little under its rim, as on the board.
+  const unit = (h - INSET - w * 0.3) / capacity;
+  const gap = w * GAP_OF_WIDTH;
+  const left0 = (width - (count * w + (count - 1) * gap)) / 2;
+  return Array.from({ length: count }, (_, i) => ({ left: left0 + i * (w + gap), top: base - h, width: w, height: h, unitHeight: unit }));
 }

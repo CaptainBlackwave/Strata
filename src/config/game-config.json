@@ -955,16 +955,22 @@
     "maxSteps": 4000
   },
   "homeHero": {
-    "$comment": "The live sand scene on Home (sprint 20 H2, D167, D169; design/ux/home.md section 5.5). Three jars on the beach; a funnel trickles one band into the middle jar with the real pour simulation (src/ui/sand), then the scene rests and cross-fades back to the start with the next colour. stepsPerSecond: the hero simulation rate (slower than the board, for a calm trickle). spillPerStep: grains that leave the funnel a step (1 is a thin stream). airRows: the drop from the funnel to the middle jar, in cells. restMs: the settled scene holds this long before the loop starts again. fadeMs: the cross-fade back to the start. middle, left, right: palette indexes of each jar's bands, bottom first. tops: the colour the funnel pours, one per loop, in turn; none may equal the top of middle.",
-    "stepsPerSecond": 60,
-    "spillPerStep": 1,
-    "airRows": 10,
-    "restMs": 4000,
-    "fadeMs": 1600,
-    "middle": [0, 1, 3],
-    "tops": [4, 7, 9, 12],
-    "left": [6, 2, 5, 1],
-    "right": [8, 4, 13, 7]
+    "$comment": "The Home hero (sprint 20, D167, D173; design/ux/home.md): a tiny sorting game playing itself on the board's own renderer. Each loop deals a seeded board of colors colours, capacity units each, into colors full jars plus empty empty ones, keeps it only if no jar starts sealed and the solver (src/core/solver.ts, within solveBudget nodes) solves it in minMoves..maxMoves pours, and plays one pour every paceMs. When solved it rests solvedMs, then fades out and in over fadeMs with the next seed (mixSeed(seed, loop)). stepsPerSecond: the hero's sand simulation rate (the board's is faster), for a calm pour. maxTiltDeg, airRows: a lower tilt and a shorter drop than the board's, so the tipped jar stays inside the hero. glassShare: the jars' glass height as a share of the hero's drawing area at rest; the rest above is room for the lifted, tipped jar. palette: the colour ids deals draw from.",
+    "colors": 3,
+    "capacity": 4,
+    "empty": 2,
+    "seed": 20261112,
+    "paceMs": 2400,
+    "solvedMs": 1600,
+    "fadeMs": 600,
+    "minMoves": 6,
+    "maxMoves": 14,
+    "solveBudget": 20000,
+    "stepsPerSecond": 150,
+    "maxTiltDeg": 95,
+    "airRows": 14,
+    "glassShare": 0.65,
+    "palette": [0, 1, 3, 5, 6, 7]
   },
   "onboarding": {
     "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",

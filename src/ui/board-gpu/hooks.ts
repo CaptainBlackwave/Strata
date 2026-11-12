@@ -13,7 +13,7 @@ import { GPU_FLAG_KEY, type BoardMode, chooseBoardMode, detectWebGL } from './sw
 import { type JarGeometry, jarGeometry, restRect } from './geometry';
 import { hexToRgb } from './paint';
 import type { GlassLook } from './art';
-import type { BoardLook, GpuBoard } from './renderer';
+import type { BoardLook, GpuBoard, GpuMotion } from './renderer';
 import { FLIP_MS } from '../logic/flip';
 import { CLAM_OPEN_MS } from '../logic/clam';
 import { FX_MS } from '../fx-plan';
@@ -116,6 +116,23 @@ function relayoutSoon(): void {
   resizeTimer = window.setTimeout(gpuLayout, 80);
 }
 
+/** The board's motion timings, from the DOM board's, so the canvas feels the same (also the Home hero's, D173). */
+export function gpuMotion(): GpuMotion {
+  return {
+    liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS, flipMs: FLIP_MS, clamOpenMs: CLAM_OPEN_MS, thawMs: THAW_MS, unlockMs: UNLOCK_MS,
+    corkMs: CORK_MS, nopeMs: NOPE_MS, hopMs: HOP_MS, hopStagger: HOP_STAGGER, glowMs: FX_MS.winGlowEach,
+  };
+}
+
+/**
+ * The scene's and the worn pieces' look for a canvas inside `host` (the board, or Home for its hero):
+ * the glass colours through a probe there, the worn sand and cork from `host`'s data attributes.
+ */
+export function lookFor(host: HTMLElement): BoardLook {
+  const t = host === boardEl ? (tokens ??= readTokens()) : readTokens(host);
+  return { glass: t.glass, ink: t.ink, sand: host.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: host.dataset.cork ?? 'cork', ...glowTokens() };
+}
+
 function load(): Promise<void> {
   loading ??= import('./renderer').then(async ({ GpuBoard }) => {
     const neutral = getComputedStyle(document.body).getPropertyValue('--buried').trim() || BURIED_FALLBACK;
@@ -124,10 +141,7 @@ function load(): Promise<void> {
       palette: config.palette.map((c) => hexToRgb(c.hex)),
       neutral: hexToRgb(neutral),
       paletteHex: config.palette.map((c) => c.hex),
-      motion: {
-        liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS, flipMs: FLIP_MS, clamOpenMs: CLAM_OPEN_MS, thawMs: THAW_MS, unlockMs: UNLOCK_MS,
-        corkMs: CORK_MS, nopeMs: NOPE_MS, hopMs: HOP_MS, hopStagger: HOP_STAGGER, glowMs: FX_MS.winGlowEach,
-      },
+      motion: gpuMotion(),
       reducedMotion,
       dims: defaultDims(),
       onContext,
@@ -157,10 +171,10 @@ let tokens: { glass: GlassLook; ink: string } | null = null;
  * Resolves the glass colours the DOM uses: the worn piece's `--style-*` over the scene's `--glass-edge`
  * and `--glass` (style.css), read through a hidden probe in `#board` so `color-mix()` resolves.
  */
-function readTokens(): { glass: GlassLook; ink: string } {
+function readTokens(host: HTMLElement = boardEl): { glass: GlassLook; ink: string } {
   const probe = document.createElement('i');
   probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;color:transparent';
-  boardEl.appendChild(probe);
+  host.appendChild(probe);
   const read = (expr: string, fallback: string): string => {
     probe.style.color = 'transparent';
     probe.style.color = expr;
