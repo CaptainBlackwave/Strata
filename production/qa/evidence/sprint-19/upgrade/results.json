@@ -1,0 +1,19 @@
+{
+  "first": {
+    "whatsNew": 1,
+    "text": "Version 0.18.0 LatestReal sandThe board has a new look: soft glass jars and real grains of sand that slide, spill and pi"
+  },
+  "second": {
+    "whatsNew": 0,
+    "level": 80,
+    "coins": 2400,
+    "streak": 20,
+    "track": [],
+    "next": "Your next daily solve collects your streak rewards›",
+    "goals": "\n            Today’s goalsSolve today’s daily0/1Clear a level Perfect0/1Clear a weekly board0/1+50 when all three are done\n          ",
+    "eventCard": "\n            \n            Winter TideBoard 3 open · 0 of 24 clearedEnds in 28 days\n          ",
+    "events": {},
+    "board": "gpu",
+    "realistic": true
+  }
+}

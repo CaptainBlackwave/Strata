@@ -1,9 +1,11 @@
 # Sprint 19: Real sand
 
-> **Status: planned (2026-11-11), approved by the owner (D157, D158).** Architecture: `docs/architecture/adr-0001-gpu-sand-board.md`. Prototype: `prototypes/gpu-sand/` (variant C). Target release: **0.18.0, as soon as ready**, December included. About 3–4 weeks.
+> **Status: built and released as 0.18.0 (2026-11-12), approved by the owner (D157, D158); released on the owner's word ("push everything live") before the phone performance check.** Architecture: `docs/architecture/adr-0001-gpu-sand-board.md`. Prototype: `prototypes/gpu-sand/` (variant C). Target release: **0.18.0, as soon as ready**, December included. About 3–4 weeks.
 
 ## Change of direction (2026-11-12, D159–D163)
 A player suggested, and the owner agreed, that the real-sand board should be a **cosmetic** rather than a replacement. Today's board stays the free default ("Classic"); "Real sand" is a one-time 2,500-coin purchase in a new **Board** row of the Jar styles sheet, switched freely once owned. The glass becomes **soft and matte**. It goes on sale only once every level works on it. The DOM board is therefore a first-class look, not only a fallback.
+
+**Update 2026-11-12 (D164, D165):** not for sale after all. Realistic sand is a free Settings toggle, **on by default**; Classic is one tap away.
 
 ## Goal
 The board looks like a studio game: lit glass jars and sand that is really sand. A pour tips the jar, the top colour slides to the lip and spills as grains, and it piles and settles in the target. The rules don't change.
@@ -18,7 +20,7 @@ The board looks like a studio game: lit glass jars and sand that is really sand.
 | S5 | **Pour, seal and win on the GPU**: the simulated pour driven by `session.pour`, cork and sparkle, the win glow, hints, the stuck banner, Undo and Shuffle redraws | Every board event looks right; Undo and Shuffle snap at once |
 | S6 | **Fallback and settings**: no WebGL, a lost context or `?board=dom` gives today's board; reduced motion gives an instant pour | Tested with WebGL disabled; a context loss mid-pour recovers |
 | S7 | **Performance**: grids sized per jar count, a simulation step budget, textures cached, the ticker stops when idle | 4× throttle: median frame 16.7 ms or less on a 16-jar board in hardware WebGL; the owner's phone test passes |
-| C1 | **Board cosmetic** (D159–D161): a `board` slot in `styles` (`classic` free, `realsand` 2,500), the Jar styles sheet row with a preview, the saved choice picks the renderer (no URL switch needed); `?board=` stays for testing | Buy, wear and switch tests; save repair; screenshots of the sheet |
+| C1 | **Board toggle** (D164, replaces the 2,500-coin purchase): Settings > "Realistic sand" switches Classic and Realistic at once, free, saved in `settings.realistic`; `?board=` stays for testing | Built: switch and save tests; `production/qa/evidence/sprint-19/toggle/` |
 | M1 | **Matte glass** (D162) and the three pour follow-ups (strata-r8z spill only over the target, strata-085 a narrow stream, strata-bcr clear empty glass) | Screenshots and a mid-pour strip |
 | R1 | **0.18.0**: What's new, the changelog, an upgrade play-through, the owner's phone sign-off, then release | Released as soon as S1–S7 pass |
 

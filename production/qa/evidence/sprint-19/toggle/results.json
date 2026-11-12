@@ -1,0 +1,7 @@
+{
+  "start": "gpu",
+  "afterFirstTap": "dom",
+  "afterReload": "dom",
+  "saved": false,
+  "afterSecondTap": "gpu"
+}

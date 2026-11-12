@@ -7,12 +7,13 @@
  * when the tab is hidden. Loaded on demand, so the DOM board's bundle carries none of Pixi.
  */
 import { CanvasSource, Container, Sprite, Texture, WebGLRenderer } from 'pixi.js';
-import type { Board, Jar } from '../../core/board';
+import { type Board, type Jar, isSealed } from '../../core/board';
 import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, done, finish, gridFromJar, planPour, sandConfig, step, stepsDue } from '../sand';
 import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from './art';
 import { DirtyTracker, jarKey } from './dirty';
 import { type JarGeometry, cubicBezier, lipLocal, mouthRow, pourLip, pourSide } from './geometry';
-import { drawClamShell, drawFunnelMark, drawIce, drawPadlock, drawSieveBand } from './mech-art';
+import { type PillLook, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawIce, drawPadlock, drawPill, drawSieveBand, padlockBox } from './mech-art';
+import { corkDrop, glowAt, liftTarget, mustSnapPour, nopeShake, shuffleHop } from './events';
 import { type PaintLook, type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
 import { type Overlay, PATTERNS, patternOverlay, sandOverlay } from './patterns';
 
@@ -39,6 +40,12 @@ export interface GpuMotion {
   /** style.css `thaw` (760 ms) and `unlock` (800 ms). */
   readonly thawMs: number;
   readonly unlockMs: number;
+  /** style.css `cork-drop` (520 ms), `nope` (300 ms), the Shuffle hop (260 ms, 25 ms a jar), and one jar's win glow (`FX_MS.winGlowEach`). */
+  readonly corkMs: number;
+  readonly nopeMs: number;
+  readonly hopMs: number;
+  readonly hopStagger: number;
+  readonly glowMs: number;
 }
 
 /** What the board looks like beyond its jars: the scene and glass piece, the sand piece and patterns. */
@@ -50,6 +57,11 @@ export interface BoardLook {
   readonly sand: string;
   /** Colour-blind patterns on. */
   readonly patterns: boolean;
+  /** The worn cork piece id (`cork`, `driftwood`, `rope`, `scallop`, `brass`). */
+  readonly cork: string;
+  /** The scene's `--glow` and `--glow-core`, as `r, g, b` (the win glow, D73). */
+  readonly glow: string;
+  readonly glowCore: string;
 }
 
 /** What the board asks of the game while a pour plays. */
@@ -60,6 +72,8 @@ export interface PourHooks {
   land(): Board;
   /** The source tips back upright: the player may act again while it flies home. */
   release(): void;
+  /** The source's hourglass count pill, where the DOM draws it at rest, to carry along; or none. */
+  readonly pill?: (PillLook & { readonly left: number; readonly top: number }) | null;
 }
 
 /** The renderer's construction options. */
@@ -73,6 +87,8 @@ export interface GpuBoardOptions {
   readonly reducedMotion: () => boolean;
   readonly dims: SandDims;
   readonly config?: SandConfig;
+  /** WebGL lost its context (true) or got it back (false): the board falls back to the DOM and returns. */
+  readonly onContext?: (lost: boolean) => void;
 }
 
 interface JarView {
@@ -99,6 +115,13 @@ interface JarView {
   liftFrom: number;
   liftTo: number;
   liftStart: number;
+  /** The sealed jar's cork sprite (the drop moves it), and a shake's offset in px (refusal, Shuffle). */
+  cork: Sprite | null;
+  corkRest: { x: number; y: number; w: number; h: number } | null;
+  shakeX: number;
+  shakeY: number;
+  /** The hourglass count travelling with the jar in a pour (strata-5lq). */
+  pill: Sprite | null;
 }
 
 /** The per-size sand look: the corner mask, the sand texture and the patterns. */
@@ -111,7 +134,7 @@ interface GrainLook {
 /** A short effect: a thaw, an unlock, a clam opening, a flip. */
 interface Fx {
   readonly jar: number;
-  readonly kind: 'thaw' | 'unlock' | 'clam' | 'flip';
+  readonly kind: 'thaw' | 'unlock' | 'clam' | 'flip' | 'cork' | 'nope' | 'hop' | 'glow';
   readonly start: number;
   readonly ms: number;
   readonly sprite: Sprite | null;
@@ -140,6 +163,8 @@ interface Pour {
   spilled: boolean;
   after: Board | null;
   released: boolean;
+  /** The target sealed: its cork drops in once every grain has landed. */
+  sealWhenFull?: { jar: Jar; capacity: number };
 }
 
 const easeLift = cubicBezier(0.3, 0.7, 0.4, 1);
@@ -160,7 +185,11 @@ export class GpuBoard {
   private readonly textures = new Map<string, Texture>();
   private readonly arts = new Map<string, JarArt>();
   private readonly grains = new Map<string, GrainLook>();
-  private look: BoardLook = { glass: DEFAULT_LOOK, ink: '#4a3b2c', sand: 'plain', patterns: false };
+  private look: BoardLook = { glass: DEFAULT_LOOK, ink: '#4a3b2c', sand: 'plain', patterns: false, cork: 'cork', glow: '255, 220, 150', glowCore: '255, 246, 216' };
+  /** The hint's "from" jar (lifted by half, as the DOM), or `null`. */
+  private hintFrom: number | null = null;
+  /** The WebGL context is lost: nothing draws until it is restored. */
+  private lost = false;
   private lookKey = '';
   private airCanvas: HTMLCanvasElement | null = null;
   private airCtx: CanvasRenderingContext2D | null = null;
@@ -185,7 +214,42 @@ export class GpuBoard {
     this.stage.addChild(this.shadows, this.jarsLayer, this.fxLayer, this.air);
     this.air.visible = false;
     document.addEventListener('visibilitychange', this.onVisibility);
+    const canvas = renderer.canvas as HTMLCanvasElement;
+    canvas.addEventListener('webglcontextlost', this.onContextLost);
+    canvas.addEventListener('webglcontextrestored', this.onContextRestored);
   }
+
+  /** True while the WebGL context is lost. */
+  get contextLost(): boolean {
+    return this.lost;
+  }
+
+  /**
+   * The context is gone (S6): any pour is played out at once on the CPU (the rules apply as usual)
+   * and nothing draws; the board's owner switches to the DOM board.
+   */
+  private readonly onContextLost = (e: Event): void => {
+    e.preventDefault(); // allow the browser to restore it
+    this.lost = true;
+    cancelAnimationFrame(this.raf);
+    this.raf = 0;
+    this.completePour();
+    this.endFx();
+    this.opts.onContext?.(true);
+  };
+
+  /** The context is back (S6): every texture is rebuilt from its canvas, then the owner re-lays out. */
+  private readonly onContextRestored = (): void => {
+    this.lost = false;
+    this.clearCaches();
+    this.tracker.reset();
+    for (const v of this.views) {
+      v.texture.source.update();
+      if (v.jar) this.applyArt(v);
+    }
+    this.airTexture?.source.update();
+    this.opts.onContext?.(false);
+  };
 
   /** Starts the WebGL renderer and puts its canvas in `host` (decorative: `aria-hidden`, no pointer events). */
   static async create(opts: GpuBoardOptions): Promise<GpuBoard | null> {
@@ -272,10 +336,11 @@ export class GpuBoard {
    * A pour in progress owns its two jars until it ends; a board change after it released the input
    * snaps it to its end first (Undo, Restart, a new pour).
    */
-  sync(board: Board, selected: number | null, instant = false): void {
+  sync(board: Board, selected: number | null, instant = false, hintFrom: number | null = this.hintFrom): void {
     if (board.jars.length !== this.views.length) return;
+    this.hintFrom = hintFrom;
     const p = this.pour;
-    if (p && p.released && board !== p.after) this.completePour();
+    if (p && mustSnapPour(p.released, board === p.after)) this.completePour();
     this.board = board;
     const keys = board.jars.map(jarKey);
     const owned = this.pour ? [this.pour.from, this.pour.to] : [];
@@ -291,9 +356,9 @@ export class GpuBoard {
     for (const i of owned) this.tracker.mark(i, '');
     this.selected = selected;
     const now = performance.now();
+    const carried = this.pour && this.pour.phase !== 'tail' ? this.pour.from : null;
     this.views.forEach((v, i) => {
-      const carried = this.pour && this.pour.from === i && this.pour.phase !== 'tail';
-      const to = selected === i && !carried ? 1 : 0;
+      const to = liftTarget(i, selected, hintFrom, carried);
       if (to === v.liftTo && !instant) return;
       v.liftFrom = v.lift;
       v.liftTo = to;
@@ -301,6 +366,112 @@ export class GpuBoard {
       if (instant || this.opts.reducedMotion()) v.lift = to;
     });
     this.request();
+  }
+
+  /**
+   * Jar `i` just sealed (from `sealFx`): its cork is drawn now, from the board after the pour, and
+   * drops in as the DOM's `cork-drop`. Reduced motion: it is simply there.
+   */
+  seal(i: number, jar: Jar, capacity: number): void {
+    const v = this.views[i];
+    if (!v) return;
+    const p = this.pour;
+    if (p && p.to === i && p.sim.landed < p.sim.required) {
+      // The sand is still falling into it: the cork waits until the last grain is in.
+      p.sealWhenFull = { jar, capacity };
+      return;
+    }
+    this.decorate(v, jar, capacity);
+    if (this.opts.reducedMotion() || !v.cork) return;
+    this.addFx({
+      jar: i, kind: 'cork', start: performance.now(), ms: this.opts.motion.corkMs, sprite: null,
+      at: (u) => this.poseCork(v, corkDrop(u, v.corkRest?.h ?? 0)),
+      end: () => this.poseCork(v, corkDrop(1, 0)),
+    });
+  }
+
+  /** The refusal shake on jar `i` (from `nope`): ±4 px, as style.css `nope`. The outline is the DOM's. */
+  nope(i: number): void {
+    const v = this.views[i];
+    if (!v || this.opts.reducedMotion()) return;
+    this.addFx({
+      jar: i, kind: 'nope', start: performance.now(), ms: this.opts.motion.nopeMs, sprite: null,
+      at: (u) => (v.shakeX = nopeShake(u)),
+      end: () => (v.shakeX = 0),
+    });
+  }
+
+  /** The Shuffle hop on every jar (from `renderAllJars(true)`): 6 px up and back, 25 ms apart. */
+  hop(): void {
+    if (this.opts.reducedMotion()) return;
+    const now = performance.now();
+    this.views.forEach((v, i) => {
+      this.addFx({
+        jar: i, kind: 'hop', start: now + i * this.opts.motion.hopStagger, ms: this.opts.motion.hopMs, sprite: null,
+        at: (u) => (v.shakeY = shuffleHop(u)),
+        end: () => (v.shakeY = 0),
+      });
+    });
+  }
+
+  /**
+   * The win glow run (sprint 18 F3, `winGlowPlan`) on the canvas jars: each planned jar glows in
+   * turn, then holds its glow until the card opens. Returns the stop function, as `winGlowRun`.
+   */
+  winGlow(steps: readonly { readonly jar: number; readonly at: number }[]): () => void {
+    const now = performance.now();
+    const sprites: Sprite[] = [];
+    for (const s of steps) {
+      const v = this.views[s.jar];
+      if (!v) continue;
+      const g = v.geom.glass;
+      const { core, halo } = { core: this.look.glowCore, halo: this.look.glow };
+      let pad = 0;
+      const t = this.tex(`glow|${g.width.toFixed(2)}x${g.height.toFixed(2)}|${core}|${halo}`, (r) => {
+        const d = drawGlow(g.width, g.height, core, halo, r);
+        return d.canvas;
+      });
+      pad = 17;
+      const sp = new Sprite(t);
+      sp.anchor.set(0.5);
+      sp.setSize(g.width + 2 * pad, g.height + 2 * pad);
+      sp.position.set(g.left + g.width / 2, g.top + g.height / 2);
+      sp.alpha = 0;
+      this.fxLayer.addChild(sp);
+      sprites.push(sp);
+      const w0 = sp.width;
+      const h0 = sp.height;
+      this.addFx({
+        jar: s.jar, kind: 'glow', start: now + s.at, ms: this.opts.motion.glowMs, sprite: sp,
+        at: (u) => {
+          const p = glowAt(u);
+          sp.alpha = p.alpha;
+          sp.setSize(w0 * p.scale, h0 * p.scale);
+        },
+        // The glow holds at its last value until the card opens; `stop` removes it.
+        end: () => {
+          const p = glowAt(1);
+          sp.alpha = p.alpha;
+          sp.setSize(w0, h0);
+        },
+      });
+    }
+    return () => {
+      this.fx = this.fx.filter((f) => f.kind !== 'glow');
+      for (const sp of sprites) sp.destroy();
+      this.request();
+    };
+  }
+
+  private poseCork(v: JarView, p: { x: number; y: number; rotate: number; scale: number; alpha: number }): void {
+    const c = v.cork;
+    const r = v.corkRest;
+    if (!c || !r) return;
+    c.anchor.set(0.5);
+    c.position.set(r.x + r.w / 2 + p.x, r.y + r.h / 2 + p.y);
+    c.rotation = (p.rotate * Math.PI) / 180;
+    c.setSize(r.w * p.scale, r.h * p.scale);
+    c.alpha = p.alpha;
   }
 
   /**
@@ -384,6 +555,15 @@ export class GpuBoard {
     src.root.pivot.set(lip.x, lip.y);
     src.root.position.set(startLip.x, startLip.y);
     this.jarsLayer.addChild(src.root);
+    if (hooks.pill) {
+      // The hourglass count travels with its jar (strata-5lq), redrawn from the DOM's own pill.
+      const look = hooks.pill;
+      src.pill?.destroy();
+      src.pill = new Sprite(this.tex(`pill|${JSON.stringify(look)}`, (r) => drawPill(look, r)));
+      src.pill.setSize(look.width, look.height);
+      src.pill.position.set(look.left - src.geom.x, look.top - src.geom.y);
+      src.decor.addChild(src.pill);
+    }
     this.prepareAir(dst.geom, targetMouth);
     return new Promise<void>((resolve, reject) => {
       this.pour = {
@@ -491,6 +671,7 @@ export class GpuBoard {
       canvas, ctx, image, texels: new Uint32Array(image.data.buffer), texture,
       grid: gridFromJar({ units: [], hidden: 0 }, 1, this.opts.dims),
       geom, jar: null, lift: 0, liftFrom: 0, liftTo: 0, liftStart: 0,
+      cork: null, corkRest: null, shakeX: 0, shakeY: 0, pill: null,
     };
     v.sandLayer.addChild(v.sand, v.marks);
     v.root.addChild(v.back, v.sandLayer, v.front, v.decor);
@@ -528,7 +709,7 @@ export class GpuBoard {
   private placeRest(v: JarView): void {
     v.root.pivot.set(0, 0);
     v.root.rotation = 0;
-    v.root.position.set(v.geom.x, v.geom.y - v.lift * v.geom.lift);
+    v.root.position.set(v.geom.x + v.shakeX, v.geom.y - v.lift * v.geom.lift + v.shakeY);
     v.shadow.alpha = 1 - 0.35 * v.lift;
   }
 
@@ -538,7 +719,7 @@ export class GpuBoard {
     v.jar = jar;
     this.paintSand(v, jar, capacity);
     this.drawMarks(v, jar.hidden, capacity);
-    this.decorate(v, jar);
+    this.decorate(v, jar, capacity);
   }
 
   private paintLook(v: JarView, jar: Jar | null, capacity: number): PaintLook {
@@ -583,8 +764,11 @@ export class GpuBoard {
   }
 
   /** The mechanic marks, as style.css places them (from the button's box and `--jar-w`). */
-  private decorate(v: JarView, jar: Jar): void {
+  private decorate(v: JarView, jar: Jar, capacity: number): void {
     v.decor.removeChildren().forEach((c) => c.destroy());
+    v.cork = null;
+    v.corkRest = null;
+    v.pill = null;
     const b = this.local(v);
     const pat = (c: number) => (this.look.patterns ? c % PATTERNS.length : null);
     v.sandLayer.visible = jar.clam === undefined; // a closed clam hides its sand (D96, §2.6)
@@ -605,6 +789,18 @@ export class GpuBoard {
       v.decor.addChild(s);
     }
     if (jar.clam !== undefined) v.decor.addChild(this.shellSprite(v));
+    if (isSealed(jar, capacity)) {
+      // style.css `.cork`: 18% in from each side, --jar-w × 0.18 − 6 px from the top, --jar-w × 0.26 tall.
+      const w = b.w * 0.64;
+      const h = b.w * 0.26;
+      const rest = { x: b.left + b.w * 0.18, y: b.top + b.w * 0.18 - 6, w, h };
+      const id = this.look.cork;
+      const s = new Sprite(this.tex(`cork|${id}|${w.toFixed(2)}x${h.toFixed(2)}`, (r) => drawCork(id, w, h, r)));
+      v.decor.addChild(s);
+      v.cork = s;
+      v.corkRest = rest;
+      this.poseCork(v, corkDrop(1, 0));
+    }
   }
 
   private iceSprite(v: JarView): Sprite {
@@ -734,7 +930,7 @@ export class GpuBoard {
   // ---- the frame loop -----------------------------------------------------------------------
 
   private request(): void {
-    if (this.raf || document.hidden) return;
+    if (this.raf || document.hidden || this.lost) return;
     this.raf = requestAnimationFrame(this.frame);
   }
 
@@ -743,14 +939,15 @@ export class GpuBoard {
     const dt = this.last ? Math.min(100, Math.max(0, now - this.last)) : 0;
     let moving = false;
     try {
-      moving = this.animateLifts(now) || moving;
       moving = this.animateFx(now) || moving;
+      moving = this.animateLifts(now) || moving;
       if (this.pour) moving = this.pourFrame(this.pour, now, dt) || moving;
     } catch (e) {
       const p = this.pour;
       this.pour = null;
       p?.reject(e);
     }
+    if (this.lost) return; // nothing draws on a lost context
     this.renderer.render(this.stage);
     (this.renderer.canvas as HTMLCanvasElement).dataset.frames = String(++this.frames);
     this.last = moving ? now : 0;
@@ -812,6 +1009,7 @@ export class GpuBoard {
       p.hooks.spill();
     }
     if (p.sim.landed > 0) this.ensureLanded(p);
+    this.dropPendingCork(p);
     this.repaintPour(p, src, dst);
     if (p.phase === 'sim') {
       src.root.position.set(p.waitLip.x, p.waitLip.y);
@@ -848,6 +1046,8 @@ export class GpuBoard {
       p.phase = 'tail';
       src.lift = 0;
       this.placeRest(src);
+      src.pill?.destroy(); // home: the DOM's own count shows again
+      src.pill = null;
       p.resolve();
     }
     return true;
@@ -862,6 +1062,13 @@ export class GpuBoard {
     dst.ctx.putImageData(dst.image, 0, 0);
     dst.texture.source.update();
     this.paintAirNow(p);
+  }
+
+  private dropPendingCork(p: Pour, force = false): void {
+    const pending = p.sealWhenFull;
+    if (!pending || (!force && p.sim.landed < p.sim.required)) return;
+    p.sealWhenFull = undefined;
+    this.seal(p.to, pending.jar, pending.capacity);
   }
 
   private ensureLanded(p: Pour): void {
@@ -880,6 +1087,8 @@ export class GpuBoard {
   private endPour(p: Pour): void {
     const after = p.after!;
     finish(p.sim, after);
+    const pendingCork = p.sealWhenFull;
+    p.sealWhenFull = undefined;
     this.pour = null;
     this.air.visible = false;
     const src = this.views[p.from];
@@ -899,6 +1108,7 @@ export class GpuBoard {
       this.redraw(v, jar, after.capacity);
       this.tracker.mark(i, jarKey(jar));
     }
+    if (pendingCork) this.seal(p.to, pendingCork.jar, pendingCork.capacity);
     // The board may have moved on already (a fast tap): catch up with it.
     const now = this.board ?? after;
     this.sync(now, this.selected);
@@ -918,8 +1128,7 @@ export class GpuBoard {
 
 /** A padlock's size and box, as `drawPadlock` lays it out (the texture may be cached). */
 function padlockMetrics(w: number): { width: number; height: number; boxTop: number; boxHeight: number } {
-  const bw = w * 0.46;
-  const bh = w * 0.38;
+  const { bw, bh } = padlockBox(w);
   const pad = 2;
   return { width: bw + 2 * pad, height: bh * 0.7 + bh + 2 * pad, boxTop: pad + bh * 0.7, boxHeight: bh };
 }

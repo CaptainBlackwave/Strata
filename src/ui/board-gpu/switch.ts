@@ -18,16 +18,20 @@ export interface BoardSwitchInput {
   readonly dev: boolean;
   /** WebGL is available. Without it the DOM board is used. */
   readonly webgl: boolean;
+  /** The player's Settings choice: Realistic (true) or Classic (false, the default; D164). */
+  readonly realistic?: boolean;
 }
 
 /**
- * The board to use. Off unless asked for: `?board=gpu`, or the stored flag in a dev build.
- * Example: `chooseBoardMode({ search: '?board=gpu', storedFlag: null, dev: false, webgl: true }) // 'gpu'`
+ * The board to use: Realistic when the player chose it in Settings (D164), or for testing with
+ * `?board=gpu` or the stored flag in a dev build; Classic otherwise. `?board=dom` always wins, and
+ * without WebGL it is always Classic.
+ * Example: `chooseBoardMode({ search: '', storedFlag: null, dev: false, webgl: true, realistic: true }) // 'gpu'`
  */
 export function chooseBoardMode(input: BoardSwitchInput): BoardMode {
   const asked = new URLSearchParams(input.search).get('board');
   if (asked === 'dom') return 'dom';
-  const wanted = asked === 'gpu' || (input.dev && input.storedFlag === 'gpu');
+  const wanted = input.realistic === true || asked === 'gpu' || (input.dev && input.storedFlag === 'gpu');
   return wanted && input.webgl ? 'gpu' : 'dom';
 }
 

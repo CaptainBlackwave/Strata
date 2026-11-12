@@ -16,6 +16,9 @@ import type { GlassLook } from './art';
 import type { BoardLook, GpuBoard } from './renderer';
 import { FLIP_MS } from '../logic/flip';
 import { CLAM_OPEN_MS } from '../logic/clam';
+import { FX_MS } from '../fx-plan';
+import { boardAfterContext } from './events';
+import type { PillLook } from './mech-art';
 
 /** Today's `.jar` selection transition (style.css), mirrored on the canvas. */
 const SELECT_MS = 160;
@@ -24,6 +27,11 @@ const BURIED_FALLBACK = '#b9a88d';
 /** style.css `thaw` and `unlock` keyframes (ms). */
 const THAW_MS = 760;
 const UNLOCK_MS = 800;
+/** style.css `cork-drop` and `nope`; the Shuffle hop in jars.ts `renderAllJars` (260 ms, 25 ms a jar). */
+const CORK_MS = 520;
+const NOPE_MS = 300;
+const HOP_MS = 260;
+const HOP_STAGGER = 25;
 /** Night scenes, where the DOM dims the clam shell (style.css). */
 const NIGHT_SCENES = new Set(['moonlit', 'harvestmoon', 'newyear']);
 
@@ -42,25 +50,58 @@ let loading: Promise<void> | null = null;
 let active = false;
 let resizeTimer = 0;
 
-/** Decides the board once, at boot. `?board=gpu` (or the dev flag) and WebGL give the GPU board. */
-export function initBoardMode(): BoardMode {
-  mode = chooseBoardMode({
-    search: location.search,
-    storedFlag: storedFlag(),
-    dev: import.meta.env.DEV,
-    webgl: detectWebGL(() => document.createElement('canvas')),
+let watching = false;
+/** WebGL works on this device (checked once). */
+let webgl: boolean | null = null;
+
+/** True when this device can draw the Realistic board (WebGL works). Settings disables the switch otherwise. */
+export function realisticAvailable(): boolean {
+  webgl ??= detectWebGL(() => document.createElement('canvas'));
+  return webgl;
+}
+
+/** Listens for resizes and scene or style changes that move or recolour the canvas, once. */
+function watchLayout(): void {
+  if (watching) return;
+  watching = true;
+  window.addEventListener('resize', relayoutSoon);
+  window.addEventListener('orientationchange', relayoutSoon);
+  // A scene change (tokens on <html>, data-theme on <body>) or a worn style (data-* on #board) redraws the glass.
+  const watch = new MutationObserver(() => {
+    tokens = null;
+    relayoutSoon();
   });
+  watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  watch.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+  watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand'] });
+}
+
+/** Picks the board from the address, the dev flag, the Settings choice and WebGL. */
+function decide(): BoardMode {
+  return chooseBoardMode({ search: location.search, storedFlag: storedFlag(), dev: import.meta.env.DEV, webgl: realisticAvailable(), realistic: state.save?.settings.realistic === true });
+}
+
+/** Decides the board at boot: the Settings choice (D164), or `?board=gpu` / the dev flag for testing. */
+export function initBoardMode(): BoardMode {
+  mode = decide();
+  if (mode === 'gpu') watchLayout();
+  return mode;
+}
+
+/**
+ * Switches between Classic and Realistic now (the Settings toggle, D164): the board in play is
+ * redrawn by the chosen renderer, nothing else changes. Returns the board in use.
+ */
+export function applyBoardSetting(): BoardMode {
+  mode = decide();
   if (mode === 'gpu') {
-    window.addEventListener('resize', relayoutSoon);
-    window.addEventListener('orientationchange', relayoutSoon);
-    // A scene change (tokens on <html>, data-theme on <body>) or a worn style (data-* on #board) redraws the glass.
-    const watch = new MutationObserver(() => {
-      tokens = null;
-      relayoutSoon();
-    });
-    watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
-    watch.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
-    watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand'] });
+    watchLayout();
+    gpuLayout();
+  } else {
+    active = false;
+    boardEl.dataset.render = 'dom';
+    gpu?.setVisible(false);
+    state.jarEls.forEach((el) => el.classList.remove('gpu-away'));
   }
   return mode;
 }
@@ -83,9 +124,13 @@ function load(): Promise<void> {
       palette: config.palette.map((c) => hexToRgb(c.hex)),
       neutral: hexToRgb(neutral),
       paletteHex: config.palette.map((c) => c.hex),
-      motion: { liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS, flipMs: FLIP_MS, clamOpenMs: CLAM_OPEN_MS, thawMs: THAW_MS, unlockMs: UNLOCK_MS },
+      motion: {
+        liftMs: ANIM.lift, backMs: ANIM.back, selectMs: SELECT_MS, flipMs: FLIP_MS, clamOpenMs: CLAM_OPEN_MS, thawMs: THAW_MS, unlockMs: UNLOCK_MS,
+        corkMs: CORK_MS, nopeMs: NOPE_MS, hopMs: HOP_MS, hopStagger: HOP_STAGGER, glowMs: FX_MS.winGlowEach,
+      },
       reducedMotion,
       dims: defaultDims(),
+      onContext,
     });
     if (!gpu) mode = 'dom'; // WebGL failed after all: today's board stays
   }).catch(() => {
@@ -145,10 +190,38 @@ function isDark(color: string): boolean {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b < 90;
 }
 
-/** The look now: tokens (cached), the worn sand piece and the patterns setting. */
+/** The scene's glow colours (`--glow`, `--glow-core`: `r, g, b` triplets, D73). */
+function glowTokens(): { glow: string; glowCore: string } {
+  const css = getComputedStyle(document.documentElement);
+  return { glow: css.getPropertyValue('--glow').trim() || '255, 236, 170', glowCore: css.getPropertyValue('--glow-core').trim() || '255, 246, 216' };
+}
+
+/** The look now: tokens (cached), the worn sand and cork pieces and the patterns setting. */
 function currentLook(): BoardLook {
   tokens ??= readTokens();
-  return { glass: tokens.glass, ink: tokens.ink, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns };
+  return { glass: tokens.glass, ink: tokens.ink, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: boardEl.dataset.cork ?? 'cork', ...glowTokens() };
+}
+
+/** The hint's "from" jar, from the DOM's `.hint-from` class (board.ts `showHint`), or `null`. */
+function hintFrom(): number | null {
+  const i = state.jarEls.findIndex((el) => el.classList.contains('hint-from'));
+  return i < 0 ? null : i;
+}
+
+/**
+ * WebGL lost or got back its context (S6). Lost: the DOM board takes over at once (its jars are
+ * always up to date), so play goes on. Restored: back to the canvas if the player still wants it.
+ */
+function onContext(lost: boolean): void {
+  if (boardAfterContext(lost, decide()) === 'dom') {
+    active = false;
+    boardEl.dataset.render = 'dom';
+    gpu?.setVisible(false);
+    state.jarEls.forEach((el) => el.classList.remove('gpu-away'));
+    return;
+  }
+  tokens = null;
+  gpuLayout();
 }
 
 /**
@@ -174,8 +247,47 @@ export function gpuLayout(): void {
 export function gpuInvalidate(): void {
   if (!active || !gpu) return;
   gpu.setLook(currentLook()); // the patterns setting or the sand piece may have changed
-  gpu.sync(state.session.board, state.selected);
+  gpu.sync(state.session.board, state.selected, false, hintFrom());
   markAway();
+}
+
+/** Jar `i` sealed (from `sealFx`): the canvas cork drops in. */
+export function gpuSeal(i: number): void {
+  if (active && gpu) gpu.seal(i, state.session.board.jars[i], state.session.board.capacity);
+}
+
+/** A refused tap on jar `i` (from `nope`): the canvas jar shakes as the button does. */
+export function gpuNope(i: number): void {
+  if (active && gpu) gpu.nope(i);
+}
+
+/** Shuffle's hop (from `renderAllJars(true)`) on the canvas jars. */
+export function gpuHop(): void {
+  if (active && gpu) gpu.hop();
+}
+
+/**
+ * The win glow run on the canvas (from `showWin`), or `null` on the DOM board, where `winGlowRun`
+ * draws it. Returns the stop function.
+ */
+export function gpuWinGlow(steps: readonly { readonly jar: number; readonly at: number }[]): (() => void) | null {
+  return active && gpu ? gpu.winGlow(steps) : null;
+}
+
+/** The DOM's hourglass count pill on jar `i`, measured so the canvas can carry it in a pour. */
+function pillOf(i: number): (PillLook & { left: number; top: number }) | null {
+  const el = state.jarEls[i]?.querySelector('.hourglass-mark') as HTMLElement | null;
+  if (!el || !state.session.board.jars[i].hourglass) return null;
+  const r = el.getBoundingClientRect();
+  if (!r.width) return null;
+  const css = getComputedStyle(el);
+  const tf = getComputedStyle(state.jarEls[i]).transform;
+  const ty = tf && tf !== 'none' ? new DOMMatrixReadOnly(tf).m42 : 0;
+  return {
+    left: r.left, top: r.top - ty, width: r.width, height: r.height,
+    bg: css.backgroundColor, fg: css.color, border: css.borderTopColor,
+    font: `${css.fontWeight} ${css.fontSize} ${css.fontFamily}`, text: el.textContent ?? '',
+  };
 }
 
 /** The hourglass flip on the canvas (from `flipFx`). */
@@ -223,9 +335,11 @@ export function gpuPour(from: number, to: number, ends: GpuPourEnds): Promise<vo
   const moved = pourAmount(board, from, to);
   const targetLen = board.jars[to].units.length;
   const seed = (state.session.moves + 1) * 7919 + from * 131 + to;
+  const pill = pillOf(from);
   state.jarEls[from]?.classList.add('gpu-away');
   return gpu!
     .playPour(from, to, board, seed, {
+      pill,
       spill: () => audio.play('pour', { units: moved }),
       land: () => {
         state.session.pour(from, to);

@@ -214,14 +214,16 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D150 | Player feedback | **A local "Your stats" sheet players copy and send**: progress, today, boosters and coins, version and device; nothing is sent automatically | feel-audio-ui | built |
 | D151 | Winter touches | **Snowfall and a winter music variation** while Winter Tide runs | events, feel-audio-ui | built |
 | D152 | Release | **One release, 0.17.0, before 1 December** | release | built |
-| D153 | Studio-quality look | **Rich 2D on the GPU**: lit glass and real-looking sand, still flat-on and readable; menus stay HTML (owner brainstorm 2026-11-11) | feel-audio-ui | accepted |
-| D154 | The pour | **A real falling-sand simulation is a must**: grains slide, pile and stream over the lip; the puzzle rules stay discrete and the simulation only plays them out | feel-audio-ui | accepted |
-| D155 | Runtime libraries | **Allowed for the board renderer** (e.g. PixiJS), about 200-250 KB gzipped in total | feel-audio-ui | accepted |
-| D156 | How to start | **Prototype first** in `prototypes/`: today's board vs Pixi glass+sand vs Pixi + sand sim, measured on the owner's phone, then decide | feel-audio-ui | accepted |
-| D157 | After the prototype | **Go straight to the full sand-simulation board** (prototype C), not the Pixi look first; ADR-0001 | feel-audio-ui | planned |
-| D158 | When to ship the new board | **As soon as it is ready**, December included | release | planned |
-| D159 | The real-sand board | **A cosmetic, not a replacement** (a player's suggestion, owner 2026-11-12): today's board stays the free default ("Classic"); "Real sand" is bought once and switched freely; supersedes D157's replace-the-board intent | jar-styles, feel-audio-ui | planned |
-| D160 | How to get Real sand | **Bought with coins, 2,500**, near the top of the jar-style ladder; never random, never sold for money | jar-styles, economy | planned |
-| D161 | Where it lives | **A "Board" row in the Jar styles sheet**: Classic (free) and Real sand (buy), with a preview | jar-styles | planned |
-| D162 | The glass | **Soft and matte**: a faint rim and one gentle highlight; no bright streaks, so the sand is the star | feel-audio-ui | planned |
-| D163 | When to sell it | **Only once it works on every level**: special jars, jar styles, scenes and colour patterns on the canvas first (S3), so buyers never see it switch back | jar-styles | planned |
+| D153 | Studio-quality look | **Rich 2D on the GPU**: lit glass and real-looking sand, still flat-on and readable; menus stay HTML (owner brainstorm 2026-11-11) | feel-audio-ui | built |
+| D154 | The pour | **A real falling-sand simulation is a must**: grains slide, pile and stream over the lip; the puzzle rules stay discrete and the simulation only plays them out | feel-audio-ui | built |
+| D155 | Runtime libraries | **Allowed for the board renderer** (e.g. PixiJS), about 200-250 KB gzipped in total | feel-audio-ui | built |
+| D156 | How to start | **Prototype first** in `prototypes/`: today's board vs Pixi glass+sand vs Pixi + sand sim, measured on the owner's phone, then decide | feel-audio-ui | built |
+| D157 | After the prototype | **Go straight to the full sand-simulation board** (prototype C), not the Pixi look first; ADR-0001 | feel-audio-ui | built |
+| D158 | When to ship the new board | **As soon as it is ready**, December included | release | built |
+| D159 | The real-sand board | **A cosmetic, not a replacement** (a player's suggestion, owner 2026-11-12): today's board stays the free default ("Classic"); "Real sand" is bought once and switched freely; supersedes D157's replace-the-board intent | jar-styles, feel-audio-ui | built |
+| D160 | How to get Real sand | **Bought with coins, 2,500**, near the top of the jar-style ladder; never random, never sold for money | jar-styles, economy | superseded by D164 |
+| D161 | Where it lives | **A "Board" row in the Jar styles sheet**: Classic (free) and Real sand (buy), with a preview | jar-styles | superseded by D164 |
+| D162 | The glass | **Soft and matte**: a faint rim and one gentle highlight; no bright streaks, so the sand is the star | feel-audio-ui | built |
+| D163 | When to sell it | **Only once it works on every level**: special jars, jar styles, scenes and colour patterns on the canvas first (S3), so buyers never see it switch back | jar-styles | built |
+| D164 | How players get Real sand | **A free toggle in Settings, "Realistic sand"** (default changed to on by D165); switches the board in play at once; disabled with a note where WebGL is missing. Supersedes D160 (2,500 coins) and D161 (Jar styles row) (owner, 2026-11-12) | feel-audio-ui | built |
+| D165 | The default board | **Realistic is the default** for new players and for saves with no choice; Classic is one tap away in Settings; without WebGL it is always Classic (owner, 2026-11-12) | feel-audio-ui | built |

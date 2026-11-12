@@ -57,6 +57,9 @@ const en = {
   patterns: 'Colour patterns',
   patternsTitle: 'Show a texture on each colour (colour-blind aid)',
   southern: 'Southern hemisphere seasons',
+  realistic: 'Realistic sand',
+  realisticHelp: 'Real grains that slide and pour. Off: Classic',
+  realisticUnavailable: 'Not available on this device',
   replayTutorial: 'Replay tutorial',
   home: 'Home',
   winTitle: 'Level cleared',
@@ -198,6 +201,15 @@ const en = {
     /** The mark beside the newest posting. */
     latest: 'Latest',
     releases: [
+      {
+        version: '0.18.0',
+        name: 'Real sand',
+        lines: [
+          'The board has a new look: soft glass jars and real grains of sand that slide, spill and pile up as you pour.',
+          'Every jar, style, scene and colour pattern works with it.',
+          'Prefer the old look? Turn off Realistic sand in Settings to go back to Classic. You can switch any time.',
+        ],
+      },
       {
         version: '0.17.0',
         name: 'A softer touch',
