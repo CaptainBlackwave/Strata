@@ -11,7 +11,8 @@ import { type Board, type Jar, isSealed } from '../../core/board';
 import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, done, finish, gridFromJar, planPour, sandConfig, step, stepsDue } from '../sand';
 import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from './art';
 import { DirtyTracker, jarKey } from './dirty';
-import { type JarGeometry, cubicBezier, lipLocal, mouthRow, pourLip, pourSide } from './geometry';
+import { type ShelfWood, drawShelf, shelfBox } from './shelf';
+import { type JarGeometry, type Rect, cubicBezier, lipLocal, mouthRow, pourLip, pourSide } from './geometry';
 import { type PillLook, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawIce, drawPadlock, drawPill, drawSieveBand, padlockBox } from './mech-art';
 import { corkDrop, glowAt, liftTarget, mustSnapPour, nopeShake, shuffleHop } from './events';
 import { type PaintLook, type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
@@ -65,6 +66,8 @@ export interface BoardLook {
   /** The scene's `--glow` and `--glow-core`, as `r, g, b` (the win glow, D73). */
   readonly glow: string;
   readonly glowCore: string;
+  /** The scene's shelf wood (`--wood-*`, sprint 25 U4); the daytime wood when absent. */
+  readonly wood?: ShelfWood;
 }
 
 /** What the board asks of the game while a pour plays. */
@@ -197,6 +200,9 @@ const easeIn = cubicBezier(0.42, 0, 1, 1);
 export class GpuBoard {
   private readonly stage = new Container();
   private readonly shadows = new Container();
+  /** The wooden shelves under the rows (sprint 25 U4): painted once per layout, under everything. */
+  private readonly shelves = new Container();
+  private shelfRects: readonly Rect[] = [];
   private readonly jarsLayer = new Container();
   private readonly fxLayer = new Container();
   private readonly air = new Sprite();
@@ -234,7 +240,7 @@ export class GpuBoard {
   ) {
     this.config = opts.config ?? sandConfig;
     this.wetPalette = opts.palette.map(wetRgb);
-    this.stage.addChild(this.shadows, this.jarsLayer, this.fxLayer, this.air);
+    this.stage.addChild(this.shelves, this.shadows, this.jarsLayer, this.fxLayer, this.air);
     this.air.visible = false;
     document.addEventListener('visibilitychange', this.onVisibility);
     const canvas = renderer.canvas as HTMLCanvasElement;
@@ -336,6 +342,7 @@ export class GpuBoard {
     this.clearCaches();
     this.tracker.reset();
     for (const v of this.views) this.applyArt(v);
+    this.layShelves(this.shelfRects); // the scene's wood may have changed
     return true;
   }
 
@@ -343,13 +350,14 @@ export class GpuBoard {
    * Lays the jars out at `geoms` (one per jar, read from the buttons) for `board`, and redraws
    * everything. Called after every DOM layout, resize and orientation change.
    */
-  layout(geoms: readonly JarGeometry[], board: Board, selected: number | null): void {
+  layout(geoms: readonly JarGeometry[], board: Board, selected: number | null, shelves: readonly Rect[] = []): void {
     this.completePour();
     this.endFx();
     const res = this.renderer.resolution;
     const size = (this.opts.viewSize ?? windowSize)();
     this.renderer.resize(Math.max(1, size.width), Math.max(1, size.height));
     if (res !== this.renderer.resolution) this.clearCaches();
+    this.layShelves(shelves);
     while (this.views.length > geoms.length) this.destroyView(this.views.pop()!);
     while (this.views.length < geoms.length) this.views.push(this.makeView(geoms[this.views.length]));
     this.views.forEach((v, i) => {
@@ -680,6 +688,25 @@ export class GpuBoard {
   }
 
   // ---- art -----------------------------------------------------------------------------------
+
+  /**
+   * Paints the shelves at `rects` (the DOM's `.jar-shelf` boxes). One texture per plank, made here and
+   * kept until the next layout, so a frame costs nothing extra.
+   */
+  private layShelves(rects: readonly Rect[]): void {
+    this.shelfRects = rects;
+    for (const c of this.shelves.removeChildren()) (c as Sprite).destroy({ texture: true, textureSource: true });
+    const res = this.renderer.resolution;
+    for (const r of rects) {
+      if (r.width < 1 || r.height < 1) continue;
+      const box = shelfBox(r);
+      const tex = new Texture({ source: new CanvasSource({ resource: drawShelf(r.width, r.height, res, this.look.wood), resolution: res }) });
+      const sp = new Sprite(tex);
+      sp.position.set(box.left, box.top);
+      sp.setSize(Math.ceil(box.width * res) / res, Math.ceil(box.height * res) / res);
+      this.shelves.addChild(sp);
+    }
+  }
 
   private clearCaches(): void {
     for (const t of this.textures.values()) t.destroy(true);

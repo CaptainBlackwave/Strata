@@ -30,6 +30,19 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.23.0 (2026-11-12): sprint 25, a fresh coat of paint
+**For players**
+- A visual refresh in the "beach-hut" style chosen from three mock-ups: warm paper cards with a pressable edge, bold headings, two-tone icons, and a colour band for each part of Home (Play teal, Today coral, Collection sand, Profile blue).
+- The jars stand on wooden shelves, on Home and under every row of jars on both boards.
+- The board: a two-row top bar, lipped toolbar buttons with readable labels, and messages shown between the board and the toolbar instead of over the jars.
+- Every sheet has one header with one close button and opens at the top. The win card shows goals as a checklist with one Continue button.
+- Fixes from a full audit of 132 screens: the moon no longer covers the settings gear at night, nothing wraps one word per line or breaks mid-word at large text sizes, the Stats overlap is gone, and night scenes colour every card and the shell cabinet properly. The focus ring shows only for keyboard use.
+
+**Under the hood**
+- Owner decisions D201-D203 (`production/sprints/sprint-25.md`). One token set in `style.css` (type scale, 4-pt spacing, radii, per-scene shadows and lips, bands, wood, motion) and one set of components; a test fails on new raw colours outside the token blocks. Distinct font sizes 23 to 6; hand-typed daytime brown 28 to 0.
+- The Realistic board draws the shelf once per layout under the jars (`src/ui/board-gpu/shelf.ts`).
+- Evidence: audit `production/qa/evidence/sprint-25/audit/`, after `production/qa/evidence/sprint-25/after/`. Layout guard: 48 screens, 0 overflow.
+
 ## 0.22.0 (2026-11-12): sprint 24, the tide jar
 **For players**
 - A new jar mechanic, the **tide jar**, from level 241 (its intro card shows there; the Jar guide and the map list it). It carries a wave mark with the pours left.

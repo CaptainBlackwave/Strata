@@ -115,7 +115,7 @@ describe('the clam shell art (style.css)', () => {
     expect(css).toMatch(/\.clam-ribs \{[^}]*repeating-conic-gradient\(/);
   });
   it('shows the count in a rem-sized pill in the scene colours, the accent at 1', () => {
-    expect(css).toMatch(/\.clam-shell b \{[^}]*background: var\(--toast-bg\);[^}]*color: var\(--toast-fg\);[^}]*font-size: 0\.75rem;/);
+    expect(css).toMatch(/\.clam-shell b \{[^}]*background: var\(--toast-bg\);[^}]*color: var\(--toast-fg\);[^}]*font-size: (0\.75rem|var\(--fs-1\));/);
     expect(css).toMatch(/\.jar\.clam\[data-clam='1'\] \.clam-shell b \{[^}]*var\(--accent-text\)/);
   });
 });

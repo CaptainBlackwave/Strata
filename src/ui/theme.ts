@@ -2,7 +2,7 @@
 import { type ThemeTokens, activeTheme, themeById } from '../core/themes';
 import { sceneDay } from './clock';
 import { startSceneFx } from './scene-fx';
-import { type UiThemeTokens, UI_TOKEN_VARS } from './theme-tokens';
+import { type UiThemeTokens, UI_TOKEN_VARS, sceneScheme } from './theme-tokens';
 import { audio, config, state } from './state';
 
 const TOKEN_VARS: Record<keyof ThemeTokens, string> = {
@@ -27,6 +27,7 @@ export function applyTheme(id: string): void {
     if (value) root.setProperty(cssVar, value);
     else root.removeProperty(cssVar); // fall back to the style.css default
   }
+  document.documentElement.dataset.scheme = sceneScheme(theme.tokens.card); // night lips, shadows and bands (style.css)
   document.body.dataset.theme = theme.id;
   startSceneFx(theme.id); // the scene's animated layer, if it has one (scene-fx.ts)
   audio.setScene(theme.id); // and its music (music.ts, D65): clock changes, previews and Use all come through here
