@@ -87,6 +87,7 @@ export function initBoardMode(): BoardMode {
 export function applyBoardSetting(): BoardMode {
   mode = decide();
   if (mode === 'gpu') {
+<<<<<<< HEAD
     watchLayout();
     gpuLayout();
   } else {
@@ -94,6 +95,18 @@ export function applyBoardSetting(): BoardMode {
     boardEl.dataset.render = 'dom';
     gpu?.setVisible(false);
     state.jarEls.forEach((el) => el.classList.remove('gpu-away'));
+=======
+    window.addEventListener('resize', relayoutSoon);
+    window.addEventListener('orientationchange', relayoutSoon);
+    // A scene change (tokens on <html>, data-theme on <body>) or a worn style (data-* on #board) redraws the glass.
+    const watch = new MutationObserver(() => {
+      tokens = null;
+      relayoutSoon();
+    });
+    watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+    watch.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+    watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand'] });
+>>>>>>> origin/main
   }
   return mode;
 }
