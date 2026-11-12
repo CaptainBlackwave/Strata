@@ -242,3 +242,14 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D178 | Winter Tide | A dress rehearsal of all 24 boards with a faked December date before 1 December (owner, 2026-11-12) | events | built |
 | D179 | App polish | Install prompt, icon and splash, offline note and update prompt, native feel (zoom, selection, status bar, haptics) (owner, 2026-11-12) | feel-audio-ui | install prompt, offline note and update bar, native feel built in sprint 21 (A1, A3, A4); icon and splash (A2) built too |
 | D180 | Release | Everything in one release, **0.20.0** (owner, 2026-11-12) | — | built |
+| D181 | Pour speed | Finish strata-8j3's 25 ms target: batch HUD and screen-reader text, no audio start-up when sound and music are off (owner, 2026-11-12) | feel-audio-ui | planned |
+| D182 | Splash | Follows the saved scene's colours (owner, 2026-11-12) | feel-audio-ui | planned |
+| D183 | Home hero | Corks on the Realistic hero jars and a clearly visible sparkle (owner, 2026-11-12) | feel-audio-ui | planned |
+| D184 | Install card | An art pass on the iPhone step pictures (owner, 2026-11-12) | feel-audio-ui | planned |
+| D185 | Release checks | An automated layout guard (every Home tab and sheet at 412px and 320px/150% text) before each release (owner, 2026-11-12) | — | planned |
+| D186 | Phone check | A checklist for the owner to run 0.20 on a real phone (owner, 2026-11-12) | — | built (`production/qa/phone-checklist-0.20.md`) |
+| D187 | Releases | 0.20.2 for the loose ends, then 0.21.0 for the next mechanic (owner, 2026-11-12) | — | planned |
+| D188 | Next focus | New jar mechanics, starting with **Wet sand** (owner, 2026-11-12) | jar-mechanics | planned |
+| D189 | Wet sand rules | Wet units pour only onto their own colour (never into an empty jar) and dry after N pours on the board (owner, 2026-11-12) | jar-mechanics, pour-rules | planned |
+| D190 | Mechanic pace | One new mechanic every 40 levels from 201; Wet sand debuts on 201 (owner, 2026-11-12) | jar-mechanics, level-generation | planned |
+| D191 | Scope | Only Wet sand for now; the mechanic for 241 is chosen later (owner, 2026-11-12) | jar-mechanics | planned |
