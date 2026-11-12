@@ -134,24 +134,29 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
 }
 
 /**
- * Paints the grains in the air into `out`, a `(cols × sub) × (airRows × sub)` texture whose bottom
- * row is the target's mouth (particle `y` 0) and whose top is the lip (`y = -airRows`).
- * Clears it first. Each grain is one cell.
+ * Paints falling grains into `out`, a `(cols × sub) × (rows × sub)` texture covering particle `y`
+ * from `top` to `top + rows` (the air above the mouth is `top = -airRows`; the target's own grid is
+ * `top = 0`). `clear` empties it first; otherwise grains only fill transparent texels, so they never
+ * hide settled sand. Each grain is one cell, nudged up or down a little by its shade so grains that
+ * left the lip together don't fall in a line (drawing only; the stream keeps its width).
  */
-export function paintAir(view: ParticleView, cols: number, airRows: number, palette: readonly Rgb[], neutral: Rgb, out: Uint32Array, sub: number): void {
-  out.fill(0);
+export function paintParticles(view: ParticleView, cols: number, top: number, rows: number, palette: readonly Rgb[], neutral: Rgb, out: Uint32Array, sub: number, clear: boolean): void {
+  if (clear) out.fill(0);
   const w = cols * sub;
-  const h = airRows * sub;
+  const h = rows * sub;
   for (let p = 0; p < view.count; p++) {
-    // Grains that left the lip in the same step fall level with each other; a small offset from
-    // each grain's shade (drawing only) breaks those rows up into a stream.
     const s = view.shade[p];
-    const tx = Math.floor((view.x[p] + ((s & 3) - 1.5) * 0.6) * sub);
-    const ty = Math.floor((view.y[p] + airRows + (((s >> 2) & 15) - 7.5) * 0.5) * sub);
+    const tx = Math.floor(view.x[p] * sub);
+    const ty = Math.floor((view.y[p] - top + (((s >> 2) & 7) - 3.5) * 0.4) * sub);
     if (tx < 0 || tx >= w || ty < 0 || ty >= h) continue;
     const c = cellRgb(view.cell[p], palette, neutral);
-    const k = 0.9 + 0.25 * (view.shade[p] / 255);
+    const k = 0.9 + 0.25 * (s / 255);
     const px = pack(c.r * k, c.g * k, c.b * k);
-    for (let sy = 0; sy < sub && ty + sy < h; sy++) for (let sx = 0; sx < sub && tx + sx < w; sx++) out[(ty + sy) * w + tx + sx] = px;
+    for (let sy = 0; sy < sub && ty + sy < h; sy++) {
+      for (let sx = 0; sx < sub && tx + sx < w; sx++) {
+        const t = (ty + sy) * w + tx + sx;
+        if (clear || out[t] === 0) out[t] = px;
+      }
+    }
   }
 }

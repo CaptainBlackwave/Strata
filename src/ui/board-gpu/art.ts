@@ -1,7 +1,7 @@
 /**
  * The jar's glass art for the GPU board (sprint 19 S2), drawn once per layout on 2D canvases and
- * used as textures: the tinted back, the lit front (rim light, inner shadow, highlight streak, thick
- * base), the contact shadow, and the "?" on hidden sand. Drawn for Strata from the jar's own
+ * used as textures: the almost clear back, the soft matte front (a faint rim, one gentle highlight,
+ * a thin outline and a frosted thick base, D162), the contact shadow, and the "?" on hidden sand. Drawn for Strata from the jar's own
  * geometry; no image files. Canvas space is jar-local CSS px (origin at the interior's bottom centre)
  * scaled by `res`, shifted by `ART_PAD`.
  */
@@ -77,150 +77,99 @@ export function drawJarArt(g: JarGeometry, res: number): JarArt {
   const inner = (c: CanvasRenderingContext2D) => rr(c, -iw / 2, -ih, iw, ih, 0, rb);
   const outer = (c: CanvasRenderingContext2D) => rr(c, -ox, -ih, ox * 2, ih + g.base, 2, rbo);
 
-  // Behind the sand: a faint tint of glass and the dark back of the opening.
+  // Behind the sand: almost clear glass, the faintest cool tint (strata-bcr: empty glass must not look milky).
   const [back, b] = canvas(width, height, res);
   b.translate(-left, -top);
   b.beginPath();
   inner(b);
-  let gr = b.createLinearGradient(-iw / 2, 0, iw / 2, 0);
-  gr.addColorStop(0, 'rgba(255,255,255,0.22)');
-  gr.addColorStop(0.45, 'rgba(214,236,236,0.08)');
-  gr.addColorStop(1, 'rgba(70,105,115,0.1)');
-  b.fillStyle = gr;
-  b.fill();
-  b.beginPath();
-  b.ellipse(0, -ih + rim * 0.7, iw / 2, rim * 0.45, 0, 0, Math.PI * 2);
-  b.fillStyle = 'rgba(40,62,70,0.16)';
+  b.fillStyle = 'rgba(225,240,242,0.07)';
   b.fill();
 
-  // In front of the sand.
+  // In front of the sand: soft, frosted, matte glass (D162). The sand is the star.
   const [front, f] = canvas(width, height, res);
   f.translate(-left, -top);
-  // 1. Light on the sand through a cylinder: dark edges, a lit left, a darker base and an inner shadow under the rim.
+  // 1. A little roundness on the sand: softly darker at the sides and the foot. No gloss.
   f.save();
   f.beginPath();
   inner(f);
   f.clip();
-  gr = f.createLinearGradient(-iw / 2, 0, iw / 2, 0);
-  gr.addColorStop(0, 'rgba(20,30,40,0.2)');
-  gr.addColorStop(0.16, 'rgba(20,30,40,0)');
-  gr.addColorStop(0.66, 'rgba(20,30,40,0)');
-  gr.addColorStop(1, 'rgba(20,30,40,0.26)');
+  let gr = f.createLinearGradient(-iw / 2, 0, iw / 2, 0);
+  gr.addColorStop(0, 'rgba(30,38,44,0.12)');
+  gr.addColorStop(0.2, 'rgba(30,38,44,0)');
+  gr.addColorStop(0.75, 'rgba(30,38,44,0)');
+  gr.addColorStop(1, 'rgba(30,38,44,0.16)');
   f.fillStyle = gr;
   f.fillRect(-iw / 2, -ih, iw, ih);
-  gr = f.createLinearGradient(-iw / 2, -ih, iw / 2, 0);
-  gr.addColorStop(0, 'rgba(255,255,255,0.14)');
-  gr.addColorStop(0.5, 'rgba(255,255,255,0)');
-  gr.addColorStop(1, 'rgba(0,0,0,0.08)');
-  f.fillStyle = gr;
-  f.fillRect(-iw / 2, -ih, iw, ih);
-  const foot = Math.min(22, ih * 0.14);
+  const foot = Math.min(18, ih * 0.1);
   gr = f.createLinearGradient(0, -foot, 0, 0);
-  gr.addColorStop(0, 'rgba(20,30,40,0)');
-  gr.addColorStop(1, 'rgba(20,30,40,0.2)');
+  gr.addColorStop(0, 'rgba(30,38,44,0)');
+  gr.addColorStop(1, 'rgba(30,38,44,0.12)');
   f.fillStyle = gr;
   f.fillRect(-iw / 2, -foot, iw, foot);
-  const lip = Math.min(14, ih * 0.1);
-  gr = f.createLinearGradient(0, -ih, 0, -ih + lip);
-  gr.addColorStop(0, 'rgba(20,30,40,0.24)');
-  gr.addColorStop(1, 'rgba(20,30,40,0)');
-  f.fillStyle = gr;
-  f.fillRect(-iw / 2, -ih, iw, lip);
   f.restore();
 
-  // 2. The glass wall (outer minus inner) and its thick base.
+  // 2. The wall and base: an even frosted film, a touch lighter at the foot where the glass is thick.
   f.beginPath();
   outer(f);
   inner(f);
-  gr = f.createLinearGradient(-ox, 0, ox, 0);
-  gr.addColorStop(0, 'rgba(250,255,255,0.78)');
-  gr.addColorStop(0.5, 'rgba(196,224,228,0.42)');
-  gr.addColorStop(1, 'rgba(150,186,194,0.66)');
-  f.fillStyle = gr;
+  f.fillStyle = 'rgba(236,244,245,0.34)';
   f.fill('evenodd');
   f.save();
   f.beginPath();
   outer(f);
   f.clip();
   gr = f.createLinearGradient(0, 0, 0, g.base);
-  gr.addColorStop(0, 'rgba(255,255,255,0.2)');
-  gr.addColorStop(1, 'rgba(255,255,255,0.75)');
+  gr.addColorStop(0, 'rgba(240,246,246,0.1)');
+  gr.addColorStop(1, 'rgba(240,246,246,0.38)');
   f.fillStyle = gr;
   f.fillRect(-ox, 0, ox * 2, g.base);
   f.restore();
 
-  // 3. The silhouette: a dark edge so the glass reads on the pale beach, and a rim light over it.
+  // 3. The outline: a thin dark edge (reads on light scenes) with a faint light line inside it
+  // (reads on dark scenes), and the inner edge, so the wall has a little thickness.
   f.beginPath();
   outer(f);
-  f.strokeStyle = 'rgba(62,82,90,0.5)';
-  f.lineWidth = 1.4;
+  f.strokeStyle = 'rgba(52,66,74,0.46)';
+  f.lineWidth = 1.1;
   f.stroke();
   f.beginPath();
-  rr(f, -ox + 0.9, -ih + 0.9, ox * 2 - 1.8, ih + g.base - 1.8, 2, rbo - 0.9);
-  gr = f.createLinearGradient(-ox, -ih, ox, 0);
-  gr.addColorStop(0, 'rgba(255,255,255,1)');
-  gr.addColorStop(0.5, 'rgba(255,255,255,0.5)');
-  gr.addColorStop(1, 'rgba(255,255,255,0.22)');
-  f.strokeStyle = gr;
-  f.lineWidth = 1.2;
+  rr(f, -ox + 1, -ih + 1, ox * 2 - 2, ih + g.base - 2, 2, rbo - 1);
+  f.strokeStyle = 'rgba(255,255,255,0.3)';
+  f.lineWidth = 0.9;
   f.stroke();
-  // The inner edge: a light and dark pair gives the wall its thickness.
   f.beginPath();
   inner(f);
-  gr = f.createLinearGradient(-iw / 2, 0, iw / 2, 0);
-  gr.addColorStop(0, 'rgba(255,255,255,0.6)');
-  gr.addColorStop(0.5, 'rgba(30,55,65,0.22)');
-  gr.addColorStop(1, 'rgba(30,50,60,0.4)');
-  f.strokeStyle = gr;
-  f.lineWidth = 1;
+  f.strokeStyle = 'rgba(52,66,74,0.2)';
+  f.lineWidth = 0.8;
   f.stroke();
 
-  // 4. The rim flange and the front arc of the opening.
+  // 4. A faint rim and the front of the opening.
   f.beginPath();
-  rr(f, -ox - 2, -ih - rim * 0.3, (ox + 2) * 2, rim, rim * 0.45, rim * 0.45);
-  gr = f.createLinearGradient(-ox, 0, ox, 0);
-  gr.addColorStop(0, 'rgba(255,255,255,0.92)');
-  gr.addColorStop(0.5, 'rgba(220,240,244,0.5)');
-  gr.addColorStop(1, 'rgba(255,255,255,0.66)');
-  f.fillStyle = gr;
+  rr(f, -ox - 1.5, -ih - rim * 0.3, (ox + 1.5) * 2, rim, rim * 0.45, rim * 0.45);
+  f.fillStyle = 'rgba(240,246,246,0.4)';
   f.fill();
-  f.strokeStyle = 'rgba(62,82,90,0.48)';
+  f.strokeStyle = 'rgba(52,66,74,0.4)';
   f.lineWidth = 1;
   f.stroke();
   f.beginPath();
-  f.ellipse(0, -ih + rim * 0.7, iw / 2 + 0.5, rim * 0.45, 0, 0, Math.PI);
-  f.strokeStyle = 'rgba(255,255,255,0.72)';
-  f.lineWidth = 1.1;
+  f.ellipse(0, -ih + rim * 0.7, iw / 2, rim * 0.4, 0, 0, Math.PI);
+  f.strokeStyle = 'rgba(255,255,255,0.3)';
+  f.lineWidth = 0.9;
   f.stroke();
 
-  // 5. Highlight streaks, softly blurred.
+  // 5. One gentle highlight: a soft, wide, low band down the lit side.
   f.save();
-  f.filter = 'blur(0.9px)';
-  const sw = Math.max(3, iw * 0.09);
-  gr = f.createLinearGradient(0, -ih + 10, 0, -foot);
-  gr.addColorStop(0, 'rgba(255,255,255,0.9)');
-  gr.addColorStop(0.7, 'rgba(255,255,255,0.36)');
-  gr.addColorStop(1, 'rgba(255,255,255,0.04)');
+  f.filter = 'blur(2px)';
+  const sw = Math.max(4, iw * 0.13);
+  gr = f.createLinearGradient(0, -ih + 12, 0, -foot);
+  gr.addColorStop(0, 'rgba(255,255,255,0.2)');
+  gr.addColorStop(0.6, 'rgba(255,255,255,0.1)');
+  gr.addColorStop(1, 'rgba(255,255,255,0)');
   f.fillStyle = gr;
   f.beginPath();
-  rr(f, -iw / 2 + iw * 0.08, -ih + 10, sw, ih * 0.78, sw / 2, sw / 2);
-  f.fill();
-  f.beginPath();
-  f.ellipse(-iw / 2 + iw * 0.08 + sw / 2, -ih + 6, sw * 0.55, sw * 0.35, 0, 0, Math.PI * 2);
-  f.fillStyle = 'rgba(255,255,255,0.95)';
-  f.fill();
-  f.fillStyle = 'rgba(255,255,255,0.3)';
-  f.beginPath();
-  rr(f, iw / 2 - iw * 0.13, -ih + ih * 0.16, sw * 0.4, ih * 0.58, sw * 0.2, sw * 0.2);
+  rr(f, -iw / 2 + iw * 0.1, -ih + 12, sw, ih * 0.7, sw / 2, sw / 2);
   f.fill();
   f.restore();
-  // The base's reflection line.
-  f.beginPath();
-  f.moveTo(-iw / 2 + rb * 0.8, g.base * 0.45);
-  f.lineTo(iw / 2 - rb * 0.8, g.base * 0.45);
-  f.strokeStyle = 'rgba(255,255,255,0.65)';
-  f.lineWidth = 1.1;
-  f.stroke();
 
   // The contact shadow under the base: a soft cast shadow and a dark core.
   const shadowWidth = width * 1.5;

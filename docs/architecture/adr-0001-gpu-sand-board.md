@@ -1,6 +1,6 @@
 # ADR-0001: A GPU board with a falling-sand simulation
 
-**Status:** accepted (owner, 2026-11-11; decisions D153–D158)
+**Status:** accepted (owner, 2026-11-11; decisions D153–D158). **Amended 2026-11-12 (D159):** the GPU board is a bought cosmetic ("Real sand"), and the DOM board stays the free default ("Classic"), a first-class look and not only a fallback.
 **Supersedes:** the "no runtime dependencies" note in `docs/engine-reference/web/VERSION.md` (for the board renderer only)
 
 ## Context

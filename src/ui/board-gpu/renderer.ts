@@ -11,10 +11,14 @@ import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, 
 import { type JarArt, drawJarArt, drawMark } from './art';
 import { DirtyTracker, jarKey } from './dirty';
 import { type JarGeometry, cubicBezier, lipLocal, pourLip, pourSide } from './geometry';
-import { type Rgb, cornerMask, paintAir, paintGrid } from './paint';
+import { type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
 
 /** Texels per sand cell along each axis: each grain gets a little texture of its own. */
 const SUB = 2;
+/** The falling stream's width in CSS px (strata-085: a narrow stream, 2 to 4 px). */
+const STREAM_PX = 3;
+/** Where the lip waits over the target's opening, as a share of its width from the near wall (strata-r8z). */
+const LIP_INSET = 0.3;
 
 /** Motion timings and curves, taken from the DOM board so both feel the same. */
 export interface GpuMotion {
@@ -79,7 +83,8 @@ interface Pour {
   readonly startLip: { x: number; y: number };
   readonly waitLip: { x: number; y: number };
   readonly start: number;
-  phase: 'move' | 'sim' | 'back';
+  /** Moving to the target (the spill held), pouring, flying home, then the target's last settling once home. */
+  phase: 'move' | 'sim' | 'back' | 'tail';
   backStart: number;
   carry: number;
   spilled: boolean;
@@ -210,7 +215,7 @@ export class GpuBoard {
     this.selected = selected;
     const now = performance.now();
     this.views.forEach((v, i) => {
-      const to = selected === i && !(this.pour && this.pour.from === i) ? 1 : 0;
+      const to = selected === i && !(this.pour && this.pour.from === i && this.pour.phase !== 'tail') ? 1 : 0;
       if (to === v.liftTo && !instant) return;
       v.liftFrom = v.lift;
       v.liftTo = to;
@@ -230,7 +235,10 @@ export class GpuBoard {
     const src = this.views[from];
     const dst = this.views[to];
     const side = pourSide(src.geom, dst.geom, window.innerWidth);
-    const sim = planPour(board, from, to, this.opts.dims, seed, { side, config: this.config });
+    const { cols } = this.opts.dims;
+    // The lip waits over the opening, a little in from the near wall, and the stream falls straight down from it.
+    const streamCol = (side > 0 ? LIP_INSET : 1 - LIP_INSET) * cols;
+    const sim = planPour(board, from, to, this.opts.dims, seed, { side, config: this.config, streamCol, streamWidth: STREAM_PX / dst.geom.cellW });
     // The grids are the same sand: keep the grains' shades so nothing shimmers at the start.
     sim.source.shade.set(src.grid.shade);
     sim.target.shade.set(dst.grid.shade);
@@ -245,7 +253,7 @@ export class GpuBoard {
     return new Promise<void>((resolve, reject) => {
       this.pour = {
         from, to, sim, side, hooks, resolve, reject, startLip,
-        waitLip: pourLip(dst.geom, side, this.config.airRows),
+        waitLip: { x: dst.geom.x - dst.geom.innerWidth / 2 + streamCol * dst.geom.cellW, y: pourLip(dst.geom, side, this.config.airRows).y },
         start: performance.now(), phase: 'move', backStart: 0, carry: 0, spilled: false, after: null, released: false,
       };
       src.liftTo = 0;
@@ -390,7 +398,8 @@ export class GpuBoard {
   }
 
   private paintAirNow(p: Pour): void {
-    paintAir(p.sim.particles, this.opts.dims.cols, this.config.airRows, this.opts.palette, this.opts.neutral, this.airTexels!, SUB);
+    const rows = this.config.airRows;
+    paintParticles(p.sim.particles, this.opts.dims.cols, -rows, rows, this.opts.palette, this.opts.neutral, this.airTexels!, SUB, true);
     this.airCtx!.putImageData(this.airImage!, 0, 0);
     this.airTexture!.source.update();
   }
@@ -426,7 +435,7 @@ export class GpuBoard {
     let moving = false;
     const ms = this.opts.motion.selectMs;
     this.views.forEach((v, i) => {
-      if (this.pour && this.pour.from === i) return;
+      if (this.pour && this.pour.from === i && this.pour.phase !== 'tail') return;
       if (v.lift !== v.liftTo) {
         const u = ms > 0 ? Math.min(1, (now - v.liftStart) / ms) : 1;
         v.lift = u >= 1 ? v.liftTo : v.liftFrom + (v.liftTo - v.liftFrom) * easeLift(u);
@@ -442,16 +451,20 @@ export class GpuBoard {
     const src = this.views[p.from];
     const dst = this.views[p.to];
     const { liftMs, backMs } = this.opts.motion;
+    const due = stepsDue(p.carry, dt, this.config);
+    p.carry = due.carryMs;
     if (p.phase === 'move') {
+      // The jar tips as it flies, like the DOM pour, but nothing spills until the lip is over the opening (strata-r8z).
+      for (let k = 0; k < due.steps && !done(p.sim); k++) step(p.sim, { holdSpill: true });
       const u = Math.min(1, (now - p.start) / liftMs);
       const e = easeLift(u);
       src.root.position.set(p.startLip.x + (p.waitLip.x - p.startLip.x) * e, p.startLip.y + (p.waitLip.y - p.startLip.y) * e);
+      src.root.rotation = p.side * p.sim.tilt;
       src.shadow.alpha = 1 - 0.7 * e;
+      this.repaintPour(p, src, dst);
       if (u >= 1) p.phase = 'sim';
       return true;
     }
-    const due = stepsDue(p.carry, dt, this.config);
-    p.carry = due.carryMs;
     for (let k = 0; k < due.steps && !done(p.sim); k++) step(p.sim);
     if (!p.spilled && p.sim.emitted > 0) {
       p.spilled = true;
@@ -470,6 +483,14 @@ export class GpuBoard {
       }
       return true;
     }
+    if (p.phase === 'tail') {
+      // Home already: the target's last grains settle, then both snap to the board.
+      if (done(p.sim)) {
+        this.endPour(p);
+        return false;
+      }
+      return true;
+    }
     // Flying home while the target settles.
     const u = Math.min(1, (now - p.backStart) / backMs);
     const e = easeBack(u);
@@ -477,9 +498,16 @@ export class GpuBoard {
     src.root.rotation = 0;
     src.root.position.set(p.waitLip.x + (home.x - p.waitLip.x) * e, p.waitLip.y + (home.y - p.waitLip.y) * e);
     src.shadow.alpha = 0.3 + 0.7 * e;
-    if (u >= 1 && done(p.sim)) {
-      this.endPour(p);
-      return false;
+    if (u >= 1) {
+      if (done(p.sim)) {
+        this.endPour(p);
+        return false;
+      }
+      // The jar is home: the pour is over for the player (input, the win card) while the sand settles.
+      p.phase = 'tail';
+      src.lift = 0;
+      this.placeRest(src);
+      p.resolve();
     }
     return true;
   }
@@ -489,6 +517,8 @@ export class GpuBoard {
     src.ctx.putImageData(src.image, 0, 0);
     src.texture.source.update();
     paintGrid(dst.grid, this.opts.palette, this.opts.neutral, dst.texels, SUB, this.mask ?? undefined);
+    // Grains already inside the target fall behind its glass, in its own texture.
+    paintParticles(p.sim.particles, this.opts.dims.cols, 0, this.opts.dims.rows, this.opts.palette, this.opts.neutral, dst.texels, SUB, false);
     dst.ctx.putImageData(dst.image, 0, 0);
     dst.texture.source.update();
     this.paintAirNow(p);
@@ -514,10 +544,12 @@ export class GpuBoard {
     this.air.visible = false;
     const src = this.views[p.from];
     const dst = this.views[p.to];
-    src.lift = 0;
-    src.liftTo = this.selected === p.from ? 1 : 0;
-    src.liftFrom = 0;
-    src.liftStart = performance.now();
+    if (p.phase !== 'tail') {
+      src.lift = 0;
+      src.liftTo = this.selected === p.from ? 1 : 0;
+      src.liftFrom = 0;
+      src.liftStart = performance.now();
+    }
     this.placeRest(src);
     this.jarsLayer.addChildAt(src.root, Math.min(p.from, this.jarsLayer.children.length - 1));
     this.paint(src, after, p.from);
@@ -527,7 +559,7 @@ export class GpuBoard {
     // The board may have moved on already (a fast tap): catch up with it.
     const now = this.board ?? after;
     this.sync(now, this.selected);
-    p.resolve();
+    p.resolve(); // a no-op when the tail already resolved it
   }
 
   private readonly onVisibility = (): void => {
