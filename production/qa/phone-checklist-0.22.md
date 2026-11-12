@@ -1,6 +1,6 @@
-# Phone checklist for 0.20 (about 10 minutes)
+# Phone checklist for 0.22 (about 15 minutes)
 
-Open https://captainblackwave.github.io/Strata/ on your phone. If an older version is cached, open it once, go back to Home, and it updates (the "Version" line in What's new should say 0.20.1 or later).
+Open https://captainblackwave.github.io/Strata/ on your phone. If an older version is cached, open it once, go back to Home, and it updates (What's new should list 0.22.0, "The tide jar", at the top).
 
 Reply with the number and ✅ or ❌, plus a word on anything that looks off.
 
@@ -27,3 +27,12 @@ Reply with the number and ✅ or ❌, plus a word on anything that looks off.
 14. Today tab: the weekly set card shows five small jars in a row, the week's theme as its title, and everything fits on screen.
 15. Realistic board: after a pour, the sand in the target jar settles into a smooth slope, not little steps.
 16. On a big level (about 14–16 jars), pours feel smooth, not stuttery. If they stutter, say which level.
+
+## New jars (only if you've reached these levels; replays open any level you've already reached)
+17. Level 201 opens with a "New jar! Wet sand" card. Wet units are darker, with a drop and a number.
+18. Try pouring wet sand into an empty jar: it refuses with "Wet sand only goes onto its own colour."
+19. Each pour lowers the number on every wet unit; at 0 the drop disappears and the sand looks normal. A full jar of one colour only gets its cork once its sand is dry.
+20. Level 241 opens with a "New jar! Tide jar" card. One jar has a wave mark with a number under it.
+21. After 4 pours the tide turns: the bottom layer slides up to the top. The number counts down 4, 3, 2, 1 and starts again.
+22. Once a tide jar is full of one colour it seals, the wave mark fades, and it never turns again.
+23. Both new jars look right on Classic too (Settings → Realistic sand off).

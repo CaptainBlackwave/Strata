@@ -247,7 +247,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D183 | Home hero | Corks on the Realistic hero jars and a clearly visible sparkle (owner, 2026-11-12) | feel-audio-ui | built (sprint 22 L3) |
 | D184 | Install card | An art pass on the iPhone step pictures (owner, 2026-11-12) | feel-audio-ui | built (sprint 22 L4) |
 | D185 | Release checks | An automated layout guard (every Home tab and sheet at 412px and 320px/150% text) before each release (owner, 2026-11-12) | — (`tools/qa/layout-guard.cjs`, `npm run guard:layout`) | built |
-| D186 | Phone check | A checklist for the owner to run 0.20 on a real phone (owner, 2026-11-12) | — | built (`production/qa/phone-checklist-0.20.md`) |
+| D186 | Phone check | A checklist for the owner to run 0.20 on a real phone (owner, 2026-11-12) | — | built (`production/qa/phone-checklist-0.22.md`) |
 | D187 | Releases | 0.20.2 for the loose ends, then 0.21.0 for the next mechanic (owner, 2026-11-12) | — | planned |
 | D188 | Next focus | New jar mechanics, starting with **Wet sand** (owner, 2026-11-12) | jar-mechanics | built |
 | D189 | Wet sand rules | Wet units pour only onto their own colour (never into an empty jar) and dry after N pours on the board (owner, 2026-11-12) | jar-mechanics, pour-rules | built |
@@ -261,3 +261,4 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D197 | Pace and rotations | 0.22.0 whenever ready; wet sand and the tide jar stay on levels only, not daily, weekly or events (owner, 2026-11-12) | — | built |
 | D198 | Tide share and balance | The tide jar comes **only from its own roll** (`shared: false`, `ownChance` 0.14, about 1 in 8 from 241), so wet sand stays at 1 in 8; it turns every 4 pours (a gentler 5 was tried and did not change the simulated player); the 301–400 stuck-rate gate samples every 3rd level instead of every 10th (owner, 2026-11-12) | jar-mechanics, level-generation | built |
 | D199 | Merging releases | **Don't wait for the Kilo review bot**: merge our own release PRs once tsc, the full test suite, the build, the layout guard and a play-through pass; read Kilo's comments if they arrive and fix real findings in the next release. Replaces D61's wait for a clean Kilo review (owner, 2026-11-12) | — | decided |
+| D200 | Next | **Pause and gather feedback**: no new feature work while Winter Tide and the new jars run; act on player reports and the owner's phone checklist (`production/qa/phone-checklist-0.22.md`, extended with wet sand and the tide jar); the Kilo bot keeps running and real findings are fixed in the next release (owner, 2026-11-12) | — | decided |
