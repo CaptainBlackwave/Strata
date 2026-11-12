@@ -1,7 +1,7 @@
 /**
- * The splash (sprint 21 A2, D179): index.html's inline-styled `#splash`, the logo jars on the scene's
- * daylight background, covers the page from the first paint so nothing unstyled ever shows. Once the
- * first screen is drawn it fades out (a short fade, none under reduced motion) and is removed.
+ * The splash (sprint 21 A2, D179): index.html's inline-styled `#splash`, the logo jars on the saved
+ * scene's background (read by a script in index.html's <head>, sprint 22 L2, D182), covers the page
+ * from the first paint so nothing unstyled ever shows. Once the first screen is drawn it fades out (a short fade, none under reduced motion) and is removed.
  */
 import { reducedMotion } from './dom';
 

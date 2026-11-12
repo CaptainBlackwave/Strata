@@ -1,0 +1,67 @@
+{
+  "label": "before-dom-firsttap",
+  "board": "dom",
+  "reducedMotion": true,
+  "firstTapCounted": true,
+  "level": 491,
+  "pours": 10,
+  "cpuThrottle": 4,
+  "perEvent": {
+    "RunTask": {
+      "count": 5856,
+      "totalMs": 1673,
+      "worstMs": 51.7
+    },
+    "PrePaint": {
+      "count": 268,
+      "totalMs": 37,
+      "worstMs": 2.3
+    },
+    "EventDispatch": {
+      "count": 402,
+      "totalMs": 141,
+      "worstMs": 42.9
+    },
+    "UpdateLayoutTree": {
+      "count": 123,
+      "totalMs": 97,
+      "worstMs": 5.7
+    },
+    "Layout": {
+      "count": 35,
+      "totalMs": 57,
+      "worstMs": 4.5
+    },
+    "Paint": {
+      "count": 131,
+      "totalMs": 206,
+      "worstMs": 6.8
+    },
+    "Layerize": {
+      "count": 96,
+      "totalMs": 82,
+      "worstMs": 4
+    },
+    "Commit": {
+      "count": 96,
+      "totalMs": 81,
+      "worstMs": 8.3
+    }
+  },
+  "tasksOver16ms": [
+    51.7,
+    33.5,
+    32.9,
+    27.8,
+    27.4,
+    25.4,
+    21.4,
+    20.9,
+    19.9,
+    18.9,
+    18.4,
+    17.7,
+    17.1,
+    16.1
+  ]
+}

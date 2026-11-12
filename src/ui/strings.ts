@@ -207,6 +207,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.20.2',
+        name: 'Small polish',
+        lines: [
+          'The splash screen now matches your scene, so a night scene no longer flashes bright while loading.',
+          'The jars on Home wear their corks in Realistic sand too, and their sparkle is easier to see.',
+          'Clearer pictures for adding Strata to an iPhone home screen.',
+          'Pours on big boards run a little smoother, and sound starts only when you turn it on.',
+        ],
+      },
+      {
         version: '0.20.1',
         name: 'Tidier Today',
         lines: [

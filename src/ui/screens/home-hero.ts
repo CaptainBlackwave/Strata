@@ -39,9 +39,16 @@ const boxes = () => {
   return heroLayout(width, height, board.capacity);
 };
 
-/** The jar geometries for the stage, in its own coordinates. */
+/**
+ * The jar geometries for the stage, in its own coordinates. The button box is the board's: the glass
+ * plus `--jar-w × 0.18` of cork room above it, so the renderer seats each cork on the rim (D183).
+ */
 function geometries() {
-  return boxes().map((box) => jarGeometry({ left: box.left, top: box.top, width: box.width, height: box.height }, box.unitHeight, board.capacity, defaultDims()));
+  return boxes().map((box) => {
+    const glass = { left: box.left, top: box.top, width: box.width, height: box.height };
+    const room = box.width * 0.18;
+    return jarGeometry(glass, box.unitHeight, board.capacity, defaultDims(), { ...glass, top: box.top - room, height: box.height + room });
+  });
 }
 
 function setMode(mode: 'realistic' | 'css'): void {
@@ -69,6 +76,7 @@ function load(): Promise<void> {
         dims: defaultDims(),
         viewSize: stageSize,
         className: 'hero-canvas',
+        corkFull: true, // the logo jars wear corks, as the CSS ones do (D183)
         onContext: (isLost) => {
           lost = isLost;
           renderHero();
@@ -107,7 +115,7 @@ function sparkle(): void {
   const anim = el.animate(
     [
       { opacity: 0, transform: 'translate(-50%, -50%) scale(0.4) rotate(0deg)' },
-      { opacity: 0.95, transform: 'translate(-50%, -50%) scale(1) rotate(20deg)', offset: 0.45 },
+      { opacity: 1, transform: 'translate(-50%, -50%) scale(1) rotate(20deg)', offset: 0.45 },
       { opacity: 0, transform: 'translate(-50%, -50%) scale(0.6) rotate(45deg)' },
     ],
     { duration: heroTuning.sparkleMs, easing: 'ease-in-out' },

@@ -19,7 +19,7 @@ import { t } from '../strings';
 import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coachText, homeEl, layers, levelLabel, reducedMotion, showToast, toastEl, toolButtons, winEl } from '../dom';
 import { showHome } from './home';
 import { screenOut } from '../fx';
-import { coach, updateHud } from './hud';
+import { coach, scheduleHud, updateHud } from './hud';
 import { buildJars, cancelFlips, clamOpenFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { flipDelay, grownFrom } from '../logic/flip';
 import { clamOpenDelay } from '../logic/clam';
@@ -292,7 +292,7 @@ export function onSessionEvent(e: SessionEvent): void {
     // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
     if (state.session.status !== 'won' && state.session.lostReason) showStuckBanner(t.cantWin);
   }
-  updateHud();
+  scheduleHud(); // with the live region, one batch of text writes in the next frame (sprint 22 L1)
 }
 
 /**

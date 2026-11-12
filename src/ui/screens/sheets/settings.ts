@@ -126,6 +126,7 @@ export function wireSettings(go: { home: () => void; tutorial: () => void }): vo
       state.save.settings[key] = (e.target as HTMLInputElement).checked;
       writeSave(state.save);
       audio.configure(state.save.settings);
+      audio.unlock(); // a gesture: turning sound or music on starts audio, which stays off while both are (L1)
       for (const v of VOLUMES) if (v.mute === key) syncSlider(v); // a muted slider shows disabled
       if (key === 'patterns') renderAllJars();
       if (key === 'southern') applyTheme(currentTheme()); // the In season badge and Match my clock follow it (P2)

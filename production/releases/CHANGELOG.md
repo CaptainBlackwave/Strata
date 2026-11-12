@@ -7,6 +7,8 @@ The game's release history. The repository's root `CHANGELOG.md` belongs to the 
 - Running the workflow by hand with `mode: backfill` tags every row of the table below that is not tagged yet.
 - An existing tag is never moved.
 
+**Before a release (D185):** run `npm run build && npm run guard:layout`. It must exit 0: every Home tab and sheet, a board and its win card fit the screen at 412px and at 320px with 150% text. The report and any failure screenshots go to `production/qa/layout-guard/`.
+
 When a release merges, add its row here so a backfill can recreate it.
 
 | Tag | Commit on `main` |
@@ -27,6 +29,18 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.14.0 | `53b6c12` (sprint 14, sharing, PR #31) |
 
 ## Unreleased
+
+## 0.20.2 (2026-11-12): sprint 22, loose ends
+**For players**
+- The splash screen uses your saved scene's colours (a night scene no longer flashes light before Home).
+- The Home hero's Realistic jars wear corks like the Classic ones, and the sparkle is larger and brighter.
+- The iPhone install steps have bigger, clearer pictures (Share, Add to Home Screen, Add).
+- Pours on big boards are smoother: HUD and screen-reader text are written once per frame, and audio no longer starts on the first tap while sound and music are off.
+
+**Under the hood**
+- Owner decisions D181–D187 (`production/sprints/sprint-22.md`). Classic, level 491, 4x throttle, fixed waits: p95 23–26 ms on a quiet machine (`production/qa/evidence/sprint-22/perf/`).
+- New layout guard (`npm run build && npm run guard:layout`): every Home tab and sheet at 412px and 320px/150% text; 48 screens, 0 overflow. Now a release step.
+- The play-through script's waits were fixed (Playwright treats an async predicate as instantly true); Realistic and Classic play-throughs win every run.
 
 ## 0.20.1 (2026-11-12): a tidier Today
 **For players**

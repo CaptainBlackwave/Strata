@@ -53,7 +53,9 @@ async function play(browser, board) {
   await page.evaluate(() => document.querySelectorAll('#whatsnew:not([hidden]) #btn-whatsnew-ok, #intro:not([hidden]) #btn-intro-ok').forEach((b) => b.click()));
   await page.waitForTimeout(1200);
   const log = { board, render: await page.evaluate(() => document.getElementById('board').dataset.render), steps: [], errors };
-  const idle = () => page.waitForFunction(async () => { const { state } = await import('/src/ui/state.ts'); return !state.busy && state.returning.size === 0; }, null, { polling: 50, timeout: 20000 });
+  // Playwright counts a Promise as truthy, so these waits read a state handle synchronously (window.__S).
+  await page.evaluate(async () => { window.__S = (await import('/src/ui/state.ts')).state; });
+  const idle = () => page.waitForFunction(() => !window.__S.busy && window.__S.returning.size === 0, null, { polling: 50, timeout: 20000 });
   const check = async (what) => {
     await idle();
     await page.waitForTimeout(900); // the Realistic pour's tail settles after input comes back
@@ -69,7 +71,27 @@ async function play(browser, board) {
     const { solve } = await import('/src/core/solver.ts');
     return solve(state.session.board, 400000).path.map((m) => [m.from, m.to]);
   });
-  const pour = async ([f, t]) => { await tap(f); await tap(t); await check(`pour ${f}->${t}`); };
+  const moves = () => page.evaluate(async () => (await import('/src/ui/state.ts')).state.session.moves);
+  log.ignored = [];
+  // A pour must add one move; a tap the game ignored (e.g. during the last pour's tail) is logged and retried once.
+  const pour = async ([f, t]) => {
+    const before = await moves();
+    await tap(f); await tap(t);
+    // The Realistic pour counts its move when the first grain lands, a moment after the tap: wait up to 3 s for it.
+    await page.waitForFunction((b) => window.__S.session.moves > b, before, { polling: 50, timeout: 3000 }).catch(() => {});
+    if ((await moves()) === before) {
+      const why = await page.evaluate(async ([t, box]) => {
+        const { state } = await import('/src/ui/state.ts');
+        const el = document.elementFromPoint(box.x + box.width / 2, box.y + box.height * 0.6);
+        return { selected: state.selected, busy: state.busy, returning: [...state.returning], hitIs: el?.closest('.jar')?.dataset.index ?? el?.className ?? null, status: state.session.status };
+      }, [t, await page.locator('#board .jar').nth(t).boundingBox()]);
+      log.ignored.push(`${f}->${t} at move ${before} ${JSON.stringify(why)}`);
+      await page.evaluate(async () => { const { state } = await import('/src/ui/state.ts'); if (state.selected !== null) document.querySelectorAll('#board .jar')[state.selected].click(); });
+      await page.waitForTimeout(300);
+      await tap(f); await tap(t);
+    }
+    await check(`pour ${f}->${t}`);
+  };
   let path0 = await solve();
   await pour(path0[0]);
   await pour(path0[1]);
@@ -104,6 +126,6 @@ async function play(browser, board) {
   const out = {};
   for (const board of ['dom', 'gpu']) out[board] = await play(browser, board);
   fs.writeFileSync(path.join(__dirname, 'play-results.json'), JSON.stringify(out, null, 2) + '\n');
-  for (const [b, l] of Object.entries(out)) console.log(b, 'render', l.render, 'steps', l.steps.length, 'allMatched', l.allMatched, 'won', l.won, 'winCard', l.winCard, 'errors', l.errors.length, JSON.stringify(l.steps.filter((s) => s.mismatches.length).slice(0, 3)));
+  for (const [b, l] of Object.entries(out)) console.log(b, 'render', l.render, 'steps', l.steps.length, 'allMatched', l.allMatched, 'won', l.won, 'winCard', l.winCard, 'errors', l.errors.length, 'ignored', JSON.stringify(l.ignored), JSON.stringify(l.steps.filter((s) => s.mismatches.length).slice(0, 3)));
   await browser.close();
 })();

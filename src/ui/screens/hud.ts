@@ -1,21 +1,25 @@
 /** The board HUD (moves, coins, booster buttons) and the tutorial pointer. */
 import { type BoosterId } from '../../core/economy';
 import { t } from '../strings';
-import { $, coachEl, coachText, coinsEl, movesEl, toolButtons } from '../dom';
+import { $, coachEl, coachText, coinsEl, frameWrites, movesEl, setAttr, setText, toolButtons } from '../dom';
 import { BOOSTER_NAMES, config, state } from '../state';
 import { boosterHintShown } from './onboarding';
 
+/**
+ * Redraws the HUD from the session now. Each text and label is written only when it changed, so an
+ * unchanged HUD costs no style or accessibility work.
+ */
 export function updateHud(): void {
-  movesEl.textContent = String(state.session.moves);
-  $('moves-label').textContent = t.poursLabel(state.session.moves);
+  setText(movesEl, String(state.session.moves));
+  setText($('moves-label'), t.poursLabel(state.session.moves));
   // A friend's pours to beat (sharing §3.2), only on the challenged level.
   const versus = state.mode === 'level' && state.versus && state.versus.level === state.level ? state.versus : null;
   $('versus').hidden = !versus;
   if (versus) {
-    $('versus-text').textContent = t.friend.target(versus.pours);
-    $('versus-sr').textContent = t.friend.targetSr(versus.pours);
+    setText($('versus-text'), t.friend.target(versus.pours));
+    setText($('versus-sr'), t.friend.targetSr(versus.pours));
   }
-  coinsEl.textContent = String(state.save.wallet.coins);
+  setText(coinsEl, String(state.save.wallet.coins));
   const over = state.session.status === 'won';
   for (const btn of toolButtons) {
     const id = btn.dataset.booster as BoosterId;
@@ -25,7 +29,7 @@ export function updateHud(): void {
     const free = (config.boosters[id] as { free?: boolean }).free === true;
     const badge = btn.querySelector('.badge') as HTMLElement;
     badge.hidden = free;
-    badge.textContent = charges > 0 ? String(charges) : String(price);
+    setText(badge, charges > 0 ? String(charges) : String(price));
     badge.classList.toggle('price', charges === 0);
     const usable =
       !over && state.mode !== 'tutorial' && (id !== 'undo' || state.session.canUndo) && (id !== 'extraJar' || state.session.extraJarsLeft > 0);
@@ -35,12 +39,12 @@ export function updateHud(): void {
     const thinking = state.thinking === id;
     const held = state.thinkingShown && state.thinking !== null && (id === 'hint' || id === 'shuffle');
     btn.disabled = !usable || thinking || held;
-    if (thinking) btn.setAttribute('aria-busy', 'true');
+    if (thinking) setAttr(btn, 'aria-busy', 'true');
     else btn.removeAttribute('aria-busy');
     btn.classList.toggle('thinking', thinking && state.thinkingShown);
-    (btn.querySelector('.tool-name') as HTMLElement).textContent = thinking && state.thinkingShown ? t.thinking : BOOSTER_NAMES[id];
+    setText(btn.querySelector('.tool-name') as HTMLElement, thinking && state.thinkingShown ? t.thinking : BOOSTER_NAMES[id]);
     const label = thinking ? t.boosterThinkingLabel(BOOSTER_NAMES[id]) : state.armedBooster === id ?t.boosterArmedLabel(BOOSTER_NAMES[id], price) : free ? t.boosterFree(BOOSTER_NAMES[id]) : t.boosterLabel(BOOSTER_NAMES[id], charges, price);
-    btn.setAttribute('aria-label', label);
+    setAttr(btn, 'aria-label', label);
   }
   ($('btn-restart') as HTMLButtonElement).disabled = state.mode === 'tutorial';
   // UX-board-9: in the tutorial a caption says why the tools are off, and each one points at it.
@@ -48,11 +52,21 @@ export function updateHud(): void {
   const note = $('tools-note');
   const boosterHint = !tutorial && boosterHintShown(); // O2: level 1 names the boosters once
   note.hidden = !tutorial && !boosterHint;
-  note.textContent = boosterHint ? t.onboarding.boosterHint : t.toolsLocked;
+  setText(note, boosterHint ? t.onboarding.boosterHint : t.toolsLocked);
   for (const btn of [...toolButtons, $('btn-restart')]) {
-    if (tutorial) btn.setAttribute('aria-describedby', 'tools-note');
+    if (tutorial) setAttr(btn, 'aria-describedby', 'tools-note');
     else btn.removeAttribute('aria-describedby');
   }
+}
+
+/**
+ * Redraws the HUD in the next frame, together with the live region (sprint 22 L1): what a pour calls,
+ * so its text writes land in one batch. Calls in the same frame redraw once.
+ */
+export function scheduleHud(): void {
+  frameWrites.queue('hud', () => {
+    if (state.session) updateHud();
+  });
 }
 
 /** Shows the tutorial pointer on jar `i` with a caption, or hides it with `null`. */

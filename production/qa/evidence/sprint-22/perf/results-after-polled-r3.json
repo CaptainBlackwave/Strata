@@ -1,0 +1,67 @@
+{
+  "label": "after-polled-r3",
+  "at": "2026-11-12T15:16:42.263Z",
+  "runs": 1,
+  "cases": {
+    "dom": {
+      "medianOfRuns": {
+        "p95": 43,
+        "p99": 50,
+        "worst": 63,
+        "over20": 31
+      },
+      "runs": [
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 1,
+          "polled": true,
+          "cpuThrottle": 4,
+          "frames": 124,
+          "windowMs": null,
+          "median": 16,
+          "p95": 43,
+          "p99": 50,
+          "worst": 63,
+          "over20": 31,
+          "over34": 12,
+          "longTasks": []
+        }
+      ]
+    },
+    "dom-reduced": {
+      "medianOfRuns": {
+        "p95": 36,
+        "p99": 40,
+        "worst": 48,
+        "over20": 28
+      },
+      "runs": [
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": true,
+          "cpuThrottle": 4,
+          "frames": 119,
+          "windowMs": null,
+          "median": 16,
+          "p95": 36,
+          "p99": 40,
+          "worst": 48,
+          "over20": 28,
+          "over34": 7,
+          "longTasks": []
+        }
+      ]
+    }
+  }
+}

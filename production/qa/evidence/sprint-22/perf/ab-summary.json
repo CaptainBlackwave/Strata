@@ -1,0 +1,242 @@
+{
+ "note": "Sprint 22 L1 interleaved A/B: before = HEAD f748347 with the L1 files reverted (port 5196), after = HEAD f748347 (port 5197); same machine, rounds alternated. Machine shared with other agents (load 2-7 on 4 cores), so absolute numbers run high.",
+ "cases": {
+  "after fixed dom": {
+   "runs": 3,
+   "p95": [
+    28,
+    36,
+    29
+   ],
+   "medianP95": 29,
+   "medianP99": 43,
+   "poured": [
+    10,
+    10,
+    10
+   ],
+   "longTasksOver50": [
+    [],
+    [
+     54
+    ],
+    [
+     52
+    ]
+   ]
+  },
+  "after fixed dom-reduced": {
+   "runs": 3,
+   "p95": [
+    25,
+    34,
+    27
+   ],
+   "medianP95": 27,
+   "medianP99": 40,
+   "poured": [
+    10,
+    10,
+    10
+   ],
+   "longTasksOver50": [
+    [],
+    [],
+    []
+   ]
+  },
+  "after gpu gpu": {
+   "runs": 1,
+   "p95": [
+    198
+   ],
+   "medianP95": 198,
+   "medianP99": 221,
+   "poured": [
+    9
+   ],
+   "longTasksOver50": [
+    []
+   ]
+  },
+  "after gpu gpu-reduced": {
+   "runs": 1,
+   "p95": [
+    98
+   ],
+   "medianP95": 98,
+   "medianP99": 115,
+   "poured": [
+    10
+   ],
+   "longTasksOver50": [
+    []
+   ]
+  },
+  "after polled dom": {
+   "runs": 3,
+   "p95": [
+    41,
+    36,
+    43
+   ],
+   "medianP95": 41,
+   "medianP99": 50,
+   "poured": [
+    1,
+    1,
+    1
+   ],
+   "longTasksOver50": [
+    [],
+    [],
+    []
+   ]
+  },
+  "after polled dom-reduced": {
+   "runs": 3,
+   "p95": [
+    34,
+    38,
+    36
+   ],
+   "medianP95": 36,
+   "medianP99": 45,
+   "poured": [
+    10,
+    10,
+    10
+   ],
+   "longTasksOver50": [
+    [],
+    [],
+    []
+   ]
+  },
+  "before fixed dom": {
+   "runs": 3,
+   "p95": [
+    29,
+    24,
+    28
+   ],
+   "medianP95": 28,
+   "medianP99": 42,
+   "poured": [
+    10,
+    10,
+    10
+   ],
+   "longTasksOver50": [
+    [
+     54,
+     54
+    ],
+    [
+     72
+    ],
+    [
+     61
+    ]
+   ]
+  },
+  "before fixed dom-reduced": {
+   "runs": 3,
+   "p95": [
+    26,
+    27,
+    27
+   ],
+   "medianP95": 27,
+   "medianP99": 53,
+   "poured": [
+    10,
+    10,
+    10
+   ],
+   "longTasksOver50": [
+    [
+     51
+    ],
+    [],
+    []
+   ]
+  },
+  "before gpu gpu": {
+   "runs": 1,
+   "p95": [
+    190
+   ],
+   "medianP95": 190,
+   "medianP99": 231,
+   "poured": [
+    9
+   ],
+   "longTasksOver50": [
+    []
+   ]
+  },
+  "before gpu gpu-reduced": {
+   "runs": 1,
+   "p95": [
+    103
+   ],
+   "medianP95": 103,
+   "medianP99": 130,
+   "poured": [
+    10
+   ],
+   "longTasksOver50": [
+    [
+     54
+    ]
+   ]
+  },
+  "before polled dom": {
+   "runs": 3,
+   "p95": [
+    36,
+    37,
+    49
+   ],
+   "medianP95": 37,
+   "medianP99": 50,
+   "poured": [
+    1,
+    1,
+    1
+   ],
+   "longTasksOver50": [
+    [
+     51
+    ],
+    [
+     52
+    ],
+    [
+     87
+    ]
+   ]
+  },
+  "before polled dom-reduced": {
+   "runs": 3,
+   "p95": [
+    41,
+    35,
+    54
+   ],
+   "medianP95": 41,
+   "medianP99": 48,
+   "poured": [
+    10,
+    10,
+    10
+   ],
+   "longTasksOver50": [
+    [],
+    [],
+    []
+   ]
+  }
+ }
+}

@@ -110,7 +110,8 @@ describe('sparkleSpot', () => {
       expect(s.x).toBeLessThan(b.left + b.width - 5.5);
       expect(s.y).toBeGreaterThan(b.top + b.height - 5.5 - 3 * b.unitHeight);
       expect(s.y).toBeLessThan(b.top + b.height - 5.5);
-      expect(s.size).toBeGreaterThanOrEqual(10);
+      expect(s.size).toBeGreaterThanOrEqual(18); // clearly visible (D183)
+      expect(s.size).toBeLessThan(b.width);
     }
   });
   it('visits every jar and is deterministic', () => {

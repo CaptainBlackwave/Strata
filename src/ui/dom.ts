@@ -1,5 +1,6 @@
 /** DOM helpers shared by every screen: element lookups, the layer (dialog) helpers, the toast and the live region. */
 import { type FocusTarget, LayerStack } from './layers';
+import { createFrameBatch, liveRegionPlan } from './logic/frame-batch';
 
 export const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 export const boardEl = $('board');
@@ -103,13 +104,39 @@ export function hideToast(): void {
 }
 
 /**
- * Reads `text` out through the polite live region outside the app root, so no layer makes it
- * inert (UX-board-5). Clearing it first lets the same sentence be read twice in a row.
+ * The text writes a board change makes (the HUD, the live region), flushed together once per frame
+ * (sprint 22 L1, D181) so a pour costs one style and layout pass for them, not several.
+ */
+export const frameWrites = createFrameBatch((flush) => requestAnimationFrame(flush));
+
+/** Sets `el`'s text only when it differs: an equal write still replaces the text node and dirties layout. */
+export function setText(el: HTMLElement, text: string): void {
+  if (el.textContent !== text) el.textContent = text;
+}
+
+/** Sets an attribute only when it differs (an equal write still invalidates style and the accessibility tree). */
+export function setAttr(el: HTMLElement, name: string, value: string): void {
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+}
+
+let announceTimer = 0;
+
+/**
+ * Says `text` through the polite live region outside the app root, so no layer makes it inert
+ * (UX-board-5), in the next frame's batched writes. New text is one
+ * write; the same text again is cleared and written 50 ms later so a screen reader still reads it.
  */
 export function announce(text: string): void {
-  const el = $('announce');
-  el.textContent = '';
-  window.setTimeout(() => (el.textContent = text), 50);
+  frameWrites.queue('announce', () => {
+    const el = $('announce');
+    window.clearTimeout(announceTimer);
+    if (liveRegionPlan(el.textContent ?? '', text) === 'write') {
+      el.textContent = text;
+      return;
+    }
+    el.textContent = '';
+    announceTimer = window.setTimeout(() => (el.textContent = text), 50);
+  });
 }
 
 export function showToast(text: string): void {

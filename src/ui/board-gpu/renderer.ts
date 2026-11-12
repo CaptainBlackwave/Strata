@@ -96,6 +96,11 @@ export interface GpuBoardOptions {
   readonly viewSize?: () => { readonly width: number; readonly height: number };
   /** The canvas's class (default `gpu-board`). */
   readonly className?: string;
+  /**
+   * Every full jar wears its cork, mixed or not (the Home hero's logo jars, sprint 22 L3, D183). The
+   * board leaves this off: there a cork means sealed.
+   */
+  readonly corkFull?: boolean;
 }
 
 /** The window's size: the board's drawing area. */
@@ -808,7 +813,7 @@ export class GpuBoard {
       v.decor.addChild(s);
     }
     if (jar.clam !== undefined) v.decor.addChild(this.shellSprite(v));
-    if (isSealed(jar, capacity)) {
+    if (isSealed(jar, capacity) || (this.opts.corkFull && jar.units.length >= capacity)) {
       // style.css `.cork`: 18% in from each side, --jar-w × 0.18 − 6 px from the top, --jar-w × 0.26 tall.
       const w = b.w * 0.64;
       const h = b.w * 0.26;

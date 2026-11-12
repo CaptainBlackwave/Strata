@@ -1,0 +1,295 @@
+{
+  "label": "quiet-after-2",
+  "at": "2026-11-12T16:20:32.209Z",
+  "runs": 3,
+  "cases": {
+    "dom": {
+      "medianOfRuns": {
+        "p95": 26,
+        "p99": 39,
+        "worst": 54,
+        "over20": 69
+      },
+      "runs": [
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 814,
+          "windowMs": 1350,
+          "median": 16,
+          "p95": 24,
+          "p99": 37,
+          "worst": 54,
+          "over20": 59,
+          "over34": 14,
+          "longTasks": []
+        },
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 805,
+          "windowMs": 1350,
+          "median": 16,
+          "p95": 27,
+          "p99": 39,
+          "worst": 69,
+          "over20": 86,
+          "over34": 13,
+          "longTasks": []
+        },
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 814,
+          "windowMs": 1350,
+          "median": 16,
+          "p95": 26,
+          "p99": 40,
+          "worst": 50,
+          "over20": 69,
+          "over34": 15,
+          "longTasks": []
+        }
+      ]
+    },
+    "dom-reduced": {
+      "medianOfRuns": {
+        "p95": 23,
+        "p99": 39,
+        "worst": 48,
+        "over20": 26
+      },
+      "runs": [
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 397,
+          "windowMs": 650,
+          "median": 16,
+          "p95": 23,
+          "p99": 39,
+          "worst": 44,
+          "over20": 26,
+          "over34": 5,
+          "longTasks": []
+        },
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 394,
+          "windowMs": 650,
+          "median": 16,
+          "p95": 24,
+          "p99": 37,
+          "worst": 48,
+          "over20": 26,
+          "over34": 7,
+          "longTasks": []
+        },
+        {
+          "board": "dom",
+          "render": "dom",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 392,
+          "windowMs": 650,
+          "median": 16,
+          "p95": 21,
+          "p99": 41,
+          "worst": 54,
+          "over20": 22,
+          "over34": 8,
+          "longTasks": []
+        }
+      ]
+    },
+    "gpu": {
+      "medianOfRuns": {
+        "p95": 166,
+        "p99": 198,
+        "worst": 219,
+        "over20": 121
+      },
+      "runs": [
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 9,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 174,
+          "windowMs": 1350,
+          "median": 91,
+          "p95": 166,
+          "p99": 198,
+          "worst": 219,
+          "over20": 127,
+          "over34": 119,
+          "longTasks": []
+        },
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 9,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 165,
+          "windowMs": 1350,
+          "median": 93,
+          "p95": 182,
+          "p99": 225,
+          "worst": 243,
+          "over20": 113,
+          "over34": 107,
+          "longTasks": [
+            85
+          ]
+        },
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 9,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 172,
+          "windowMs": 1350,
+          "median": 92,
+          "p95": 155,
+          "p99": 172,
+          "worst": 210,
+          "over20": 121,
+          "over34": 114,
+          "longTasks": []
+        }
+      ]
+    },
+    "gpu-reduced": {
+      "medianOfRuns": {
+        "p95": 93,
+        "p99": 113,
+        "worst": 124,
+        "over20": 41
+      },
+      "runs": [
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 291,
+          "windowMs": 650,
+          "median": 16,
+          "p95": 96,
+          "p99": 105,
+          "worst": 111,
+          "over20": 41,
+          "over34": 30,
+          "longTasks": [
+            52
+          ]
+        },
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 292,
+          "windowMs": 650,
+          "median": 16,
+          "p95": 93,
+          "p99": 113,
+          "worst": 144,
+          "over20": 41,
+          "over34": 28,
+          "longTasks": [
+            65
+          ]
+        },
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 294,
+          "windowMs": 650,
+          "median": 16,
+          "p95": 88,
+          "p99": 113,
+          "worst": 124,
+          "over20": 39,
+          "over34": 29,
+          "longTasks": [
+            64
+          ]
+        }
+      ]
+    }
+  }
+}

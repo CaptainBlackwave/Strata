@@ -1,0 +1,67 @@
+{
+  "label": "after-gpu",
+  "at": "2026-11-12T15:18:47.291Z",
+  "runs": 1,
+  "cases": {
+    "gpu": {
+      "medianOfRuns": {
+        "p95": 198,
+        "p99": 221,
+        "worst": 339,
+        "over20": 110
+      },
+      "runs": [
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": false,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 9,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 160,
+          "windowMs": 1350,
+          "median": 98,
+          "p95": 198,
+          "p99": 221,
+          "worst": 339,
+          "over20": 110,
+          "over34": 106,
+          "longTasks": []
+        }
+      ]
+    },
+    "gpu-reduced": {
+      "medianOfRuns": {
+        "p95": 98,
+        "p99": 115,
+        "worst": 129,
+        "over20": 40
+      },
+      "runs": [
+        {
+          "board": "gpu",
+          "render": "gpu",
+          "reducedMotion": true,
+          "level": 491,
+          "jars": 16,
+          "pours": 10,
+          "poured": 10,
+          "polled": false,
+          "cpuThrottle": 4,
+          "frames": 283,
+          "windowMs": 650,
+          "median": 16,
+          "p95": 98,
+          "p99": 115,
+          "worst": 129,
+          "over20": 40,
+          "over34": 28,
+          "longTasks": []
+        }
+      ]
+    }
+  }
+}
