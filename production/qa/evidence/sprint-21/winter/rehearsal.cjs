@@ -65,8 +65,10 @@ async function boot(page, query = '') {
   await page.goto(`${BASE}/${query}`);
   await page.waitForFunction(() => !document.getElementById('splash') && !document.getElementById('home').hidden, null, { timeout: 30000 });
   await dismiss(page);
+  await page.evaluate(async () => { window.S = (await window.__mod('/src/ui/state.ts')).state; });
   await page.waitForTimeout(900);
 }
+// Playwright's waitForFunction takes a Promise as truthy, so every predicate below is synchronous on window.S.
 
 const homeInfo = (page) => page.evaluate(async () => {
   const { winterSnowing } = await window.__mod('/src/ui/winter.ts');
@@ -91,7 +93,7 @@ async function openChooser(page) {
   }));
 }
 
-const idle = (page) => page.waitForFunction(async () => { const { state } = await window.__mod('/src/ui/state.ts'); return !state.busy && state.returning.size === 0; }, null, { polling: 40, timeout: 20000 });
+const idle = (page) => page.waitForFunction(() => !S.busy && S.returning.size === 0, null, { polling: 40, timeout: 20000 });
 async function tap(page, i) {
   const box = await page.locator('#board .jar').nth(i).boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6);
@@ -102,13 +104,14 @@ async function tap(page, i) {
 async function playBoard(page, n) {
   if (!(await page.locator('#event:not([hidden])').count())) await openChooser(page);
   await page.click(`.event-board[data-board="${n}"]`);
-  await page.waitForFunction(async (n) => { const { state } = await window.__mod('/src/ui/state.ts'); return state.mode === 'event' && state.eventBoard === n && !!state.session && state.session.board.jars.length === document.querySelectorAll('#board .jar').length; }, n, { polling: 50, timeout: 20000 });
+  await page.waitForFunction((n) => S.mode === 'event' && S.eventBoard === n && !!S.session && S.session.board.jars.length === document.querySelectorAll('#board .jar').length, n, { polling: 50, timeout: 20000 });
   await dismiss(page);
   await page.waitForTimeout(500);
   const onBoard = await homeInfo(page);
   const render = await page.evaluate(() => document.getElementById('board').dataset.render);
   let taps = 0;
   let misses = 0;
+  const trace = [];
   for (let round = 0; round < 40; round++) {
     await idle(page);
     const s = await st(page, (m) => ({ won: m.state.session.status === 'won', sel: m.state.selected }));
@@ -116,19 +119,24 @@ async function playBoard(page, n) {
     if (s.sel !== null && s.sel !== undefined) { await tap(page, s.sel); await idle(page); }
     const p = await page.evaluate(async () => { const { state } = await window.__mod('/src/ui/state.ts'); const { solve } = await window.__mod('/src/core/solver.ts'); return solve(state.session.board, 400000).path.map((m) => [m.from, m.to]); });
     let ok = true;
+    trace.push(`r${round}:len${p.length}:${JSON.stringify(p[0])}`);
     for (const [f, t] of p) {
       const before = await st(page, (m) => m.state.session.moves);
-      await tap(page, f); await tap(page, t); taps += 2;
-      const counted = await page.waitForFunction(async (b) => (await window.__mod('/src/ui/state.ts')).state.session.moves === b + 1, before, { polling: 40, timeout: 3000 }).then(() => true, () => false);
+      const selOk = async () => page.waitForFunction((f) => S.selected === f, f, { polling: 30, timeout: 1500 }).then(() => true, () => false);
+      await tap(page, f); taps++;
+      if (!(await selOk())) { misses++; await page.waitForTimeout(400); await tap(page, f); taps++; if (!(await selOk())) { ok = false; break; } }
+      await tap(page, t); taps++;
+      const counted = await page.waitForFunction((b) => S.session.moves === b + 1, before, { polling: 40, timeout: 3000 }).then(() => true, () => false);
       await idle(page);
       if (!counted) { ok = false; misses++; break; }
     }
     if (ok) break;
   }
   await page.waitForSelector('#win:not([hidden])', { timeout: 20000 }).catch(async (e) => {
-    const dbg = await st(page, (m) => ({ status: m.state.session.status, moves: m.state.session.moves, busy: m.state.busy, sel: m.state.selected, mode: m.state.mode }));
+    const dbg = await st(page, (m) => ({ status: m.state.session.status, moves: m.state.session.moves, busy: m.state.busy, sel: m.state.selected, mode: m.state.mode, jarsDom: document.querySelectorAll('#board .jar').length, jarsBoard: m.state.session.board.jars.length,
+      hits: [...document.querySelectorAll('#board .jar')].map((j) => { const r = j.getBoundingClientRect(); const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height * 0.6); return `${e?.tagName}.${e?.className}`.slice(0, 40); }) }));
     await page.screenshot({ path: path.join(OUT, `fail-board${n}.png`) });
-    throw new Error(`board ${n} no win card: ${JSON.stringify(dbg)} taps ${taps}`);
+    throw new Error(`board ${n} no win card: ${JSON.stringify(dbg)} taps ${taps} trace ${trace.slice(0, 12).join(' ')}`);
   });
   await page.waitForTimeout(1400);
   const win = await page.evaluate(() => ({
@@ -185,7 +193,7 @@ async function frostSheet(page) {
     out.frostBefore = await frostSheet(page);
     await openChooser(page);
     for (let n = 1; n <= 24; n++) {
-      if (n === 13) { await page.goto(`${BASE}/?board=dom`); await page.waitForFunction(() => !document.getElementById('splash') && !document.getElementById('home').hidden); await dismiss(page); await page.waitForTimeout(800); await openChooser(page); }
+      if (n === 13) { await page.goto(`${BASE}/?board=dom`); await page.waitForFunction(() => !document.getElementById('splash') && !document.getElementById('home').hidden); await dismiss(page); await page.evaluate(async () => { window.S = (await window.__mod('/src/ui/state.ts')).state; }); await page.waitForTimeout(800); await openChooser(page); }
       const before = await saved(page);
       const r = await playBoard(page, n);
       const after = await saved(page);
@@ -197,7 +205,7 @@ async function frostSheet(page) {
     }
     // Replays: one Classic now, one Realistic after a reload; neither pays nor re-grants.
     for (const [n, q] of [[24, null], [3, '?board=gpu']]) {
-      if (q) { await page.goto(`${BASE}/${q}`); await page.waitForFunction(() => !document.getElementById('splash') && !document.getElementById('home').hidden); await dismiss(page); await page.waitForTimeout(800); }
+      if (q) { await page.goto(`${BASE}/${q}`); await page.waitForFunction(() => !document.getElementById('splash') && !document.getElementById('home').hidden); await dismiss(page); await page.evaluate(async () => { window.S = (await window.__mod('/src/ui/state.ts')).state; }); await page.waitForTimeout(800); }
       const before = await saved(page);
       const r = await playBoard(page, n);
       const after = await saved(page);
@@ -223,7 +231,7 @@ async function frostSheet(page) {
       await boot(page);
       const home = await homeInfo(page);
       let board = null;
-      if (home.card) { await openChooser(page); await page.click('.event-board[data-board="1"]'); await page.waitForFunction(async () => (await window.__mod('/src/ui/state.ts')).state.mode === 'event'); await page.waitForTimeout(800); board = await homeInfo(page); if (tag === 'dec24') await page.screenshot({ path: path.join(OUT, 'snow-event-board.png') }); }
+      if (home.card) { await openChooser(page); await page.click('.event-board[data-board="1"]'); await page.waitForFunction(() => S.mode === 'event'); await page.waitForTimeout(800); board = await homeInfo(page); if (tag === 'dec24') await page.screenshot({ path: path.join(OUT, 'snow-event-board.png') }); }
       // A level board turns it off again.
       await page.evaluate(async () => (await window.__mod('/src/ui/screens/board.ts')).startLevel(5));
       await page.waitForTimeout(800);
