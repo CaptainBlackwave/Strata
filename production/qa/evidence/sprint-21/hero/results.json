@@ -1,0 +1,43 @@
+{
+  "realistic-390": {
+    "mode": "realistic",
+    "label": "Play level 42",
+    "canvas": true,
+    "splash": false,
+    "scrollX": false,
+    "rafIdle1s": 64,
+    "sparkleSeen": 1,
+    "rafBetweenSparkles3s": 186
+  },
+  "realistic-320-text150": {
+    "mode": "realistic",
+    "label": "Play level 42",
+    "canvas": true,
+    "splash": false,
+    "scrollX": false
+  },
+  "classic-390": {
+    "mode": "css",
+    "label": "Play level 42",
+    "canvas": false,
+    "splash": false,
+    "scrollX": false
+  },
+  "classic-320-text150": {
+    "mode": "css",
+    "label": "Play level 42",
+    "canvas": false,
+    "splash": false,
+    "scrollX": false
+  },
+  "realistic-390-reduced-motion": {
+    "mode": "css",
+    "label": "Play",
+    "canvas": false,
+    "splash": true,
+    "scrollX": false,
+    "rafIdle1s": 23,
+    "sparkleSeen": 0,
+    "rafBetweenSparkles3s": 117
+  }
+}

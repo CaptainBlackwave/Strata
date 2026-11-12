@@ -3626,26 +3626,65 @@ body[data-theme='harvestmoon']::before {
   font-size: 0.9375rem;
   line-height: 1.4;
 }
+/* A1 (D179): the iPhone steps, each a small picture drawn in SVG beside its caption. */
 .install-steps {
   margin: 0 0 14px;
-  padding-left: 1.4em;
+  padding: 0;
+  list-style: none;
+  counter-reset: install-step;
   font-size: 0.9375rem;
-  line-height: 1.4;
+  line-height: 1.35;
+}
+.install-steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  counter-increment: install-step;
 }
 .install-steps li + li {
-  margin-top: 6px;
+  margin-top: 8px;
 }
-.install-share-ico {
-  display: inline-block;
-  width: 1.15em;
-  height: 1.15em;
-  margin-left: 0.25em;
-  vertical-align: -0.2em;
+.install-step-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.install-step-text::before {
+  content: counter(install-step) '. ';
+  font-weight: 700;
+}
+.install-pic {
+  flex: none;
+  width: 64px;
+  height: 44px;
   fill: none;
-  stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.install-pic .ip-frame {
+  fill: var(--surface, #fff);
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+}
+.install-pic .ip-line {
+  stroke: var(--ink-soft);
+  stroke-width: 1.2;
+  opacity: 0.6;
+}
+.install-pic .ip-soft {
+  stroke: var(--ink-soft);
+  opacity: 0.45;
+}
+.install-pic rect.ip-soft {
+  fill: none;
+}
+.install-pic .ip-ring {
+  fill: color-mix(in srgb, var(--accent) 16%, transparent);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.install-pic .ip-hi {
+  stroke: var(--accent);
 }
 .install-note {
   margin: -6px 0 12px;
@@ -3781,7 +3820,11 @@ body[data-theme='harvestmoon']::before {
     margin-bottom: 8px;
   }
   .install-card .install-steps li + li {
-    margin-top: 2px;
+    margin-top: 4px;
+  }
+  .install-card .install-pic {
+    width: 54px;
+    height: 37px;
   }
   .install-card .install-note {
     margin: -2px 0 8px;
@@ -5730,3 +5773,87 @@ canvas.gpu-board {
   visibility: hidden;
 }
 
+
+/* ===== Sprint 21 A3 (D179): the update bar on Home and "Works offline" in Settings ===== */
+.update-bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: 8px;
+  margin: 6px 16px 8px;
+  padding: 2px 14px;
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 2px 10px rgba(40, 30, 20, 0.12);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+}
+.update-dot {
+  color: var(--ink-soft);
+}
+.update-btn {
+  min-height: 44px;
+  padding: 8px 6px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.update-btn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.offline-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 12px 0 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.offline-status svg {
+  width: 1.1em;
+  height: 1.1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.offline-status[hidden],
+.toggle[hidden],
+.toggle-help[hidden] {
+  display: none;
+}
+
+/* ===== Sprint 21 A4 (D179): native feel =====
+   No long-press callouts or text selection on game controls (inputs keep selection, F6).
+   The board takes every touch itself: no pinch or double-tap zoom on it. Elsewhere the page
+   keeps pinch zoom (D44, AX-17), and buttons keep `manipulation` (no double-tap zoom). */
+body,
+button,
+img,
+svg,
+canvas {
+  -webkit-touch-callout: none;
+}
+.board,
+.board .jar,
+.board canvas {
+  touch-action: none;
+}

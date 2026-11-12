@@ -12,7 +12,7 @@ const LABEL = process.env.LABEL || 'run';
 const LEVEL = Number(process.env.LEVEL || 12);
 const MOVE = Number(process.env.MOVE || 0); // which solver move to film
 /** Milliseconds after the second tap at which each frame is taken. */
-const FRAMES = (process.env.FRAMES || '900,1050,1200,1350,1500,1700,1950,2400').split(',').map(Number);
+const FRAMES = (process.env.FRAMES || '432,496,560,624,688,752,848,1008').split(',').map(Number);
 const KEY = 'strata.save.v2';
 const MECHANICS = ['narrow', 'frozen', 'locked', 'funnel', 'hourglass', 'sieve', 'clam'];
 
@@ -37,6 +37,8 @@ const MECHANICS = ['narrow', 'frozen', 'locked', 'funnel', 'hourglass', 'sieve',
   for (let k = 0; k < 200 && !(await ready()); k++) await context.clock.runFor(100);
   await page.evaluate(() => document.querySelectorAll('#whatsnew:not([hidden]) #btn-whatsnew-ok, #intro:not([hidden]) #btn-intro-ok').forEach((b) => b.click()));
   await context.clock.runFor(1500);
+  // From here the clock only moves by runFor: a screenshot takes no simulated time.
+  await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 100);
   const [from, to] = await page.evaluate(async (k) => {
     const { state } = await import('/src/ui/state.ts');
     const { solve } = await import('/src/core/solver.ts');

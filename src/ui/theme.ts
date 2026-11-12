@@ -30,5 +30,7 @@ export function applyTheme(id: string): void {
   document.body.dataset.theme = theme.id;
   startSceneFx(theme.id); // the scene's animated layer, if it has one (scene-fx.ts)
   audio.setScene(theme.id); // and its music (music.ts, D65): clock changes, previews and Use all come through here
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.themeColor);
+  // A4 (D179): the status bar takes the top of the scene's background, so it reads as one surface
+  // (themeColor, a slightly deeper shade on the light scenes, stays the manifest's colour).
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme.tokens.bgTop);
 }
