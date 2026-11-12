@@ -1659,6 +1659,60 @@ button {
   color: var(--card);
 }
 
+/* Tide jar (sprint 24 T4, D194, D195, design/gdd/jar-mechanics.md §2.8): a pill on the jar's base with a
+   small wave and the pours left until the tide turns (4, 3, 2, 1), placed and coloured like the
+   hourglass's pill (a jar is never both), sized in rem so it grows with text. At 1 it takes the
+   scene's accent. A sealed tide jar is still: the wave shows alone, faded, with no count. Drawn for Strata. */
+.tide-mark {
+  display: none;
+}
+:is(.jar, .mini-jar).tide .tide-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.14em;
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 58%);
+  padding: 0.1em 0.42em 0.1em 0.32em;
+  border-radius: 999px;
+  border: 1.5px solid var(--card);
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.tide-mark svg {
+  flex: none;
+  width: 1.05em;
+  height: 0.75em;
+  overflow: visible;
+}
+.tide-mark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.tide-mark b:empty {
+  display: none;
+}
+/* The next pour turns the tide: the pill takes the scene's accent, as the hourglass's does. */
+.jar.tide[data-tide='1'] .tide-mark {
+  background: var(--accent-text);
+  color: var(--card);
+}
+/* Sealed: still for good (D195), so the wave is faded and carries no count. */
+.jar.tide.tide-still .tide-mark {
+  opacity: 0.55;
+  padding: 0.1em 0.32em;
+}
+
 /* Wet sand (sprint 23 W4, D189, design/gdd/jar-mechanics.md §2.7): a wet unit is drawn in a darker
    damp tone of its own colour (set in --c by src/ui/logic/wet.ts, so every sand texture and the tilted
    fill follow it), with a wet sheen and a few glints; with colour patterns on, its pattern is drawn as
@@ -5858,6 +5912,7 @@ canvas.gpu-board {
   visibility: visible;
 }
 #board[data-render='gpu'] .jar.gpu-away .hourglass-mark,
+#board[data-render='gpu'] .jar.gpu-away .tide-mark,
 #board[data-render='gpu'] .jar.gpu-away .clam-shell b {
   visibility: hidden;
 }

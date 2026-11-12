@@ -188,6 +188,8 @@ const en = {
     sieve: { name: 'Sieve jar', rule: 'A sieve jar only lets its own colour in: the colour of its band. Anything can be poured out.', tap: 'Sieve: only the colour of its band goes in.' },
     clam: { name: 'Clam jar', rule: 'A clam jar stays shut under its shell until the count runs out: every pour on the board counts down. Then it opens and plays like any jar.', tap: 'Clam: shut until the count on its shell runs out.' },
     wet: { name: 'Wet sand', rule: 'Wet sand is darker, with a drop and a number on it. It only goes onto sand of its own colour, never into an empty jar. Every pour on the board dries it a little: at 0 it is ordinary sand. A full jar seals once its sand is dry.', tap: 'Wet sand: only onto its own colour. It dries as you pour.' },
+    /** The tide jar (sprint 24 T5, D194, D195; §2.8): its intro card, Jar guide entry and tap text. */
+    tide: { name: 'Tide jar', rule: 'Every fourth pour on the board, the tide turns: the sand in the tide jar rises by one layer, and its bottom layer comes up to the top. The number on its wave counts the pours left. A sealed tide jar stays still.', tap: 'Tide jar: every fourth pour, its bottom layer rises to the top.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -207,6 +209,16 @@ const en = {
     /** The mark beside the newest posting. */
     latest: 'Latest',
     releases: [
+      {
+        version: '0.22.0',
+        name: 'The tide jar',
+        lines: [
+          'A new jar from level 241: the tide jar, with a wave and a number on it.',
+          'Every fourth pour on the board the tide turns: its sand rises one layer, and the bottom layer comes up to the top.',
+          'Plan for the turn: a sealed tide jar stays still.',
+          'You will meet it on about one level in eight from level 241.',
+        ],
+      },
       {
         version: '0.21.0',
         name: 'Wet sand',
@@ -445,7 +457,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',
@@ -473,6 +485,10 @@ const en = {
     clam: (left: number) => (left === 1 ? 'clam, closed, opens after the next pour' : `clam, closed, opens in ${left} pours`),
     /** A full jar of one colour that waits for its wet sand to dry before it seals (D189, §2.7). */
     wet: 'full, seals when dry',
+    /** A tide jar's state (D194, §2.8): `left` is the pours until the tide turns (1..every). */
+    tide: (left: number) => (left === 1 ? 'tide jar, turns after the next pour' : `tide jar, turns in ${left} pours`),
+    /** A sealed tide jar's state (D195, §2.8): it never turns again, so it has no count. */
+    tideStill: 'tide jar, still',
   },
   /** One wet unit in a jar's screen-reader contents (D189, §2.7): `left` is the pours until it dries (1..dryAfter). */
   wetUnit: (colour: string, left: number) => (left === 1 ? `wet ${colour}, dries after the next pour` : `wet ${colour}, dries in ${left} pours`),
@@ -548,6 +564,8 @@ const en = {
   clamAnnounce: (jar: number) => `The clam opened (jar ${jar}).`,
   /** Shown when wet sand is poured towards an empty jar (D189, §2.7). */
   wetRefused: 'Wet sand only goes onto its own colour.',
+  /** Said after the pour that turned a tide jar (D194, §2.8). `jar` is 1-based. */
+  tideAnnounce: (jar: number) => `The tide turned (jar ${jar}).`,
   /** Said after a pour that dried wet sand (D189, §2.7). `jar` is 1-based. */
   dryAnnounce: (jar: number) => `Sand dried (jar ${jar}).`,
   jarEmpty: 'empty',

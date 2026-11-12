@@ -48,9 +48,11 @@ describe('stuck rate targets (sprint 15)', () => {
     rates.c = stuckRate(201, 300, 3);
     expect(rates.c).toBeLessThanOrEqual(0.3);
   }, 120_000);
+  // Sampled every 3rd level (34 boards), not every 10th: with the tide jar (D198) two unlucky boards
+  // out of 10 decided the result; 34 measure the band's difficulty (32% with tide jars, 29% without).
   it('levels 301-400 stay below today\'s late rate (about 70%)', () => {
-    expect(stuckRate(301, 400, 10)).toBeLessThan(0.6);
-  }, 120_000);
+    expect(stuckRate(301, 400, 3)).toBeLessThan(0.6);
+  }, 300_000);
 });
 
 describe('the curve (D128-D131)', () => {
@@ -75,6 +77,6 @@ describe('the curve (D128-D131)', () => {
     expect(mechanicChance(250, cfg)).toBeCloseTo(0.34);
     expect(mechanicChance(500, cfg)).toBeCloseTo(0.5);
     expect(cfg.mechanics.comboFrom).toBe(250);
-    expect(cfg.mechanics.list.map((m) => m.unlockAt)).toEqual([21, 41, 61, 81, 101, 141, 181, 201]);
+    expect(cfg.mechanics.list.map((m) => m.unlockAt)).toEqual([21, 41, 61, 81, 101, 141, 181, 201, 241]); // the tide jar on 241 (sprint 24, D193)
   });
 });

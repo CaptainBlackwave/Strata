@@ -6,7 +6,7 @@
  * requestAnimationFrame loop that runs while a lift, a pour or a mechanic effect moves, and stops
  * when the tab is hidden. Loaded on demand, so the DOM board's bundle carries none of Pixi.
  */
-import { CanvasSource, Container, Sprite, Texture, Ticker, WebGLRenderer } from 'pixi.js';
+import { CanvasSource, Container, Rectangle, Sprite, Texture, Ticker, WebGLRenderer } from 'pixi.js';
 import { type Board, type Jar, isSealed } from '../../core/board';
 import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, done, finish, gridFromJar, planPour, sandConfig, step, stepsDue } from '../sand';
 import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from './art';
@@ -38,6 +38,8 @@ export interface GpuMotion {
   /** The hourglass flip (`FLIP_MS`) and the clam opening (`CLAM_OPEN_MS`). */
   readonly flipMs: number;
   readonly clamOpenMs: number;
+  /** The tide jar's rise (`TIDE_MS`, §2.8). */
+  readonly tideMs: number;
   /** style.css `thaw` (760 ms) and `unlock` (800 ms). */
   readonly thawMs: number;
   readonly unlockMs: number;
@@ -152,7 +154,7 @@ interface GrainLook {
 /** A short effect: a thaw, an unlock, a clam opening, a flip. */
 interface Fx {
   readonly jar: number;
-  readonly kind: 'thaw' | 'unlock' | 'clam' | 'flip' | 'cork' | 'nope' | 'hop' | 'glow';
+  readonly kind: 'thaw' | 'unlock' | 'clam' | 'flip' | 'tide' | 'cork' | 'nope' | 'hop' | 'glow';
   readonly start: number;
   readonly ms: number;
   readonly sprite: Sprite | null;
@@ -529,6 +531,56 @@ export class GpuBoard {
   }
 
   /**
+   * The tide turning on jar `i` (D194, §2.8): its sand already shows the new order. For the rise its
+   * sand sprite is hidden and drawn as two slices of the same texture: the top unit (which came from
+   * the bottom) slides up from the bottom place, narrowing as it passes, while the units under it drop one place, after
+   * `delay` ms, as the DOM's `tideFx`. The texture is the jar's own, so wet tones and colour
+   * patterns move with their units. Reduced motion: nothing moves.
+   */
+  tide(i: number, delay: number): void {
+    const v = this.views[i];
+    const jar = this.board?.jars[i];
+    if (!v || !jar || this.opts.reducedMotion() || !this.board) return;
+    const n = jar.units.length;
+    if (n < 2) return;
+    const band = bandRows(this.board.capacity, this.opts.dims);
+    const rows = this.opts.dims.rows;
+    const cols = this.opts.dims.cols;
+    const unit = v.geom.cellH * band;
+    const topRow = Math.max(0, rows - n * band);
+    const slice = (fromRow: number, toRow: number) => {
+      const sp = new Sprite(new Texture({ source: v.texture.source, frame: new Rectangle(0, fromRow * SUB, cols * SUB, (toRow - fromRow) * SUB) }));
+      sp.setSize(v.geom.innerWidth, (toRow - fromRow) * v.geom.cellH);
+      return sp;
+    };
+    const top = slice(topRow, topRow + band); // the risen unit, now at the top
+    const rest = slice(topRow + band, rows); // the units under it, each now one place lower
+    const x = -v.geom.innerWidth / 2;
+    const restY = -(n - 1) * unit;
+    v.sandLayer.addChild(rest, top);
+    v.sand.visible = false;
+    this.addFx({
+      jar: i, kind: 'tide', start: performance.now() + delay, ms: this.opts.motion.tideMs, sprite: null,
+      at: (u) => {
+        const e = easeFlip(Math.max(0, u));
+        // Start: the top unit in the bottom place, the rest one place higher (the old order).
+        // The rising unit narrows on its way up (to half at the middle), as the DOM's, so the others stay in view.
+        const sx = 1 - 0.5 * Math.sin(Math.PI * e);
+        top.width = v.geom.innerWidth * sx;
+        top.position.set(x + (v.geom.innerWidth * (1 - sx)) / 2, -unit + (-(n - 1) * unit) * e);
+        rest.position.set(x, restY - unit * (1 - e));
+      },
+      end: () => {
+        v.sand.visible = true;
+        top.texture.destroy(false);
+        rest.texture.destroy(false);
+        top.destroy();
+        rest.destroy();
+      },
+    });
+  }
+
+  /**
    * A clam's shell swinging open on jar `i` (D96, §2.6): the jar is drawn open already; the shell
    * stays closed over it for `delay` ms, then tips back on its hinge and fades, as the DOM's `clamOpenFx`.
    */
@@ -555,7 +607,7 @@ export class GpuBoard {
 
   /** Ends every flip and clam opening at once (a board change other than a pour, as `cancelFlips`). */
   cancelFlips(): void {
-    this.endFx(['flip', 'clam']);
+    this.endFx(['flip', 'tide', 'clam']);
   }
 
   /**

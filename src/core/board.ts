@@ -52,6 +52,23 @@ export interface Jar {
    * it is poured, flipped or shuffled. Part of the board, so undo, restart, the solver and hints see it.
    */
   readonly wet?: readonly number[];
+  /**
+   * Tide jar (D193–D195, design/gdd/jar-mechanics.md §2.8): every successful pour anywhere on the
+   * board counts down `left`; the pour that reaches zero turns the tide: the stack rises by one
+   * (the bottom unit moves to the top, every other unit moves down one place) and the count
+   * restarts at `every`. A sealed tide jar never turns again: its count stops where it was. Part
+   * of the board, so undo, restart, the solver and hints see it.
+   */
+  readonly tide?: Tide;
+}
+
+/**
+ * A tide jar's count (§2.8): it turns every `every` pours, `left` pours from now (1..every).
+ * Same shape as the hourglass's count. Once the jar is sealed, `left` no longer changes.
+ */
+export interface Tide {
+  readonly every: number;
+  readonly left: number;
 }
 
 /** An hourglass jar's count: it flips every `every` pours, `left` pours from now (1..every). */
@@ -231,6 +248,11 @@ export interface PourResult {
    * including every jar the winning pour dried; usually empty.
    */
   readonly dried: readonly number[];
+  /**
+   * Indices of tide jars that turned right after this pour (D194, §2.8), the count reset
+   * included, even when the turn changes nothing visible (an empty or one-colour jar); usually empty.
+   */
+  readonly turned: readonly number[];
 }
 
 /**
@@ -253,9 +275,10 @@ export function pour(board: Board, from: number, to: number): PourResult {
     newDst = withWet(newDst, [...(dst.wet ?? new Array<number>(dst.units.length).fill(0)), ...srcWet.slice(newSrcUnits.length)]);
   }
   const poured = board.jars.map((j, i) => (i === from ? newSrc : i === to ? newDst : j));
-  const { jars: turned, flipped } = tickHourglasses(poured);
-  const { jars: openedJars, opened } = tickClams(turned);
-  const { jars, dried } = tickWet(openedJars);
+  const { jars: flippedJars, flipped } = tickHourglasses(poured);
+  const { jars: openedJars, opened } = tickClams(flippedJars);
+  const { jars: driedJars, dried } = tickWet(openedJars);
+  const { jars, turned } = tickTides(driedJars, board.capacity);
   let next = settle({ capacity: board.capacity, jars });
   // The winning pour dries the board (§2.7), so a won board is all sealed.
   if (hasWet(next) && isWon(next)) {
@@ -265,7 +288,48 @@ export function pour(board: Board, from: number, to: number): PourResult {
     dried.sort((a, b) => a - b);
     next = settle({ capacity: next.capacity, jars: next.jars.map((j) => (j.wet ? withWet(j, undefined) : j)) });
   }
-  return { board: next, moved, color, flipped, opened, dried };
+  return { board: next, moved, color, flipped, opened, dried, turned };
+}
+
+/**
+ * The tide rule (D194, D195, §2.8), applied after every successful pour, last of the per-pour
+ * rules (after the hourglasses, the clams and the drying), so it sees the board this pour
+ * leaves. Each tide jar that is not sealed counts down one; one that reaches zero turns: its
+ * bottom unit moves to the top and every other unit moves down one place, each unit's wet
+ * count moving with it (§2.7), the whole stack is shown (`hidden: 0`) and the count restarts
+ * at `every`. A turn keeps the jar's colours, so it never seals or unseals a jar by itself. A
+ * sealed tide jar (sealed on this pour or earlier) never turns again: its count is left as it
+ * was. Returns the same array when there is none.
+ */
+function tickTides(jars: readonly Jar[], capacity: number): { jars: readonly Jar[]; turned: number[] } {
+  const turned: number[] = [];
+  if (!jars.some((j) => j.tide)) return { jars, turned };
+  const next = jars.map((j, i) => {
+    if (!j.tide || isSealed(j, capacity)) return j;
+    const left = j.tide.left - 1;
+    if (left > 0) return { ...j, tide: { every: j.tide.every, left } };
+    turned.push(i);
+    return { ...j, units: riseByOne(j.units), hidden: 0, tide: { every: j.tide.every, left: j.tide.every }, ...(j.wet ? { wet: riseByOne(j.wet) } : {}) };
+  });
+  return { jars: next, turned };
+}
+
+/**
+ * One tide turn of a bottom-first list (§2.8): the first entry (the bottom) moves to the end (the
+ * top) and every other entry moves down one place. Example: `riseByOne([0, 1, 2]) // [1, 2, 0]`.
+ */
+export function riseByOne<T>(xs: readonly T[]): T[] {
+  return xs.length < 2 ? [...xs] : [...xs.slice(1), xs[0]];
+}
+
+/**
+ * True when a tide jar's next turn changes its sand (§2.8): it is not sealed and holds two or more
+ * colours. Only then can a pour that merely swaps two jars matter, as a wait that brings the turn
+ * closer (like `hasLiveHourglass`). An empty, one-colour or sealed tide jar looks the same after a
+ * turn, so while every tide jar is like that the usual pruning stands.
+ */
+export function hasLiveTide(board: Board): boolean {
+  return board.jars.some((j) => j.tide !== undefined && !isMonochrome(j) && j.units.length > 0 && !isSealed(j, board.capacity));
 }
 
 /**
@@ -409,12 +473,15 @@ export function usefulMoves(board: Board): Move[] {
   if (hasClosedClam(board)) return legalMoves(board);
   // With wet sand any pour dries it, so a swap is a wait too (D189, §2.7).
   if (hasWet(board)) return legalMoves(board);
+  // With a live tide jar any pour brings its turn closer, so a swap is a wait too (D194, §2.8).
+  if (hasLiveTide(board)) return legalMoves(board);
   return legalMoves(board).filter(({ from, to }) => {
     const src = board.jars[from];
     const dst = board.jars[to];
     // Moving a whole one-colour jar into an empty jar of the same kind only swaps them.
     // A sieve is its own kind (D96): filling an empty sieve frees an ordinary jar, which is progress.
-    const sameKind = jarCapacity(board, from) === jarCapacity(board, to) && !dst.funnel && src.sieve === dst.sieve;
+    // So is a tide jar (§2.8): moving sand into or out of it changes which sand the tide turns.
+    const sameKind = jarCapacity(board, from) === jarCapacity(board, to) && !dst.funnel && src.sieve === dst.sieve && !src.tide === !dst.tide;
     return !(dst.units.length === 0 && isMonochrome(src) && sameKind);
   });
 }
@@ -496,7 +563,7 @@ export function lostReason(board: Board): LostReason | null {
 
 /**
  * A canonical string for a board, ignoring jar order and burial. An hourglass's count, a
- * sieve's band, a clam's count and wet sand's counts (§2.7) are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
+ * sieve's band, a clam's count, wet sand's counts (§2.7) and a tide jar's count (§2.8) are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
  * with the same key are equivalent for solving purposes.
  */
 export function boardKey(board: Board): string {
@@ -512,7 +579,8 @@ export function jarKey(j: Jar): string {
   const sieve = j.sieve !== undefined ? `S${j.sieve}` : '';
   const clam = j.clam !== undefined ? `C${j.clam}` : '';
   const wet = j.wet ? `W${j.wet.join('.')}` : '';
-  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}${wet}`;
+  const tide = j.tide ? `T${j.tide.left}/${j.tide.every}` : '';
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}${wet}${tide}`;
   return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 
