@@ -1,4 +1,5 @@
-// D164: Settings > Realistic sand switches the board in play between Classic and Realistic at once.
+// D164/D165: Realistic sand is the default; Settings > Realistic sand switches the board in play at once.
+// A save with no choice starts on Realistic (gpu); one tap gives Classic (dom), kept across a reload; a second tap returns.
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const URL = `http://localhost:${process.env.PORT ?? 4520}/?level=7`;
 const QUIET = { sound: false, music: false, haptics: false, patterns: false, southern: false };
@@ -13,22 +14,22 @@ const save = { boards: 3, level: 20, wallet: { coins: 200, boosters: {} }, tutor
   await p.waitForTimeout(1500);
   const render = () => p.evaluate(() => document.getElementById('board').dataset.render ?? 'dom');
   const r = { start: await render() };
-  await p.screenshot({ path: `${__dirname}/1-classic.png` });
+  await p.screenshot({ path: `${__dirname}/1-start-realistic.png` });
   await p.click('#btn-settings'); await p.waitForTimeout(400);
   await p.locator('#set-realistic').scrollIntoViewIfNeeded();
   await p.screenshot({ path: `${__dirname}/2-settings.png` });
   await p.click('#set-realistic', { force: true }); await p.waitForTimeout(1500);
   await p.click('#btn-close-settings'); await p.waitForTimeout(800);
-  r.afterOn = await render();
-  await p.screenshot({ path: `${__dirname}/3-realistic.png` });
+  r.afterFirstTap = await render();
+  await p.screenshot({ path: `${__dirname}/3-after-tap-classic.png` });
   await p.reload(); await p.waitForTimeout(2500);
   r.afterReload = await render();
   r.saved = await p.evaluate(() => JSON.parse(localStorage.getItem('strata.save.v2')).settings.realistic);
   await p.click('#btn-settings'); await p.waitForTimeout(400);
   await p.click('#set-realistic', { force: true }); await p.waitForTimeout(600);
   await p.click('#btn-close-settings'); await p.waitForTimeout(600);
-  r.afterOff = await render();
-  await p.screenshot({ path: `${__dirname}/4-classic-again.png` });
+  r.afterSecondTap = await render();
+  await p.screenshot({ path: `${__dirname}/4-realistic-again.png` });
   console.log(JSON.stringify(r));
   require('fs').writeFileSync(__dirname + '/results.json', JSON.stringify(r, null, 2));
   await b.close();

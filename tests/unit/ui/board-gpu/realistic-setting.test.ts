@@ -1,4 +1,4 @@
-// D164: Realistic sand is a free Settings switch, off (Classic) by default; it survives save and repair.
+// D164/D165: Realistic sand is a free Settings switch, on by default (D165); it survives save and repair.
 import { describe, expect, it } from 'vitest';
 import config from '../../../../src/config/game-config.json';
 import type { EconomyConfig } from '../../../../src/core/economy';
@@ -11,12 +11,13 @@ const load = (settings: unknown) => {
 };
 
 describe('the Realistic sand setting', () => {
-  it('is off (Classic) for a new player and for an older save', () => {
-    expect(freshSave(econ).settings.realistic).toBe(false);
-    expect(load({ sound: true })).toBe(false);
+  it('is on (Realistic) for a new player and for an older save without the field (D165)', () => {
+    expect(freshSave(econ).settings.realistic).toBe(true);
+    expect(load({ sound: true })).toBe(true);
   });
-  it('keeps a stored choice and repairs a bad value to Classic', () => {
+  it('keeps a stored choice, Classic included, and repairs a bad value to Realistic', () => {
+    expect(load({ realistic: false })).toBe(false);
     expect(load({ realistic: true })).toBe(true);
-    expect(load({ realistic: 'yes' })).toBe(false);
+    expect(load({ realistic: 'yes' })).toBe(true);
   });
 });

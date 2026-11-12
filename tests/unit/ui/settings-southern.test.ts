@@ -21,7 +21,7 @@ describe('Southern hemisphere seasons setting', () => {
   });
   it('an older save without the field loads with it off and keeps the other settings', () => {
     const save = loadSave(econ, memoryStore({ [KEY]: JSON.stringify({ level: 4, settings: OLD_SETTINGS }) }));
-    expect(save.settings).toEqual({ ...OLD_SETTINGS, southern: false, soundVolume: 0.8, musicVolume: 0.8, realistic: false }); // Realistic sand (D164) defaults to Classic // the sprint 10 volumes (D66) get their defaults too
+    expect(save.settings).toEqual({ ...OLD_SETTINGS, southern: false, soundVolume: 0.8, musicVolume: 0.8, realistic: true }); // Realistic sand defaults on (D165) // the sprint 10 volumes (D66) get their defaults too
   });
   it('a value that is not a boolean is repaired to off', () => {
     const save = loadSave(econ, memoryStore({ [KEY]: JSON.stringify({ level: 4, settings: { ...OLD_SETTINGS, southern: 'yes' } }) }));

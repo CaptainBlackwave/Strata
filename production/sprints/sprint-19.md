@@ -5,7 +5,7 @@
 ## Change of direction (2026-11-12, D159–D163)
 A player suggested, and the owner agreed, that the real-sand board should be a **cosmetic** rather than a replacement. Today's board stays the free default ("Classic"); "Real sand" is a one-time 2,500-coin purchase in a new **Board** row of the Jar styles sheet, switched freely once owned. The glass becomes **soft and matte**. It goes on sale only once every level works on it. The DOM board is therefore a first-class look, not only a fallback.
 
-**Update 2026-11-12 (D164):** not for sale after all. Realistic sand is a free Settings toggle, Classic by default.
+**Update 2026-11-12 (D164, D165):** not for sale after all. Realistic sand is a free Settings toggle, **on by default**; Classic is one tap away.
 
 ## Goal
 The board looks like a studio game: lit glass jars and sand that is really sand. A pour tips the jar, the top colour slides to the lip and spills as grains, and it piles and settles in the target. The rules don't change.
