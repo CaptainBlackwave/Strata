@@ -19,6 +19,7 @@
   --glow: 255, 236, 170; /* D73: each scene sets its own (theme-tokens.ts) */
   --glow-core: 255, 246, 216;
   --buried: #b9a88d;
+  --buried-mark: rgba(74, 59, 44, 0.55); /* the mark on buried sand (art, fixed in every scene) */
   --focus: #2a6fdb;
   --accent-text: #1a6b61;
   --coral-text: #b3412b;
@@ -109,6 +110,16 @@
   --dur-3: 400ms; /* celebrations */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-pop: cubic-bezier(0.3, 1.5, 0.5, 1);
+
+  /* Fixed colours that do not follow the scene (coins, prices, rewards, destructive actions).
+     Their contrast is checked in tests/unit/core/themes.test.ts (FIXED). */
+  --gold: #f6c453;
+  --gold-light: #fff3c4;
+  --gold-deep: #d99a2b;
+  --gold-ink: #5a3d0c; /* text on --gold */
+  --gold-wash: #fff3d1;
+  --gold-text: #8a5a10; /* text on --gold-wash */
+  --danger: #b3412b; /* fill of destructive buttons, white text on it */
 }
 /* Night scenes: theme.ts sets data-scheme from the card colour's luminance (sceneScheme). */
 :root[data-scheme='dark'] {
@@ -666,7 +677,7 @@ button {
   place-items: center;
   font-weight: var(--fw-bold);
   font-size: calc(var(--unit-h) * 0.55);
-  color: rgba(74, 59, 44, 0.55);
+  color: var(--buried-mark);
 }
 .unit.grow {
   transform-origin: bottom;
@@ -729,7 +740,7 @@ button {
 
 /* A refused pour also gets a static outline, so it shows under reduced motion (AX-5). */
 .jar.nope .glass {
-  outline: 3px solid var(--coral-text, #b3412b);
+  outline: 3px solid var(--coral-text);
   outline-offset: 2px;
 }
 .jar.nope {
@@ -1041,7 +1052,7 @@ button {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff3c4 0 18%, #f6c453 20% 62%, #d99a2b 64%);
+  background: radial-gradient(circle at 35% 30%, var(--gold-light) 0 18%, var(--gold) 20% 62%, var(--gold-deep) 64%);
   box-shadow: inset 0 -2px 0 rgba(140, 90, 20, 0.35);
 }
 .subhud {
@@ -1055,8 +1066,8 @@ button {
   color: var(--ink);
 }
 .badge.price {
-  background: #f6c453;
-  color: #5a3d0c;
+  background: var(--gold);
+  color: var(--gold-ink);
 }
 .badge.price::before {
   content: '';
@@ -1065,7 +1076,7 @@ button {
   height: 8px;
   margin-right: 2px;
   border-radius: 50%;
-  background: #d99a2b;
+  background: var(--gold-deep);
   vertical-align: 0;
 }
 
@@ -1189,10 +1200,10 @@ button {
   margin: calc(-1 * var(--sp-2)) 0 var(--sp-2);
   padding: var(--sp-2) var(--sp-4);
   border-radius: var(--r-pill);
-  background: #fff3d1;
+  background: var(--gold-wash);
   font-size: var(--fs-4);
   font-weight: var(--fw-black);
-  color: #8a5a10;
+  color: var(--gold-text);
 }
 .win-reward[hidden] {
   display: none;
@@ -1253,7 +1264,7 @@ button {
   width: 46px;
   height: 28px;
   border-radius: var(--r-pill);
-  background: #d9cbb4;
+  background: color-mix(in srgb, var(--ink) 22%, var(--card)); /* the off track, in the scene's ink */
   box-shadow: inset 0 0 0 2px var(--ink-soft);
   position: relative;
   cursor: pointer;
@@ -1527,7 +1538,7 @@ button {
   gap: 10px;
   margin: 0 0 14px;
   padding: 8px 12px;
-  border-radius: 14px;
+  border-radius: var(--r-m);
   background: var(--surface-2);
   text-align: left;
   font-size: var(--fs-2);
@@ -1571,7 +1582,7 @@ button {
   margin-left: auto;
   min-height: 44px; /* F5 */
   padding: 6px 16px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   font-size: var(--fs-2);
   background: var(--card); /* the row is surface-2 */
   box-shadow: inset 0 0 0 2px var(--accent-text);
@@ -1661,7 +1672,7 @@ button {
 .shell-set {
   margin-bottom: 12px;
   padding: 10px 10px 4px;
-  border-radius: 16px;
+  border-radius: var(--r-m);
   background: var(--surface-2);
   box-shadow: inset 0 -3px 0 var(--ink-hair);
 }
@@ -1704,7 +1715,7 @@ button {
 .shell-set-head:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 8px;
+  border-radius: var(--r-s);
 }
 .shell-set.complete .shell-set-head[aria-expanded='false'] {
   padding-bottom: 4px;
@@ -1738,7 +1749,7 @@ button {
   right: 0;
   z-index: 1;
   padding: 1px 5px;
-  border-radius: 8px;
+  border-radius: var(--r-s);
   background: var(--toast-bg);
   color: var(--toast-fg);
   font-size: var(--fs-1);
@@ -2446,7 +2457,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 .scene-swatch {
   position: relative;
   height: 64px;
-  border-radius: 10px;
+  border-radius: var(--r-s);
   overflow: hidden;
 }
 .scene-swatch i {
@@ -2478,7 +2489,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   height: 10px;
   margin-right: 4px;
   border-radius: 50%;
-  background: #f6c453;
+  background: var(--gold);
   vertical-align: -1px;
 }
 .scene-buy {
@@ -2972,7 +2983,7 @@ svg.fx-stone {
 }
 .discard-btn {
   color: #fff;
-  background: #b3412b;
+  background: var(--danger);
 }
 
 /* Win card: small avatar and unlock rows (§3.7) */
@@ -5322,7 +5333,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 .scenes-art .scene-swatch {
   width: 34px;
   height: 46px;
-  border-radius: 10px;
+  border-radius: var(--r-s);
   border: 2px solid var(--surface-2);
 }
 .m-sea { fill: var(--sea); }

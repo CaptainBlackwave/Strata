@@ -3,7 +3,7 @@
 // with board screens on both Classic (?board=dom) and Realistic. Then builds contact sheets.
 //
 // Usage: npm run build && node production/qa/evidence/sprint-25/audit/capture.cjs
-// Env: PORT (default 5191), ONLY (comma-separated screen names), SHEETS=0 to skip contact sheets,
+// Env: OUT (output folder, default this one), PORT (default 5191), ONLY (comma-separated screen names), SHEETS=0 to skip contact sheets,
 //      JOBS (parallel pages, default 4).
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const http = require('http');
@@ -13,7 +13,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..', '..', '..', '..');
 const DIST = path.join(ROOT, 'dist');
 const PORT = Number(process.env.PORT || 5191);
-const OUT = __dirname;
+const OUT = process.env.OUT ? path.resolve(process.env.OUT) : __dirname; // sprint 25 U1: OUT for after-shots
 const SHOTS = path.join(OUT, 'shots');
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',').map((s) => s.trim()) : null;
 const JOBS = Number(process.env.JOBS || 4);
