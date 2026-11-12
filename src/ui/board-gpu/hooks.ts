@@ -11,6 +11,7 @@ import { boardEl, reducedMotion } from '../dom';
 import { ANIM, audio, config, state } from '../state';
 import { GPU_FLAG_KEY, type BoardMode, chooseBoardMode, detectWebGL } from './switch';
 import { type JarGeometry, type Rect, jarGeometry, restRect } from './geometry';
+import { type ShelfWood, SHELF_WOOD } from './shelf';
 import { hexToRgb } from './paint';
 import type { GlassLook } from './art';
 import type { BoardLook, GpuBoard, GpuMotion } from './renderer';
@@ -177,13 +178,13 @@ function readShelves(): Rect[] {
 }
 
 /** The scene's and the worn glass's resolved colours; `null` until read (and after a change). */
-let tokens: { glass: GlassLook; ink: string } | null = null;
+let tokens: { glass: GlassLook; ink: string; wood: ShelfWood } | null = null;
 
 /**
  * Resolves the glass colours the DOM uses: the worn piece's `--style-*` over the scene's `--glass-edge`
  * and `--glass` (style.css), read through a hidden probe in `#board` so `color-mix()` resolves.
  */
-function readTokens(host: HTMLElement = boardEl): { glass: GlassLook; ink: string } {
+function readTokens(host: HTMLElement = boardEl): { glass: GlassLook; ink: string; wood: ShelfWood } {
   const probe = document.createElement('i');
   probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;color:transparent';
   host.appendChild(probe);
@@ -204,8 +205,10 @@ function readTokens(host: HTMLElement = boardEl): { glass: GlassLook; ink: strin
     night: NIGHT_SCENES.has(document.body.dataset.theme ?? '') || isDark(read('var(--bg-bottom)', '#f1dfc1')),
   };
   const ink = read('var(--ink)', '#4a3b2c');
+  // Sprint 25 U4: the shelf wood, shared with Home's shelf and the Classic board's .jar-shelf.
+  const wood: ShelfWood = { top: read('var(--wood-top)', SHELF_WOOD.top), bottom: read('var(--wood-bottom)', SHELF_WOOD.bottom), lip: read('var(--wood-lip)', SHELF_WOOD.lip) };
   probe.remove();
-  return { glass: { ...glass, shadow: glass.night ? 'rgb(0,0,0)' : 'rgb(60,44,24)' }, ink };
+  return { glass: { ...glass, shadow: glass.night ? 'rgb(0,0,0)' : 'rgb(60,44,24)' }, ink, wood };
 }
 
 /** True for a dark CSS colour (`rgb(…)`): a night scene's background. */
@@ -228,7 +231,7 @@ function currentLook(): BoardLook {
   // Read once with the tokens (strata-8j3): getComputedStyle here forced a style recalculation on
   // every jar redraw of a pour. The scene sets --glow on <html>; the observer in watchLayout clears both.
   glow ??= glowTokens();
-  return { glass: tokens.glass, ink: tokens.ink, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: boardEl.dataset.cork ?? 'cork', ...glow };
+  return { glass: tokens.glass, ink: tokens.ink, wood: tokens.wood, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: boardEl.dataset.cork ?? 'cork', ...glow };
 }
 
 /** The scene's glow colours, cached like `tokens`; `null` until read (and after a scene change). */

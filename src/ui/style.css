@@ -120,6 +120,12 @@
   --gold-wash: #fff3d1;
   --gold-text: #8a5a10; /* text on --gold-wash */
   --danger: #b3412b; /* fill of destructive buttons, white text on it */
+
+  /* Wood (sprint 25 U3/U4): the shelves the jars stand on, on Home and on the board (both boards:
+     the canvas reads these through board-gpu/hooks.ts). Deeper by night, below. */
+  --wood-top: #dcb57d;
+  --wood-bottom: #b88c55;
+  --wood-lip: #8f6736;
 }
 /* Night scenes: theme.ts sets data-scheme from the card colour's luminance (sceneScheme). */
 :root[data-scheme='dark'] {
@@ -136,6 +142,9 @@
   --band-today: color-mix(in srgb, var(--hue-today) 40%, var(--card));
   --band-collection: color-mix(in srgb, var(--hue-collection) 36%, var(--card));
   --band-profile: color-mix(in srgb, var(--hue-profile) 46%, var(--card));
+  --wood-top: color-mix(in srgb, #b98f5c 70%, var(--bg-top));
+  --wood-bottom: color-mix(in srgb, #8d6740 70%, var(--bg-top));
+  --wood-lip: color-mix(in srgb, #5e4228 70%, var(--bg-top));
 }
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -586,18 +595,16 @@ body {
   column-gap: var(--gap-x);
 }
 .jar-shelf {
-  /* Wood is art: the same plank in every scene (keep in step with board-gpu/shelf.ts SHELF_WOOD). */
-  --wood-hi: #d9b27a;
-  --wood-lo: #b58a52;
-  --wood-lip: #8f6736;
+  /* Wood: the shared --wood-* tokens (:root), as Home's shelf; the canvas reads the same tokens. */
   position: absolute;
   top: 100%;
   left: calc(-1 * var(--shelf-over));
   right: calc(-1 * var(--shelf-over));
   height: var(--shelf-h);
   border-radius: calc(var(--shelf-h) / 2);
-  background: linear-gradient(180deg, var(--wood-hi), var(--wood-lo));
+  background: linear-gradient(180deg, var(--wood-top), var(--wood-bottom));
   box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
     0 var(--shelf-lip) 0 var(--wood-lip),
     0 calc(var(--shelf-lip) + 4px) 8px -4px color-mix(in srgb, var(--shadow-c) 30%, transparent);
   pointer-events: none;
@@ -4910,15 +4917,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
    jars' base (logic/home-hero.ts LOGO.foot, 18 px above the stage's foot), so Classic's CSS jars and
    Realistic's canvas jars, drawn over this, both stand on it; it stays visible when the CSS jars hide. */
 .hero .hero-logo {
-  --shelf-h: 14px;
-  --wood-top: #dcb57d;
-  --wood-bottom: #b88c55;
-  --wood-lip: #8f6736;
-}
-:root[data-scheme='dark'] .hero .hero-logo {
-  --wood-top: color-mix(in srgb, #b98f5c 70%, var(--bg-top));
-  --wood-bottom: color-mix(in srgb, #8d6740 70%, var(--bg-top));
-  --wood-lip: color-mix(in srgb, #5e4228 70%, var(--bg-top));
+  --shelf-h: 14px; /* the wood colours are the shared --wood-* tokens (:root) */
 }
 .hero .hero-logo::after {
   content: '';

@@ -6,8 +6,15 @@
  */
 import type { Rect } from './geometry';
 
-/** The plank's colours. Wood is art: the same in every scene. Keep in step with style.css `.jar-shelf`. */
-export const SHELF_WOOD = { hi: '#d9b27a', lo: '#b58a52', lip: '#8f6736' } as const;
+/** The plank's colours: any CSS colour strings (the canvas reads style.css `--wood-*` through a probe). */
+export interface ShelfWood {
+  readonly top: string;
+  readonly bottom: string;
+  readonly lip: string;
+}
+
+/** The daytime `--wood-*` tokens (style.css `:root`): the fallback before the tokens are read. */
+export const SHELF_WOOD: ShelfWood = { top: '#dcb57d', bottom: '#b88c55', lip: '#8f6736' };
 
 /** The plank's lip below its face, in CSS px (style.css `--shelf-lip`). */
 export const SHELF_LIP = 3;
@@ -27,7 +34,7 @@ export function shelfBox(r: Rect): Rect {
  * Paints one plank `width` × `height` CSS px (face only; the lip and shadow are added below it) at
  * `res` device pixels per CSS px, into a new canvas. Example: `drawShelf(300, 10, 2).height // 42`
  */
-export function drawShelf(width: number, height: number, res: number, doc: Document = document): HTMLCanvasElement {
+export function drawShelf(width: number, height: number, res: number, wood: ShelfWood = SHELF_WOOD, doc: Document = document): HTMLCanvasElement {
   const box = shelfBox({ left: 0, top: 0, width, height });
   const canvas = doc.createElement('canvas');
   canvas.width = Math.max(1, Math.ceil(box.width * res));
@@ -41,16 +48,21 @@ export function drawShelf(width: number, height: number, res: number, doc: Docum
   ctx.shadowColor = 'rgba(60, 40, 20, 0.28)';
   ctx.shadowBlur = 6;
   ctx.shadowOffsetY = SHELF_LIP + 2;
-  ctx.fillStyle = SHELF_WOOD.lip;
+  ctx.fillStyle = wood.lip;
   roundRect(ctx, 0, SHELF_LIP, width, height, r);
   ctx.fill();
   ctx.restore();
   const face = ctx.createLinearGradient(0, 0, 0, height);
-  face.addColorStop(0, SHELF_WOOD.hi);
-  face.addColorStop(1, SHELF_WOOD.lo);
+  face.addColorStop(0, wood.top);
+  face.addColorStop(1, wood.bottom);
   ctx.fillStyle = face;
   roundRect(ctx, 0, 0, width, height, r);
   ctx.fill();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.28)'; // the top highlight (the CSS inset 0 2px 0)
+  ctx.save();
+  ctx.clip();
+  ctx.fillRect(0, 0, width, 2);
+  ctx.restore();
   return canvas;
 }
 
