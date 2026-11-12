@@ -1,6 +1,6 @@
 {
   "base": "dist/",
-  "date": "2026-11-12T22:52:32.032Z",
+  "date": "2026-11-12T23:10:11.943Z",
   "viewports": [
     {
       "tag": "412",
@@ -325,9 +325,7 @@
       "viewport": 320,
       "total": 0,
       "over": [],
-      "scrollers": [
-        "div.card.sheet-card (320px in 316px)"
-      ],
+      "scrollers": [],
       "pageErrors": []
     },
     {

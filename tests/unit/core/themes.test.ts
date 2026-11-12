@@ -270,6 +270,22 @@ describe('readability (WCAG contrast) in every scene', () => {
     });
   }
 
+  /** `color-mix(in srgb, a p%, b)` for two #rrggbb colours. */
+  const mix = (a: string, p: number, b: string): string => {
+    const ch = (h: string, i: number) => parseInt(h.slice(1 + 2 * i, 3 + 2 * i), 16);
+    return '#' + [0, 1, 2].map((i) => Math.round(ch(a, i) * p + ch(b, i) * (1 - p)).toString(16).padStart(2, '0')).join('');
+  };
+  // Sprint 25 U5 (audit S4): a completed shell set is tinted from the scene (style.css .shell-set.complete).
+  for (const theme of cfg.themes.list) {
+    const k = theme.tokens as ThemeTokens & UiThemeTokens;
+    it(`${theme.id}: a completed shell set's tint keeps its ink, soft ink and focus ring readable`, () => {
+      const tint = mix(k.accent, 0.16, k.surface2);
+      expect(contrastRatio(k.ink, tint)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(k.inkSoft, tint)).toBeGreaterThanOrEqual(3);
+      expect(contrastRatio(k.focus!, tint)).toBeGreaterThanOrEqual(3);
+    });
+  }
+
   it('the glow is tinted per scene, not one colour for all (D73)', () => {
     const glows = new Set(cfg.themes.list.map((t) => (t.tokens as ThemeTokens & UiThemeTokens).glow));
     expect(glows.size).toBeGreaterThanOrEqual(12);
@@ -277,13 +293,11 @@ describe('readability (WCAG contrast) in every scene', () => {
 
   /**
    * Fixed colours in style.css that don't follow the scene, with the fixed tint they sit on
-   * (`.shell-set.complete`, `.badge.price`, `.discard-btn`). Keep this list in step with the CSS.
+   * (`.badge.price`, `.discard-btn`). Keep this list in step with the CSS.
    */
   const FIXED: readonly (readonly [what: string, fg: string, bg: string, min: number])[] = [
-    ['completed set: ink on the mint tint (top)', '#4a3b2c', '#e8f5f0', 4.5],
-    ['completed set: ink on the mint tint (bottom)', '#4a3b2c', '#cfe9e1', 4.5],
-    ['completed set: soft ink on the mint tint', '#6b5a47', '#cfe9e1', 4.5],
-    ['completed set: focus ring on the mint tint', '#2a6fdb', '#cfe9e1', 3],
+    // Sprint 25 U5 (audit S4): the completed set's fixed mint tint is gone. It now follows the scene
+    // (accent 16% into surface-2), so its contrast is checked per scene below, not pinned here.
     ['booster price badge', '#5a3d0c', '#f6c453', 4.5],
     ['Discard button label', '#ffffff', '#b3412b', 4.5],
   ];

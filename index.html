@@ -97,18 +97,24 @@
         <div class="card win-card" role="dialog" aria-modal="true" aria-labelledby="win-title" aria-describedby="win-text">
           <span id="win-avatar" class="portrait portrait-xs win-avatar" aria-hidden="true" hidden></span>
           <div class="win-jars" aria-hidden="true"><i></i><i></i><i></i></div>
-          <h2 id="win-title">Level cleared</h2>
-          <p id="win-text">All jars sorted.</p>
+          <div class="win-head">
+            <h2 id="win-title">Level cleared</h2>
+            <p id="win-text">All jars sorted.</p>
+            <p id="win-note" class="win-note"></p>
+          </div>
           <div id="win-reward" class="win-reward"><i class="coin" aria-hidden="true"></i><span id="win-coins" aria-hidden="true">+20</span><span id="win-reward-sr" class="sr-only"></span></div>
-          <p id="win-note" class="win-note"></p>
-          <div id="win-shell" class="win-shell" hidden><span id="win-shell-art" class="win-shell-art"></span><span id="win-shell-text"></span></div>
-          <div id="win-unlocks" class="win-unlocks" aria-live="polite"></div>
-          <button id="btn-share" data-s="share" class="secondary share" type="button" hidden>Share</button>
-          <p id="share-status" class="share-status" role="status"></p>
+          <div class="win-checks">
+            <div id="win-shell" class="win-shell" hidden><span id="win-shell-art" class="win-shell-art"></span><span id="win-shell-text"></span></div>
+            <div id="win-unlocks" class="win-unlocks" aria-live="polite"></div>
+          </div>
           <div class="win-actions">
-            <button id="btn-win-home" data-s="home" class="secondary" type="button" hidden>Home</button>
-            <button id="btn-win-shared" class="secondary" type="button" hidden>Play the shared puzzle</button>
             <button id="btn-next" class="primary" type="button">Continue</button>
+            <div class="win-links">
+              <button id="btn-win-home" data-s="home" class="link-btn" type="button" hidden>Home</button>
+              <button id="btn-win-shared" class="link-btn" type="button" hidden>Play the shared puzzle</button>
+              <button id="btn-share" data-s="share" class="link-btn share" type="button" hidden>Share</button>
+            </div>
+            <p id="share-status" class="share-status" role="status"></p>
           </div>
         </div>
       </div>
@@ -151,8 +157,8 @@
         </div>
       </div>
       <div id="scenes" class="sheet" hidden>
-        <div class="card sheet-card" role="dialog" aria-modal="true" aria-labelledby="scenes-title">
-          <div class="sheet-head"><h2 id="scenes-title" data-s="scenes" class="sheet-title">Scenes</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="scenes-coins">0</span><span class="sr-only coins-sr"> coins</span></div><button id="btn-close-scenes" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+        <div data-band="collection" class="card sheet-card" role="dialog" aria-modal="true" aria-labelledby="scenes-title">
+          <div class="sheet-head"><div class="sheet-titles"><h2 id="scenes-title" data-s="scenes" class="sheet-title">Scenes</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="scenes-coins">0</span><span class="sr-only coins-sr"> coins</span></div></div><button id="btn-close-scenes" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div id="scene-grid" class="scene-grid"></div>
           <p id="scene-previewing" class="scene-previewing" aria-live="polite"></p>
           <button id="btn-scene-buy" class="primary scene-buy" type="button" hidden>Buy</button>
@@ -161,8 +167,8 @@
         </div>
       </div>
       <div id="styles" class="sheet" hidden>
-        <div class="card sheet-card styles-card" role="dialog" aria-modal="true" aria-labelledby="styles-title" aria-describedby="styles-intro">
-          <div class="sheet-head"><h2 id="styles-title" data-s="styles.title" class="sheet-title">Jar styles</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="styles-coins">0</span><span class="sr-only coins-sr"> coins</span></div><button id="btn-close-styles" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+        <div data-band="collection" class="card sheet-card styles-card" role="dialog" aria-modal="true" aria-labelledby="styles-title" aria-describedby="styles-intro">
+          <div class="sheet-head"><div class="sheet-titles"><h2 id="styles-title" data-s="styles.title" class="sheet-title">Jar styles</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="styles-coins">0</span><span class="sr-only coins-sr"> coins</span></div></div><button id="btn-close-styles" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="styles-intro" data-s="styles.intro" class="styles-intro">Change how your jars look.</p>
           <div id="styles-preview" class="style-preview styles-stage" aria-hidden="true"></div>
           <div id="styles-slots" class="styles-slots"></div>
@@ -217,14 +223,14 @@
         </div>
       </div>
       <div id="cabinet" class="cabinet" hidden>
-        <div class="card cabinet-card" role="dialog" aria-modal="true" aria-labelledby="cabinet-title">
+        <div data-band="collection" class="card cabinet-card" role="dialog" aria-modal="true" aria-labelledby="cabinet-title">
           <div class="sheet-head"><h2 id="cabinet-title" class="sheet-title">Shell cabinet</h2><button id="btn-close-cabinet" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="cabinet-next" class="cabinet-next"></p>
           <div id="cabinet-sets"></div>
         </div>
       </div>
       <div id="weekly" class="cabinet" hidden>
-        <div class="card cabinet-card weekly-sheet" role="dialog" aria-modal="true" aria-labelledby="weekly-sheet-title" aria-describedby="weekly-sheet-sub">
+        <div data-band="today" class="card cabinet-card weekly-sheet" role="dialog" aria-modal="true" aria-labelledby="weekly-sheet-title" aria-describedby="weekly-sheet-sub">
           <div class="sheet-head"><h2 id="weekly-sheet-title" data-s="weekly.title" class="sheet-title">Weekly set</h2><button id="btn-close-weekly" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="weekly-sheet-sub" class="cabinet-next"></p>
           <ol id="weekly-boards" class="weekly-boards"></ol>
@@ -233,7 +239,7 @@
         </div>
       </div>
       <div id="event" class="cabinet" hidden>
-        <div class="card cabinet-card event-sheet" role="dialog" aria-modal="true" aria-labelledby="event-sheet-title" aria-describedby="event-sheet-sub event-prize">
+        <div data-band="play" class="card cabinet-card event-sheet" role="dialog" aria-modal="true" aria-labelledby="event-sheet-title" aria-describedby="event-sheet-sub event-prize">
           <div class="sheet-head"><h2 id="event-sheet-title" class="sheet-title"></h2><button id="btn-close-event" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="event-sheet-sub" class="cabinet-next"></p>
           <p id="event-prize" class="event-prize"></p>
@@ -241,7 +247,7 @@
         </div>
       </div>
       <div id="stats" class="cabinet" hidden>
-        <div class="card cabinet-card stats-sheet" role="dialog" aria-modal="true" aria-labelledby="stats-title" aria-describedby="stats-intro">
+        <div data-band="profile" class="card cabinet-card stats-sheet" role="dialog" aria-modal="true" aria-labelledby="stats-title" aria-describedby="stats-intro">
           <div class="sheet-head"><h2 id="stats-title" data-s="stats.heading" class="sheet-title">Your stats</h2><button id="btn-close-stats" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="stats-intro" data-s="stats.intro" class="cabinet-next">Copy these and send them to us with your feedback. Nothing is sent automatically.</p>
           <div id="stats-list" class="stats-list"></div>
@@ -250,7 +256,7 @@
         </div>
       </div>
       <div id="track" class="cabinet" hidden>
-        <div class="card cabinet-card track-sheet" role="dialog" aria-modal="true" aria-labelledby="track-title" aria-describedby="track-streak track-keep">
+        <div data-band="today" class="card cabinet-card track-sheet" role="dialog" aria-modal="true" aria-labelledby="track-title" aria-describedby="track-streak track-keep">
           <div class="sheet-head"><h2 id="track-title" data-s="track.title" class="sheet-title">Streak rewards</h2><button id="btn-close-track" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="track-streak" class="cabinet-next"></p>
           <ol id="track-list" class="track-list"></ol>
@@ -267,7 +273,7 @@
         </div>
       </div>
       <div id="profile" class="cabinet" hidden>
-        <div class="card cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+        <div data-band="profile" class="card cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
           <div class="sheet-head"><h2 id="profile-title" data-s="profileTitle" class="sheet-title">Profile</h2><button id="btn-close-profile" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div class="profile-head">
             <span id="profile-art" class="portrait portrait-lg" aria-hidden="true"></span>
@@ -279,7 +285,7 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></svg>
             </button>
           </div>
-          <h3 id="stats-title" data-s="statsTitle" class="stats-title">Stats</h3>
+          <h3 id="profile-stats-title" data-s="statsTitle" class="stats-title">Stats</h3>
           <dl id="stats-grid" class="stats-grid"></dl>
           <p id="stats-note" class="stats-note"></p>
           <h3 id="badges-title" data-s="badgesTitle" class="stats-title badges-title">Badges</h3>
@@ -288,7 +294,7 @@
         </div>
       </div>
       <div id="edit-profile" class="cabinet edit-layer" hidden>
-        <div class="card cabinet-card edit-card" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+        <div data-band="profile" class="card cabinet-card edit-card" role="dialog" aria-modal="true" aria-labelledby="edit-title">
           <div class="sheet-head"><h2 id="edit-title" data-s="editProfileTitle" class="sheet-title">Edit profile</h2><button id="btn-close-edit" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div class="edit-preview"><span id="edit-art" class="portrait portrait-md" aria-hidden="true"></span><span id="edit-plate" class="profile-plate"></span></div>
           <div class="tabs" role="tablist" aria-labelledby="edit-title">

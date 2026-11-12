@@ -52,7 +52,11 @@ function render(): void {
         dt.textContent = r.label;
         const dd = document.createElement('dd');
         dd.textContent = r.value;
-        dl.append(dt, dd);
+        // Audit S1: each pair in its own row, so a value that can't fit beside its label wraps under it.
+        const row = document.createElement('div');
+        row.className = 'stats-row';
+        row.append(dt, dd);
+        dl.append(row);
       }
       box.append(h, dl);
       return box;
@@ -75,7 +79,7 @@ async function copy(): Promise<void> {
   }
 }
 
-/** Opens the sheet over Settings; focus goes to Copy and returns to `opener`. */
+/** Opens the sheet over Settings, at its top; focus goes to Copy (or the header's close button when Copy is below the fold) and returns to `opener`. */
 export function openStats(opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
   render();
   openLayer($('stats'), $('btn-copy-stats'), opener);
