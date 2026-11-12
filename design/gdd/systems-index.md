@@ -254,3 +254,8 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D190 | Mechanic pace | One new mechanic every 40 levels from 201; Wet sand debuts on 201 (owner, 2026-11-12) | jar-mechanics, level-generation | built |
 | D191 | Scope | Only Wet sand for now; the mechanic for 241 is chosen later (owner, 2026-11-12) | jar-mechanics | built |
 | D192 | Wet sand share | **About 1 level in 8 from 201**: its own seeded roll (`ownChance` 0.065) on top of the shared mechanic draw; the board wins when sorted even if sand is still wet (the winning pour dries it); the look approved from screenshots (owner, 2026-11-12) | jar-mechanics, level-generation | built |
+| D193 | Next mechanic | The **Tide jar**, debuting on level 241 (owner, 2026-11-12) | jar-mechanics | planned |
+| D194 | Tide rule | Every 4 successful pours on the board the tide turns: the stack rises by one (bottom unit to the top); a count shows pours left (owner, 2026-11-12) | jar-mechanics, pour-rules | planned |
+| D195 | Tide and sealing | A tide jar seals as usual and then never turns again (owner, 2026-11-12) | jar-mechanics | planned |
+| D196 | Tide share | About 1 level in 8 from 241, its own roll like wet sand (owner, 2026-11-12) | jar-mechanics, level-generation | planned |
+| D197 | Pace and rotations | 0.22.0 whenever ready; wet sand and the tide jar stay on levels only, not daily, weekly or events (owner, 2026-11-12) | — | planned |
