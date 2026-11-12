@@ -1,6 +1,6 @@
 # Sprint 23: Wet sand (0.21.0)
 
-> **Status: planned (2026-11-12), awaiting the owner's approval.** From the owner interview after 0.20.1 (D188–D191). Target release: **0.21.0**, after 0.20.2. Winter Tide (1–31 Dec) is not changed.
+> **Status: built (2026-11-12), approved by the owner (look approved from screenshots, D192); released as 0.21.0.** Evidence: `production/qa/evidence/sprint-23/wet/`. From the owner interview after 0.20.1 (D188–D191). Target release: **0.21.0**, after 0.20.2. Winter Tide (1–31 Dec) is not changed.
 
 ## Why
 Levels are endless and the 7 jar mechanics all debut by level 181 (narrow, frozen, locked, funnel, hourglass, sieve, clam). Players past 200 meet nothing new. The owner chose **new jar mechanics** (D188), starting with **Wet sand**, and a slower pace of one every 40 levels from 201 (D190).

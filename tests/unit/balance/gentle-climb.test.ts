@@ -75,6 +75,6 @@ describe('the curve (D128-D131)', () => {
     expect(mechanicChance(250, cfg)).toBeCloseTo(0.34);
     expect(mechanicChance(500, cfg)).toBeCloseTo(0.5);
     expect(cfg.mechanics.comboFrom).toBe(250);
-    expect(cfg.mechanics.list.map((m) => m.unlockAt)).toEqual([21, 41, 61, 81, 101, 141, 181]);
+    expect(cfg.mechanics.list.map((m) => m.unlockAt)).toEqual([21, 41, 61, 81, 101, 141, 181, 201]);
   });
 });

@@ -107,9 +107,10 @@ export interface PourBand {
 /**
  * Every jar mechanic. Each one has an intro card, a Jar guide entry and player-facing strings,
  * so the UI's lookup tables are keyed by this type. The hourglass (D96) joined in sprint 13 M1,
- * the sieve (D96) in sprint 13 M2 and the clam (D96) in sprint 13 M3.
+ * the sieve (D96) in sprint 13 M2, the clam (D96) in sprint 13 M3 and wet sand (D189, §2.7) in
+ * sprint 23 W5, with its intro card on level 201.
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet';
 
 /**
  * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass,
@@ -117,25 +118,21 @@ export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass'
  * the generator's placement stream and every board from before them stay byte-identical. They are
  * also the daily's Saturday rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam'>;
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet'>;
 
-/** @deprecated Since sprint 13 M3 (the clam's UI) every mechanic is a `MechanicId`; kept as an alias for older branches. */
+
+/**
+ * Every id in `mechanics.list`. Since sprint 23 W5 every one has its card, so this is `MechanicId`;
+ * the name stays for the core code written while wet sand had no card yet (W2/W3).
+ */
 export type BoardMechanicId = MechanicId;
 
 /**
  * True for the four original mechanics (`ClassicMechanicId`), false for the hourglass, the sieve
  * and the clam. Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
  */
-export function isClassicMechanic(id: MechanicId): id is ClassicMechanicId {
-  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam';
-}
-
-/**
- * True for a mechanic with an intro card, Jar guide entry and strings. Since sprint 13 M3 (the
- * clam's UI) that is every mechanic again. Kept for older branches. Example: `hasMechanicCard('clam') // true`.
- */
-export function hasMechanicCard(id: MechanicId): id is MechanicId {
-  return typeof id === 'string';
+export function isClassicMechanic(id: BoardMechanicId): id is ClassicMechanicId {
+  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet';
 }
 
 /** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
@@ -143,20 +140,22 @@ export const isCardMechanic = isClassicMechanic;
 
 /**
  * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
- * the hourglass, the sieve and the clam, each when it has one. Example: level 181 gives `['clam']`.
+ * the hourglass, the sieve, the clam and wet sand, each when it has one. Example: level 181 gives
+ * `['clam']`, level 201 `['wet']`.
  */
-export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam'>): MechanicId[] {
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet'>): MechanicId[] {
   return [
     ...spec.mechanics,
     ...(spec.hourglass ? ['hourglass' as const] : []),
     ...(spec.sieve ? ['sieve' as const] : []),
     ...(spec.clam ? ['clam' as const] : []),
+    ...(spec.wet ? ['wet' as const] : []),
   ];
 }
 
 /** One mechanic's schedule and tuning in game-config.json. */
 export interface MechanicConfig {
-  readonly id: MechanicId;
+  readonly id: BoardMechanicId;
   readonly unlockAt: number;
   /** Narrow jar capacity. */
   readonly cap?: number;
@@ -175,6 +174,20 @@ export interface MechanicConfig {
    * here and the pour that reaches zero opens it. Default 6; at least 1.
    */
   readonly opensAfter?: number;
+  /** Wet sand: how many units are dealt wet on a level that rolls it (D189, §2.7). Default 3; at least 1. */
+  readonly units?: number;
+  /** Wet sand: how many units are dealt wet on its debut level (a gentle first meeting). Default `units`. */
+  readonly debutUnits?: number;
+  /** Wet sand: the successful pours a wet unit takes to dry; its count starts here. Default 5; at least 1. */
+  readonly dryAfter?: number;
+  /**
+   * Wet sand: its own extra chance per level from `unlockAt`, on top of the shared mechanic roll
+   * (owner, D192: about 1 level in 8 from 201). Seeded by `ownSalt` and the level, so levels below
+   * `unlockAt` never change. Absent or 0: only the shared roll.
+   */
+  readonly ownChance?: number;
+  /** Wet sand: the seed salt of `ownChance`'s roll. Never change it once released. */
+  readonly ownSalt?: number;
 }
 
 /** Fully resolved parameters for one level. */
@@ -193,6 +206,8 @@ export interface LevelSpec {
   readonly sieve?: boolean;
   /** One filled jar is a closed clam (D96, sprint 13 M3). Absent or false: none. See `ClassicMechanicId`. */
   readonly clam?: boolean;
+  /** Some units are dealt wet (D189, sprint 23 W3, §2.7). Absent or false: none. See `ClassicMechanicId`. */
+  readonly wet?: boolean;
 }
 
 /**
@@ -200,13 +215,28 @@ export interface LevelSpec {
  * the one path every board recipe (levels, the daily, the weekly; sprint 13 W1) uses.
  * Example: `splitMechanics(['sieve']) // { mechanics: [], sieve: true }`.
  */
-export function splitMechanics(ids: readonly MechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true } {
+export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
     ...(ids.includes('sieve') ? { sieve: true as const } : {}),
     ...(ids.includes('clam') ? { clam: true as const } : {}),
+    ...(ids.includes('wet') ? { wet: true as const } : {}),
   };
+}
+
+/**
+ * Adds the mechanics with their own per-level roll (`ownChance`, D192) to the shared roll's pick,
+ * after it so a breather's `maxMechanics` cut keeps the shared pick first. Only levels at or past
+ * a mechanic's `unlockAt` roll, so earlier levels are unchanged. Example: wet sand at 0.09 from 201.
+ */
+export function withOwnRolls(level: number, rolled: readonly BoardMechanicId[], config: GameConfig): BoardMechanicId[] {
+  const out = [...rolled];
+  for (const m of config.mechanics.list) {
+    if (!m.ownChance || level < m.unlockAt || out.includes(m.id as BoardMechanicId)) continue;
+    if (createRng(mixSeed(m.ownSalt ?? 0, level))() < m.ownChance) out.push(m.id as BoardMechanicId);
+  }
+  return out;
 }
 
 /**
@@ -253,8 +283,8 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
   const breather = isBreather(level, config);
   const br = breather ? config.breather : undefined;
   if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
-  const rolled = pickMechanics(level, config);
-  const { mechanics, hourglass, sieve, clam } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
+  const rolled = withOwnRolls(level, pickMechanics(level, config), config);
+  const { mechanics, hourglass, sieve, clam, wet } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
@@ -270,7 +300,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}) };
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}) };
 }
 
 /**
@@ -315,7 +345,7 @@ export function mechanicChance(level: number, config: GameConfig): number {
  * possible from `comboFrom`. Deterministic per level. Tall-jar levels only call this
  * from `challenge.mechanicsFrom` (decision D8).
  */
-export function pickMechanics(level: number, config: GameConfig): MechanicId[] {
+export function pickMechanics(level: number, config: GameConfig): BoardMechanicId[] {
   const m = config.mechanics;
   const debut = m.list.find((x) => x.unlockAt === level);
   if (debut) return [debut.id];

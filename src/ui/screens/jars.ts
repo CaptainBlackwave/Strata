@@ -8,6 +8,7 @@ import { boardEl, reducedMotion, showToast } from '../dom';
 import { FLIP_MS } from '../logic/flip';
 import { jarSummary } from '../logic/jar-label';
 import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
+import { DRY_MS, wetHex, wetLeft } from '../logic/wet';
 import { audio, config, state } from '../state';
 import { type DomDrawKeys, domDrawKeys, domRedraw } from '../board-gpu/dirty';
 import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuHop, gpuInvalidate, gpuLayout, gpuNope, gpuSeal } from '../board-gpu/hooks';
@@ -39,6 +40,14 @@ export const SIEVE_BAND = '<span class="sieve-band" aria-hidden="true"><span cla
  * Drawn for Strata: a fan of ribs and growth rings from a hinge at the jar's foot, its crown domed.
  */
 export const CLAM_SHELL = '<span class="clam-shell" aria-hidden="true"><span class="clam-ribs"></span><b></b></span>';
+
+/**
+ * A wet unit's mark (D189, §2.7): a small drop and the pours left until it dries, in the empty
+ * `<b>`, on the unit itself so it travels with the sand. Drawn for Strata: one teardrop path.
+ */
+export const WET_MARK =
+  '<i class="wet-mark" aria-hidden="true"><svg viewBox="0 0 10 13" focusable="false">' +
+  '<path d="M5 .8C3.6 3.3 1.3 5.9 1.3 8.4a3.7 3.7 0 0 0 7.4 0C8.7 5.9 6.4 3.3 5 .8z"/></svg><b></b></i>';
 
 let tapHandler: (i: number) => void = () => {};
 
@@ -92,8 +101,9 @@ export function renderAllJars(shake = false): void {
   if (shake) gpuHop(); // sprint 19 S5: the canvas jars hop too
 }
 
-export function unitColor(color: number, buried: boolean): string {
-  return buried ? 'var(--buried)' : config.palette[color].hex;
+/** A unit's drawn colour: buried sand is neutral, wet sand (D189, §2.7) its darker damp tone. */
+export function unitColor(color: number, buried: boolean, wet = false): string {
+  return buried ? 'var(--buried)' : wet ? wetHex(config.palette[color].hex) : config.palette[color].hex;
 }
 
 /** What each jar button was last drawn from (sprint 21 P2). A rebuilt button starts unknown, so it is drawn in full. */
@@ -122,7 +132,8 @@ export function updateJar(i: number, growFrom = Infinity): void {
     if (!sealed) el.classList.remove('just-sealed');
     renderMechanics(el, jar);
     // A closed clam's sand is hidden from the screen reader too (D96, §2.6).
-    el.setAttribute('aria-label', t.jarLabel(i, jarSummary(jar, sealed, (c) => config.palette[c].id)));
+    // Wet units name their pours left; a complete jar still wet says it seals when dry (§2.7).
+    el.setAttribute('aria-label', t.jarLabel(i, jarSummary(jar, sealed, (c) => config.palette[c].id, board.capacity)));
   }
   if (todo.selection) {
     el.classList.toggle('selected', selected);
@@ -141,8 +152,15 @@ function drawSand(el: HTMLElement, jar: Jar, growFrom: number): void {
       if (k < jar.hidden) {
         u.classList.add('buried');
       } else {
-        u.style.setProperty('--c', config.palette[color].hex);
+        const left = wetLeft(jar, k);
+        u.style.setProperty('--c', left > 0 ? wetHex(config.palette[color].hex) : config.palette[color].hex);
         if (state.save.settings.patterns) u.classList.add(`pat-${color % PATTERNS}`);
+        if (left > 0) {
+          // Wet sand (D189, §2.7): damp and darker, with a drop and its pours left.
+          u.classList.add('wet');
+          u.dataset.wet = String(left);
+          u.innerHTML = WET_MARK.replace('<b></b>', `<b>${left}</b>`);
+        }
       }
       if (k >= growFrom) {
         u.classList.add('grow');
@@ -269,6 +287,44 @@ export function clamOpenFx(i: number, delay: number): void {
   a.addEventListener('cancel', done);
 }
 
+/**
+ * Wet sand drying (D189, §2.7): a short soft shimmer sweeps across each unit of jar `i` that just
+ * dried (`units`, indices bottom first), once the pour's sand has landed (`delay` ms). The units are
+ * already drawn dry. On the Realistic board the sweep shows over the canvas the same way. Reduced
+ * motion: the caller plays nothing (`dryDelay` is `null`). A board change cancels it with the flips.
+ */
+export function dryFx(i: number, units: readonly number[], delay: number): void {
+  const el = state.jarEls[i];
+  if (!el) return;
+  const spans = el.querySelectorAll<HTMLElement>('.sand > .unit');
+  for (const k of units) {
+    const u = spans[k];
+    if (!u) continue;
+    u.querySelector('.dry-shimmer')?.remove();
+    const sweep = document.createElement('i');
+    sweep.className = 'dry-shimmer';
+    sweep.setAttribute('aria-hidden', 'true');
+    u.style.position = 'relative';
+    u.appendChild(sweep);
+    const a = sweep.animate(
+      [
+        { transform: 'translateX(-100%)', opacity: 0 },
+        { opacity: 1, offset: 0.25 },
+        { opacity: 0.85, offset: 0.7 },
+        { transform: 'translateX(100%)', opacity: 0 },
+      ],
+      { duration: DRY_MS, delay: delay + k * 40, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'both' },
+    );
+    flips.add(a);
+    const done = () => {
+      flips.delete(a);
+      sweep.remove();
+    };
+    a.addEventListener('finish', done);
+    a.addEventListener('cancel', done);
+  }
+}
+
 /** Stops every flip and clam-opening animation: the board was redrawn by something other than a pour. */
 export function cancelFlips(): void {
   for (const a of [...flips]) a.cancel();
@@ -343,7 +399,7 @@ export function makeTiltFill(jarEl: HTMLElement, i: number) {
   band.style.left = `${-Hg * 1.5}px`;
   const stripes = jar.units.map((c, k) => {
     const s = document.createElement('span');
-    s.style.background = unitColor(c, k < jar.hidden);
+    s.style.background = unitColor(c, k < jar.hidden, wetLeft(jar, k) > 0);
     s.style.height = `${state.unitHeight + (k === 0 ? 40 : 0)}px`;
     return s;
   });

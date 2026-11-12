@@ -30,6 +30,17 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.21.0 (2026-11-12): sprint 23, wet sand
+**For players**
+- A new jar mechanic, **wet sand**, from level 201 (its intro card shows there, and the Jar guide and the map list it). Wet units are darker, with a drop and the pours left until they dry.
+- Wet sand only pours onto its own colour, never into an empty jar ("Wet sand only goes onto its own colour"). Every pour on the board dries every wet unit by one; a full jar seals once its sand is dry, with a short shimmer as sand dries.
+- About one level in eight from 201 has wet sand. Levels 1-200 are unchanged; daily, weekly and Winter Tide boards have none.
+
+**Under the hood**
+- Owner decisions D188-D192 (`production/sprints/sprint-23.md`, `design/gdd/jar-mechanics.md` section 2.7). `Jar.wet` counts per unit, the `'wet'` refusal, `isComplete` vs `isSealed`, `dried`/`sealedDry` on the pour event; the solver and hints know the rule and every deal is solver-proven. A board wins when sorted, and the winning pour dries it.
+- Levels 1-200 are pinned by a fixture of board hashes made before the change. Some boards from 201 changed, as with every new mechanic.
+- Screen-reader labels name wet units and their counts, colour-blind patterns follow the damp tone, reduced motion skips the shimmer. Layout guard: 48 screens, 0 overflow.
+
 ## 0.20.2 (2026-11-12): sprint 22, loose ends
 **For players**
 - The splash screen uses your saved scene's colours (a night scene no longer flashes light before Home).

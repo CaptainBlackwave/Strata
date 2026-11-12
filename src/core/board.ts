@@ -45,6 +45,13 @@ export interface Jar {
    * hints see it.
    */
   readonly clam?: number;
+  /**
+   * Wet sand (D189, design/gdd/jar-mechanics.md §2.7): one entry per unit, parallel to `units`
+   * (bottom first), the successful pours left until that unit is dry; 0 is dry. Absent when every
+   * unit is dry, so a jar without wet sand is exactly as before. A wet unit carries its count when
+   * it is poured, flipped or shuffled. Part of the board, so undo, restart, the solver and hints see it.
+   */
+  readonly wet?: readonly number[];
 }
 
 /** An hourglass jar's count: it flips every `every` pours, `left` pours from now (1..every). */
@@ -108,12 +115,49 @@ export function isClosed(jar: Jar): boolean {
 }
 
 /**
- * A jar is sealed when it is full of a single colour at the board's normal capacity.
- * Narrow jars never seal.
+ * A jar is complete when it is full of a single colour at the board's normal capacity, wet or
+ * dry. Narrow jars are never complete. A complete jar is sealed once all its sand is dry (§2.7);
+ * a board of empty and complete jars is won.
  */
-export function isSealed(jar: Jar, capacity: number): boolean {
+export function isComplete(jar: Jar, capacity: number): boolean {
   if ((jar.cap ?? capacity) !== capacity || jar.units.length !== capacity) return false;
   return jar.units.every((c) => c === jar.units[0]);
+}
+
+/**
+ * A jar is sealed when it is full of a single colour at the board's normal capacity and none of
+ * its sand is wet (D189, §2.7). Narrow jars never seal.
+ */
+export function isSealed(jar: Jar, capacity: number): boolean {
+  return isComplete(jar, capacity) && !isJarWet(jar);
+}
+
+/** True when any unit in `jar` is wet (§2.7). */
+export function isJarWet(jar: Jar): boolean {
+  return jar.wet !== undefined && jar.wet.some((w) => w > 0);
+}
+
+/** True when any unit on the board is wet (§2.7). */
+export function hasWet(board: Board): boolean {
+  return board.jars.some(isJarWet);
+}
+
+/**
+ * True when the top run of `jar` (the units a pour would move, `topRun`) holds a wet unit, so
+ * the whole run follows the wet rule: it may only go onto its own colour, never into an empty
+ * jar (D189, §2.7). False for an empty jar.
+ */
+export function isRunWet(jar: Jar): boolean {
+  const run = topRun(jar);
+  if (!run || !jar.wet) return false;
+  for (let k = 1; k <= run.count; k++) if ((jar.wet[jar.units.length - k] ?? 0) > 0) return true;
+  return false;
+}
+
+/** `jar` with its wet counts set to `wet`, or with no `wet` field when every count is dry. */
+function withWet(jar: Jar, wet: readonly number[] | undefined): Jar {
+  const { wet: _old, ...rest } = jar;
+  return wet && wet.some((w) => w > 0) ? { ...rest, wet } : rest;
 }
 
 /** True when every unit in a non-empty jar has the same colour. */
@@ -126,10 +170,11 @@ export function isMonochrome(jar: Jar): boolean {
  * `'same'` source is the target; `'missing'` no such jar; `'closed'` either jar is frozen or
  * locked; `'funnel'` the source is a funnel; `'sealed'` the source is sealed; `'empty'` the
  * source is empty; `'sieve'` the target is a sieve and the poured colour is not its band (D96);
- * `'clam'` either jar is a closed clam (D96, §2.6); `'full'` the target has no room; `'colour'`
- * the target's top is another colour.
+ * `'clam'` either jar is a closed clam (D96, §2.6); `'full'` the target has no room; `'wet'` the
+ * moving run holds wet sand and the target is empty (D189, §2.7); `'colour'` the target's top is
+ * another colour.
  */
-export type PourRefusal = 'same' | 'missing' | 'closed' | 'clam' | 'funnel' | 'sealed' | 'empty' | 'sieve' | 'full' | 'colour';
+export type PourRefusal = 'same' | 'missing' | 'closed' | 'clam' | 'funnel' | 'sealed' | 'empty' | 'sieve' | 'full' | 'wet' | 'colour';
 
 /**
  * Teardown rule R5: a pour is legal when the source is non-empty, the target has
@@ -154,7 +199,9 @@ export function pourRefusal(board: Board, from: number, to: number): PourRefusal
   if (dst.sieve !== undefined && run.color !== dst.sieve) return 'sieve';
   if (dst.units.length >= (dst.cap ?? board.capacity)) return 'full';
   const dstTop = topRun(dst);
-  return dstTop === null || dstTop.color === run.color ? null : 'colour';
+  // Wet sand (D189, §2.7) goes only onto its own colour, so never into an empty jar.
+  if (dstTop === null) return isRunWet(src) ? 'wet' : null;
+  return dstTop.color === run.color ? null : 'colour';
 }
 
 /** True when `pourRefusal` finds no reason to refuse the pour (teardown rule R5, D96). */
@@ -179,6 +226,11 @@ export interface PourResult {
   readonly flipped: readonly number[];
   /** Indices of clam jars that opened right after this pour (D96, §2.6); usually empty. */
   readonly opened: readonly number[];
+  /**
+   * Indices of jars where at least one wet unit dried right after this pour (D189, §2.7),
+   * including every jar the winning pour dried; usually empty.
+   */
+  readonly dried: readonly number[];
 }
 
 /**
@@ -192,12 +244,45 @@ export function pour(board: Board, from: number, to: number): PourResult {
   const dst = board.jars[to];
   const color = src.units[src.units.length - 1];
   const newSrcUnits = src.units.slice(0, src.units.length - moved);
-  const newSrc: Jar = { ...src, units: newSrcUnits, hidden: clampHidden(src.hidden, newSrcUnits.length) };
-  const newDst: Jar = { ...dst, units: [...dst.units, ...new Array<Color>(moved).fill(color)] };
+  let newSrc: Jar = { ...src, units: newSrcUnits, hidden: clampHidden(src.hidden, newSrcUnits.length) };
+  let newDst: Jar = { ...dst, units: [...dst.units, ...new Array<Color>(moved).fill(color)] };
+  if (src.wet || dst.wet) {
+    // Each moved unit takes its own count along (§2.7).
+    const srcWet = src.wet ?? new Array<number>(src.units.length).fill(0);
+    newSrc = withWet(newSrc, srcWet.slice(0, newSrcUnits.length));
+    newDst = withWet(newDst, [...(dst.wet ?? new Array<number>(dst.units.length).fill(0)), ...srcWet.slice(newSrcUnits.length)]);
+  }
   const poured = board.jars.map((j, i) => (i === from ? newSrc : i === to ? newDst : j));
   const { jars: turned, flipped } = tickHourglasses(poured);
-  const { jars, opened } = tickClams(turned);
-  return { board: settle({ capacity: board.capacity, jars }), moved, color, flipped, opened };
+  const { jars: openedJars, opened } = tickClams(turned);
+  const { jars, dried } = tickWet(openedJars);
+  let next = settle({ capacity: board.capacity, jars });
+  // The winning pour dries the board (§2.7), so a won board is all sealed.
+  if (hasWet(next) && isWon(next)) {
+    next.jars.forEach((j, i) => {
+      if (isJarWet(j) && !dried.includes(i)) dried.push(i);
+    });
+    dried.sort((a, b) => a - b);
+    next = settle({ capacity: next.capacity, jars: next.jars.map((j) => (j.wet ? withWet(j, undefined) : j)) });
+  }
+  return { board: next, moved, color, flipped, opened, dried };
+}
+
+/**
+ * The drying rule (D189, §2.7), applied after every successful pour (after the hourglasses and
+ * the clams): every wet unit on the board counts down one, the units just poured included; at 0
+ * it is dry. A jar whose last wet unit dries drops its `wet` field. Returns the same array when
+ * there is no wet sand.
+ */
+function tickWet(jars: readonly Jar[]): { jars: readonly Jar[]; dried: number[] } {
+  const dried: number[] = [];
+  if (!jars.some((j) => j.wet)) return { jars, dried };
+  const next = jars.map((j, i) => {
+    if (!j.wet) return j;
+    if (j.wet.some((w) => w === 1)) dried.push(i);
+    return withWet(j, j.wet.map((w) => Math.max(0, w - 1)));
+  });
+  return { jars: next, dried };
 }
 
 /**
@@ -243,7 +328,8 @@ function tickHourglasses(jars: readonly Jar[]): { jars: readonly Jar[]; flipped:
     const left = j.hourglass.left - 1;
     if (left > 0) return { ...j, hourglass: { every: j.hourglass.every, left } };
     flipped.push(i);
-    return { ...j, units: [...j.units].reverse(), hidden: 0, hourglass: { every: j.hourglass.every, left: j.hourglass.every } };
+    // Wet counts turn over with their units (§2.7).
+    return { ...j, units: [...j.units].reverse(), hidden: 0, hourglass: { every: j.hourglass.every, left: j.hourglass.every }, ...(j.wet ? { wet: [...j.wet].reverse() } : {}) };
   });
   return { jars: next, flipped };
 }
@@ -267,12 +353,14 @@ export function hasLiveHourglass(board: Board): boolean {
 export function settle(board: Board): Board {
   const sealedColors = new Set<Color>();
   for (const j of board.jars) if (isSealed(j, board.capacity)) sealedColors.add(j.units[0]);
-  if (sealedColors.size === 0) return board;
+  // A complete jar that is still wet seals nothing yet (§2.7), but its burial is revealed below.
+  if (sealedColors.size === 0 && !board.jars.some((j) => j.hidden && isComplete(j, board.capacity))) return board;
   let changed = false;
   const jars = board.jars.map((j0) => {
     // A sealed jar is one colour, so its buried units are revealed (owner bug report 2026-11-08).
+    // A complete jar that is still wet is one colour too (§2.7).
     let j = j0;
-    if (j0.hidden && isSealed(j0, board.capacity)) {
+    if (j0.hidden && isComplete(j0, board.capacity)) {
       j = { ...j0, hidden: 0 };
       changed = true;
     }
@@ -290,9 +378,13 @@ export function settle(board: Board): Board {
   return changed ? { capacity: board.capacity, jars } : board;
 }
 
-/** Teardown rule R8: won when every jar is empty or sealed. */
+/**
+ * Teardown rule R8: won when every jar is empty or sealed. A complete jar that is still wet
+ * counts (§2.7): its colour is all in it, so it can never move again, and the winning pour dries
+ * the board (`pour`), so a won board is all sealed.
+ */
 export function isWon(board: Board): boolean {
-  return board.jars.every((j) => j.units.length === 0 || isSealed(j, board.capacity));
+  return board.jars.every((j) => j.units.length === 0 || isComplete(j, board.capacity));
 }
 
 /** Every legal pour on the board. */
@@ -315,6 +407,8 @@ export function usefulMoves(board: Board): Move[] {
   if (hasLiveHourglass(board)) return legalMoves(board);
   // With a closed clam any pour counts it down, so a swap is a wait too (D96, §2.6).
   if (hasClosedClam(board)) return legalMoves(board);
+  // With wet sand any pour dries it, so a swap is a wait too (D189, §2.7).
+  if (hasWet(board)) return legalMoves(board);
   return legalMoves(board).filter(({ from, to }) => {
     const src = board.jars[from];
     const dst = board.jars[to];
@@ -327,7 +421,8 @@ export function usefulMoves(board: Board): Move[] {
 
 /**
  * Teardown rule R9: stuck when the level isn't won and no useful pour is left. With a closed
- * clam every legal pour is useful (D96, §2.6), so this is true only when no pour at all is left.
+ * clam or wet sand every legal pour is useful (D96 §2.6, D189 §2.7), so this is true only when
+ * no pour at all is left.
  */
 export function isStuck(board: Board): boolean {
   return !isWon(board) && usefulMoves(board).length === 0;
@@ -400,8 +495,8 @@ export function lostReason(board: Board): LostReason | null {
 }
 
 /**
- * A canonical string for a board, ignoring jar order and burial. An hourglass's count and a
- * sieve's band and a clam's count are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
+ * A canonical string for a board, ignoring jar order and burial. An hourglass's count, a
+ * sieve's band, a clam's count and wet sand's counts (§2.7) are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
  * with the same key are equivalent for solving purposes.
  */
 export function boardKey(board: Board): string {
@@ -416,7 +511,8 @@ export function jarKey(j: Jar): string {
   const glass = j.hourglass ? `H${j.hourglass.left}/${j.hourglass.every}` : '';
   const sieve = j.sieve !== undefined ? `S${j.sieve}` : '';
   const clam = j.clam !== undefined ? `C${j.clam}` : '';
-  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}`;
+  const wet = j.wet ? `W${j.wet.join('.')}` : '';
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}${wet}`;
   return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 

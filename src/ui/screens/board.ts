@@ -20,9 +20,10 @@ import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coach
 import { showHome } from './home';
 import { screenOut } from '../fx';
 import { coach, scheduleHud, updateHud } from './hud';
-import { buildJars, cancelFlips, clamOpenFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
+import { buildJars, cancelFlips, clamOpenFx, dryFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, updateJar } from './jars';
 import { flipDelay, grownFrom } from '../logic/flip';
 import { clamOpenDelay } from '../logic/clam';
+import { driedUnits, dryDelay } from '../logic/wet';
 import { refusalNote, tapMechanic } from '../logic/refusal';
 import { animatePour, recoverPour } from './pour';
 import { gpuInvalidate } from '../board-gpu/hooks';
@@ -216,11 +217,18 @@ function workerChannel<Req, Res>(): { post(req: Req): void; onMessage: ((res: Re
   return port;
 }
 
+/**
+ * The board as the jars last showed it, before the session's latest change: a pour event comes
+ * after the board moved on, and the drying shimmer needs to know which units were wet (§2.7).
+ */
+let shownBoard: Board | null = null;
+
 export function beginSession(board: Board, isChallenge: boolean): void {
   cancelAssists(); // a reply for the old level must not land on the new one (TD-13)
   // One place builds the options, so the shuffle's total budget (F7, GA-SB-4) is always passed.
   state.session = new GameSession(board, sessionOptions(config));
   state.session.onChange(onSessionEvent);
+  shownBoard = board;
   state.challenge = isChallenge;
   state.selected = null;
   state.busy = false;
@@ -252,7 +260,15 @@ export function onSessionEvent(e: SessionEvent): void {
       // A seal can thaw or unlock jars anywhere on the board and an hourglass anywhere counts down, so the
       // rest are checked too; `updateJar` touches only those that changed (strata-8j3).
       state.session.board.jars.forEach((_, i) => i !== e.move.from && i !== e.move.to && updateJar(i));
-      if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex, sealedOnBoard() - 1); // F2: the chime climbs per seal
+      // Jars sealed by their last wet sand drying (§2.7) seal too, each a chime step higher.
+      const sealedDry = e.sealedDry ?? [];
+      const firstStep = sealedOnBoard() - (e.sealed ? 1 : 0) - sealedDry.length;
+      if (e.sealed) sealFx(e.move.to, config.palette[e.color].hex, firstStep); // F2: the chime climbs per seal
+      sealedDry.forEach((i, n) => sealFx(i, config.palette[state.session.board.jars[i].units[0]].hex, firstStep + (e.sealed ? 1 : 0) + n));
+      // Wet sand that just dried shimmers once the pour's sand has landed (none under reduced motion).
+      const dryAt = dryDelay(reducedMotion(), ANIM);
+      const dried = shownBoard ? driedUnits(shownBoard, state.session.board, e) : [];
+      if (dryAt !== null) for (const d of dried) dryFx(d.jar, d.units, dryAt);
       // The hourglass turns over once the pour around it is done (D96).
       for (const i of flipped) flipFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
       // A clam that just opened swings its shell open once the sand has landed (D96, §2.6).
@@ -262,7 +278,9 @@ export function onSessionEvent(e: SessionEvent): void {
         t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
           (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
           flipped.map((i) => ` ${t.flipAnnounce(i + 1)}`).join('') +
-          opened.map((i) => ` ${t.clamAnnounce(i + 1)}`).join(''),
+          opened.map((i) => ` ${t.clamAnnounce(i + 1)}`).join('') +
+          dried.map((d) => ` ${t.dryAnnounce(d.jar + 1)}`).join('') +
+          sealedDry.map((i) => ` ${t.sealAnnounce(i + 1)}`).join(''),
       );
       break;
     }
@@ -292,6 +310,7 @@ export function onSessionEvent(e: SessionEvent): void {
     // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
     if (state.session.status !== 'won' && state.session.lostReason) showStuckBanner(t.cantWin);
   }
+  shownBoard = state.session.board;
   scheduleHud(); // with the live region, one batch of text writes in the next frame (sprint 22 L1)
 }
 
@@ -417,6 +436,7 @@ export function explainRefusal(from: number, i: number): void {
   if (!jar) return;
   const note = refusalNote(pourRefusal(board, from, i), isSealed(jar, board.capacity));
   if (note === 'mechanic' || note === 'clam') explain(i);
+  else if (note === 'wet') showToast(t.wetRefused);
   else if (note === 'sieve') showToast(t.sieveRefused(config.palette[jar.sieve!].id));
   else if (note === 'sealed') showToast(t.jarSealedFull);
   else if (note === 'full') showToast(t.jarFull);

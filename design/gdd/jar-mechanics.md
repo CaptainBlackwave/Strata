@@ -160,6 +160,36 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 
 **Player-facing**: not built in the core task. Until the clam's UI task, `'clam'` is a `BoardMechanicId` but not a `MechanicId`: `hasMechanicCard('clam')` is false, `specMechanics` leaves it out, the Jar guide skips it (a one-line, compiler-forced filter in `src/ui/screens/sheets/guide.ts`, as for the sieve core), and the map shows no "new jar" badge at 181. The UI task adds its card, strings, the shell art with its count, hiding the sand while closed, the opening animation (`opened`), the `'clam'` refusal explanation and making a closed clam unselectable (the board's tap check uses `isClosed`, which is frozen and locked only), then folds it into `MechanicId`. **The core must not ship to players without that UI**: a clam drawn as a plain jar would refuse pours with no visible reason and show its sand.
 
+### 2.7 Wet sand (sprint 23 W1–W3, D189, D190)
+
+*Designed for Strata; no rule, name or art is taken from another game.*
+
+Wet sand is the first mechanic of the 40-level pace (D190): it debuts on level 201, the next one is chosen for 241 (D191). Unlike the jar mechanics above it belongs to **sand units**, not to a jar, so it travels with the sand.
+
+**Rules**
+1. **Wet units.** Some units are dealt wet. `Jar.wet` is a list parallel to `Jar.units` (bottom first): each entry is the successful pours left until that unit is dry (1 to `dryAfter`); 0 is dry. A jar with no wet unit has no `wet` field at all, so every board without wet sand is exactly as before.
+2. **Only onto its colour.** A pour moves the source's top run (one colour, `topRun`). If **any unit of that run** is wet, the whole run follows the wet rule: it may only go onto a jar whose top is the same colour. It may never go into an empty jar, whatever its kind (ordinary, narrow, funnel, or a sieve of that band). Dry units over a wet one, or a wet one under a run of another colour, do not make the run wet: they pour as usual. (Decided here: the rule looks at the whole top run, not only at the units the pour would move. A partial pour therefore never escapes the rule because the wet unit would stay behind; one rule covers every pour, and the UI can mark the run.)
+3. **The refusal is named.** `pourRefusal` returns `'wet'` when the target is empty and the moving run is wet. It is checked last but one, after `'full'` and in place of "an empty target is fine"; onto another colour the reason stays `'colour'`. Every answer for a board without wet sand is unchanged.
+4. **Units carry their counts.** The units a pour moves take their own counts along; a partial pour leaves the rest of the run (with its counts) behind. An hourglass flip turns the counts over with their units.
+5. **Drying.** Every successful pour anywhere on the board counts **every** wet unit down by one, the units just poured included, after the pour, the hourglasses and the clams (the same path in `pour()`). A refused pour changes nothing. At 0 a unit is dry and is ordinary sand; a jar whose last wet unit dries drops its `wet` field. `pour()` reports the jars where any unit dried in `dried`; the session's pour event carries `dried` when non-empty.
+6. **Sealing waits for dry sand.** A full jar of one colour at the normal capacity (`isComplete`) is **sealed** (`isSealed`) only once none of its units is wet. Until then it seals nothing: frozen jars do not thaw and its colour's locks do not open. The pour that dries its last wet unit seals it; the session's pour event lists such jars (other than the target) in `sealedDry`, so the seal effect can play on the jar that dried. Its buried units are revealed as soon as it is complete (it is one colour either way).
+7. **Winning (decided here).** A board is won when every jar is empty or complete, wet or dry (`isWon`). A complete jar holds every unit of its colour, so it can never move again; requiring it to dry first would leave the last pour able to end on a board that is fully sorted but stuck (no pour left to dry it). The winning pour then dries the board: every remaining wet unit dries, every complete jar seals and their indices are added to `dried`, so a won board is always all sealed.
+8. **Board state.** The counts live on the board, so Undo, Restart, the solver, hint plans and saved boards keep them. They are part of the jar's solver key (`W{counts}`), so the same sand with other counts, or dry, is another state.
+9. **Waiting is useful.** While any unit is wet every legal pour dries it, so `usefulMoves` keeps every legal pour, swaps included (as for the hourglass and the clam). The stuck banner then appears only when **no legal pour at all** is left; the board is then truly stuck (nothing can dry the sand). No dead-end reason is added (D21): wet sand never removes sand from reach.
+10. **Shuffle.** Each re-dealt unit keeps its count: the shuffle pool is units with their counts, so a wet unit lands somewhere new still wet with the same number. A shuffle is not a pour and dries nothing. Sealed, frozen, locked, closed-clam and funnel jars keep their sand (and counts) as before. A complete but wet jar is not sealed, so it is a free jar. Each re-deal is solver-proven with the counts.
+11. **Hint**: the hint follows the solver, which never pours wet sand into an empty jar and may spend pours waiting for sand to dry.
+
+**Placement** (`applyMechanics`): last of all mechanics (after the clam), from the same seeded placement stream. Candidates are the **visible** units (index ≥ `hidden`) of filled jars that are not frozen, locked, a closed clam, sealed or a funnel; the hourglass, the sieve and narrow jars may hold wet sand. `units` distinct candidates are drawn (one draw each; `debutUnits` on the unlock level), each wet for `dryAfter` pours. Buried units are never wet, so a droplet is never hidden under burial. A deal with no candidate is re-dealt. Levels that do not roll wet sand draw nothing extra and keep exactly their boards. Every board is then solver-proven with the counts.
+
+**Schedule**: `{ "id": "wet", "unlockAt": 201, "units": 3, "debutUnits": 2, "dryAfter": 5, "ownChance": 0.065, "ownSalt": 4421 }` in `mechanics.list`. Level 201 is its debut: wet sand alone, two spares, no spare swap (D28), two wet units. From 202 it is one of eight unlocked mechanics in `pickMechanics` (uniform, like the others), can combine with a second rolled mechanic and the spare swap (still at most 3, D22), and tall-jar levels can roll it.
+- **Levels that changed.** Adding an eighth mechanic changes the draw for levels 201 and up. Levels 1–200 are byte-identical: fixture `tests/fixtures/boards-1-200.json` hashes every level 1–200 at commit `58efb98`, before wet sand. Of levels 201–300, 11 boards changed: 201, 222, 240, 245, 255, 259, 262, 270, 277, 278, 282; the other 89 are byte-identical.
+- **Share (D192).** The owner asked for about 1 level in 8. The shared draw alone gave about 1 in 20 (9 of levels 201–400), so wet sand also has its own seeded roll, `ownChance` per level from `unlockAt` (`withOwnRolls` in `levels.ts`, added after the shared pick so a breather's `maxMechanics` cut keeps the shared pick). Measured: 99 of levels 201–1000 (12.4%), 18 of 201–400; every one built with it and solver-proven.
+- **Fallback.** Wet sand with a classic mechanic falls back first to the classic one alone (two spares), then to none; alone it falls back straight to none.
+
+**Daily, weekly, events**: not in their rotation (sprint 23, out of scope). `isClassicMechanic('wet')` is false, so the Saturday rotation never picks it; no weekly theme names it; event boards have no special jars (D144).
+
+**Player-facing**: not built in the core tasks. Until W4/W5, `'wet'` is a `BoardMechanicId` but not a `MechanicId`: `hasMechanicCard('wet')` is false, `specMechanics` leaves it out, the Jar guide skips it (a one-line filter in `src/ui/screens/sheets/guide.ts`) and the map shows no "new jar" badge at 201. W4 draws wet units darker with a droplet and the count, and a drying shimmer (`dried`); W5 adds the intro card, the help entry and the `'wet'` refusal explanation, then folds it into `MechanicId`. **The core must not ship to players without that UI**: wet sand drawn as dry sand would refuse pours into empty jars with no visible reason.
+
 ### 2.2 State and Data
 
 - `Jar.cap?: number`, `Jar.frozen?: boolean`, `Jar.lock?: Color`, `Jar.funnel?: boolean`. A thawed or unlocked jar has the field removed, not set to false.
@@ -169,7 +199,9 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - `LevelSpec.sieve?: boolean`: the level rolled the sieve (kept apart from `mechanics`, like the hourglass, so placement stays byte-identical).
 - `Jar.clam?: number` (§2.6): a closed clam's pours left until it opens (1 to `opensAfter`); removed when it opens. Part of the jar's solver key (`C{left}`) and of the solver's empty-jar kind. `pour()` returns `opened` (indices of clams that opened); the session's pour event carries it when non-empty.
 - `LevelSpec.clam?: boolean`: the level rolled the clam (kept apart from `mechanics`, like the hourglass and the sieve, so placement stays byte-identical).
-- `BoardMechanicId` = `MechanicId | 'clam'` (every id in `mechanics.list`; the sieve was folded into `MechanicId` with its UI); `hasMechanicCard(id)` is false for the clam until its UI lands; `isClassicMechanic` is false for the hourglass, the sieve and the clam.
+- `Jar.wet?: number[]` (§2.7): per-unit pours left until dry, parallel to `units` (0 dry); absent when every unit is dry. Part of the jar's solver key (`W{counts}`). `pour()` returns `dried` (jars where a unit dried, including every jar the winning pour dried); the session's pour event carries `dried` and `sealedDry` when non-empty. `isComplete(jar, capacity)` is full of one colour; `isSealed` is complete and dry; `isRunWet(jar)`, `isJarWet(jar)` and `hasWet(board)` answer the wet questions.
+- `LevelSpec.wet?: boolean`: the level rolled wet sand (kept apart from `mechanics`, like the hourglass, the sieve and the clam).
+- `BoardMechanicId` = `MechanicId | 'wet'` since sprint 23 (before that `MechanicId | 'clam'` (every id in `mechanics.list`; the sieve was folded into `MechanicId` with its UI); `hasMechanicCard(id)` is false for the clam until its UI lands; `isClassicMechanic` is false for the hourglass, the sieve and the clam.
 - `pourRefusal(board, from, to)`: why a pour is refused (`PourRefusal`), or `null`; `canPour` is `pourRefusal(...) === null`.
 - `settle(board)`: collects the colours of all sealed jars; if any jar is sealed, drops `frozen` from all jars; drops `lock` from any jar whose lock colour is in that set. Returns the same object when nothing changes.
 - `seenMechanics` (save data) remembers which intro cards were shown.
@@ -201,6 +233,11 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 | Hourglass share | not a separate draw: one of the unlocked mechanics, uniform, like the others | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 16 of levels 101–300 roll it, 15 are built with it (14 of 14 since the clam, sprint 13 M3) |
 | Clam count | after `n` successful pours from the deal, a clam dealt with `opensAfter` is closed with `left = opensAfter − n` while `n < opensAfter`, and open for good from `n = opensAfter` | `opensAfter` (default 6), `n` ≥ 0 | Pours 1–5: `left` 5 … 1; pour 6 opens it |
 | Clam share | not a separate draw: one of the unlocked mechanics, uniform | `chance`, `ramp.mechanicChance`, `comboChance` | Measured: 5 of levels 181–300 roll it, all 5 are built with it |
+| Wet count | a unit dealt wet is wet with `left = dryAfter − n` after `n` successful pours while `n < dryAfter`, and dry from `n = dryAfter`; a moved unit keeps its count | `dryAfter` (default 5), `n` ≥ 0 | Pours 1–4: `left` 4 … 1; pour 5 dries it |
+| Wet units | `units` per level that rolls it, `debutUnits` on `unlockAt`; at most the number of candidate units | `units` (3), `debutUnits` (2) | Level 201: 2 wet units; level 259: 3 |
+| Wet rule window | every wet unit is dry by pour `dryAfter`, so the rule bites only in the first `dryAfter` pours | `dryAfter` | With 5, from pour 6 on the level is ordinary sand |
+| Pace (D190) | from 201 one new mechanic every 40 levels: `unlockAt = 201 + 40·k` | | Wet sand 201; the next (D191) 241 |
+| Wet share | the shared draw (one of the unlocked mechanics) or its own roll: `rng(mixSeed(ownSalt, level)) < ownChance` from `unlockAt` | `ownChance` 0.065, plus `chance`, `ramp.mechanicChance` | Measured 12.4% of levels 201–1000 (about 1 in 8, D192) |
 
 **Tuning knobs (hourglass)**
 
@@ -222,6 +259,16 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 |---|---|---|---|
 | `mechanics.list[clam].unlockAt` | 181 | ≥ 181 (lower would change levels ≤ 180) | Debut level |
 | `mechanics.list[clam].opensAfter` | 6 | 2–10 (at least 1 is enforced) | Pours the clam stays closed. Low barely matters (it opens before the player needs it); high forces long waits (swaps) and lengthens solver plans toward the pour cap. Changing it changes clam boards from 181 |
+
+**Tuning knobs (wet sand)**
+
+| Knob | Default | Safe range | Effect |
+|---|---|---|---|
+| `mechanics.list[wet].unlockAt` | 201 | ≥ 201 (lower would change levels ≤ 200) | Debut level (D190) |
+| `mechanics.list[wet].units` | 3 | 1–5 (at least 1 is enforced) | Wet units per level. More blocks more empty-jar pours early; with burial most candidates are jar tops, so above about half the jar count nearly every opening pour is blocked |
+| `mechanics.list[wet].debutUnits` | 2 | 1–`units` | Wet units on the debut level only; absent: `units` |
+| `mechanics.list[wet].ownChance` | 0.065 | 0–0.2 | Its own per-level roll on top of the shared draw; 0.065 gives about 1 level in 8 from 201 (D192). Changing it changes which levels 201+ have wet sand; levels below 201 never change. `ownSalt` must never change once released |
+| `mechanics.list[wet].dryAfter` | 5 | 2–8 (at least 1 is enforced) | Pours a wet unit stays wet. 1 barely matters (any first pour dries it); high keeps the solver's wait branching (every legal pour is useful while wet) for longer and pushes plans toward the pour cap. Changing it changes wet boards from 201 |
 
 ---
 
@@ -271,6 +318,19 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - ✅ The clam, the sieve and the hourglass on one level: they are always different jars.
 - ✅ No jar qualifies for placement: the deal is re-dealt; a level that never gets one falls back (§2.6).
 
+**Wet sand (sprint 23 W2/W3)**:
+- ✅ A wet run into any empty jar (ordinary, narrow, funnel, a sieve of its band) is refused with `'wet'`; onto another colour it is `'colour'`; onto its own colour it is legal.
+- ✅ A wet unit anywhere in the top run makes the whole run wet, even under dry units of its colour; a wet unit under a run of another colour does not.
+- ✅ A partial pour moves the top units with their own counts; the rest of the run stays with its counts.
+- ✅ Every pour dries every wet unit by one, moved ones included; a refused pour dries nothing.
+- ✅ A complete jar that is still wet is not sealed: no thaw, no unlock, not a seal for the pour event. The pour that dries it seals it (`sealedDry` when it was not the target).
+- ✅ The last pour of a level leaves a complete jar wet: the board is won anyway and the winning pour dries and seals it.
+- ✅ An hourglass flip turns the counts with the units; a closed clam's sand is never wet (placement skips it), but sand poured into an opened clam may be.
+- ✅ Undo and Restart restore every count; Shuffle keeps each unit's count with it and dries nothing.
+- ✅ With wet sand every legal pour is useful (a wait), so the board is stuck only when no pour at all is left; such a board is truly stuck and the solver proves it unwinnable.
+- ✅ A deal with no visible candidate unit is re-dealt; fewer candidates than `units` places as many as there are (at least one).
+- ✅ Buried units are never dealt wet, so a droplet is never under burial; a unit that becomes wet-and-buried cannot happen (pours only add on top).
+
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
 - ⚠️ A debut level from 60 up can also get the spare-swap narrow jar, so its new mechanic is not always alone (GA-LG-7; no rule yet).
@@ -286,9 +346,11 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 
 **Technical Dependencies**: `rng.ts` (seeded streams); `game-config.json` (`mechanics`).
 
+**Wet sand (§2.7)** also depends on `session-boosters.md` (Undo, Shuffle carry the counts; hint waits) and on the sprint 23 UI tasks W4 (look) and W5 (intro card, help), without which it must not ship.
+
 **Design Dependencies**: `pour-rules.md`, `level-generation.md`, `daily-puzzle.md`, `session-boosters.md`, `feel-audio-ui.md`, `save-data.md` (remembers which intro cards were shown).
 
-**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`, `every`, `colorTries`, `opensAfter`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
+**Content Dependencies**: `mechanics.list` (ids, `unlockAt`, `cap`, `count`, `every`, `colorTries`, `opensAfter`, `units`, `debutUnits`, `dryAfter`), `mechanics.chance`, `mechanics.comboFrom`, `mechanics.comboChance`, `mechanics.salt`, `ramp.mechanicChance`, `ramp.spareOne` (the swap), `challenge.mechanicsFrom`.
 
 ---
 
@@ -345,6 +407,22 @@ The stuck banner then says "This board can't be won now: Undo or Restart" (`feel
 - ✅ Levels 141–180 byte-identical (`boards-141-180.json`); the Saturday dailies never pick the clam over 520 weeks; no weekly theme has it.
 - [ ] Intro card, Jar guide entry, shell art with the count, hidden sand while closed, opening animation, the `'clam'` refusal explanation, a closed clam not selectable, screen-reader state and map badge, with screenshots and owner art approval (the M3 UI task).
 
+**Wet sand (sprint 23 W2/W3, core)**, covered in `tests/unit/core/wet.test.ts`:
+- ✅ Config lists wet sand at 201 with `units: 3`, `debutUnits: 2`, `dryAfter: 5`.
+- ✅ The `'wet'` refusal into every kind of empty jar; own colour legal; other colour `'colour'`; whole-run rule; dry sand over or under wet pours as usual.
+- ✅ Drying: every pour counts every wet unit down, moved ones included; partial pours carry counts; a board without wet sand pours exactly as before (no field, nothing dried).
+- ✅ A complete wet jar seals (and thaws a frozen jar) only once dry; the session reports `dried` and `sealedDry`; the winning pour dries the board.
+- ✅ Undo and Restart restore counts; an hourglass flip turns them; board keys differ by counts; with wet sand every legal pour is useful; a board with only wet-into-empty pours is stuck and proven unwinnable.
+- ✅ Shuffle keeps each unit's count with it; the re-deal is solver-proven.
+- ✅ The solver never pours wet sand into an empty jar and its path replays to a win; following hints on level 201 wins.
+- ✅ Level 201 debuts it alone with two spares, `debutUnits` visible units at `dryAfter`, proven on the first attempt and no longer than its pour band's median (gentle). No level ≤ 200 rolls it.
+- ✅ Placement: distinct visible units of filled, unsealed jars that are not frozen, locked, a closed clam or a funnel; drawn after every other mechanic (the rest of the board is unchanged); `units`, `debutUnits`, `dryAfter` tunable.
+- ✅ Fallback: wet + classic keeps the classic one alone first; wet alone falls back to none.
+- ✅ Levels 201–260 all generate solver-proven within their pour cap; every level that rolls wet sand is built with it and its proof replays to a win.
+- ✅ Levels 1–200 byte-identical (`boards-1-200.json`, hashed at `58efb98`); two years of dailies and a year of weekly boards have no wet sand; no weekly theme names it.
+- [ ] W4: darker damp sand with a droplet and the count on Classic and Realistic boards, colour-blind patterns readable, reduced motion respected, a drying shimmer (`dried`), screenshots of every state at 320 px / 150%.
+- [ ] W5: intro card on level 201, Jar guide entry, map "new jar" badge, the `'wet'` refusal explanation; then `'wet'` joins `MechanicId`.
+
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.
 - [x] Open questions answered (2026-11-08).
@@ -375,3 +453,4 @@ None open: Saturday stays as built (D2), narrow jars never seal (D4), dead ends 
 | 2026-11-09 | Claude (sprint 13 M1) | Hourglass jar (D96, D97), §2.4: rules, placement (sand shown, since every dealt jar is buried from 75), schedule, the levels 101+ that changed, daily and weekly held back until W1, no new dead end (D21), formulas, tuning knobs, edge cases, acceptance criteria |
 | 2026-11-09 | Claude (sprint 13 M2) | Sieve jar (D96, D97), §2.5: rules (band in, anything out, seals), the `'sieve'` refusal reason (`pourRefusal`), Shuffle re-deals a free sieve and keeps its band, placement after every other mechanic, band colour chosen by solver proof (prefers a sieve that ends sealed, `colorTries`), the levels 141+ that changed, daily and weekly held back until W1, no new dead end (D21), formulas, tuning knobs, edge cases, acceptance criteria; §2.4 hourglass counts updated |
 | 2026-11-10 | Claude (sprint 13 M3) | Clam jar (D96, D97), §2.6: rules (closed: nothing in or out, sand hidden; every pour counts down; opens for good at zero), the `'clam'` refusal reason, `opened` on the pour result and event, the stuck decision (with a closed clam every legal pour is useful, so stuck only when no pour is left; no new dead end), Shuffle keeps a closed clam, placement after every other mechanic, `opensAfter` knob, the levels 181+ that changed (fixture `boards-141-180.json`), daily and weekly held back until W1, formulas, tuning knobs, edge cases, acceptance criteria; hourglass and sieve shares updated |
+| 2026-11-12 | Claude (sprint 23 W1–W3) | Wet sand (D189, D190), §2.7: per-unit counts (`Jar.wet`), the whole-top-run rule and the `'wet'` refusal (never into an empty jar), drying on every pour (`dried`), sealing only when dry (`isComplete` vs `isSealed`, `sealedDry`), the won-when-complete decision (the winning pour dries the board), waits are useful, Shuffle keeps counts, placement on visible units after every other mechanic, `units`/`debutUnits`/`dryAfter` knobs, the 40-level pace, levels 201+ that changed (fixture `boards-1-200.json`), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |

@@ -6,7 +6,7 @@ import config from '../../../src/config/game-config.json';
 // @ts-expect-error node:fs types are not installed (as in style-art.test.ts)
 import { readFileSync as readFs } from 'node:fs';
 import { type CollectionConfig } from '../../../src/core/collection';
-import { type GameConfig, type MechanicId, hasMechanicCard, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
+import { type GameConfig, type MechanicId, isClassicMechanic, levelSpec, specMechanics } from '../../../src/core/levels';
 import { specialsOf } from '../../../src/core/map';
 import { t } from '../../../src/ui/strings';
 
@@ -14,7 +14,7 @@ import { t } from '../../../src/ui/strings';
 const css = (readFs as (path: URL, enc: string) => string)(new URL('../../../src/ui/style.css', import.meta.url), 'utf8');
 const cfg = config as unknown as GameConfig & CollectionConfig;
 // Every mechanic has a card again since sprint 13 M3 (the clam's UI).
-const ids: MechanicId[] = cfg.mechanics.list.map((m) => m.id).filter(hasMechanicCard);
+const ids: MechanicId[] = cfg.mechanics.list.map((m) => m.id);
 
 describe('the sieve is a card mechanic (D96)', () => {
   it('every configured mechanic, the sieve included, has a card, a map name and a jar state', () => {
@@ -40,7 +40,7 @@ describe('the sieve is a card mechanic (D96)', () => {
     expect(specialsOf(141, cfg).debut).toBe('sieve');
   });
   it('the Jar guide order is the config order, the hourglass and the sieve before the clam', () => {
-    expect(ids.slice(-3, -1)).toEqual(['hourglass', 'sieve']);
+    expect(ids.slice(-4, -2)).toEqual(['hourglass', 'sieve']);
   });
   it('stays out of the daily rotation and the "all four special jars" count until W1', () => {
     expect(ids.filter(isClassicMechanic)).toEqual(['narrow', 'frozen', 'locked', 'funnel']);

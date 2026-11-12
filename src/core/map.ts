@@ -97,7 +97,7 @@ export function specialsOf(level: number, config: GameConfig & CollectionConfig)
   return {
     tall: levelSpec(level, config).challenge,
     shell: milestoneDue(level, config),
-    debut: config.mechanics.list.find((m) => m.unlockAt === level)?.id ?? null,
+    debut: config.mechanics.list.map((m) => (m.unlockAt === level ? m.id : null)).find((id): id is MechanicId => id !== null) ?? null,
   };
 }
 

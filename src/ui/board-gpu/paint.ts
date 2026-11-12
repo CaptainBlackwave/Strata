@@ -74,6 +74,12 @@ export interface PaintLook {
    * absent draws the cells as they are. Only for an upright grid (the target, or the source at rest).
    */
   readonly smooth?: number;
+  /**
+   * Wet sand (D189, §2.7): `rows` marks the grid rows of wet units (1 wet, one entry per row, top
+   * first, `wetRows`) and `palette` is the damp tone of each colour (`wetRgb`). Hidden sand is never
+   * wet. Absent or null: nothing is wet.
+   */
+  readonly wet?: { readonly rows: Uint8Array; readonly palette: readonly Rgb[] } | null;
 }
 
 /**
@@ -149,7 +155,8 @@ export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb,
         for (let sy = 0; sy < sub; sy++) out.fill(0, t0 + sy * w, t0 + sy * w + sub);
         continue;
       }
-      paintCell(grid, i, x, y, cellRgb(cell, palette, neutral), out, w, sub, t0, mask, false, look);
+      const pal = look.wet && look.wet.rows[y] === 1 && cell !== NEUTRAL ? look.wet.palette : palette;
+      paintCell(grid, i, x, y, cellRgb(cell, pal, neutral), out, w, sub, t0, mask, false, look);
     }
   }
   for (let y = 1; y < rows - 1; y++) {

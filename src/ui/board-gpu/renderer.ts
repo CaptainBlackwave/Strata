@@ -16,6 +16,7 @@ import { type PillLook, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawI
 import { corkDrop, glowAt, liftTarget, mustSnapPour, nopeShake, shuffleHop } from './events';
 import { type PaintLook, type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
 import { type Overlay, PATTERNS, patternOverlay, sandOverlay } from './patterns';
+import { wetRgb, wetRows } from '../logic/wet';
 
 /** Texels per sand cell along each axis: each grain gets a little texture of its own. */
 const SUB = 2;
@@ -137,6 +138,8 @@ interface JarView {
   shakeY: number;
   /** The hourglass count travelling with the jar in a pour (strata-5lq). */
   pill: Sprite | null;
+  /** Which grid rows hold wet sand (D189, §2.7), refilled for each paint (`wetRows`), so a pour allocates nothing. */
+  readonly wetRows: Uint8Array;
 }
 
 /** The per-size sand look: the corner mask, the sand texture and the patterns. */
@@ -220,12 +223,15 @@ export class GpuBoard {
   private frames = 0;
   private last = 0;
   private readonly config: SandConfig;
+  /** Each palette colour's damp tone (wet sand, D189 §2.7). */
+  private readonly wetPalette: readonly Rgb[];
 
   private constructor(
     private readonly renderer: WebGLRenderer,
     private readonly opts: GpuBoardOptions,
   ) {
     this.config = opts.config ?? sandConfig;
+    this.wetPalette = opts.palette.map(wetRgb);
     this.stage.addChild(this.shadows, this.jarsLayer, this.fxLayer, this.air);
     this.air.visible = false;
     document.addEventListener('visibilitychange', this.onVisibility);
@@ -695,6 +701,7 @@ export class GpuBoard {
       grid: gridFromJar({ units: [], hidden: 0 }, 1, this.opts.dims),
       geom, jar: null, lift: 0, liftFrom: 0, liftTo: 0, liftStart: 0,
       cork: null, corkRest: null, shakeX: 0, shakeY: 0, pill: null,
+      wetRows: new Uint8Array(rows),
     };
     v.sandLayer.addChild(v.sand, v.marks);
     v.root.addChild(v.back, v.sandLayer, v.front, v.decor);
@@ -749,7 +756,9 @@ export class GpuBoard {
   private paintLook(v: JarView, jar: Jar | null, capacity: number, upright = true): PaintLook {
     const art = this.artFor(v.geom, jar?.funnel === true).art;
     const grain = this.grainFor(v.geom, capacity, art.innerRadius);
-    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1, smooth: upright ? this.config.surfaceSmooth : 0 };
+    // Wet units are painted in their damp tone, band by band as `gridFromJar` lays them (§2.7).
+    const wet = wetRows(jar, bandRows(capacity, this.opts.dims), v.wetRows) ? { rows: v.wetRows, palette: this.wetPalette } : null;
+    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1, smooth: upright ? this.config.surfaceSmooth : 0, wet };
   }
 
   private paintSand(v: JarView, jar: Jar | null, capacity: number, upright = true): void {
