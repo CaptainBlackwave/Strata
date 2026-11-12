@@ -102,6 +102,7 @@ export function selectHomeTab(wanted: HomeTab, focus = false): HomeTab {
   const tab = landingTab(wanted, shownTabs);
   const changed = tab !== current;
   current = tab;
+  homeEl.dataset.tab = tab; // the header band and the sky's sun or moon follow it (style.css, sprint 25 U3)
   for (const x of HOME_TABS) {
     const on = x === tab;
     tabEl(x).setAttribute('aria-selected', String(on));
