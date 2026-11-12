@@ -28,7 +28,7 @@ describe('Sound and music volume settings (D66)', () => {
     expect(s.musicVolume).toBe(DEFAULT_VOLUME);
   });
   it('an older save without the fields gets the defaults and keeps every other setting', () => {
-    expect(loadWith(OLD_SETTINGS)).toEqual({ ...OLD_SETTINGS, soundVolume: DEFAULT_VOLUME, musicVolume: DEFAULT_VOLUME });
+    expect(loadWith(OLD_SETTINGS)).toEqual({ ...OLD_SETTINGS, soundVolume: DEFAULT_VOLUME, musicVolume: DEFAULT_VOLUME, realistic: false }); // and Realistic sand (D164) to Classic
   });
   it('a v1 save (migrated) gets the defaults', () => {
     const save = loadSave(econ, memoryStore({ 'strata.progress.v1': JSON.stringify({ level: 3, best: {} }) }));

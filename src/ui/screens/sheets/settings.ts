@@ -1,4 +1,5 @@
 /** The Settings sheet, its toggles and the "Leave this board?" dialog. */
+import { applyBoardSetting, realisticAvailable } from '../../board-gpu/hooks';
 import { writeSave } from '../../storage';
 import { $, closeLayer, homeEl, layers, openLayer, settingsEl } from '../../dom';
 import { renderAllJars } from '../jars';
@@ -48,8 +49,18 @@ function onSlider(v: Volume, el: HTMLInputElement, commit: boolean): void {
   if (commit) writeSave(state.save);
 }
 
+/** The Realistic sand switch: on when chosen, and disabled with a note where WebGL is missing. */
+function syncRealistic(): void {
+  const input = $<HTMLInputElement>('set-realistic');
+  const ok = realisticAvailable();
+  input.disabled = !ok;
+  input.checked = ok && state.save.settings.realistic;
+  $('realistic-help').textContent = ok ? t.realisticHelp : t.realisticUnavailable;
+}
+
 export function openSettings(): void {
   for (const key of ['sound', 'music', 'haptics', 'patterns', 'southern'] as const) $<HTMLInputElement>(`set-${key}`).checked = state.save.settings[key];
+  syncRealistic();
   for (const v of VOLUMES) syncSlider(v);
   $('btn-home').hidden = layers.has(homeEl); // already Home when opened from Home
   openLayer(settingsEl, $('set-sound'));
@@ -102,6 +113,12 @@ export function wireSettings(go: { home: () => void; tutorial: () => void }): vo
       if (key === 'southern') applyTheme(currentTheme()); // the In season badge and Match my clock follow it (P2)
     });
   }
+  // D164: Classic or Realistic sand, a free switch that redraws the board in play at once.
+  $<HTMLInputElement>('set-realistic').addEventListener('change', (e) => {
+    state.save.settings.realistic = (e.target as HTMLInputElement).checked;
+    writeSave(state.save);
+    applyBoardSetting();
+  });
   for (const v of VOLUMES) {
     const el = sliderOf(v);
     el.addEventListener('input', () => onSlider(v, el, false));

@@ -39,6 +39,8 @@ export interface Settings {
   soundVolume: number;
   /** Music volume, 0..1 (D66, sprint 10 F3). The `music` switch still mutes. */
   musicVolume: number;
+  /** The board look: Realistic sand (true) or Classic (false, the default). A free switch in Settings (D164). */
+  realistic: boolean;
 }
 
 /** Everything we persist. */
@@ -126,7 +128,7 @@ export interface KeyValueStore {
 
 /** The volume a new player, or a save without a valid value, starts with (D66). */
 export const DEFAULT_VOLUME = 0.8;
-const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, patterns: false, southern: false, soundVolume: DEFAULT_VOLUME, musicVolume: DEFAULT_VOLUME };
+const DEFAULT_SETTINGS: Settings = { sound: true, music: true, haptics: true, patterns: false, southern: false, soundVolume: DEFAULT_VOLUME, musicVolume: DEFAULT_VOLUME, realistic: false };
 const BOOSTERS: BoosterId[] = ['undo', 'shuffle', 'extraJar', 'hint'];
 const NO_STREAK: StreakState = { last: null, streak: 0, best: 0, passes: 0 };
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
@@ -289,6 +291,7 @@ export function loadSave(econ: EconomyConfig, store: KeyValueStore | null = defa
       haptics: typeof s.haptics === 'boolean' ? s.haptics : DEFAULT_SETTINGS.haptics,
       patterns: typeof s.patterns === 'boolean' ? s.patterns : DEFAULT_SETTINGS.patterns,
       southern: typeof s.southern === 'boolean' ? s.southern : DEFAULT_SETTINGS.southern,
+      realistic: typeof s.realistic === 'boolean' ? s.realistic : DEFAULT_SETTINGS.realistic,
       soundVolume: volumeOf(s.soundVolume),
       musicVolume: volumeOf(s.musicVolume),
     },

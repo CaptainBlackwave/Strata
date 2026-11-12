@@ -1,0 +1,7 @@
+{
+  "start": "dom",
+  "afterOn": "gpu",
+  "afterReload": "gpu",
+  "saved": true,
+  "afterOff": "dom"
+}

@@ -42,25 +42,58 @@ let loading: Promise<void> | null = null;
 let active = false;
 let resizeTimer = 0;
 
-/** Decides the board once, at boot. `?board=gpu` (or the dev flag) and WebGL give the GPU board. */
-export function initBoardMode(): BoardMode {
-  mode = chooseBoardMode({
-    search: location.search,
-    storedFlag: storedFlag(),
-    dev: import.meta.env.DEV,
-    webgl: detectWebGL(() => document.createElement('canvas')),
+let watching = false;
+/** WebGL works on this device (checked once). */
+let webgl: boolean | null = null;
+
+/** True when this device can draw the Realistic board (WebGL works). Settings disables the switch otherwise. */
+export function realisticAvailable(): boolean {
+  webgl ??= detectWebGL(() => document.createElement('canvas'));
+  return webgl;
+}
+
+/** Listens for resizes and scene or style changes that move or recolour the canvas, once. */
+function watchLayout(): void {
+  if (watching) return;
+  watching = true;
+  window.addEventListener('resize', relayoutSoon);
+  window.addEventListener('orientationchange', relayoutSoon);
+  // A scene change (tokens on <html>, data-theme on <body>) or a worn style (data-* on #board) redraws the glass.
+  const watch = new MutationObserver(() => {
+    tokens = null;
+    relayoutSoon();
   });
+  watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  watch.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+  watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand'] });
+}
+
+/** Picks the board from the address, the dev flag, the Settings choice and WebGL. */
+function decide(): BoardMode {
+  return chooseBoardMode({ search: location.search, storedFlag: storedFlag(), dev: import.meta.env.DEV, webgl: realisticAvailable(), realistic: state.save?.settings.realistic === true });
+}
+
+/** Decides the board at boot: the Settings choice (D164), or `?board=gpu` / the dev flag for testing. */
+export function initBoardMode(): BoardMode {
+  mode = decide();
+  if (mode === 'gpu') watchLayout();
+  return mode;
+}
+
+/**
+ * Switches between Classic and Realistic now (the Settings toggle, D164): the board in play is
+ * redrawn by the chosen renderer, nothing else changes. Returns the board in use.
+ */
+export function applyBoardSetting(): BoardMode {
+  mode = decide();
   if (mode === 'gpu') {
-    window.addEventListener('resize', relayoutSoon);
-    window.addEventListener('orientationchange', relayoutSoon);
-    // A scene change (tokens on <html>, data-theme on <body>) or a worn style (data-* on #board) redraws the glass.
-    const watch = new MutationObserver(() => {
-      tokens = null;
-      relayoutSoon();
-    });
-    watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
-    watch.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
-    watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand'] });
+    watchLayout();
+    gpuLayout();
+  } else {
+    active = false;
+    boardEl.dataset.render = 'dom';
+    gpu?.setVisible(false);
+    state.jarEls.forEach((el) => el.classList.remove('gpu-away'));
   }
   return mode;
 }

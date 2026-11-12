@@ -19,6 +19,14 @@ describe('chooseBoardMode', () => {
     expect(chooseBoardMode({ ...base, storedFlag: 'gpu', dev: false })).toBe('dom');
     expect(chooseBoardMode({ ...base, storedFlag: 'dom', dev: true })).toBe('dom');
   });
+  it('the Settings choice Realistic gives the GPU board (D164); Classic is the default', () => {
+    expect(chooseBoardMode({ ...base, realistic: true })).toBe('gpu');
+    expect(chooseBoardMode({ ...base, realistic: false })).toBe('dom');
+  });
+  it('?board=dom and a missing WebGL beat the Realistic choice', () => {
+    expect(chooseBoardMode({ ...base, realistic: true, search: '?board=dom' })).toBe('dom');
+    expect(chooseBoardMode({ ...base, realistic: true, webgl: false })).toBe('dom');
+  });
   it('falls back to DOM without WebGL', () => {
     expect(chooseBoardMode({ ...base, search: '?board=gpu', webgl: false })).toBe('dom');
     expect(chooseBoardMode({ ...base, storedFlag: 'gpu', dev: true, webgl: false })).toBe('dom');
