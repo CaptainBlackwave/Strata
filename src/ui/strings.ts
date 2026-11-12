@@ -210,6 +210,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.23.0',
+        name: 'A fresh coat of paint',
+        lines: [
+          'Strata has a new look: warm paper cards you can press, bold headings and a colour for each part of Home.',
+          'The jars now stand on wooden shelves, on Home and on every board.',
+          'A tidier board: a two-row top bar, clearer buttons, and messages that no longer cover the jars.',
+          'Sheets open at the top, nothing breaks mid-word with large text, and night scenes look right everywhere.',
+        ],
+      },
+      {
         version: '0.22.0',
         name: 'The tide jar',
         lines: [

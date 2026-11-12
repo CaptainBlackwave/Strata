@@ -1,6 +1,6 @@
 # Sprint 25: Beach-hut refresh (0.23.0)
 
-> **Status: planned (2026-11-12), awaiting the owner's approval.** From the owner interview and the UI audit (`production/qa/evidence/sprint-25/audit/audit.md`), direction **B, Beach-hut tactile**, chosen from the mock-ups (`prototypes/ui-refresh/`, D201). One release, **0.23.0** (D203).
+> **Status: built (2026-11-12), approved by the owner; released as 0.23.0.** Before: `production/qa/evidence/sprint-25/audit/`; after: `production/qa/evidence/sprint-25/after/`. From the owner interview and the UI audit (`production/qa/evidence/sprint-25/audit/audit.md`), direction **B, Beach-hut tactile**, chosen from the mock-ups (`prototypes/ui-refresh/`, D201). One release, **0.23.0** (D203).
 
 ## Goal
 Every screen looks like one finished game: warm paper cards with a pressable lip, bold headings, a tide-colour band per area, duotone icons and wooden shelves under the jars, built on one shared set of tokens. Every audit bug is fixed (D202). Rules and the Realistic sand itself don't change.
