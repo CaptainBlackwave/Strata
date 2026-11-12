@@ -108,7 +108,7 @@ async function playBoard(page, n) {
   await dismiss(page);
   await page.waitForTimeout(500);
   const onBoard = await homeInfo(page);
-  const render = await page.evaluate(() => document.getElementById('board').dataset.render);
+  const render = await page.evaluate(() => document.getElementById('board').dataset.render || 'dom'); // Classic sets no data-render
   let taps = 0;
   let misses = 0;
   const trace = [];

@@ -1,6 +1,6 @@
 # Sprint 21: Feels like an app
 
-> **Status: planned (2026-11-12), awaiting the owner's approval.** From the owner interview after 0.19.1 (D174–D180). Target release: **0.20.0**, one release, live **before 1 December 2026** so it lands before Winter Tide opens.
+> **Status: built (2026-11-12), approved by the owner; releasing as 0.20.0.** Evidence: `production/qa/evidence/sprint-21/`. P2 note: Classic p95 went from 36 to 30 ms on the sprint-18 script (target 25 ms missed); long tasks over 25 ms fell from 10 to 1 (`perf/`). From the owner interview after 0.19.1 (D174–D180). Target release: **0.20.0**, one release, live **before 1 December 2026** so it lands before Winter Tide opens.
 
 ## Why
 Realistic sand and the new Home made the board look like a studio game. The shell around it still feels like a web page: no install moment, a plain icon, no splash, silent updates, and browser habits such as pinch zoom and text selection. The owner chose **install and app polish** next (D179). Two sand-quality items and a Home hero rethink ride along, and Winter Tide gets a dress rehearsal before 1 December.
