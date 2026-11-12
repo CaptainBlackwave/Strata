@@ -31,9 +31,6 @@ describe('switches (strata-gbw.4)', () => {
 });
 
 describe('Jar styles sheet (strata-gbw.5)', () => {
-  it('puts space between the action button and Close', () => {
-    expect(rule('.scene-buy + .secondary')).toMatch(/margin-top:\s*1[0-9]px/);
-  });
   // 0.15.1 strata-r20: no longer faded with opacity (unreadable); a muted surface with full ink, a lock and no shadow.
   it('a disabled buy button reads as locked but stays readable', () => {
     const r = rule('.scene-buy:disabled');
@@ -46,9 +43,11 @@ describe('Jar styles sheet (strata-gbw.5)', () => {
   });
 });
 
-describe('sheet Close (strata-r20)', () => {
-  it('the Scenes and Jar styles Close spans the sheet', () => {
-    expect(rule('.sheet-close')).toMatch(/width:\s*100%/);
-    expect(rule('.sheet-close')).toMatch(/display:\s*block/);
+describe('sheet Close (strata-r20, sprint 25 U2)', () => {
+  // The bottom Close buttons (strata-r20's full-width .sheet-close) became the one header X
+  // (.sheet-head .sheet-x); tests/unit/ui/tokens.test.ts checks every sheet uses it.
+  it('the sheet header stays in view while a long sheet scrolls, so its X is always reachable', () => {
+    expect(rule('.sheet-head')).toMatch(/position:\s*sticky/);
+    expect(rule('.sheet-head')).toMatch(/top:\s*0/);
   });
 });

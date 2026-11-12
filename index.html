@@ -85,7 +85,7 @@
         </button>
       </nav>
       <div id="win" class="win" hidden>
-        <div class="win-card" role="dialog" aria-modal="true" aria-labelledby="win-title" aria-describedby="win-text">
+        <div class="card win-card" role="dialog" aria-modal="true" aria-labelledby="win-title" aria-describedby="win-text">
           <span id="win-avatar" class="portrait portrait-xs win-avatar" aria-hidden="true" hidden></span>
           <div class="win-jars" aria-hidden="true"><i></i><i></i><i></i></div>
           <h2 id="win-title">Level cleared</h2>
@@ -104,8 +104,8 @@
         </div>
       </div>
       <div id="settings" class="sheet" hidden>
-        <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-          <h2 id="settings-title" data-s="settings">Settings</h2>
+        <div class="card sheet-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+          <div class="sheet-head"><h2 id="settings-title" data-s="settings" class="sheet-title">Settings</h2><button id="btn-close-settings" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <label class="toggle"><span data-s="sound">Sound effects</span><input type="checkbox" id="set-sound" /></label>
           <label class="volume"><span class="volume-name" data-s="soundVolume">Sound volume</span><input type="range" id="set-sound-volume" min="0" max="100" step="5" /></label>
           <label class="toggle"><span data-s="music">Music</span><input type="checkbox" id="set-music" /></label>
@@ -126,12 +126,11 @@
             <button id="btn-stats" data-s="stats.button" class="secondary" type="button">Your stats</button>
           </div>
           <p id="offline-status" class="offline-status" hidden><svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span data-s="worksOffline">Works offline</span></p>
-          <button id="btn-close-settings" data-s="close" class="primary" type="button">Close</button>
         </div>
       </div>
       <div id="transfer" class="sheet" hidden>
-        <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
-          <h2 id="transfer-title" data-s="saveCode">Save code</h2>
+        <div class="card sheet-card" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
+          <div class="sheet-head"><h2 id="transfer-title" data-s="saveCode" class="sheet-title">Save code</h2><button id="btn-close-transfer" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <label id="code-mine-label" data-s="yourCode" class="transfer-label" for="transfer-code">Your code</label>
           <textarea id="transfer-code" class="transfer-code" rows="3" readonly spellcheck="false" autocomplete="off" aria-describedby="copy-status"></textarea>
           <p id="copy-status" class="transfer-status" aria-live="polite"></p>
@@ -140,47 +139,44 @@
           <textarea id="transfer-paste" class="transfer-code" rows="3" spellcheck="false" autocomplete="off" aria-describedby="transfer-status"></textarea>
           <p id="transfer-status" class="transfer-status" aria-live="polite"></p>
           <button id="btn-restore-code" class="secondary transfer-btn" type="button">Restore from code</button>
-          <button id="btn-close-transfer" data-s="close" class="primary" type="button">Close</button>
         </div>
       </div>
       <div id="scenes" class="sheet" hidden>
-        <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="scenes-title">
-          <div class="cabinet-head"><h2 id="scenes-title" data-s="scenes">Scenes</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="scenes-coins">0</span><span class="sr-only coins-sr"> coins</span></div></div>
+        <div class="card sheet-card" role="dialog" aria-modal="true" aria-labelledby="scenes-title">
+          <div class="sheet-head"><h2 id="scenes-title" data-s="scenes" class="sheet-title">Scenes</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="scenes-coins">0</span><span class="sr-only coins-sr"> coins</span></div><button id="btn-close-scenes" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div id="scene-grid" class="scene-grid"></div>
           <p id="scene-previewing" class="scene-previewing" aria-live="polite"></p>
           <button id="btn-scene-buy" class="primary scene-buy" type="button" hidden>Buy</button>
           <label class="toggle"><span class="toggle-text"><span id="scenes-auto-label" data-s="matchClock">Match my clock</span><small id="scenes-auto-help" data-s="matchClockOff" class="toggle-help" aria-hidden="true"></small></span><input type="checkbox" id="set-auto" aria-describedby="scenes-auto-help" /></label>
           <p id="scenes-auto-note" class="cabinet-next"></p>
-          <button id="btn-close-scenes" data-s="close" class="secondary sheet-close" type="button">Close</button>
         </div>
       </div>
       <div id="styles" class="sheet" hidden>
-        <div class="sheet-card styles-card" role="dialog" aria-modal="true" aria-labelledby="styles-title" aria-describedby="styles-intro">
-          <div class="cabinet-head"><h2 id="styles-title" data-s="styles.title">Jar styles</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="styles-coins">0</span><span class="sr-only coins-sr"> coins</span></div></div>
+        <div class="card sheet-card styles-card" role="dialog" aria-modal="true" aria-labelledby="styles-title" aria-describedby="styles-intro">
+          <div class="sheet-head"><h2 id="styles-title" data-s="styles.title" class="sheet-title">Jar styles</h2><div class="coins"><i class="coin" aria-hidden="true"></i><span id="styles-coins">0</span><span class="sr-only coins-sr"> coins</span></div><button id="btn-close-styles" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="styles-intro" data-s="styles.intro" class="styles-intro">Change how your jars look.</p>
           <div id="styles-preview" class="style-preview styles-stage" aria-hidden="true"></div>
           <div id="styles-slots" class="styles-slots"></div>
           <p id="styles-previewing" class="scene-previewing" aria-live="polite"></p>
           <button id="btn-style-action" class="primary scene-buy" type="button" hidden>Wear</button>
-          <button id="btn-close-styles" data-s="close" class="secondary sheet-close" type="button">Close</button>
         </div>
       </div>
       <div id="intro" class="cabinet" hidden>
-        <div class="cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+        <div class="card cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
           <p id="intro-title" class="intro-kicker">New jar!</p>
           <div id="intro-list"></div>
           <button id="btn-intro-ok" data-s="gotIt" class="primary" type="button">Got it</button>
         </div>
       </div>
       <div id="whatsnew" class="cabinet" hidden>
-        <div class="cabinet-card intro-card whatsnew-card" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
+        <div class="card cabinet-card intro-card whatsnew-card" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
           <h2 id="whatsnew-title" data-s="whatsNew.title" class="whatsnew-title">What's new</h2>
           <div id="whatsnew-log" class="whatsnew-log" role="region" tabindex="0" aria-labelledby="whatsnew-title"></div>
           <button id="btn-whatsnew-ok" data-s="gotIt" class="primary" type="button">Got it</button>
         </div>
       </div>
       <div id="install" class="cabinet" hidden>
-        <div class="cabinet-card intro-card install-card" role="dialog" aria-modal="true" aria-labelledby="install-title" aria-describedby="install-text install-steps install-note">
+        <div class="card cabinet-card intro-card install-card" role="dialog" aria-modal="true" aria-labelledby="install-title" aria-describedby="install-text install-steps install-note">
           <h2 id="install-title" data-s="onboarding.installTitle" class="whatsnew-title">Add Strata to your home screen</h2>
           <p id="install-text" data-s="onboarding.installText" class="install-text">It opens full screen, like an app, and plays offline.</p>
           <ol id="install-steps" class="install-steps" hidden></ol>
@@ -192,7 +188,7 @@
         </div>
       </div>
       <div id="daily-over" class="cabinet" hidden>
-        <div class="cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="daily-over-title" aria-describedby="daily-over-text">
+        <div class="card cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="daily-over-title" aria-describedby="daily-over-text">
           <h2 id="daily-over-title" data-s="onboarding.dailyOverTitle" class="whatsnew-title">That daily is over</h2>
           <p id="daily-over-text" class="install-text"></p>
           <div class="sheet-row install-actions">
@@ -202,7 +198,7 @@
         </div>
       </div>
       <div id="friend" class="cabinet" hidden>
-        <div class="cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="friend-title" aria-describedby="friend-text">
+        <div class="card cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="friend-title" aria-describedby="friend-text">
           <h2 id="friend-title" data-s="friend.title" class="whatsnew-title">A friend's challenge</h2>
           <p id="friend-text" class="install-text"></p>
           <div class="sheet-row install-actions">
@@ -212,15 +208,15 @@
         </div>
       </div>
       <div id="cabinet" class="cabinet" hidden>
-        <div class="cabinet-card" role="dialog" aria-modal="true" aria-labelledby="cabinet-title">
-          <div class="cabinet-head"><h2 id="cabinet-title">Shell cabinet</h2><button id="btn-close-cabinet" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+        <div class="card cabinet-card" role="dialog" aria-modal="true" aria-labelledby="cabinet-title">
+          <div class="sheet-head"><h2 id="cabinet-title" class="sheet-title">Shell cabinet</h2><button id="btn-close-cabinet" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="cabinet-next" class="cabinet-next"></p>
           <div id="cabinet-sets"></div>
         </div>
       </div>
       <div id="weekly" class="cabinet" hidden>
-        <div class="cabinet-card weekly-sheet" role="dialog" aria-modal="true" aria-labelledby="weekly-sheet-title" aria-describedby="weekly-sheet-sub">
-          <div class="cabinet-head"><h2 id="weekly-sheet-title" data-s="weekly.title">Weekly set</h2><button id="btn-close-weekly" data-s-title="close" data-s-label="close" class="icon-btn" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+        <div class="card cabinet-card weekly-sheet" role="dialog" aria-modal="true" aria-labelledby="weekly-sheet-title" aria-describedby="weekly-sheet-sub">
+          <div class="sheet-head"><h2 id="weekly-sheet-title" data-s="weekly.title" class="sheet-title">Weekly set</h2><button id="btn-close-weekly" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="weekly-sheet-sub" class="cabinet-next"></p>
           <ol id="weekly-boards" class="weekly-boards"></ol>
           <button id="btn-weekly-share" data-s="share" class="secondary share" type="button" hidden>Share</button>
@@ -228,36 +224,33 @@
         </div>
       </div>
       <div id="event" class="cabinet" hidden>
-        <div class="cabinet-card event-sheet" role="dialog" aria-modal="true" aria-labelledby="event-sheet-title" aria-describedby="event-sheet-sub event-prize">
-          <div class="cabinet-head"><h2 id="event-sheet-title"></h2></div>
+        <div class="card cabinet-card event-sheet" role="dialog" aria-modal="true" aria-labelledby="event-sheet-title" aria-describedby="event-sheet-sub event-prize">
+          <div class="sheet-head"><h2 id="event-sheet-title" class="sheet-title"></h2><button id="btn-close-event" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="event-sheet-sub" class="cabinet-next"></p>
           <p id="event-prize" class="event-prize"></p>
           <ol id="event-boards" class="event-boards"></ol>
-          <button id="btn-close-event" data-s="close" class="secondary sheet-close" type="button">Close</button>
         </div>
       </div>
       <div id="stats" class="cabinet" hidden>
-        <div class="cabinet-card stats-sheet" role="dialog" aria-modal="true" aria-labelledby="stats-title" aria-describedby="stats-intro">
-          <div class="cabinet-head"><h2 id="stats-title" data-s="stats.heading">Your stats</h2></div>
+        <div class="card cabinet-card stats-sheet" role="dialog" aria-modal="true" aria-labelledby="stats-title" aria-describedby="stats-intro">
+          <div class="sheet-head"><h2 id="stats-title" data-s="stats.heading" class="sheet-title">Your stats</h2><button id="btn-close-stats" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="stats-intro" data-s="stats.intro" class="cabinet-next">Copy these and send them to us with your feedback. Nothing is sent automatically.</p>
           <div id="stats-list" class="stats-list"></div>
           <p id="stats-status" class="share-status" aria-live="polite"></p>
           <button id="btn-copy-stats" data-s="stats.copy" class="primary" type="button">Copy</button>
-          <button id="btn-close-stats" data-s="close" class="secondary sheet-close" type="button">Close</button>
         </div>
       </div>
       <div id="track" class="cabinet" hidden>
-        <div class="cabinet-card track-sheet" role="dialog" aria-modal="true" aria-labelledby="track-title" aria-describedby="track-streak track-keep">
-          <div class="cabinet-head"><h2 id="track-title" data-s="track.title">Streak rewards</h2></div>
+        <div class="card cabinet-card track-sheet" role="dialog" aria-modal="true" aria-labelledby="track-title" aria-describedby="track-streak track-keep">
+          <div class="sheet-head"><h2 id="track-title" data-s="track.title" class="sheet-title">Streak rewards</h2><button id="btn-close-track" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <p id="track-streak" class="cabinet-next"></p>
           <ol id="track-list" class="track-list"></ol>
           <p id="track-keep" data-s="track.keep" class="track-keep">Rewards are yours to keep, even if a streak ends.</p>
-          <button id="btn-close-track" data-s="close" class="secondary track-close" type="button">Close</button>
         </div>
       </div>
       <div id="share-sheet" class="cabinet" hidden>
-        <div class="cabinet-card share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">
-          <div class="cabinet-head"><h2 id="share-sheet-title" data-s="shareCard.title">Share your result</h2><button id="btn-close-share" data-s-title="close" data-s-label="close" class="icon-btn" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+        <div class="card cabinet-card share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">
+          <div class="sheet-head"><h2 id="share-sheet-title" data-s="shareCard.title" class="sheet-title">Share your result</h2><button id="btn-close-share" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <img id="share-card-img" class="share-card-img" alt="" width="1080" height="1350" />
           <label class="toggle share-name"><span data-s="shareCard.showName">Show my name</span><input type="checkbox" id="share-name" /></label>
           <button id="btn-share-send" data-s="shareCard.share" class="primary share-send" type="button">Share</button>
@@ -265,8 +258,8 @@
         </div>
       </div>
       <div id="profile" class="cabinet" hidden>
-        <div class="cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
-          <div class="cabinet-head"><h2 id="profile-title" data-s="profileTitle">Profile</h2><button id="btn-close-profile" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+        <div class="card cabinet-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+          <div class="sheet-head"><h2 id="profile-title" data-s="profileTitle" class="sheet-title">Profile</h2><button id="btn-close-profile" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div class="profile-head">
             <span id="profile-art" class="portrait portrait-lg" aria-hidden="true"></span>
             <div class="profile-id">
@@ -286,8 +279,8 @@
         </div>
       </div>
       <div id="edit-profile" class="cabinet edit-layer" hidden>
-        <div class="cabinet-card edit-card" role="dialog" aria-modal="true" aria-labelledby="edit-title">
-          <div class="cabinet-head"><h2 id="edit-title" data-s="editProfileTitle">Edit profile</h2><button id="btn-close-edit" data-s-title="close" class="icon-btn" type="button" title="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
+        <div class="card cabinet-card edit-card" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+          <div class="sheet-head"><h2 id="edit-title" data-s="editProfileTitle" class="sheet-title">Edit profile</h2><button id="btn-close-edit" data-s-title="close" data-s-label="close" class="icon-btn sheet-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>
           <div class="edit-preview"><span id="edit-art" class="portrait portrait-md" aria-hidden="true"></span><span id="edit-plate" class="profile-plate"></span></div>
           <div class="tabs" role="tablist" aria-labelledby="edit-title">
             <button id="tab-avatar" data-s="tabs.avatar" class="tab" type="button" role="tab" data-slot="avatar" aria-controls="panel-avatar">Avatar</button>
@@ -312,7 +305,7 @@
         </div>
       </div>
       <div id="discard" class="cabinet discard-layer" hidden>
-        <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="discard-title">
+        <div class="card cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="discard-title">
           <h2 id="discard-title" data-s="discardTitle">Discard changes?</h2>
           <div class="sheet-row">
             <button id="btn-keep-editing" data-s="keepEditing" class="secondary" type="button">Keep editing</button>
@@ -321,7 +314,7 @@
         </div>
       </div>
       <div id="leave" class="cabinet discard-layer" hidden>
-        <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="leave-title" aria-describedby="leave-text">
+        <div class="card cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="leave-title" aria-describedby="leave-text">
           <h2 id="leave-title" data-s="leaveTitle">Leave this board?</h2>
           <p id="leave-text" data-s="leaveText" class="leave-text">Your pours here won't be kept.</p>
           <div class="sheet-row">
@@ -331,7 +324,7 @@
         </div>
       </div>
       <div id="other-tab" class="cabinet other-tab-layer" hidden>
-        <div class="cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="other-tab-title" aria-describedby="other-tab-text">
+        <div class="card cabinet-card discard-card" role="alertdialog" aria-modal="true" aria-labelledby="other-tab-title" aria-describedby="other-tab-text">
           <h2 id="other-tab-title" data-s="otherTabTitle">Strata is open in another tab</h2>
           <p id="other-tab-text" data-s="otherTabText" class="leave-text">Your progress is kept in that tab.</p>
           <button id="btn-play-here" data-s="playHere" class="primary" type="button">Play here</button>
@@ -481,7 +474,7 @@
         <div class="map-foot"><p id="map-hint" data-s="onboarding.mapHint" class="map-hint" hidden>Your path along the beach.</p><button id="btn-map-play" class="primary map-play" type="button">Play</button></div>
       </div>
       <div id="stone-card" class="cabinet" hidden>
-        <div class="cabinet-card stone-card" role="dialog" aria-modal="true" aria-labelledby="stone-title" aria-describedby="stone-text stone-specials">
+        <div class="card cabinet-card stone-card" role="dialog" aria-modal="true" aria-labelledby="stone-title" aria-describedby="stone-text stone-specials">
           <h2 id="stone-title" class="stone-title">Level 1</h2>
           <p id="stone-text" class="stone-text"></p>
           <ul id="stone-specials" class="stone-specials"></ul>
