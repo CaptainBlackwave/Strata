@@ -955,22 +955,13 @@
     "maxSteps": 4000
   },
   "homeHero": {
-    "$comment": "The Home hero (sprint 20, D167, D173; design/ux/home.md): a tiny sorting game playing itself on the board's own renderer. Each loop deals a seeded board of colors colours, capacity units each, into colors full jars plus empty empty ones, keeps it only if no jar starts sealed and the solver (src/core/solver.ts, within solveBudget nodes) solves it in minMoves..maxMoves pours, and plays one pour every paceMs. When solved it rests solvedMs, then fades out and in over fadeMs with the next seed (mixSeed(seed, loop)). stepsPerSecond: the hero's sand simulation rate (the board's is faster), for a calm pour. maxTiltDeg, airRows: a lower tilt and a shorter drop than the board's, so the tipped jar stays inside the hero. glassShare: the jars' glass height as a share of the hero's drawing area at rest; the rest above is room for the lifted, tipped jar. palette: the colour ids deals draw from.",
-    "colors": 3,
-    "capacity": 4,
-    "empty": 2,
-    "seed": 20261112,
-    "paceMs": 2400,
-    "solvedMs": 1600,
-    "fadeMs": 600,
-    "minMoves": 6,
-    "maxMoves": 14,
-    "solveBudget": 20000,
-    "stepsPerSecond": 150,
-    "maxTiltDeg": 95,
-    "airRows": 14,
-    "glassShare": 0.65,
-    "palette": [0, 1, 3, 5, 6, 7]
+    "$comment": "The Home hero (sprint 21 H1, D175, D176; design/ux/home.md): the three pre-0.19 logo jars, larger, drawn still with the Realistic renderer (the CSS logo jars on Classic, without WebGL and before the renderer loads). jars: each jar's colour ids, bottom first (terracotta 0, saffron 1, lagoon 3: the logo's red, amber and teal, permuted); the middle jar is the taller one. The only motion is a rare soft sparkle on the sand, never under reduced motion: the first firstSparkleMs after Home shows, then one about every sparkleEveryMs, give or take sparkleJitterMs (seeded by seed); each lasts sparkleMs. Nothing runs between sparkles but one timer.",
+    "jars": [[0, 1, 3], [3, 0, 1], [1, 3, 0]],
+    "firstSparkleMs": 4000,
+    "sparkleEveryMs": 12000,
+    "sparkleJitterMs": 4000,
+    "sparkleMs": 1400,
+    "seed": 20261112
   },
   "onboarding": {
     "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1). installAfterLevels: levels cleared before the one-time Add to Home Screen card may show on Home; it never shows on the first visit. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
