@@ -104,10 +104,6 @@ export function hideToast(): void {
 }
 
 /**
- * Reads `text` out through the polite live region outside the app root, so no layer makes it
- * inert (UX-board-5). Clearing it first lets the same sentence be read twice in a row.
- */
-/**
  * The text writes a board change makes (the HUD, the live region), flushed together once per frame
  * (sprint 22 L1, D181) so a pour costs one style and layout pass for them, not several.
  */
@@ -126,7 +122,8 @@ export function setAttr(el: HTMLElement, name: string, value: string): void {
 let announceTimer = 0;
 
 /**
- * Says `text` through the polite live region, in the next frame's batched writes. New text is one
+ * Says `text` through the polite live region outside the app root, so no layer makes it inert
+ * (UX-board-5), in the next frame's batched writes. New text is one
  * write; the same text again is cleared and written 50 ms later so a screen reader still reads it.
  */
 export function announce(text: string): void {
