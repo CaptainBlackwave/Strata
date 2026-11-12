@@ -10,6 +10,7 @@
 //   SHOTS  'fail' (default) screenshots failing screens, 'all' every screen, '0' none
 //   ONLY   comma-separated screen names to run (e.g. ONLY=tab-today,sheet-weekly)
 //   PORT   port for the built-in dist/ server (default 5187)
+//   DIST   folder to serve instead of dist/ (e.g. a build of an older tree)
 // Exit code: 0 all screens fit, 1 overflow found (listed on stdout), 2 the guard itself broke.
 //
 // What counts: an element with a layout box, visibility not hidden, not inside [aria-hidden="true"],
@@ -23,7 +24,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const DIST = path.join(ROOT, 'dist');
+const DIST = path.resolve(ROOT, process.env.DIST || 'dist');
 const PORT = Number(process.env.PORT || 5187);
 const OUT = path.resolve(ROOT, process.env.OUT || 'production/qa/layout-guard');
 const SHOTS = process.env.SHOTS || 'fail';
@@ -88,7 +89,7 @@ const SCREENS = [
   { name: 'tab-today', open: tab('today') },
   { name: 'tab-collection', open: tab('collection') },
   { name: 'tab-profile', open: tab('profile') },
-  { name: 'sheet-settings', open: sheet('play', '#btn-home-settings', '#settings') },
+  { name: 'sheet-settings', open: sheet('today', '#btn-home-settings', '#settings') }, // the gear shows on Today and Collection
   { name: 'sheet-all-settings', open: sheet('profile', '#btn-me-settings', '#settings') },
   { name: 'sheet-savecode', open: sheet('profile', '#btn-me-savecode', '#transfer') },
   { name: 'sheet-stats', open: sheet('profile', '#btn-me-stats', '#stats') },
@@ -103,7 +104,9 @@ const SCREENS = [
   {
     name: 'map-stone', open: async (page) => {
       await sheet('collection', '#btn-map-tile', '#map')(page);
-      await page.evaluate(() => document.querySelector('#map .stone[data-level="1"]')?.click());
+      // The map draws stones near the player; any cleared one opens its card.
+      const ok = await page.evaluate(() => { const s = document.querySelector('#map .stone.stone-cleared'); s?.click(); return !!s; });
+      if (!ok) throw new Error('map-stone: no cleared stone on the map');
       await page.waitForSelector('#stone-card:not([hidden])', { timeout: 8000 });
       await page.waitForTimeout(500);
     },
@@ -170,24 +173,50 @@ async function tapJar(page, i) {
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6);
 }
 
-/** Wins the open board by taps along a searched path, then waits for the win card. */
+/** Whether the board is still: the same units twice, 200ms apart, and no jar selected. */
+async function settled(page) {
+  const a = await readBoard(page);
+  await page.waitForTimeout(200);
+  const b = await readBoard(page);
+  const sel = await page.evaluate(() => document.querySelectorAll('#board .jar[aria-pressed="true"]').length);
+  return JSON.stringify(a) === JSON.stringify(b) && !sel ? b : null;
+}
+
+/**
+ * Wins the open board by taps along a searched path, then waits for the win card. A tap the board
+ * ignores (it is still pouring) or a pour that lands elsewhere is not an error: the guard waits for the
+ * board to settle and searches again from what it shows.
+ */
 async function winLevel(page) {
   await page.waitForFunction(() => document.querySelectorAll('#board .jar .unit').length > 0, null, { timeout: 15000 });
   await page.waitForTimeout(1200);
-  const start = await readBoard(page);
-  const moves = solveBoard(start);
-  if (!moves) throw new Error(`win-card: no path found for the board ${JSON.stringify(start)}`);
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-  for (const [f, t, after] of moves) {
-    await tapJar(page, f);
-    await page.waitForFunction((f) => document.querySelectorAll('#board .jar')[f]?.getAttribute('aria-pressed') === 'true', f, { timeout: 3000 });
-    await tapJar(page, t);
-    const deadline = Date.now() + 6000;
-    while (!same(await readBoard(page), after)) {
-      if (Date.now() > deadline) throw new Error(`win-card: pour ${f}->${t} did not land`);
-      await page.waitForTimeout(80);
+  for (let round = 0; round < 12; round++) {
+    if (await page.locator('#win:not([hidden])').count()) break;
+    let now = null;
+    for (let i = 0; i < 30 && !(now = await settled(page)); i++) {
+      // A jar left selected by an ignored tap: tap it again to put it down.
+      const sel = await page.evaluate(() => [...document.querySelectorAll('#board .jar')].findIndex((j) => j.getAttribute('aria-pressed') === 'true'));
+      if (sel >= 0) await tapJar(page, sel);
     }
-    await page.waitForTimeout(250);
+    if (!now) throw new Error('win-card: the board never settled');
+    const moves = solveBoard(now);
+    if (!moves) throw new Error(`win-card: no path found for the board ${JSON.stringify(now)}`);
+    let ok = true;
+    for (const [f, t, after] of moves) {
+      await tapJar(page, f);
+      const pressed = await page.waitForFunction((f) => document.querySelectorAll('#board .jar')[f]?.getAttribute('aria-pressed') === 'true', f, { timeout: 1500 }).then(() => true, () => false);
+      if (!pressed) { ok = false; break; }
+      await tapJar(page, t);
+      const deadline = Date.now() + 4000;
+      while (!same(await readBoard(page), after)) {
+        if (Date.now() > deadline) { ok = false; break; }
+        await page.waitForTimeout(80);
+      }
+      if (!ok) break;
+      await page.waitForTimeout(300);
+    }
+    if (ok) break;
   }
   await page.waitForSelector('#win:not([hidden])', { timeout: 15000 });
   await page.waitForTimeout(1500); // the card's entrance and coin count settle
