@@ -1,6 +1,6 @@
 # Sprint 20: A new Home
 
-> **Status: planned (2026-11-12), approved by the owner (D166–D170).** Mock-up first, then the build. Target release: **0.19.0**.
+> **Status: mock-up approved (2026-11-12) with changes D171–D172; building.** Mock-up first, then the build. Target release: **0.19.0**.
 
 ## Why
 Home grew one card at a time: logo jars, Play, daily, streak line, weekly, event, goals, then shells, scenes and styles below. It is busy, it doesn't match the new Realistic sand look, players miss features, and it doesn't sell the game to a newcomer (D166).
@@ -10,7 +10,7 @@ A calm, studio-quality Home where the eye lands on a live sand scene and one big
 
 ## The design
 - **Hero (D167):** a large glass jar (or a small set) of layered Realistic sand that slowly trickles and settles, lit softly; the level number above, one big **Play** button below. On Classic or without WebGL, a matching still image.
-- **Today strip (D168):** under Play, compact cards for the daily (with the streak and next reward), today's goals, and the event when one runs.
+- **Today strip (D168, D171, D172):** under Play, compact cards for the daily and the event when one runs, then a **streak reward card** with the next reward's picture and name, "Day N · … in K days" and a track of the six reward days. **Goals live on the Today tab**, not on Play. Booster rewards are titled "Booster pair" (day 3) and "Booster bundle" (day 7).
 - **Bottom tab bar (D168):** **Play** (Home), **Today** (daily, weekly, goals, event, streak rewards), **Collection** (shells, badges, jar styles, scenes, map), **Profile** (profile, stats, Settings). A tab appears only once it holds something; a dot marks something new.
 - **Header:** the profile chip and coins stay small at the top; Settings moves into Profile (the gear stays reachable).
 - **First visit (D169):** straight into the tutorial, as today.
