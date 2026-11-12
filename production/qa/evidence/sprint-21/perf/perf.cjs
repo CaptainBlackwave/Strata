@@ -58,6 +58,7 @@ async function tapJar(page, i) {
  */
 async function pourBy(page, [from, to], settleMs = 1800) {
   if (!process.env.POLL) {
+    await page.evaluate(() => window.__perf?.marks.push(performance.now())); // the pour window opens
     await tapJar(page, from);
     await page.waitForTimeout(250);
     await tapJar(page, to);
@@ -82,11 +83,12 @@ async function measure(browser, board, reduced) {
   const cdp = await context.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   await page.evaluate(() => {
-    window.__perf = { long: [], frames: [] };
+    window.__perf = { long: [], frames: [], at: [], marks: [] };
     new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__perf.long.push(Math.round(e.duration)))).observe({ type: 'longtask', buffered: false });
     let last = performance.now();
     const loop = (t) => {
       window.__perf.frames.push(t - last);
+      window.__perf.at.push(t);
       last = t;
       if (!window.__perf.stop) requestAnimationFrame(loop);
     };
@@ -95,12 +97,17 @@ async function measure(browser, board, reduced) {
   for (const m of moves) await pourBy(page, m, reduced ? 700 : 1800);
   await page.waitForTimeout(400);
   const poured = await page.evaluate(async () => (await import('/src/ui/state.ts')).state.session.moves);
-  const perf = await page.evaluate(() => {
-    window.__perf.stop = true;
-    const f = window.__perf.frames.slice(2).sort((a, b) => a - b);
+  // Without polling, the stats count only frames inside a pour window: from the first tap to
+  // windowMs later (both taps and the whole pour animation), so idle frames between pours don't dilute them.
+  const windowMs = 250 + (reduced ? 400 : 1100);
+  const perf = await page.evaluate((windowMs) => {
+    const P = window.__perf;
+    P.stop = true;
+    const inWindow = (t) => P.marks.length === 0 || P.marks.some((m) => t > m && t <= m + windowMs);
+    const f = P.frames.map((d, k) => ({ d, t: P.at[k] })).slice(2).filter((x) => inWindow(x.t)).map((x) => x.d).sort((a, b) => a - b);
     const pct = (p) => Math.round(f[Math.min(f.length - 1, Math.floor(f.length * p))] * 10) / 10;
-    return { frames: f.length, median: pct(0.5), p95: pct(0.95), p99: pct(0.99), worst: Math.round(f[f.length - 1]), over20: f.filter((x) => x > 20).length, over34: f.filter((x) => x > 34).length, longTasks: window.__perf.long };
-  });
+    return { frames: f.length, windowMs: P.marks.length ? windowMs : null, median: pct(0.5), p95: pct(0.95), p99: pct(0.99), worst: Math.round(f[f.length - 1]), over20: f.filter((x) => x > 20).length, over34: f.filter((x) => x > 34).length, longTasks: P.long };
+  }, windowMs);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   await context.close();
   return { board, render, reducedMotion: reduced, level: 491, jars, pours: moves.length, poured, polled: !!process.env.POLL, cpuThrottle: 4, ...perf };

@@ -1,0 +1,58 @@
+{
+  "label": "after-dom",
+  "board": "dom",
+  "reducedMotion": true,
+  "level": 491,
+  "pours": 10,
+  "cpuThrottle": 4,
+  "perEvent": {
+    "RunTask": {
+      "count": 5724,
+      "totalMs": 1172,
+      "worstMs": 57.2
+    },
+    "PrePaint": {
+      "count": 272,
+      "totalMs": 36,
+      "worstMs": 1.7
+    },
+    "EventDispatch": {
+      "count": 405,
+      "totalMs": 85,
+      "worstMs": 11.6
+    },
+    "UpdateLayoutTree": {
+      "count": 124,
+      "totalMs": 85,
+      "worstMs": 5.8
+    },
+    "Layout": {
+      "count": 40,
+      "totalMs": 46,
+      "worstMs": 3
+    },
+    "Paint": {
+      "count": 136,
+      "totalMs": 183,
+      "worstMs": 7.5
+    },
+    "Layerize": {
+      "count": 101,
+      "totalMs": 76,
+      "worstMs": 4.4
+    },
+    "Commit": {
+      "count": 101,
+      "totalMs": 66,
+      "worstMs": 3.9
+    }
+  },
+  "tasksOver16ms": [
+    57.2,
+    23.7,
+    20,
+    19,
+    16.7,
+    16.3
+  ]
+}

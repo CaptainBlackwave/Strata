@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DirtyTracker, jarKey } from '../../../../src/ui/board-gpu/dirty';
+import { DirtyTracker, domDrawKeys, domRedraw, jarKey } from '../../../../src/ui/board-gpu/dirty';
 
 describe('jarKey', () => {
   it('changes with the units and the hidden count only', () => {
@@ -43,5 +43,47 @@ describe('DirtyTracker', () => {
     t.diff(['a']);
     t.reset();
     expect(t.diff(['a'])).toEqual([0]);
+  });
+});
+
+describe('the Classic board redraws only the jars that changed (sprint 21 P2, strata-8j3)', () => {
+  const plain = { sealed: false, patterns: false, unitHeight: 30 };
+  const keys = (jar: Parameters<typeof domDrawKeys>[0], d = plain) => domDrawKeys(jar, d);
+  it('an untouched jar needs nothing redrawn', () => {
+    const k = keys({ units: [0, 2], hidden: 0 });
+    expect(domRedraw(k, keys({ units: [0, 2], hidden: 0 }), false, false, false)).toEqual({ sand: false, rest: false, selection: false });
+  });
+  it('a jar never drawn (a new button) is drawn in full', () => {
+    expect(domRedraw(null, keys({ units: [], hidden: 0 }), false, false, false)).toEqual({ sand: true, rest: true, selection: true });
+  });
+  it('a pour changes the sand and the label; growing units always rebuild the sand', () => {
+    const a = keys({ units: [0], hidden: 0 });
+    const b = keys({ units: [0, 0], hidden: 0 });
+    expect(domRedraw(a, b, false, false, false)).toMatchObject({ sand: true, rest: true });
+    expect(domRedraw(a, a, false, false, true).sand).toBe(true);
+  });
+  it('selecting a jar only refreshes its selection', () => {
+    const k = keys({ units: [1], hidden: 0 });
+    expect(domRedraw(k, k, false, true, false)).toEqual({ sand: false, rest: false, selection: true });
+  });
+  it('the counts the DOM draws as text redraw the jar: an hourglass or a clam counting down', () => {
+    const h = (left: number) => keys({ units: [0], hidden: 0, hourglass: { every: 3, left } });
+    expect(domRedraw(h(2), h(1), false, false, false).rest).toBe(true);
+    const c = (n: number) => keys({ units: [0], hidden: 0, clam: n });
+    expect(domRedraw(c(3), c(2), false, false, false).rest).toBe(true);
+  });
+  it('a thaw, an unlock, a seal, the patterns setting or a new unit height redraw it', () => {
+    const base = keys({ units: [0], hidden: 0 });
+    for (const next of [
+      keys({ units: [0], hidden: 0, frozen: true }),
+      keys({ units: [0], hidden: 0, lock: 1 }),
+      keys({ units: [0], hidden: 0 }, { ...plain, sealed: true }),
+      keys({ units: [0], hidden: 0 }, { ...plain, unitHeight: 24 }),
+    ])
+      expect(domRedraw(next, base, false, false, false).rest).toBe(true);
+    expect(domRedraw(base, keys({ units: [0], hidden: 0 }, { ...plain, patterns: true }), false, false, false)).toMatchObject({ sand: true, rest: true });
+  });
+  it('a reveal (hidden count down) rebuilds the sand', () => {
+    expect(domRedraw(keys({ units: [0, 1], hidden: 1 }), keys({ units: [0, 1], hidden: 0 }), false, false, false).sand).toBe(true);
   });
 });
