@@ -227,3 +227,10 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D163 | When to sell it | **Only once it works on every level**: special jars, jar styles, scenes and colour patterns on the canvas first (S3), so buyers never see it switch back | jar-styles | built |
 | D164 | How players get Real sand | **A free toggle in Settings, "Realistic sand"** (default changed to on by D165); switches the board in play at once; disabled with a note where WebGL is missing. Supersedes D160 (2,500 coins) and D161 (Jar styles row) (owner, 2026-11-12) | feel-audio-ui | built |
 | D165 | The default board | **Realistic is the default** for new players and for saves with no choice; Classic is one tap away in Settings; without WebGL it is always Classic (owner, 2026-11-12) | feel-audio-ui | built |
+| D166 | Next focus after 0.18 | **A bold redesign of the Home screen**: too busy, not studio quality, features missed, and it should win new players (owner interview 2026-11-12) | feel-audio-ui | built |
+| D167 | Home hero | **A live Realistic-sand scene** with the level and one big Play button; a matching still on Classic or without WebGL | feel-audio-ui | built |
+| D168 | Home layout | **A Today strip under Play and a 4-tab bottom bar**: Play, Today, Collection, Profile; tabs appear once they hold something | feel-audio-ui | built |
+| D169 | First visit and motion | **Straight into the tutorial as now; Home gently alive** (slow trickle, light sweep, moving sea), still under reduced motion | feel-audio-ui | built |
+| D170 | Process | **A clickable mock-up for the owner's approval before the build**; release as 0.19.0 | release | built |
+| D171 | Next streak reward on Home | **Its own card with a track**: the reward's picture and name, "Day N · … in K days", and a track of the six reward days (collected ticked, the streak marked, the next highlighted); tap opens the full list (owner, mock-up review 2026-11-12) | feel-audio-ui, daily-puzzle | built |
+| D172 | Goals on Home | **Moved to the Today tab**; Play keeps the hero, Play, the daily and event cards and the streak card | feel-audio-ui, daily-goals | built |

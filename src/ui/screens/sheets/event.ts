@@ -8,6 +8,7 @@ import { dailyKey } from '../../clock';
 import { type FocusTarget } from '../../layers';
 import { $, closeLayer, openLayer } from '../../dom';
 import { startEvent } from '../board';
+import { t } from '../../strings';
 import { audio, config, state } from '../../state';
 
 /** The view for today by the app clock (UTC, like the daily), or null when no event runs. */
@@ -22,7 +23,7 @@ export function renderEventCard(today: string): void {
   btn.hidden = !v;
   if (!v) return;
   $('event-title').textContent = v.name;
-  $('event-sub').textContent = v.sub;
+  $('event-sub').textContent = t.homeScreen.eventCleared(v.cleared, v.total); // the Play tab's mini card (sprint 20); the Today tab shows the full line
   $('event-days').textContent = v.days;
   btn.classList.toggle('solved', v.cleared >= v.total);
 }

@@ -602,7 +602,7 @@ export function wireBoard(): void {
     closeLayer(winEl, false);
     if (state.mode === 'daily') showHome();
     else if (state.mode === 'weekly') {
-      showHome();
+      showHome('today'); // the weekly set lives on the Today tab (sprint 20)
       openWeekly($('btn-weekly')); // back to the five boards (weekly-set.md §3.8)
     } else if (state.mode === 'event') {
       showHome();

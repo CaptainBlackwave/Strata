@@ -7,6 +7,7 @@ import { type ShareKey, dailyLaunch } from '../logic/launch';
 import { dailyKey } from '../clock';
 import { saveStored, whatsNewDue, writeSave } from '../storage';
 import { t } from '../strings';
+import { selectHomeTab } from './home-tabs';
 import { $, closeLayer, hideToast, homeEl, layers, openLayer, showToast } from '../dom';
 import { config, state } from '../state';
 import { startDaily } from './board';
@@ -115,7 +116,8 @@ export function openShared(share: ShareKey): void {
       openDailyOver(share.daily);
     } else startDaily();
   } else if ('weekly' in share) {
-    if (!layers.has(homeEl)) showHome();
+    if (!layers.has(homeEl)) showHome('today');
+    else selectHomeTab('today'); // the weekly set lives on the Today tab (sprint 20)
     openWeekly($('btn-weekly'));
   } else {
     if (!layers.has(homeEl)) showHome();

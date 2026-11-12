@@ -1,16 +1,19 @@
-/** The Home screen and the What's new card. */
+/**
+ * The Home screen (sprint 20, D166-D172; design/ux/home.md) and the What's new card. Home is a hero
+ * of live sand with the level and one Play, the Today strip under it, and a bottom tab bar (Play,
+ * Today, Collection, Profile) once the tutorial is done. The tabs are screens/home-tabs.ts and the
+ * hero screens/home-hero.ts.
+ */
 import { applyUpdateIfSafe } from '../update';
-import { allShells } from '../../core/collection';
 import { streakStatus, weekday } from '../../core/daily';
-import { byIdOr, isOwned } from '../../core/themes';
-import { type TrackConfig, trackOf } from '../../core/streak-track';
+import { isOwned } from '../../core/themes';
 import { type GoalsConfig } from '../../core/goals';
 import { goalsCard } from '../logic/goals-card';
-import { type TrackNames, nextRewardLine } from '../logic/streak-track';
+import { type TrackNames } from '../logic/streak-track';
+import { type HomeTab, landingTab } from '../logic/home-tabs';
 import { scenesNewDue } from '../logic/onboarding';
 import { whatsNewReleases } from '../logic/whats-new';
 import { type FocusTarget } from '../layers';
-import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
 import { type WhatsNewRelease, t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, winEl } from '../dom';
@@ -24,13 +27,27 @@ import { activeEvent, type EventsConfig } from '../../core/events';
 import { EVENT_MUSIC } from '../music';
 import { applyStyles, renderStylesButton } from './sheets/styles';
 import { dailyKey } from '../clock';
+import { realisticAvailable } from '../board-gpu/hooks';
 import { audio, config, state } from '../state';
+import { currentHomeTab, renderCollectionPanel, renderStreakCard, renderTabs, selectHomeTab, wireHomeTabs } from './home-tabs';
+import { renderHero } from './home-hero';
 
-export function showHome(): void {
+/**
+ * Shows Home and fills it from the save. Arriving from the board it lands on Play (or `tab`, if it
+ * shows yet); refreshed while open it keeps the tab shown. Focus goes to Play, or to the tab.
+ */
+export function showHome(tab?: HomeTab): void {
   const arriving = !layers.has(homeEl);
   closeLayer(winEl, false);
+  const done = state.save.tutorialDone;
   $('home-coins').textContent = String(state.save.wallet.coins);
-  $('btn-play').textContent = state.save.tutorialDone ? t.play(state.save.level) : t.playTutorial;
+  $('btn-play').textContent = t.playTutorial;
+  $('home-level').textContent = done ? t.level(state.save.level) : t.brand;
+  const eyebrow = $('home-eyebrow');
+  eyebrow.textContent = done ? t.homeScreen.eyebrow : t.tagline;
+  eyebrow.classList.toggle('intro', !done);
+  $('btn-play').setAttribute('aria-describedby', 'home-level');
+  $('today-strip').hidden = !done;
   const today = dailyKey(state.clock); // the daily follows UTC (design/gdd/daily-puzzle.md, M4)
   const day = config.daily.week[weekday(today)];
   const status = streakStatus(state.save.daily, today);
@@ -42,28 +59,24 @@ export function showHome(): void {
   $('daily-sub').textContent = status.solvedToday ? t.dailySolved : t.dailyNew(day.name);
   $('daily-streak').textContent = status.passAtRisk ? t.passAtRisk : status.current > 0 ? `${t.streakDays(status.current)}${state.save.daily.passes ? ` · ${t.passes(state.save.daily.passes)}` : ''}` : t.noStreak;
   $('btn-daily').classList.toggle('solved', status.solvedToday);
-  $('btn-daily').hidden = !state.save.tutorialDone;
-  const next = nextRewardLine(state.save.track, status.current, trackOf(config as unknown as TrackConfig), trackNames()); // sprint 16: the next streak reward
-  const link = next || t.track.allCollected;
-  $('track-link-text').textContent = link;
-  $('btn-track').setAttribute('aria-label', t.track.linkLabel(link));
-  $('btn-track').hidden = !state.save.tutorialDone; // 0.15.1: opens the track sheet, never the daily
-  renderWeeklyCard(); // sprint 11 W2: the weekly set's card, under the daily
+  $('btn-daily').hidden = !done;
+  renderStreakCard(); // D171: the next streak reward and its track (opens the track sheet)
+  renderWeeklyCard(); // sprint 11 W2: on the Today tab
   renderEventCard(today); // sprint 17: a seasonal event's card, while one runs
   const running = activeEvent(today, config as unknown as EventsConfig)?.event.id ?? null;
   audio.setEvent(running && EVENT_MUSIC[running] ? running : null); // sprint 18 W1: Winter Tide's music while it runs
-  renderGoalsCard(today); // sprint 16: today's goals, under the weekly card
-  const total = allShells(config).length;
-  $('shells-label').textContent = t.shellCount(state.save.shells.length, total);
-  const last = byIdOr(allShells(config), state.save.shells.at(-1) ?? '');
-  $('shell-ico').innerHTML = shellSvg(last, state.save.shells.length === 0);
-  $('btn-shells').hidden = !state.save.tutorialDone;
-  $('btn-scenes').hidden = !state.save.tutorialDone;
+  renderGoalsCard(today); // D172: today's goals, on the Today tab
+  $('btn-shells').hidden = !done;
+  $('btn-scenes').hidden = !done;
   renderScenesMark();
   renderStylesButton(); // sprint 12: from level 60 (jar-styles.md §3.2)
+  renderCollectionPanel();
   applyStyles(); // after a save reload or import too
   renderProfileChip();
-  openLayer(homeEl, $('btn-play'), null);
+  renderTabs();
+  const shown = selectHomeTab(landingTab(tab ?? (arriving ? 'play' : currentHomeTab()), renderTabs()));
+  openLayer(homeEl, shown === 'play' ? $('btn-play') : $(`home-tab-${shown}`), null);
+  renderHero(); // sprint 20 H2: the live sand scene, or its still
   winterSnow('home', running); // sprint 18 W1: light snow behind Home while Winter Tide runs
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
   maybeShowInstall(); // once, after a few levels, never on the first visit (O1, D78)
@@ -81,8 +94,8 @@ export function trackNames(): TrackNames {
 }
 
 /**
- * Fills Home's "Today's goals" card (sprint 16, D137): each goal with its progress ("12/25") or a
- * tick, and the bonus line. Hidden until the tutorial is done. A save for another day shows zeros.
+ * Fills the "Today's goals" card on the Today tab (sprint 16, D137; D172): each goal with a bar and
+ * its progress ("12/25") or a tick, and the bonus line. Hidden until the tutorial is done.
  */
 export function renderGoalsCard(today: string): void {
   const el = $('goals-card');
@@ -97,18 +110,24 @@ export function renderGoalsCard(today: string): void {
       const text = document.createElement('span');
       text.className = 'goal-text';
       text.textContent = row.text;
+      const bar = document.createElement('span');
+      bar.className = 'bar';
+      bar.setAttribute('aria-hidden', 'true');
+      const fill = document.createElement('i');
+      fill.style.width = `${Math.min(100, (100 * row.have) / Math.max(1, row.target))}%`;
+      bar.append(fill);
       const prog = document.createElement('span');
       prog.className = 'goal-progress';
       if (row.done) {
         const tick = document.createElement('span');
         tick.setAttribute('aria-hidden', 'true');
-        tick.textContent = '\u2713';
+        tick.textContent = '✓';
         const sr = document.createElement('span');
         sr.className = 'sr-only';
         sr.textContent = t.goals.done;
         prog.append(tick, sr);
       } else prog.textContent = row.progress;
-      li.append(text, prog);
+      li.append(text, bar, prog);
       return li;
     }),
   );
@@ -159,9 +178,9 @@ function releaseEl(release: WhatsNewRelease, latest: boolean): HTMLElement {
 }
 
 /**
- * Shows "What's new" (D46, D52) and records that this version has been seen. With `all` (Settings)
- * it is the whole changelog, newest first; without it (once on Home after an update) it is only the
- * newest posting. Focus goes to its button and returns to `opener` on close.
+ * Shows "What's new" (D46, D52) and records that this version has been seen. With `all` (Settings,
+ * Profile) it is the whole changelog, newest first; without it (once on Home after an update) it is
+ * only the newest posting. Focus goes to its button and returns to `opener` on close.
  */
 export function openWhatsNew(opener: FocusTarget | null = document.activeElement as HTMLElement | null, all = false): void {
   const log = $('whatsnew-log');
@@ -175,8 +194,10 @@ export function openWhatsNew(opener: FocusTarget | null = document.activeElement
   openLayer($('whatsnew'), $('btn-whatsnew-ok'), opener);
 }
 
-/** Wires the What's new card's buttons. */
+/** Wires the What's new card's buttons and Home's tabs. */
 export function wireHome(): void {
   $('btn-whatsnew').addEventListener('click', () => openWhatsNew(undefined, true)); // Settings: the whole changelog
+  $('btn-me-whatsnew').addEventListener('click', () => openWhatsNew($('btn-me-whatsnew'), true)); // the Profile tab
   $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
+  wireHomeTabs(realisticAvailable);
 }

@@ -1,5 +1,6 @@
 /** The global keyboard handler. */
 import { closeShare } from './sheets/share';
+import { currentHomeTab } from './home-tabs';
 import { $, btnNext, closeLayer, homeEl, layers, settingsEl, winEl } from '../dom';
 import { hasCommandModifier, keyToAction } from '../logic/keymap';
 import { onJarTap, play, requestRestart, useBooster } from './board';
@@ -64,6 +65,7 @@ export function wireKeys(): void {
       // Enter/Space plays, unless another home button (profile, daily, shells, scenes) has focus.
       const focused = document.activeElement;
       if (focused instanceof HTMLButtonElement && focused.id !== 'btn-play') return;
+      if (currentHomeTab() !== 'play') return; // sprint 20: only the Play tab plays on Enter
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         play();

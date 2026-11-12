@@ -1,0 +1,16 @@
+{
+  "first": {
+    "whatsNew": 1,
+    "text": "Version 0.19.0 LatestA new HomeHome is calmer: a live sand scene, one big Play button, and today's daily, event and next"
+  },
+  "second": {
+    "whatsNew": 0,
+    "level": 80,
+    "coins": 2400,
+    "streak": 20,
+    "track": [],
+    "events": {},
+    "board": "gpu",
+    "realistic": true
+  }
+}

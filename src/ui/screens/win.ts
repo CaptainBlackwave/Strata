@@ -423,7 +423,7 @@ export function countUp(el: HTMLElement, total: number, delay = 0): void {
 
 /** Wires the win card's Home and Share buttons (Continue is wired by the board, which starts the next level). */
 export function wireWin(): void {
-  $('btn-win-home').addEventListener('click', showHome); // showHome closes the card
+  $('btn-win-home').addEventListener('click', () => showHome()); // showHome closes the card
   $('btn-win-shared').addEventListener('click', () => {
     const share = sharedOffer;
     sharedOffer = null;

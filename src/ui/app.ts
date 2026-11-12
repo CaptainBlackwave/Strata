@@ -107,7 +107,7 @@ function wireAll(): void {
   wireProfile();
   wireEditProfile();
   wireWin();
-  wireSettings({ home: showHome, tutorial: startTutorial });
+  wireSettings({ home: () => showHome(), tutorial: startTutorial });
   wireTransfer();
   wireGuide();
   wireOnboarding();
