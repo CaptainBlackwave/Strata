@@ -5794,6 +5794,9 @@ canvas.gpu-board {
   font-weight: 600;
   text-align: center;
 }
+.update-act {
+  white-space: nowrap;
+}
 .update-dot {
   color: var(--ink-soft);
 }
