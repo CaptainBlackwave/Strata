@@ -120,8 +120,13 @@ export class GameAudio {
     else this.stopMusic();
   }
 
-  /** Creates or resumes the AudioContext. Must be called from a user gesture. */
+  /**
+   * Creates or resumes the AudioContext. Must be called from a user gesture. With sound and music both
+   * off it does nothing (sprint 22 L1, D181: building the context and its noise buffer cost a ~37 ms task
+   * on the first tap at 4x throttle); the first unlock after the player turns either on builds it.
+   */
   unlock(): void {
+    if (!this.ctx && !this.options.sound && !this.options.music) return;
     try {
       if (!this.ctx) {
         const ctx = (this.deps.createContext ?? browserContext)();

@@ -1,4 +1,4 @@
-// Sprint 21 P2 (strata-8j3, D177): the board's frame cost during pours at 4x CPU throttle.
+// Sprint 22 L1 (D181; copied from sprint 21 P2, strata-8j3, D177): the board's frame cost during pours at 4x CPU throttle.
 // Level 491 (16 jars) at 390x844, the first 10 pours of the game's own solver path made with real
 // mouse taps, on the Classic board (?board=dom) and the Realistic board (?board=gpu), with motion on
 // and with reduced motion (every effect off: the board's own redraw cost). Each case runs RUNS times.

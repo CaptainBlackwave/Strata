@@ -1,7 +1,8 @@
-// Sprint 21 P2 (strata-8j3): the main-thread cost of 10 pours on level 491 (16 jars) at 4x CPU throttle,
+// Sprint 22 L1 (D181; copied from sprint 21 P2, strata-8j3): the main-thread cost of 10 pours on level 491 (16 jars) at 4x CPU throttle,
 // from a Chrome trace (CDP Tracing, devtools.timeline), on the Classic board with reduced motion (the
 // board's own redraw cost, no animation). Same pours and taps as perf.cjs (fixed waits, no polling).
 // Usage (dev server running):  PORT=5182 LABEL=before BOARD=dom node production/qa/evidence/sprint-22/perf/trace.cjs
+// FIRSTTAP=1 leaves audio locked, so the trace includes the first tap's own cost (L1: audio start-up).
 // Writes trace-<LABEL>.json: per event type the count, total and worst ms, and the tasks over 16 ms.
 const { open, solvePath, pourBy } = require('./perf.cjs');
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
@@ -16,7 +17,7 @@ const REDUCED = process.env.MOTION ? false : true;
   const moves = (await solvePath(page)).slice(0, 10);
   const cdp = await context.newCDPSession(page);
   // The first tap unlocks audio (one-off AudioContext set-up); do it before tracing so it isn't counted.
-  await page.evaluate(async () => (await import('/src/ui/state.ts')).audio.unlock());
+  if (!process.env.FIRSTTAP) await page.evaluate(async () => (await import('/src/ui/state.ts')).audio.unlock());
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   const events = [];
   cdp.on('Tracing.dataCollected', (d) => events.push(...d.value));
@@ -36,7 +37,7 @@ const REDUCED = process.env.MOTION ? false : true;
   }
   for (const a of Object.values(agg)) { a.totalMs = Math.round(a.totalMs); a.worstMs = Math.round(a.worstMs * 10) / 10; }
   const main = events.filter((e) => e.name === 'RunTask' && e.dur > 16000).map((e) => Math.round(e.dur / 100) / 10).sort((a, b) => b - a);
-  const out = { label: LABEL, board: BOARD, reducedMotion: REDUCED, level: 491, pours: moves.length, cpuThrottle: 4, perEvent: agg, tasksOver16ms: main };
+  const out = { label: LABEL, board: BOARD, reducedMotion: REDUCED, firstTapCounted: !!process.env.FIRSTTAP, level: 491, pours: moves.length, cpuThrottle: 4, perEvent: agg, tasksOver16ms: main };
   fs.writeFileSync(path.join(__dirname, `trace-${LABEL}.json`), JSON.stringify(out, null, 2) + '\n');
   console.log(JSON.stringify(out));
   await browser.close();

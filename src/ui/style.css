@@ -3654,8 +3654,9 @@ body[data-theme='harvestmoon']::before {
 }
 .install-pic {
   flex: none;
-  width: 64px;
-  height: 44px;
+  /* L4 (D184): close-ups, larger, so Share and its row read at 320px with 150% text. */
+  width: 84px;
+  height: 56px;
   fill: none;
   stroke-width: 2;
   stroke-linecap: round;
@@ -3685,6 +3686,10 @@ body[data-theme='harvestmoon']::before {
 }
 .install-pic .ip-hi {
   stroke: var(--accent);
+}
+.install-pic .ip-glyph {
+  stroke: var(--accent-text, var(--accent));
+  stroke-width: 2.4;
 }
 .install-note {
   margin: -6px 0 12px;
@@ -3823,8 +3828,8 @@ body[data-theme='harvestmoon']::before {
     margin-top: 4px;
   }
   .install-card .install-pic {
-    width: 54px;
-    height: 37px;
+    width: 72px;
+    height: 48px;
   }
   .install-card .install-note {
     margin: -2px 0 8px;

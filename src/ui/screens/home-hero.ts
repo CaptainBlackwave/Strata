@@ -39,9 +39,16 @@ const boxes = () => {
   return heroLayout(width, height, board.capacity);
 };
 
-/** The jar geometries for the stage, in its own coordinates. */
+/**
+ * The jar geometries for the stage, in its own coordinates. The button box is the board's: the glass
+ * plus `--jar-w × 0.18` of cork room above it, so the renderer seats each cork on the rim (D183).
+ */
 function geometries() {
-  return boxes().map((box) => jarGeometry({ left: box.left, top: box.top, width: box.width, height: box.height }, box.unitHeight, board.capacity, defaultDims()));
+  return boxes().map((box) => {
+    const glass = { left: box.left, top: box.top, width: box.width, height: box.height };
+    const room = box.width * 0.18;
+    return jarGeometry(glass, box.unitHeight, board.capacity, defaultDims(), { ...glass, top: box.top - room, height: box.height + room });
+  });
 }
 
 function setMode(mode: 'realistic' | 'css'): void {

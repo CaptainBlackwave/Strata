@@ -146,6 +146,27 @@ describe('GameAudio buses (D66)', () => {
     audio.unlock();
     expect(buses(ctx).intoMaster.map((n) => n.gain.value).sort()).toEqual([0.1, 0.9]);
   });
+  it('with sound and music both off, unlock builds no context; turning either on and the next unlock do (sprint 22 L1)', () => {
+    let made = 0;
+    const ctx = new FakeContext();
+    const quiet = { ...OPTS, sound: false, music: false };
+    const audio = new GameAudio(quiet, { createContext: () => (made++, ctx as unknown as BaseAudioContext), vibrate: () => undefined, random: () => 0.5 });
+    const before = ctx.nodes.length; // the destination
+    audio.unlock();
+    audio.play('pour');
+    expect(made).toBe(0);
+    expect(ctx.nodes.length).toBe(before);
+    audio.configure({ ...quiet, sound: true });
+    audio.unlock();
+    expect(made).toBe(1);
+    expect(buses(ctx).intoMaster.length).toBe(2);
+    const music = new GameAudio(quiet, { createContext: () => (made++, new FakeContext() as unknown as BaseAudioContext), vibrate: () => undefined, random: () => 0.5 });
+    music.unlock();
+    expect(made).toBe(1);
+    music.configure({ ...quiet, music: true });
+    music.unlock();
+    expect(made).toBe(2);
+  });
   it('a missing context factory result leaves the game silent', () => {
     const audio = new GameAudio(OPTS, { createContext: () => null, vibrate: () => undefined });
     expect(() => {
