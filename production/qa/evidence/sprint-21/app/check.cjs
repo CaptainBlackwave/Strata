@@ -124,6 +124,7 @@ const saved = (p) => p.evaluate((k) => JSON.parse(localStorage.getItem(k)).onboa
     await p.screenshot({ path: `${OUT}/offline-board.png` });
     let pours = 0;
     for (let i = 0; i < 80 && !(await p.locator('#win:not([hidden])').count()); i++) {
+      if (await p.locator('#btn-hint[disabled]').count()) { await p.waitForTimeout(600); if (await p.locator('#btn-hint[disabled]').count()) break; }
       await p.click('#btn-hint'); await p.waitForTimeout(350);
       const from = p.locator('.jar.hint-from'), to = p.locator('.jar.hint-to');
       if (!(await from.count()) || !(await to.count())) { await p.waitForTimeout(400); continue; }

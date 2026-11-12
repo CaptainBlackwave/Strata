@@ -1,0 +1,93 @@
+{
+  "install-android": {
+    "shown": 1,
+    "title": "Add Strata to your home screen",
+    "asks": 1
+  },
+  "install-iphone": {
+    "shown": 1,
+    "title": "Add Strata to your home screen",
+    "asks": 1,
+    "again_same_day": 0
+  },
+  "install-android-320-150": {
+    "shown": 1,
+    "title": "Add Strata to your home screen",
+    "asks": 1
+  },
+  "install-iphone-320-150": {
+    "shown": 1,
+    "title": "Add Strata to your home screen",
+    "asks": 1
+  },
+  "no-card-four-clears": 0,
+  "no-card-asked-twice": 0,
+  "no-card-standalone": 0,
+  "nativeFeel": {
+    "viewport": "width=device-width, initial-scale=1, viewport-fit=cover",
+    "themeColor": "#fbf3e4",
+    "bgTop": "#fbf3e4",
+    "board": {
+      "touchAction": "none",
+      "userSelect": "none",
+      "callout": "n/a"
+    },
+    "jar": {
+      "touchAction": "none",
+      "userSelect": "none",
+      "callout": "n/a"
+    },
+    "button": {
+      "touchAction": "manipulation",
+      "userSelect": "none",
+      "callout": "n/a"
+    },
+    "body": {
+      "touchAction": "manipulation",
+      "userSelect": "none",
+      "callout": "n/a"
+    }
+  },
+  "sw-pixel7": true,
+  "settings-pixel7": {
+    "offline": true,
+    "vibrationRow": true,
+    "checked": true,
+    "disabled": false,
+    "note": false
+  },
+  "sw-pixel7-reduced-motion": true,
+  "settings-pixel7-reduced-motion": {
+    "offline": true,
+    "vibrationRow": true,
+    "checked": false,
+    "disabled": true,
+    "note": true
+  },
+  "sw-320-150": true,
+  "settings-320-150": {
+    "offline": true,
+    "vibrationRow": true,
+    "checked": true,
+    "disabled": false,
+    "note": false
+  },
+  "update-pixel7": {
+    "bar": 1,
+    "text": "New version ready·Update",
+    "reloaded": true,
+    "barAfter": 0
+  },
+  "update-iphone-320-150": {
+    "bar": 1,
+    "text": "New version ready·Update",
+    "reloaded": true,
+    "barAfter": 0
+  },
+  "offline": {
+    "pours": 19,
+    "won": 1,
+    "online": false,
+    "level": 7
+  }
+}
