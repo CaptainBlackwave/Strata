@@ -28,6 +28,19 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.20.0 (2026-11-12): sprint 21, feels like an app
+**For players**
+- An install card on Home after your 5th level: the browser's install on Android and desktop, step pictures on iPhone (Share, Add to Home Screen, Add). Shown at most twice, a week apart, and never once installed.
+- A sharper app icon at every size (including a maskable one) and a splash screen while the game loads.
+- Settings shows "Works offline" once the game is cached. A new version shows a "New version ready · Update" bar on Home; it never reloads in the middle of a board.
+- The board no longer pinch- or double-tap-zooms, long-press menus are gone from game buttons, the status bar follows the scene, and vibration patterns are tuned (a Settings switch; off under reduced motion).
+- The Home hero is back to the three logo jars, drawn in Realistic sand with a rare sparkle (CSS jars on Classic).
+- On Realistic, settling sand forms smooth slopes instead of steps; Classic pours redraw only the jars that changed.
+
+**Under the hood**
+- Owner decisions D174–D180 (`production/sprints/sprint-21.md`). Pixi's system ticker is stopped in `GpuBoard.create`, so an idle Realistic board asks for no frames. Install, update-bar and haptic rules are pure and tested (`src/ui/logic/onboarding.ts`, `update.ts`, `haptics.ts`). Winter Tide dress rehearsal: `production/qa/evidence/sprint-21/winter/`.
+- Closed: strata-1q0, strata-pwe, strata-2en, strata-8j3.
+
 ## 0.19.1 (2026-11-12): a game on Home
 **For players**
 - The Home hero is now a tiny game of Strata playing itself: 5 jars of mixed sand, a jar lifting and pouring its top colour onto a match every couple of seconds, corks sealing full jars, then a fresh mix. Tap it to start your level.

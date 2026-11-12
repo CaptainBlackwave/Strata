@@ -207,6 +207,17 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.20.0',
+        name: 'Feels like an app',
+        lines: [
+          'Add Strata to your home screen: after a few levels Home shows you how, with pictures on iPhone.',
+          'A new icon and a sandy splash screen, and Settings tells you when the game works offline.',
+          'When a new version is ready, Home shows an Update bar, so nothing changes in the middle of a board.',
+          'The board no longer zooms by accident, the sand settles in smooth slopes, and pours redraw faster.',
+          'The Home picture is back to the three logo jars, now in Realistic sand.',
+        ],
+      },
+      {
         version: '0.19.1',
         name: 'A game on Home',
         lines: [
