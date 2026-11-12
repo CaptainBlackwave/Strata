@@ -246,7 +246,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D182 | Splash | Follows the saved scene's colours (owner, 2026-11-12) | feel-audio-ui | built (sprint 22 L2) |
 | D183 | Home hero | Corks on the Realistic hero jars and a clearly visible sparkle (owner, 2026-11-12) | feel-audio-ui | built (sprint 22 L3) |
 | D184 | Install card | An art pass on the iPhone step pictures (owner, 2026-11-12) | feel-audio-ui | built (sprint 22 L4) |
-| D185 | Release checks | An automated layout guard (every Home tab and sheet at 412px and 320px/150% text) before each release (owner, 2026-11-12) | — | planned |
+| D185 | Release checks | An automated layout guard (every Home tab and sheet at 412px and 320px/150% text) before each release (owner, 2026-11-12) | — (`tools/qa/layout-guard.cjs`, `npm run guard:layout`) | built |
 | D186 | Phone check | A checklist for the owner to run 0.20 on a real phone (owner, 2026-11-12) | — | built (`production/qa/phone-checklist-0.20.md`) |
 | D187 | Releases | 0.20.2 for the loose ends, then 0.21.0 for the next mechanic (owner, 2026-11-12) | — | planned |
 | D188 | Next focus | New jar mechanics, starting with **Wet sand** (owner, 2026-11-12) | jar-mechanics | planned |

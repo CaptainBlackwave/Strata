@@ -1,0 +1,406 @@
+{
+  "base": "dist/",
+  "date": "2026-11-12T15:16:35.572Z",
+  "viewports": [
+    {
+      "tag": "412",
+      "width": 412,
+      "height": 900,
+      "text": 100
+    },
+    {
+      "tag": "320-150",
+      "width": 320,
+      "height": 900,
+      "text": 150
+    }
+  ],
+  "screens": [
+    {
+      "screen": "tab-play",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "tab-today",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "tab-collection",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "tab-profile",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-settings",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-all-settings",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-savecode",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-stats",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-profile",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-edit-profile",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-whatsnew",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-shells",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-badges",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-styles",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-scenes",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "map",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "map-stone",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-weekly",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-track",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "event-home",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "event-today",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-event",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "level-board",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "win-card",
+      "viewport": 412,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "tab-play",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "tab-today",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "tab-collection",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "tab-profile",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-settings",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-all-settings",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-savecode",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-stats",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-profile",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-edit-profile",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-whatsnew",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-shells",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-badges",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-styles",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-scenes",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "map",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "map-stone",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-weekly",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-track",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "event-home",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "event-today",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "sheet-event",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "level-board",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    },
+    {
+      "screen": "win-card",
+      "viewport": 320,
+      "total": 0,
+      "over": [],
+      "scrollers": [],
+      "pageErrors": []
+    }
+  ],
+  "failures": 0,
+  "broken": 0
+}

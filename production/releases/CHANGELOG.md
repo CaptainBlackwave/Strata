@@ -7,6 +7,8 @@ The game's release history. The repository's root `CHANGELOG.md` belongs to the 
 - Running the workflow by hand with `mode: backfill` tags every row of the table below that is not tagged yet.
 - An existing tag is never moved.
 
+**Before a release (D185):** run `npm run build && npm run guard:layout`. It must exit 0: every Home tab and sheet, a board and its win card fit the screen at 412px and at 320px with 150% text. The report and any failure screenshots go to `production/qa/layout-guard/`.
+
 When a release merges, add its row here so a backfill can recreate it.
 
 | Tag | Commit on `main` |
