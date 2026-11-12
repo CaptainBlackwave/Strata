@@ -77,10 +77,10 @@ async function strip(p, name, times) {
     await d.p.screenshot({ path: `${__dirname}/hint-lift-dom.png`, clip: CLIP });
     await d.ctx.close();
   }
-  if (run('win')) {
-    const { ctx, p } = await open(b, `${BASE}?level=2`);
+  if (run('win')) for (const board of ['gpu', 'dom']) {
+    const { ctx, p } = await open(b, `${BASE}?level=2&board=${board}`);
     for (const m of SOLVE2.slice(0, -1)) {
-      await p.waitForFunction(() => !document.querySelector('#board .jar.gpu-away'), null, { timeout: 5000 });
+      await p.waitForFunction(() => !document.querySelector('#board .jar.gpu-away, #board .jar.pouring'), null, { timeout: 5000 });
       await pourKeys(p, m, 1600);
     }
     console.log('before the last pour', JSON.stringify(await state(p)));
@@ -89,8 +89,8 @@ async function strip(p, name, times) {
     // The last pour and the glow run after it, with the clock slowed 4x.
     await slowClock(p, 0.25);
     await p.keyboard.press(String(SOLVE2.at(-1)[1] + 1));
-    await p.waitForFunction(() => !document.querySelector('#board .jar.gpu-away'), null, { timeout: 8000 });
-    await strip(p, 'win-glow', [50, 300, 550, 800, 1050, 1300, 1700, 2400]);
+    await p.waitForFunction(() => !document.querySelector('#board .jar.gpu-away, #board .jar.pouring'), null, { timeout: 8000 });
+    await strip(p, `win-glow-${board}`, [50, 300, 550, 800, 1050, 1300, 1700, 2400]);
     console.log('win', JSON.stringify(await state(p)));
     await ctx.close();
   }
