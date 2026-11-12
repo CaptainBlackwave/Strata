@@ -9,7 +9,8 @@
  *
  * It also remembers whether the game is cached for offline play, for Settings' "Works offline".
  */
-import { $, homeEl, layers } from './dom';
+import { $, announce, homeEl, layers } from './dom';
+import { t } from './strings';
 import { type UpdateEvent, type UpdatePhase, type UpdatePlace, takeoverGate, updateStep, worksOffline } from './logic/update';
 
 let phase: UpdatePhase = 'none';
@@ -29,15 +30,18 @@ function step(event: UpdateEvent): void {
     location.reload();
     return;
   }
-  $('update-bar').hidden = phase !== 'offered';
+  const bar = $('update-bar');
+  const show = phase === 'offered';
+  if (show && bar.hidden) announce(t.update.ready); // the bar appears once; say so to a screen reader
+  bar.hidden = !show;
 }
 
 /**
- * Reloads into the new version if one is waiting and Home is on top (the silent fallback); else
- * waits for Home. Kept for callers outside the bar.
+ * Called as Home shows: offers the bar for a version that took over while away, or reloads
+ * silently for a bar that was passed by (the fallback). Elsewhere it waits for Home.
  */
 export function applyUpdateIfSafe(): void {
-  if (phase === 'ignored') step('place');
+  if (phase !== 'none') step('place');
 }
 
 /** sw.js reported (or a controlled boot proved) that every file is cached: Settings says "Works offline". */

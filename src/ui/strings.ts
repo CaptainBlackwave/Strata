@@ -54,6 +54,12 @@ const en = {
   sound: 'Sound effects',
   music: 'Music',
   haptics: 'Vibration',
+  /** Under the Vibration switch while the device asks for reduced motion (sprint 21 A4): it stays off. */
+  hapticsReduced: 'Off while your device reduces motion',
+  /** Settings, once the service worker has cached the game (sprint 21 A3). */
+  worksOffline: 'Works offline',
+  /** The calm bar on Home when a new version has taken over (sprint 21 A3): the text, then its button. */
+  update: { ready: 'New version ready', button: 'Update' },
   patterns: 'Colour patterns',
   patternsTitle: 'Show a texture on each colour (colour-blind aid)',
   southern: 'Southern hemisphere seasons',
@@ -632,11 +638,11 @@ const en = {
   // sprint 11 onboarding
   /** Install and onboarding (sprint 11 O1-O4, D78). */
   onboarding: {
-    installTitle: 'Keep Strata on your home screen',
+    installTitle: 'Add Strata to your home screen',
     installText: 'It opens full screen, like an app, and plays offline.',
     installButton: 'Add to Home Screen',
     notNow: 'Not now',
-    /** iPhone and iPad: Safari has no install prompt, so the steps are shown. The share icon is drawn after step 1. */
+    /** iPhone and iPad: Safari has no install prompt, so the steps are shown, each beside its picture (A1). */
     iosSteps: ['Tap Share', 'Choose \u201cAdd to Home Screen\u201d', 'Tap Add'],
     /** Under the steps: newer Safari hides Share behind the ··· button. */
     iosNote: 'No Share button? Tap \u00b7\u00b7\u00b7 first, then scroll to Add to Home Screen.',

@@ -963,6 +963,31 @@
     "sparkleMs": 1400,
     "seed": 20261112
   },
+  "haptics": {
+    "$comment": "Haptic patterns per sound event in ms, pulse/gap/pulse (sprint 10 F4, D64; sprint 21 A4, D179). null: none. A pour's touch rides on its land; seal is a double tap, win a triple. Off under reduced motion and when the Vibration switch is off. maxPulseMs and maxSteps keep every pattern short and soft.",
+    "maxPulseMs": 40,
+    "maxSteps": 9,
+    "patterns": {
+      "select": 6,
+      "deselect": null,
+      "nope": [10, 40, 10],
+      "pour": null,
+      "land": 8,
+      "seal": [12, 40, 24],
+      "win": [16, 50, 16, 50, 36],
+      "coin": null,
+      "booster": 12,
+      "shuffle": [6, 30, 6, 30, 6],
+      "mapStone": 6,
+      "locked": [6, 30, 6],
+      "unlock": [10, 50, 10],
+      "shell": [8, 40, 16],
+      "sceneBought": [10, 40, 20],
+      "playHere": 10,
+      "flip": [4, 24, 8],
+      "clamOpen": [6, 30, 10]
+    }
+  },
   "onboarding": {
     "$comment": "Install and onboarding (design/gdd/systems-index.md D78, sprint 11 O1; sprint 21 A1, D179). installAfterLevels: levels cleared before the Add to Home Screen card may show on Home. installMaxAsks: the most times it ever asks. installGapDays: the fewest days between two asks. homeHintLevel: the level whose first clear adds the one-time line pointing to Home and the daily (R1, D81).",
     "installAfterLevels": 5,

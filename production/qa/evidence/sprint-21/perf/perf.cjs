@@ -19,7 +19,7 @@ const QUIET = { sound: false, music: false, haptics: false };
 const ONB = { visits: 9, installShown: true, offlineNoticed: true, homeHintSeen: true, scenesNewSeen: true, stylesNewSeen: true, mapHintSeen: true, boosterHintSeen: true };
 
 async function open(browser, board, reduced) {
-  const context = await browser.newContext({ viewport: VIEW, deviceScaleFactor: 2, reducedMotion: reduced ? 'reduce' : 'no-preference' });
+  const context = await browser.newContext({ viewport: VIEW, deviceScaleFactor: 2, serviceWorkers: 'block', reducedMotion: reduced ? 'reduce' : 'no-preference' });
   await context.clock.setFixedTime(new Date('2026-11-20T12:00:00Z'));
   await context.addInitScript(([key, mech, quiet, onb]) => {
     const s = JSON.parse(localStorage.getItem(key) || '{}');

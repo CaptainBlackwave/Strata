@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<title>Strata</title>
+<defs>
+  <linearGradient id="cork" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8a86b"/><stop offset="1" stop-color="#b7834a"/></linearGradient>
+  <filter id="grain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
+    <feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.27  0 0 0 0 0.2  0 0 0 -1.6 0.95"/>
+    <feComposite in2="SourceGraphic" operator="in"/>
+  </filter>
+</defs>
+<rect width="512" height="512" fill="#f6ecd9"/>
+<g id="art">
+  <ellipse cx="256" cy="418" rx="209.7" ry="13" fill="#5a4632" opacity="0.12"/>
+  <g>
+  <clipPath id="j0"><path d="M62.3 184V356.17A47.83 47.83 0 0 0 110.13 404H124.48A47.83 47.83 0 0 0 172.3 356.17V184Z"/></clipPath>
+  <g clip-path="url(#j0)">
+    <rect x="62.3" y="184" width="110" height="36.2" fill="#fff" opacity="0.55"/>
+    <rect x="62.3" y="338" width="110" height="66.5" fill="#c8553d"/><rect x="62.3" y="338" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="62.3" y="276.4" width="110" height="62.1" fill="#f2a541"/><rect x="62.3" y="276.4" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="62.3" y="219.2" width="110" height="57.7" fill="#2a9d8f"/><rect x="62.3" y="219.2" width="110" height="5" fill="#fff" opacity="0.22"/>
+    <rect x="62.3" y="219.2" width="110" height="184.8" filter="url(#grain)" opacity="0.5"/>
+    <rect x="75.3" y="200" width="11" height="162" rx="5.5" fill="#fff" opacity="0.38"/>
+  </g>
+  <path d="M62.3 184V356.17A47.83 47.83 0 0 0 110.13 404H124.48A47.83 47.83 0 0 0 172.3 356.17V184" fill="none" stroke="#8c7a64" stroke-width="9" stroke-linejoin="round"/>
+  <rect x="84.3" y="160" width="66" height="31" rx="8" fill="url(#cork)" stroke="#8a6136" stroke-width="5"/>
+</g>
+  <g>
+  <clipPath id="j1"><path d="M201 136.17V356.17A47.83 47.83 0 0 0 248.83 404H263.17A47.83 47.83 0 0 0 311 356.17V136.17Z"/></clipPath>
+  <g clip-path="url(#j1)">
+    <rect x="201" y="136.17" width="110" height="43.85" fill="#fff" opacity="0.55"/>
+    <rect x="201" y="323.65" width="110" height="80.85" fill="#2a9d8f"/><rect x="201" y="323.65" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="201" y="248.66" width="110" height="75.49" fill="#c8553d"/><rect x="201" y="248.66" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="201" y="179.03" width="110" height="70.13" fill="#f2a541"/><rect x="201" y="179.03" width="110" height="5" fill="#fff" opacity="0.22"/>
+    <rect x="201" y="179.03" width="110" height="224.97" filter="url(#grain)" opacity="0.5"/>
+    <rect x="214" y="152.17" width="11" height="209.83" rx="5.5" fill="#fff" opacity="0.38"/>
+  </g>
+  <path d="M201 136.17V356.17A47.83 47.83 0 0 0 248.83 404H263.17A47.83 47.83 0 0 0 311 356.17V136.17" fill="none" stroke="#8c7a64" stroke-width="9" stroke-linejoin="round"/>
+  <rect x="223" y="112.17" width="66" height="31" rx="8" fill="url(#cork)" stroke="#8a6136" stroke-width="5"/>
+</g>
+  <g>
+  <clipPath id="j2"><path d="M339.7 184V356.17A47.83 47.83 0 0 0 387.52 404H401.87A47.83 47.83 0 0 0 449.7 356.17V184Z"/></clipPath>
+  <g clip-path="url(#j2)">
+    <rect x="339.7" y="184" width="110" height="36.2" fill="#fff" opacity="0.55"/>
+    <rect x="339.7" y="338" width="110" height="66.5" fill="#f2a541"/><rect x="339.7" y="338" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="339.7" y="276.4" width="110" height="62.1" fill="#2a9d8f"/><rect x="339.7" y="276.4" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="339.7" y="219.2" width="110" height="57.7" fill="#c8553d"/><rect x="339.7" y="219.2" width="110" height="5" fill="#fff" opacity="0.22"/>
+    <rect x="339.7" y="219.2" width="110" height="184.8" filter="url(#grain)" opacity="0.5"/>
+    <rect x="352.7" y="200" width="11" height="162" rx="5.5" fill="#fff" opacity="0.38"/>
+  </g>
+  <path d="M339.7 184V356.17A47.83 47.83 0 0 0 387.52 404H401.87A47.83 47.83 0 0 0 449.7 356.17V184" fill="none" stroke="#8c7a64" stroke-width="9" stroke-linejoin="round"/>
+  <rect x="361.7" y="160" width="66" height="31" rx="8" fill="url(#cork)" stroke="#8a6136" stroke-width="5"/>
+</g>
+</g>
+</svg>

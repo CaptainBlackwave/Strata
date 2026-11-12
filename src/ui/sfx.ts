@@ -5,6 +5,8 @@
  * tests/unit/ui/sfx.test.ts checks every event in Node. The real loudness of each event is
  * measured in Chromium with an OfflineAudioContext (production/qa/evidence/sprint-10/f1/).
  */
+import gameConfig from '../config/game-config.json';
+import { type Haptic, type HapticsConfig, patternOf } from './logic/haptics';
 
 /** Every sound event the game can make. Adding one means a recipe in {@link SOUNDS} and an entry in {@link HAPTICS}. */
 export const SOUND_EVENTS = [
@@ -270,33 +272,19 @@ export const SOUNDS: Record<SoundEvent, SoundRecipe> = {
   },
 };
 
-/** A vibration pattern in milliseconds (navigator.vibrate), or `null` for an explicit none. */
-export type Haptic = number | number[] | null;
+export type { Haptic } from './logic/haptics';
+
+/** The haptics tuning from game-config.json (sprint 21 A4: patterns are data). */
+export const HAPTICS_CONFIG: HapticsConfig = (gameConfig as unknown as { haptics: HapticsConfig }).haptics;
 
 /**
- * Haptic patterns per event (F4, D64): short and soft. Seal is a double tap, win a triple
- * one, so the two feel distinct. Android only: iPhone browsers ignore navigator.vibrate.
+ * Haptic patterns per event (F4, D64), from `haptics.patterns` in game-config.json: short and soft.
+ * Seal is a double tap, win a triple one, so the two feel distinct. Android only: iPhone browsers
+ * ignore navigator.vibrate. An event missing from the config has none.
  */
-export const HAPTICS: Record<SoundEvent, Haptic> = {
-  select: 6,
-  deselect: null,
-  nope: [10, 40, 10],
-  pour: null, // the land that follows carries the touch
-  land: 8,
-  seal: [12, 40, 24],
-  win: [16, 50, 16, 50, 36],
-  coin: null, // the count-up plays it many times
-  booster: 12,
-  shuffle: [6, 30, 6, 30, 6],
-  mapStone: 6,
-  locked: [6, 30, 6],
-  unlock: [10, 50, 10],
-  shell: [8, 40, 16],
-  sceneBought: [10, 40, 20],
-  playHere: 10,
-  flip: [4, 24, 8], // a light tap and a settle, softer than the land
-  clamOpen: [6, 30, 10], // a soft give and a settle as the shell lifts
-};
+export const HAPTICS: Record<SoundEvent, Haptic> = Object.fromEntries(
+  SOUND_EVENTS.map((e) => [e, patternOf(HAPTICS_CONFIG.patterns[e], HAPTICS_CONFIG)]),
+) as Record<SoundEvent, Haptic>;
 
 /** A voice's envelope level at `t` seconds: the same exponential ramps audio.ts schedules. */
 export function envelopeAt(v: Voice, t: number): number {

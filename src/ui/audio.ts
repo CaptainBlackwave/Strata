@@ -9,7 +9,8 @@
  *
  * Example: `audio.play('pour', { units: 2 })` after `audio.unlock()` inside a tap handler.
  */
-import { HAPTICS, MASTER_GAIN, SOUNDS, type Haptic, type SoundDetail, type SoundEvent, type Voice } from './sfx';
+import { HAPTICS_CONFIG, MASTER_GAIN, SOUNDS, type Haptic, type SoundDetail, type SoundEvent, type Voice } from './sfx';
+import { hapticFor } from './logic/haptics';
 import { SceneMusic, type SceneVariation, eventMusicKey, musicFor } from './music';
 
 export type { SoundDetail, SoundEvent } from './sfx';
@@ -37,6 +38,8 @@ export interface AudioDeps {
   createContext?: () => BaseAudioContext | null;
   /** Default: navigator.vibrate, if the browser has it. */
   vibrate?: (pattern: number | number[]) => void;
+  /** Whether the player asks for reduced motion; haptics stay off then (sprint 21 A4). Default: the media query. */
+  reducedMotion?: () => boolean;
   /** Fills the noise buffer and picks its start offsets. Default: Math.random. */
   random?: () => number;
 }
@@ -59,6 +62,16 @@ function browserVibrate(pattern: number | number[]): void {
   } catch {
     /* not supported */
   }
+}
+
+/** Whether the browser can vibrate at all (no iPhone browser can). */
+export function canVibrate(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+}
+
+/** `prefers-reduced-motion: reduce`, false where there is no matchMedia (Node). */
+export function prefersReducedMotion(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 /** Whether `ctx` renders offline (it has no resume before rendering starts). */
@@ -155,7 +168,13 @@ export class GameAudio {
    * Example: `audio.play('shell', { delay: 0.8 })` lets the win chime ring first.
    */
   play(event: SoundEvent, detail: SoundDetail = {}): void {
-    if (this.options.haptics) this.vibrate(HAPTICS[event]);
+    this.vibrate(
+      hapticFor(event, HAPTICS_CONFIG, {
+        enabled: this.options.haptics,
+        reducedMotion: (this.deps.reducedMotion ?? prefersReducedMotion)(),
+        supported: this.deps.vibrate !== undefined || canVibrate(),
+      }),
+    );
     if (!this.options.sound || clampVolume(this.options.soundVolume) === 0 || !this.ctx || !this.sfxBus) return;
     const delay = Math.min(2, Math.max(0, detail.delay ?? 0));
     const t = this.ctx.currentTime + delay;

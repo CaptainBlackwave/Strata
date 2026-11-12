@@ -18,7 +18,7 @@
  */
 const BUILD_ID = '__BUILD_ID__';
 const CACHE = 'strata-' + BUILD_ID;
-const CORE = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CORE = ['./', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-32.png'];
 const ASSET_REF = /(?:src|href)="(\.?\/?assets\/[^"]+)"/g;
 const CHUNK_REF = /new URL\(\s*["'`]([^"'`]+\.[A-Za-z0-9]+)["'`]\s*,\s*import\.meta\.url/g; // workers, and any file JS names by URL
 const IMPORT_REF = /(?:from|import)\s*\(?\s*["'](\.\/[^"']+\.js)["']/g; // static and dynamic imports between chunks

@@ -29,9 +29,13 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <title>Strata: a calm seaside sand-sort puzzle</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='9' y='3' width='14' height='26' rx='5' fill='%23fff8' stroke='%235a4632' stroke-width='2'/%3E%3Crect x='10' y='20' width='12' height='8' rx='3' fill='%23c8553d'/%3E%3Crect x='10' y='13' width='12' height='7' fill='%23f2a541'/%3E%3C/svg%3E" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
   </head>
   <body>
+    <!-- The splash (sprint 21 A2, D179): the logo jars on the scene's daylight background, inline-styled so
+         it paints before style.css loads; src/ui/splash.ts removes it once the first screen is ready. -->
+    <div id="splash" aria-hidden="true" style="position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 50% at 50% 108%,#b9e0d6 0 38%,transparent 38.5%),radial-gradient(90% 60% at 85% -10%,#fff6d8 0 40%,transparent 60%),linear-gradient(180deg,#fbf3e4,#f1dfc1);"><svg viewBox="40 96 432 340" width="200" height="157" style="display:block;max-width:52vw;height:auto;margin-bottom:6vh"><defs> <linearGradient id="sp-cork" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8a86b"/><stop offset="1" stop-color="#b7834a"/></linearGradient> <filter id="sp-grain" x="0" y="0" width="100%" height="100%"> <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/> <feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.27  0 0 0 0 0.2  0 0 0 -1.6 0.95"/> <feComposite in2="SourceGraphic" operator="in"/> </filter> </defs><g > <ellipse cx="256" cy="418" rx="209.7" ry="13" fill="#5a4632" opacity="0.12"/> <g> <clipPath id="sp-j0"><path d="M62.3 184V356.17A47.83 47.83 0 0 0 110.13 404H124.48A47.83 47.83 0 0 0 172.3 356.17V184Z"/></clipPath> <g clip-path="url(#sp-j0)"> <rect x="62.3" y="184" width="110" height="36.2" fill="#fff" opacity="0.55"/> <rect x="62.3" y="338" width="110" height="66.5" fill="#c8553d"/><rect x="62.3" y="338" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="62.3" y="276.4" width="110" height="62.1" fill="#f2a541"/><rect x="62.3" y="276.4" width="110" height="5" fill="#fff" opacity="0.22"/><rect x="62.3" y="219.2" width="110" height="57.7" fill="#2a9d8f"/><rect x="62.3" y="219.2" width="110" height="5" fill="#fff" opacity="0.22"/> <rect x="62.3" y="219.2" width="110" height="184.8" filter="url(#sp-grain)" opacity="0.5"/> <rect x="75.3" y="200" width="11" height="162" rx="5.5" fill="#fff" opacity="0.38"/> </g> <path d="M62.3 184V356.17A47.83 47.83 0 0 0 110.13 404H124.48A47.83 47.83 0 0 0 172.3 356.17V184" fill="none" stroke="#8c7a64" stroke-width="9" stroke-linejoin="round"/> <rect x="84.3" y="160" width="66" height="31" rx="8" fill="url(#sp-cork)" stroke="#8a6136" stroke-width="5"/> </g></svg></div>
     <div id="app">
       <header class="hud">
         <div class="hud-title">
@@ -101,7 +105,7 @@
           <label class="volume"><span class="volume-name" data-s="soundVolume">Sound volume</span><input type="range" id="set-sound-volume" min="0" max="100" step="5" /></label>
           <label class="toggle"><span data-s="music">Music</span><input type="checkbox" id="set-music" /></label>
           <label class="volume"><span class="volume-name" data-s="musicVolume">Music volume</span><input type="range" id="set-music-volume" min="0" max="100" step="5" /></label>
-          <label class="toggle"><span data-s="haptics">Vibration</span><input type="checkbox" id="set-haptics" /></label>
+          <label id="set-haptics-row" class="toggle"><span class="toggle-text"><span data-s="haptics">Vibration</span><small id="haptics-help" data-s="hapticsReduced" class="toggle-help" aria-hidden="true" hidden>Off while your device reduces motion</small></span><input type="checkbox" id="set-haptics" aria-describedby="haptics-help" /></label>
           <label class="toggle"><span class="toggle-text"><span data-s="patterns">Colour patterns</span><small id="patterns-help" data-s="patternsTitle" class="toggle-help" aria-hidden="true"></small></span><input type="checkbox" id="set-patterns" aria-describedby="patterns-help" /></label>
           <label class="toggle"><span data-s="southern">Southern hemisphere seasons</span><input type="checkbox" id="set-southern" /></label>
           <label class="toggle"><span class="toggle-text"><span data-s="realistic">Realistic sand</span><small id="realistic-help" data-s="realisticHelp" class="toggle-help" aria-hidden="true">Real grains that slide and pour. Off: Classic</small></span><input type="checkbox" id="set-realistic" aria-describedby="realistic-help" /></label>
@@ -116,6 +120,7 @@
             <button id="btn-whatsnew" data-s="whatsNew.button" class="secondary" type="button">What's new</button>
             <button id="btn-stats" data-s="stats.button" class="secondary" type="button">Your stats</button>
           </div>
+          <p id="offline-status" class="offline-status" hidden><svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span data-s="worksOffline">Works offline</span></p>
           <button id="btn-close-settings" data-s="close" class="primary" type="button">Close</button>
         </div>
       </div>
@@ -171,7 +176,7 @@
       </div>
       <div id="install" class="cabinet" hidden>
         <div class="cabinet-card intro-card install-card" role="dialog" aria-modal="true" aria-labelledby="install-title" aria-describedby="install-text install-steps install-note">
-          <h2 id="install-title" data-s="onboarding.installTitle" class="whatsnew-title">Keep Strata on your home screen</h2>
+          <h2 id="install-title" data-s="onboarding.installTitle" class="whatsnew-title">Add Strata to your home screen</h2>
           <p id="install-text" data-s="onboarding.installText" class="install-text">It opens full screen, like an app, and plays offline.</p>
           <ol id="install-steps" class="install-steps" hidden></ol>
           <p id="install-note" data-s="onboarding.iosNote" class="install-note" hidden>No Share button? Tap ··· first.</p>
@@ -342,6 +347,7 @@
           </div>
         </header>
         <div id="home-views" class="home-views">
+          <div id="update-bar" class="update-bar" hidden><span data-s="update.ready">New version ready</span><span class="update-dot" aria-hidden="true">·</span><button id="btn-update" data-s="update.button" class="update-btn" type="button">Update</button></div>
           <section id="home-panel-play" class="home-panel home-panel-play" role="tabpanel" aria-labelledby="home-level" tabindex="-1">
             <div id="home-hero" class="hero" data-mode="css">
               <div class="hero-sky" aria-hidden="true"><span class="hero-moon"></span></div>
