@@ -142,11 +142,24 @@ function layerInk(l: SandLayer): (x: number, y: number, h: number) => Ink {
   };
 }
 
+/**
+ * How much stronger a sand piece's layers are drawn on the canvas than in the DOM table. The canvas's
+ * own grain is busier than the DOM's flat colour, so at the table's strength a piece barely shows;
+ * light and dark layers scale together, so the mean shade stays put (jar-styles.md §4).
+ */
+export const CANVAS_TEXTURE_GAIN = 1.8;
+
 /** The worn sand texture's overlay, or `null` for plain sand (the board's own grain is the plain look). */
-export function sandOverlay(space: TexelSpace, sand: string): Overlay | null {
+export function sandOverlay(space: TexelSpace, sand: string, gain = CANVAS_TEXTURE_GAIN): Overlay | null {
   const layers = SAND_TEXTURES[sand as SandId];
   if (!layers) return null;
-  return bake(space, layers.map(layerInk));
+  return bake(space, layers.map((l) => {
+    const ink = layerInk(l);
+    return (x: number, y: number, h: number) => {
+      const p = ink(x, y, h);
+      return { rgb: p.rgb, a: Math.min(0.6, p.a * gain) };
+    };
+  }));
 }
 
 /** Colour pattern `index`'s overlay (`index` is `color % PATTERNS.length`). */

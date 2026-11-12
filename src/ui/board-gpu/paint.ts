@@ -112,7 +112,9 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
   const { cols, cells, shade } = grid;
   const cell = cells[i];
   const s = shade[i];
-  let k = 0.87 + 0.2 * (s / 255);
+  // A worn sand piece brings its own texture, so the grain's own tone steps back for it.
+  const quiet = look?.texture ? 0.5 : 1;
+  let k = 0.87 + 0.2 * quiet * (s / 255) + 0.1 * (1 - quiet);
   const above = y > 0 ? cells[i - cols] : EMPTY;
   const exposed = above === EMPTY;
   if (exposed) k += 0.14;
@@ -136,7 +138,7 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
       if (onlyEmpty && out[t] !== 0) continue;
       // Per-texel tone from the grain's own shade, so the texture travels with the grain.
       const n = (((s * 73 + (sy * sub + sx) * 151) ^ (s >> 3)) & 31) / 31;
-      let kk = k + (n - 0.5) * 0.1;
+      let kk = k + (n - 0.5) * 0.1 * quiet;
       if (seam && sy === 0) kk -= 0.12;
       let r = c.r * kk;
       let g = c.g * kk;
