@@ -22,6 +22,20 @@ const at = (d) => new Date(`${d}T12:00:00Z`);
 /** A context + page on `date`, seeded once per tab (sessionStorage flag), so progress survives navigation. */
 async function open(browser, { date, width = 390, text = 100, reduced = false, seed = {}, block = null }) {
   const ctx = await browser.newContext({ viewport: { width, height: width === 320 ? 640 : 844 }, deviceScaleFactor: 2, serviceWorkers: 'block', reducedMotion: reduced ? 'reduce' : 'no-preference' });
+  // The app's modules can carry Vite's ?t= HMR stamp; importing the bare path would make a second
+  // instance (a second `state`, a second GameAudio). __mod imports the URL the app itself loaded.
+  await ctx.addInitScript(() => {
+    const cache = {};
+    const importers = ['/src/ui/main.ts', '/src/ui/app.ts', '/src/ui/screens/home.ts', '/src/ui/screens/board.ts', '/src/ui/screens/win.ts', '/src/ui/screens/sheets/event.ts'];
+    window.__mod = (p) => (cache[p] ??= (async () => {
+      for (const f of importers) {
+        const text = await (await fetch(f)).text();
+        const m = text.match(new RegExp('"(' + p.replace(/[.]/g, '\\.') + '(\\?t=\\d+)?)"'));
+        if (m) return import(m[1]);
+      }
+      return import(p);
+    })());
+  });
   await ctx.addInitScript(([key, mech, onb, seed, text, goalsDate]) => {
     if (text !== 100) document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.fontSize = text + '%'; });
     if (sessionStorage.getItem('seeded')) return;
@@ -44,7 +58,7 @@ async function open(browser, { date, width = 390, text = 100, reduced = false, s
   return { ctx, page };
 }
 
-const st = (page, fn, arg) => page.evaluate(async ([src, arg]) => { const m = await import('/src/ui/state.ts'); return new Function('m', 'arg', `return (${src})(m, arg)`)(m, arg); }, [fn.toString(), arg]);
+const st = (page, fn, arg) => page.evaluate(async ([src, arg]) => { const m = await window.__mod('/src/ui/state.ts'); return new Function('m', 'arg', `return (${src})(m, arg)`)(m, arg); }, [fn.toString(), arg]);
 const dismiss = (page) => page.evaluate(() => document.querySelectorAll('#whatsnew:not([hidden]) #btn-whatsnew-ok, #intro:not([hidden]) #btn-intro-ok').forEach((b) => b.click()));
 
 async function boot(page, query = '') {
@@ -55,8 +69,8 @@ async function boot(page, query = '') {
 }
 
 const homeInfo = (page) => page.evaluate(async () => {
-  const { winterSnowing } = await import('/src/ui/winter.ts');
-  const { audio } = await import('/src/ui/state.ts');
+  const { winterSnowing } = await window.__mod('/src/ui/winter.ts');
+  const { audio } = await window.__mod('/src/ui/state.ts');
   const tx = (id) => document.getElementById(id)?.textContent ?? null;
   return {
     card: !document.getElementById('btn-event').hidden, title: tx('event-title'), sub: tx('event-sub'), days: tx('event-days'),
@@ -67,7 +81,7 @@ const homeInfo = (page) => page.evaluate(async () => {
 });
 
 async function openChooser(page) {
-  await page.evaluate(async () => (await import('/src/ui/screens/sheets/event.ts')).openEvent(null));
+  await page.evaluate(async () => (await window.__mod('/src/ui/screens/sheets/event.ts')).openEvent(null));
   await page.waitForSelector('#event:not([hidden])');
   await page.waitForTimeout(500);
   return page.evaluate(() => ({
@@ -77,7 +91,7 @@ async function openChooser(page) {
   }));
 }
 
-const idle = (page) => page.waitForFunction(async () => { const { state } = await import('/src/ui/state.ts'); return !state.busy && state.returning.size === 0; }, null, { polling: 40, timeout: 20000 });
+const idle = (page) => page.waitForFunction(async () => { const { state } = await window.__mod('/src/ui/state.ts'); return !state.busy && state.returning.size === 0; }, null, { polling: 40, timeout: 20000 });
 async function tap(page, i) {
   const box = await page.locator('#board .jar').nth(i).boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6);
@@ -88,42 +102,48 @@ async function tap(page, i) {
 async function playBoard(page, n) {
   if (!(await page.locator('#event:not([hidden])').count())) await openChooser(page);
   await page.click(`.event-board[data-board="${n}"]`);
-  await page.waitForFunction(async (n) => { const { state } = await import('/src/ui/state.ts'); return state.mode === 'event' && state.eventBoard === n && !!state.session && state.session.board.jars.length === document.querySelectorAll('#board .jar').length; }, n, { polling: 50, timeout: 20000 });
+  await page.waitForFunction(async (n) => { const { state } = await window.__mod('/src/ui/state.ts'); return state.mode === 'event' && state.eventBoard === n && !!state.session && state.session.board.jars.length === document.querySelectorAll('#board .jar').length; }, n, { polling: 50, timeout: 20000 });
   await dismiss(page);
   await page.waitForTimeout(500);
   const onBoard = await homeInfo(page);
   const render = await page.evaluate(() => document.getElementById('board').dataset.render);
   let taps = 0;
-  for (let round = 0; round < 8; round++) {
+  let misses = 0;
+  for (let round = 0; round < 40; round++) {
     await idle(page);
     const s = await st(page, (m) => ({ won: m.state.session.status === 'won', sel: m.state.selected }));
     if (s.won) break;
     if (s.sel !== null && s.sel !== undefined) { await tap(page, s.sel); await idle(page); }
-    const p = await page.evaluate(async () => { const { state } = await import('/src/ui/state.ts'); const { solve } = await import('/src/core/solver.ts'); return solve(state.session.board, 400000).path.map((m) => [m.from, m.to]); });
+    const p = await page.evaluate(async () => { const { state } = await window.__mod('/src/ui/state.ts'); const { solve } = await window.__mod('/src/core/solver.ts'); return solve(state.session.board, 400000).path.map((m) => [m.from, m.to]); });
     let ok = true;
     for (const [f, t] of p) {
       const before = await st(page, (m) => m.state.session.moves);
       await tap(page, f); await tap(page, t); taps += 2;
+      const counted = await page.waitForFunction(async (b) => (await window.__mod('/src/ui/state.ts')).state.session.moves === b + 1, before, { polling: 40, timeout: 3000 }).then(() => true, () => false);
       await idle(page);
-      if ((await st(page, (m) => m.state.session.moves)) !== before + 1) { ok = false; break; }
+      if (!counted) { ok = false; misses++; break; }
     }
     if (ok) break;
   }
-  await page.waitForSelector('#win:not([hidden])', { timeout: 20000 });
+  await page.waitForSelector('#win:not([hidden])', { timeout: 20000 }).catch(async (e) => {
+    const dbg = await st(page, (m) => ({ status: m.state.session.status, moves: m.state.session.moves, busy: m.state.busy, sel: m.state.selected, mode: m.state.mode }));
+    await page.screenshot({ path: path.join(OUT, `fail-board${n}.png`) });
+    throw new Error(`board ${n} no win card: ${JSON.stringify(dbg)} taps ${taps}`);
+  });
   await page.waitForTimeout(1400);
   const win = await page.evaluate(() => ({
     title: document.getElementById('win-title').textContent, text: document.getElementById('win-text').textContent, note: document.getElementById('win-note').textContent,
     coinsShown: !document.getElementById('win-reward').hidden ? document.getElementById('win-coins').textContent : null,
     rows: [...document.querySelectorAll('#win-unlocks > *')].filter((e) => !e.hidden).map((e) => e.textContent.trim().replace(/\s+/g, ' ')),
   }));
-  return { n, render, taps, snowOnBoard: onBoard.snowing, musicOnBoard: onBoard.musicEvent, win };
+  return { n, render, taps, misses, snowOnBoard: onBoard.snowing, musicOnBoard: onBoard.musicEvent, win };
 }
 const nextFromWin = async (page) => { await page.click('#btn-next'); await page.waitForSelector('#event:not([hidden])', { timeout: 10000 }); await page.waitForTimeout(400); };
 const saved = (page) => page.evaluate((k) => { const s = JSON.parse(localStorage.getItem(k)); return { coins: s.wallet.coins, events: s.events, frostOwned: s.styles.owned.filter((x) => x === 'glass:frost').length, badge: s.badges.filter((b) => (b.id ?? b) === 'event-wintertide').length, badges: s.badges.length, level: s.level }; }, KEY);
 
 async function frostSheet(page) {
   const coins0 = (await saved(page)).coins;
-  await page.evaluate(async () => (await import('/src/ui/screens/sheets/styles.ts')).openStyles(null));
+  await page.evaluate(async () => (await window.__mod('/src/ui/screens/sheets/styles.ts')).openStyles(null));
   await page.waitForSelector('#styles:not([hidden])');
   await page.waitForTimeout(400);
   const btn = page.locator('[data-slot="glass"][data-id="frost"]');
@@ -134,7 +154,7 @@ async function frostSheet(page) {
   const action = await page.evaluate(() => { const b = document.getElementById('btn-style-action'); return { hidden: b.hidden, disabled: b.disabled, text: b.textContent }; });
   if (!action.hidden && !action.disabled) { await page.click('#btn-style-action'); await page.waitForTimeout(300); }
   const after = await saved(page);
-  const direct = await page.evaluate(async () => { const { buyStyle } = await import('/src/core/styles.ts'); const { state, config } = await import('/src/ui/state.ts'); return buyStyle({ ...state.save.wallet, coins: 999999 }, state.save.styles, 60, 'glass', 'frost', config).ok; });
+  const direct = await page.evaluate(async () => { const { buyStyle } = await window.__mod('/src/core/styles.ts'); const { state, config } = await window.__mod('/src/ui/state.ts'); return buyStyle({ ...state.save.wallet, coins: 999999 }, state.save.styles, 60, 'glass', 'frost', config).ok; });
   await page.keyboard.press('Escape');
   await page.evaluate(() => document.querySelector('#styles:not([hidden]) [id^="btn-close"]')?.click());
   await page.waitForTimeout(300);
@@ -203,9 +223,9 @@ async function frostSheet(page) {
       await boot(page);
       const home = await homeInfo(page);
       let board = null;
-      if (home.card) { await openChooser(page); await page.click('.event-board[data-board="1"]'); await page.waitForFunction(async () => (await import('/src/ui/state.ts')).state.mode === 'event'); await page.waitForTimeout(800); board = await homeInfo(page); if (tag === 'dec24') await page.screenshot({ path: path.join(OUT, 'snow-event-board.png') }); }
+      if (home.card) { await openChooser(page); await page.click('.event-board[data-board="1"]'); await page.waitForFunction(async () => (await window.__mod('/src/ui/state.ts')).state.mode === 'event'); await page.waitForTimeout(800); board = await homeInfo(page); if (tag === 'dec24') await page.screenshot({ path: path.join(OUT, 'snow-event-board.png') }); }
       // A level board turns it off again.
-      await page.evaluate(async () => (await import('/src/ui/screens/board.ts')).startLevel(5));
+      await page.evaluate(async () => (await window.__mod('/src/ui/screens/board.ts')).startLevel(5));
       await page.waitForTimeout(800);
       const level = await homeInfo(page);
       out[tag] = { home: { snowing: home.snowing, canvas: home.snowCanvas, parent: home.snowParent, music: home.musicEvent, key: home.musicKey }, eventBoard: board && { snowing: board.snowing, canvas: board.snowCanvas, music: board.musicEvent }, levelBoard: { snowing: level.snowing, canvas: level.snowCanvas, music: level.musicEvent } };
@@ -214,7 +234,7 @@ async function frostSheet(page) {
     // The variation the music would play (music.ts), read without audio.
     const { ctx, page } = await open(browser, { date: '2026-12-24' });
     await boot(page);
-    out.variation = await page.evaluate(async () => { const m = await import('/src/ui/music.ts'); const v = m.musicFor('event:wintertide'); return { wintertide: v, sameAsMidday: JSON.stringify(v) === JSON.stringify(m.musicFor('midday')) }; });
+    out.variation = await page.evaluate(async () => { const m = await window.__mod('/src/ui/music.ts'); const v = m.musicFor('event:wintertide'); return { wintertide: v, sameAsMidday: JSON.stringify(v) === JSON.stringify(m.musicFor('midday')) }; });
     await ctx.close();
     results.snow = out;
     save();
@@ -274,7 +294,7 @@ async function frostSheet(page) {
       await page.waitForTimeout(1200);
       await page.screenshot({ path: path.join(OUT, `scene-rainbow-home-${q}.png`) });
       await page.locator('.hero, #hero-stage').first().screenshot({ path: path.join(OUT, `scene-rainbow-hero-${q}.png`) }).catch(() => {});
-      out[`rainbow-${q}`] = { scene: await page.evaluate(async () => (await import('/src/ui/theme.ts')).currentTheme()), errors: page.errors };
+      out[`rainbow-${q}`] = { scene: await page.evaluate(async () => (await window.__mod('/src/ui/theme.ts')).currentTheme()), errors: page.errors };
       await ctx.close();
     }
     const night = { themes: { owned: ['lighthousenight'], selected: 'lighthousenight', auto: false } };
@@ -290,7 +310,7 @@ async function frostSheet(page) {
       const { ctx, page } = await open(browser, { date: '2026-11-20', seed: night });
       await boot(page);
       await page.screenshot({ path: path.join(OUT, 'scene-night-home.png') });
-      out.nightHome = { scene: await page.evaluate(async () => (await import('/src/ui/theme.ts')).currentTheme()), bodyBg: await page.evaluate(() => getComputedStyle(document.body).backgroundColor) };
+      out.nightHome = { scene: await page.evaluate(async () => (await window.__mod('/src/ui/theme.ts')).currentTheme()), bodyBg: await page.evaluate(() => getComputedStyle(document.body).backgroundColor) };
       await ctx.close();
     }
     results.scenes = out;

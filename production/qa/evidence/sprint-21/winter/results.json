@@ -26,8 +26,8 @@
       "snowing": true,
       "snowCanvas": 1,
       "snowParent": "home",
-      "musicEvent": null,
-      "musicKey": "midday",
+      "musicEvent": "wintertide",
+      "musicKey": "event:wintertide",
       "chooser": {
         "sub": "Board 1 open · 0 of 24 cleared · Ends in 30 days",
         "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
@@ -49,8 +49,8 @@
       "snowing": true,
       "snowCanvas": 1,
       "snowParent": "home",
-      "musicEvent": null,
-      "musicKey": "midday",
+      "musicEvent": "wintertide",
+      "musicKey": "event:wintertide",
       "chooser": {
         "sub": "Board 12 open · 0 of 24 cleared · Ends in 19 days",
         "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
@@ -72,8 +72,8 @@
       "snowing": true,
       "snowCanvas": 1,
       "snowParent": "home",
-      "musicEvent": null,
-      "musicKey": "midday",
+      "musicEvent": "wintertide",
+      "musicKey": "event:wintertide",
       "chooser": {
         "sub": "All 24 boards open · 0 of 24 cleared · Ends in 7 days",
         "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
@@ -95,8 +95,8 @@
       "snowing": true,
       "snowCanvas": 1,
       "snowParent": "home",
-      "musicEvent": null,
-      "musicKey": "midday",
+      "musicEvent": "wintertide",
+      "musicKey": "event:wintertide",
       "chooser": {
         "sub": "All 24 boards open · 0 of 24 cleared · Last day",
         "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
