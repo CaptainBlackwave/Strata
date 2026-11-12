@@ -4,6 +4,7 @@
  * shade (which moves with it) picks its tone, a few grains sparkle, and exposed tops catch the light.
  */
 import { EMPTY, NEUTRAL, type ParticleView, type SandGrid } from '../sand';
+import type { Overlay } from './patterns';
 
 /** A colour as 0..255 channels. */
 export interface Rgb {
@@ -57,11 +58,24 @@ function cellRgb(cell: number, palette: readonly Rgb[], neutral: Rgb): Rgb {
   return cell === NEUTRAL ? neutral : palette[(cell - 1) % palette.length];
 }
 
+/** How `paintGrid` dresses the sand. */
+export interface PaintLook {
+  /** 0 outside the interior's rounded corners (`cornerMask`). */
+  readonly mask?: Uint8Array;
+  /** The worn sand texture (jar styles), over every grain, hidden sand too. */
+  readonly texture?: Overlay | null;
+  /** Colour-blind patterns, by colour id (`null` entries or none: patterns off). Never on hidden sand. */
+  readonly patterns?: readonly (Overlay | null)[] | null;
+  /** Colour saturation, 1 as is (a locked jar's glass dulls its sand to 0.85, as the DOM's filter). */
+  readonly saturation?: number;
+}
+
 /**
  * Paints `grid` into `out`, which is `(cols × sub) × (rows × sub)` texels. Empty cells and masked
- * texels are transparent. Example: `paintGrid(grid, palette, neutral, out, 2, mask)`
+ * texels are transparent. Example: `paintGrid(grid, palette, neutral, out, 2, { mask })`
  */
-export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb, out: Uint32Array, sub: number, mask?: Uint8Array): void {
+export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb, out: Uint32Array, sub: number, look: PaintLook = {}): void {
+  const mask = look.mask;
   const { cols, rows, cells, shade } = grid;
   const w = cols * sub;
   // A grain with nothing above or below it is falling. Grains that entered together fall level
@@ -77,7 +91,7 @@ export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb,
         for (let sy = 0; sy < sub; sy++) out.fill(0, t0 + sy * w, t0 + sy * w + sub);
         continue;
       }
-      paintCell(grid, i, x, y, cellRgb(cell, palette, neutral), out, w, sub, t0, mask, false);
+      paintCell(grid, i, x, y, cellRgb(cell, palette, neutral), out, w, sub, t0, mask, false, look);
     }
   }
   for (let y = 1; y < rows - 1; y++) {
@@ -88,17 +102,19 @@ export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb,
       const ty = Math.min(rows - 1, Math.max(0, y + (((s >> 2) & 7) - 3.5) * 0.6));
       const tx = Math.min(cols - 1, Math.max(0, x + ((s & 3) - 1.5) * 0.4));
       const t0 = Math.floor(ty * sub) * w + Math.floor(tx * sub);
-      paintCell(grid, i, x, y, cellRgb(cells[i], palette, neutral), out, w, sub, t0, mask, true);
+      paintCell(grid, i, x, y, cellRgb(cells[i], palette, neutral), out, w, sub, t0, mask, true, null);
     }
   }
 }
 
 /** One grain's `sub × sub` texels at `t0`. `onlyEmpty` keeps a nudged falling grain off settled sand. */
-function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out: Uint32Array, w: number, sub: number, t0: number, mask: Uint8Array | undefined, onlyEmpty: boolean): void {
+function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out: Uint32Array, w: number, sub: number, t0: number, mask: Uint8Array | undefined, onlyEmpty: boolean, look: PaintLook | null): void {
   const { cols, cells, shade } = grid;
   const cell = cells[i];
   const s = shade[i];
-  let k = 0.87 + 0.2 * (s / 255);
+  // A worn sand piece brings its own texture, so the grain's own tone steps back for it.
+  const quiet = look?.texture ? 0.5 : 1;
+  let k = 0.87 + 0.2 * quiet * (s / 255) + 0.1 * (1 - quiet);
   const above = y > 0 ? cells[i - cols] : EMPTY;
   const exposed = above === EMPTY;
   if (exposed) k += 0.14;
@@ -107,6 +123,10 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
   if (x < cols - 1 && cells[i + 1] === EMPTY) k -= 0.06;
   // A thin shadow under a stratum line, where a different colour lies on top.
   const seam = !exposed && above !== cell;
+  // A falling grain (look null) is drawn plain: textures and patterns belong to the resting sand.
+  const texture = look?.texture ?? null;
+  const pattern = look?.patterns && cell !== NEUTRAL ? look.patterns[cell - 1] ?? null : null;
+  const sat = look?.saturation ?? 1;
   for (let sy = 0; sy < sub; sy++) {
     for (let sx = 0; sx < sub; sx++) {
       const t = t0 + sy * w + sx;
@@ -118,7 +138,7 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
       if (onlyEmpty && out[t] !== 0) continue;
       // Per-texel tone from the grain's own shade, so the texture travels with the grain.
       const n = (((s * 73 + (sy * sub + sx) * 151) ^ (s >> 3)) & 31) / 31;
-      let kk = k + (n - 0.5) * 0.1;
+      let kk = k + (n - 0.5) * 0.1 * quiet;
       if (seam && sy === 0) kk -= 0.12;
       let r = c.r * kk;
       let g = c.g * kk;
@@ -127,6 +147,19 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
         r += (255 - r) * 0.7;
         g += (255 - g) * 0.7;
         b += (255 - b) * 0.7;
+      }
+      for (const o of [texture, pattern]) {
+        if (!o) continue;
+        const k = o.keep[t];
+        r = r * k + o.add[t * 3];
+        g = g * k + o.add[t * 3 + 1];
+        b = b * k + o.add[t * 3 + 2];
+      }
+      if (sat !== 1) {
+        const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        r = l + (r - l) * sat;
+        g = l + (g - l) * sat;
+        b = l + (b - l) * sat;
       }
       out[t] = pack(r, g, b);
     }
@@ -137,14 +170,15 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
  * Paints falling grains into `out`, a `(cols × sub) × (rows × sub)` texture covering particle `y`
  * from `top` to `top + rows` (the air above the mouth is `top = -airRows`; the target's own grid is
  * `top = 0`). `clear` empties it first; otherwise grains only fill transparent texels, so they never
- * hide settled sand. Each grain is one cell, nudged up or down a little by its shade so grains that
+ * hide settled sand; `minY` skips grains above it (a narrow target draws only grains past its mouth). Each grain is one cell, nudged up or down a little by its shade so grains that
  * left the lip together don't fall in a line (drawing only; the stream keeps its width).
  */
-export function paintParticles(view: ParticleView, cols: number, top: number, rows: number, palette: readonly Rgb[], neutral: Rgb, out: Uint32Array, sub: number, clear: boolean): void {
+export function paintParticles(view: ParticleView, cols: number, top: number, rows: number, palette: readonly Rgb[], neutral: Rgb, out: Uint32Array, sub: number, clear: boolean, minY = -Infinity): void {
   if (clear) out.fill(0);
   const w = cols * sub;
   const h = rows * sub;
   for (let p = 0; p < view.count; p++) {
+    if (view.y[p] < minY) continue;
     const s = view.shade[p];
     const tx = Math.floor(view.x[p] * sub);
     const ty = Math.floor((view.y[p] - top + (((s >> 2) & 7) - 3.5) * 0.4) * sub);

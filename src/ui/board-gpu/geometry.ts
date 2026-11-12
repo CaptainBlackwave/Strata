@@ -16,6 +16,8 @@ export interface Rect {
 export interface JarGeometry {
   /** The glass's outer box at rest (no lift). */
   readonly glass: Rect;
+  /** The jar button's box at rest: the DOM places the rim marks (padlock, funnel, sieve, clam) from it. */
+  readonly button: Rect;
   /** Interior bottom centre, viewport coordinates: the jar container's origin. */
   readonly x: number;
   readonly y: number;
@@ -28,7 +30,8 @@ export interface JarGeometry {
   /** One sand cell. A unit's band is exactly `unitHeight` tall. */
   readonly cellW: number;
   readonly cellH: number;
-  /** The sand grid's height (`rows × cellH`), bottom-aligned in the interior. */
+  /** The sand grid's height (`rows × cellH`), bottom-aligned in the interior. A narrow jar's grid
+   * is taller than its glass; the rows above its mouth (`mouthRow`) stay empty. */
   readonly gridHeight: number;
   /** Selection lift, as the DOM's `--lift`. */
   readonly lift: number;
@@ -47,7 +50,7 @@ export function restRect(r: Rect, translateY: number): Rect {
  * `unitHeight` tall, so the canvas sand lines up with where the DOM draws it.
  * Example: `jarGeometry({ left: 0, top: 0, width: 68, height: 189 }, 42, 4, { cols: 32, rows: 72 }).cellH // 42 / 18`
  */
-export function jarGeometry(glass: Rect, unitHeight: number, capacity: number, dims: SandDims): JarGeometry {
+export function jarGeometry(glass: Rect, unitHeight: number, capacity: number, dims: SandDims, button: Rect = glass): JarGeometry {
   const wall = DOM_INSET;
   const base = DOM_INSET;
   const innerWidth = Math.max(1, glass.width - 2 * wall);
@@ -56,6 +59,7 @@ export function jarGeometry(glass: Rect, unitHeight: number, capacity: number, d
   const cellH = unitHeight / bandRows(capacity, dims);
   return {
     glass,
+    button,
     x: glass.left + glass.width / 2,
     y: glass.top + glass.height - base,
     wall,
@@ -64,8 +68,8 @@ export function jarGeometry(glass: Rect, unitHeight: number, capacity: number, d
     innerHeight,
     cellW,
     cellH,
-    gridHeight: Math.min(innerHeight, dims.rows * cellH),
-    lift: glass.width * 0.32,
+    gridHeight: dims.rows * cellH,
+    lift: button.width * 0.32,
   };
 }
 
@@ -75,11 +79,19 @@ export function lipLocal(g: JarGeometry, side: 1 | -1): { x: number; y: number }
 }
 
 /**
+ * The jar's mouth row in its grid: 0 when the glass holds the whole grid, else the first row inside
+ * a narrow jar's shorter glass. Example: `mouthRow(narrowGeom, 72) // 30`
+ */
+export function mouthRow(g: JarGeometry, rows: number): number {
+  return Math.max(0, rows - Math.floor(g.innerHeight / g.cellH + 1e-6));
+}
+
+/**
  * Where the source's lip waits during the pour: over the target's near edge, `airRows` cells above
  * the top of its sand grid, which is where the simulation starts a spilled grain.
  */
-export function pourLip(target: JarGeometry, side: 1 | -1, airRows: number): { x: number; y: number } {
-  return { x: target.x - (side * target.innerWidth) / 2, y: target.y - target.gridHeight - airRows * target.cellH };
+export function pourLip(target: JarGeometry, side: 1 | -1, airRows: number, mouth = 0): { x: number; y: number } {
+  return { x: target.x - (side * target.innerWidth) / 2, y: target.y - target.gridHeight + (mouth - airRows) * target.cellH };
 }
 
 /**

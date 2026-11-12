@@ -62,8 +62,35 @@ function rr(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: num
   g.closePath();
 }
 
-/** Draws the art for jars of geometry `g` at `res` device pixels per CSS px. */
-export function drawJarArt(g: JarGeometry, res: number): JarArt {
+/**
+ * The glass's colours, resolved from the scene's tokens and the worn glass piece (style.css: the
+ * `--style-*` properties of `[data-glass]`, over `--glass-edge` and `--glass`), so the outline reads
+ * on light and dark scenes and each piece keeps its tint. Any CSS colour string.
+ */
+export interface GlassLook {
+  /** The outline. */
+  readonly edge: string;
+  /** The glass body: the tint seen through empty glass. */
+  readonly body: string;
+  /** A faint band at the wall beside the sand (`transparent` for clear glass). */
+  readonly band: string;
+  /** The rim flange. */
+  readonly rim: string;
+  /** The contact shadow's colour, and a night scene (darker, stronger shadow). */
+  readonly shadow: string;
+  readonly night: boolean;
+}
+
+/** Clear glass on a daylight scene: today's tokens. */
+export const DEFAULT_LOOK: GlassLook = {
+  edge: 'rgba(90,70,50,0.55)', body: 'rgba(255,255,255,0.38)', band: 'transparent', rim: 'rgba(255,255,255,0.38)', shadow: 'rgb(60,44,24)', night: false,
+};
+
+/**
+ * Draws the art for jars of geometry `g` at `res` device pixels per CSS px, in `look`. A funnel's glass
+ * gets the DOM's faint horizontal stripes and dashed sides.
+ */
+export function drawJarArt(g: JarGeometry, res: number, look: GlassLook = DEFAULT_LOOK, funnel = false): JarArt {
   const iw = g.innerWidth;
   const ih = g.innerHeight;
   const ox = iw / 2 + g.wall;
@@ -82,8 +109,19 @@ export function drawJarArt(g: JarGeometry, res: number): JarArt {
   b.translate(-left, -top);
   b.beginPath();
   inner(b);
-  b.fillStyle = 'rgba(225,240,242,0.07)';
+  b.save();
+  b.globalAlpha = 0.2; // the body token is the DOM's whole glass fill; here it is only a breath of tint
+  b.fillStyle = look.body;
   b.fill();
+  b.restore();
+  if (funnel) {
+    // The funnel's glass: faint brown stripes, 6 px on, 6 px off (style.css `.funnel .glass`).
+    b.save();
+    b.clip();
+    b.fillStyle = 'rgba(122,80,56,0.08)';
+    for (let y = 0; y < ih + 12; y += 12) b.fillRect(-iw / 2, -y - 6, iw, 6);
+    b.restore();
+  }
 
   // In front of the sand: soft, frosted, matte glass (D162). The sand is the star.
   const [front, f] = canvas(width, height, res);
@@ -112,8 +150,11 @@ export function drawJarArt(g: JarGeometry, res: number): JarArt {
   f.beginPath();
   outer(f);
   inner(f);
-  f.fillStyle = 'rgba(236,244,245,0.34)';
+  f.save();
+  f.globalAlpha = 0.75;
+  f.fillStyle = look.rim;
   f.fill('evenodd');
+  f.restore();
   f.save();
   f.beginPath();
   outer(f);
@@ -129,9 +170,24 @@ export function drawJarArt(g: JarGeometry, res: number): JarArt {
   // (reads on dark scenes), and the inner edge, so the wall has a little thickness.
   f.beginPath();
   outer(f);
-  f.strokeStyle = 'rgba(52,66,74,0.46)';
-  f.lineWidth = 1.1;
-  f.stroke();
+  f.strokeStyle = look.edge;
+  f.lineWidth = 1.3;
+  if (funnel) {
+    // Dashed sides, a solid foot and top, as the DOM's `border-style: solid dashed`.
+    f.save();
+    f.setLineDash([4, 3]);
+    f.stroke();
+    f.restore();
+  } else f.stroke();
+  // The worn piece's band at the wall, beside the sand.
+  f.save();
+  f.beginPath();
+  inner(f);
+  f.clip();
+  f.fillStyle = look.band;
+  f.fillRect(-iw / 2, -ih, Math.max(1.5, iw * 0.06), ih);
+  f.fillRect(iw / 2 - Math.max(1.5, iw * 0.06), -ih, Math.max(1.5, iw * 0.06), ih);
+  f.restore();
   f.beginPath();
   rr(f, -ox + 1, -ih + 1, ox * 2 - 2, ih + g.base - 2, 2, rbo - 1);
   f.strokeStyle = 'rgba(255,255,255,0.3)';
@@ -139,16 +195,19 @@ export function drawJarArt(g: JarGeometry, res: number): JarArt {
   f.stroke();
   f.beginPath();
   inner(f);
-  f.strokeStyle = 'rgba(52,66,74,0.2)';
+  f.save();
+  f.globalAlpha = 0.4;
+  f.strokeStyle = look.edge;
   f.lineWidth = 0.8;
   f.stroke();
+  f.restore();
 
   // 4. A faint rim and the front of the opening.
   f.beginPath();
   rr(f, -ox - 1.5, -ih - rim * 0.3, (ox + 1.5) * 2, rim, rim * 0.45, rim * 0.45);
-  f.fillStyle = 'rgba(240,246,246,0.4)';
+  f.fillStyle = look.rim;
   f.fill();
-  f.strokeStyle = 'rgba(52,66,74,0.4)';
+  f.strokeStyle = look.edge;
   f.lineWidth = 1;
   f.stroke();
   f.beginPath();
@@ -179,23 +238,47 @@ export function drawJarArt(g: JarGeometry, res: number): JarArt {
   s.save();
   s.translate(width * 0.06, 0);
   s.scale(1, shadowHeight / shadowWidth);
+  // The shadow takes the scene's ink; at night it is darker and a little stronger, so it still reads.
+  const k = look.night ? 1.6 : 1;
+  s.globalAlpha = Math.min(1, 0.3 * k);
   gr = s.createRadialGradient(0, 0, 0, 0, 0, shadowWidth / 2);
-  gr.addColorStop(0, 'rgba(60,44,24,0.3)');
-  gr.addColorStop(0.55, 'rgba(60,44,24,0.12)');
-  gr.addColorStop(1, 'rgba(60,44,24,0)');
+  gr.addColorStop(0, look.shadow);
+  gr.addColorStop(0.55, withAlpha(look.shadow, 0.4));
+  gr.addColorStop(1, withAlpha(look.shadow, 0));
   s.fillStyle = gr;
   s.fillRect(-shadowWidth / 2, -shadowWidth / 2, shadowWidth, shadowWidth);
   s.restore();
   s.save();
   s.scale(1, (shadowHeight * 0.55) / ox / 2);
+  s.globalAlpha = Math.min(1, 0.42 * k);
   gr = s.createRadialGradient(0, 0, 0, 0, 0, ox * 1.1);
-  gr.addColorStop(0, 'rgba(40,28,14,0.42)');
-  gr.addColorStop(1, 'rgba(40,28,14,0)');
+  gr.addColorStop(0, look.shadow);
+  gr.addColorStop(1, withAlpha(look.shadow, 0));
   s.fillStyle = gr;
   s.fillRect(-ox * 1.2, -ox * 1.2, ox * 2.4, ox * 2.4);
   s.restore();
 
   return { back, front, shadow, left, top, width, height, shadowWidth, shadowHeight, innerRadius: rb };
+}
+
+/** `color` (any CSS colour a 2D canvas reads) at `alpha`, through the canvas's own colour parser. */
+export function withAlpha(color: string, alpha: number): string {
+  const c = document.createElement('canvas').getContext('2d');
+  if (!c) return color;
+  c.fillStyle = '#000';
+  c.fillStyle = color;
+  const v = String(c.fillStyle);
+  const hex = /^#([0-9a-f]{6})$/i.exec(v);
+  if (hex) {
+    const n = parseInt(hex[1], 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+  }
+  const m = /rgba?\(([^)]+)\)/.exec(v);
+  if (m) {
+    const [r, g, b] = m[1].split(',').map((x) => parseFloat(x));
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  return color;
 }
 
 /** The "?" on a hidden unit, as today's DOM draws it: bold, `unitHeight × 0.55`, soft ink. */

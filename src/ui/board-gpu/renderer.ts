@@ -1,17 +1,20 @@
 /**
- * The PixiJS board (sprint 19 S2, docs/architecture/adr-0001-gpu-sand-board.md). One WebGL canvas
- * behind `#board` draws every jar's glass and sand where today's layout puts the jar buttons; the
- * buttons stay on top as the input layer (S4). It draws only when something changes: there is no
- * Pixi ticker, only a requestAnimationFrame loop that runs while a lift or a pour moves, and stops
+ * The PixiJS board (sprint 19 S2/S3, docs/architecture/adr-0001-gpu-sand-board.md). One WebGL canvas
+ * behind `#board` draws every jar's glass, sand and mechanic marks where today's layout puts the jar
+ * buttons; the buttons stay on top as the input layer (S4), with the DOM's text (hourglass and clam
+ * counts) and corks. It draws only when something changes: there is no Pixi ticker, only a
+ * requestAnimationFrame loop that runs while a lift, a pour or a mechanic effect moves, and stops
  * when the tab is hidden. Loaded on demand, so the DOM board's bundle carries none of Pixi.
  */
 import { CanvasSource, Container, Sprite, Texture, WebGLRenderer } from 'pixi.js';
-import type { Board } from '../../core/board';
+import type { Board, Jar } from '../../core/board';
 import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, done, finish, gridFromJar, planPour, sandConfig, step, stepsDue } from '../sand';
-import { type JarArt, drawJarArt, drawMark } from './art';
+import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from './art';
 import { DirtyTracker, jarKey } from './dirty';
-import { type JarGeometry, cubicBezier, lipLocal, pourLip, pourSide } from './geometry';
-import { type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
+import { type JarGeometry, cubicBezier, lipLocal, mouthRow, pourLip, pourSide } from './geometry';
+import { drawClamShell, drawFunnelMark, drawIce, drawPadlock, drawSieveBand } from './mech-art';
+import { type PaintLook, type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
+import { type Overlay, PATTERNS, patternOverlay, sandOverlay } from './patterns';
 
 /** Texels per sand cell along each axis: each grain gets a little texture of its own. */
 const SUB = 2;
@@ -19,15 +22,34 @@ const SUB = 2;
 const STREAM_PX = 3;
 /** Where the lip waits over the target's opening, as a share of its width from the near wall (strata-r8z). */
 const LIP_INSET = 0.3;
+/** A locked jar's sand is dulled like the DOM's `.jar.locked .glass { filter: saturate(0.85) }`. */
+const LOCKED_SATURATION = 0.85;
 
 /** Motion timings and curves, taken from the DOM board so both feel the same. */
 export interface GpuMotion {
-  /** The lift to the pour position (ms) and its CSS easing. */
+  /** The lift to the pour position (ms). */
   readonly liftMs: number;
   /** The flight home (ms). */
   readonly backMs: number;
   /** The selection lift's transition (ms), as `.jar`'s `transition` in style.css. */
   readonly selectMs: number;
+  /** The hourglass flip (`FLIP_MS`) and the clam opening (`CLAM_OPEN_MS`). */
+  readonly flipMs: number;
+  readonly clamOpenMs: number;
+  /** style.css `thaw` (760 ms) and `unlock` (800 ms). */
+  readonly thawMs: number;
+  readonly unlockMs: number;
+}
+
+/** What the board looks like beyond its jars: the scene and glass piece, the sand piece and patterns. */
+export interface BoardLook {
+  readonly glass: GlassLook;
+  /** The scene's ink (`--ink`): the padlock's and the sieve band's edges. */
+  readonly ink: string;
+  /** The worn sand piece id (`plain`, `fine`, `glint`, `layered`, `ripple`). */
+  readonly sand: string;
+  /** Colour-blind patterns on. */
+  readonly patterns: boolean;
 }
 
 /** What the board asks of the game while a pour plays. */
@@ -43,7 +65,9 @@ export interface PourHooks {
 /** The renderer's construction options. */
 export interface GpuBoardOptions {
   readonly host: HTMLElement;
+  /** Palette colours, by colour id; `hex` strings are used for the marks. */
   readonly palette: readonly Rgb[];
+  readonly paletteHex: readonly string[];
   readonly neutral: Rgb;
   readonly motion: GpuMotion;
   readonly reducedMotion: () => boolean;
@@ -54,9 +78,13 @@ export interface GpuBoardOptions {
 interface JarView {
   readonly root: Container;
   readonly back: Sprite;
+  /** The sand and its "?" marks: the hourglass flip turns this over. */
+  readonly sandLayer: Container;
   readonly sand: Sprite;
   readonly marks: Container;
   readonly front: Sprite;
+  /** Mechanic marks over the glass: ice, padlock, funnel, sieve band, clam shell. */
+  readonly decor: Container;
   readonly shadow: Sprite;
   readonly canvas: HTMLCanvasElement;
   readonly ctx: CanvasRenderingContext2D;
@@ -65,10 +93,31 @@ interface JarView {
   readonly texture: Texture;
   grid: SandGrid;
   geom: JarGeometry;
+  /** The jar as last drawn (its mechanics, to notice a thaw or an unlock). */
+  jar: Jar | null;
   lift: number;
   liftFrom: number;
   liftTo: number;
   liftStart: number;
+}
+
+/** The per-size sand look: the corner mask, the sand texture and the patterns. */
+interface GrainLook {
+  readonly mask: Uint8Array;
+  readonly texture: Overlay | null;
+  readonly patterns: readonly Overlay[] | null;
+}
+
+/** A short effect: a thaw, an unlock, a clam opening, a flip. */
+interface Fx {
+  readonly jar: number;
+  readonly kind: 'thaw' | 'unlock' | 'clam' | 'flip';
+  readonly start: number;
+  readonly ms: number;
+  readonly sprite: Sprite | null;
+  /** Draws progress `u` (0..1, or below 0 while delayed). */
+  readonly at: (u: number) => void;
+  readonly end: () => void;
 }
 
 interface Pour {
@@ -79,9 +128,10 @@ interface Pour {
   readonly hooks: PourHooks;
   readonly resolve: () => void;
   readonly reject: (e: unknown) => void;
-  /** Where the lip starts (at rest, with the current lift) and waits over the target. */
   readonly startLip: { x: number; y: number };
   readonly waitLip: { x: number; y: number };
+  /** The target's mouth row (narrow jars), for the air and its own texture. */
+  readonly targetMouth: number;
   readonly start: number;
   /** Moving to the target (the spill held), pouring, flying home, then the target's last settling once home. */
   phase: 'move' | 'sim' | 'back' | 'tail';
@@ -94,32 +144,37 @@ interface Pour {
 
 const easeLift = cubicBezier(0.3, 0.7, 0.4, 1);
 const easeBack = cubicBezier(0.4, 0, 0.3, 1);
+const easeFlip = cubicBezier(0.45, 0, 0.25, 1);
+const easeClam = cubicBezier(0.3, 0.6, 0.4, 1);
+const easeIn = cubicBezier(0.42, 0, 1, 1);
 
 /** The PixiJS jar board. Create with `GpuBoard.create`; `null` when WebGL fails. */
 export class GpuBoard {
   private readonly stage = new Container();
   private readonly shadows = new Container();
   private readonly jarsLayer = new Container();
+  private readonly fxLayer = new Container();
   private readonly air = new Sprite();
   private views: JarView[] = [];
-  private art: JarArt | null = null;
-  private artKey = '';
-  private backTex: Texture | null = null;
-  private frontTex: Texture | null = null;
-  private shadowTex: Texture | null = null;
-  private markTex: Texture | null = null;
+  /** Cached textures by key (glass art, marks); cleared when the look or the resolution changes. */
+  private readonly textures = new Map<string, Texture>();
+  private readonly arts = new Map<string, JarArt>();
+  private readonly grains = new Map<string, GrainLook>();
+  private look: BoardLook = { glass: DEFAULT_LOOK, ink: '#4a3b2c', sand: 'plain', patterns: false };
+  private lookKey = '';
   private airCanvas: HTMLCanvasElement | null = null;
   private airCtx: CanvasRenderingContext2D | null = null;
   private airImage: ImageData | null = null;
   private airTexels: Uint32Array | null = null;
   private airTexture: Texture | null = null;
-  private mask: Uint8Array | null = null;
   private readonly tracker = new DirtyTracker();
   private board: Board | null = null;
   private selected: number | null = null;
   private pour: Pour | null = null;
+  private fx: Fx[] = [];
   private raf = 0;
   private frames = 0;
+  private last = 0;
   private readonly config: SandConfig;
 
   private constructor(
@@ -127,7 +182,7 @@ export class GpuBoard {
     private readonly opts: GpuBoardOptions,
   ) {
     this.config = opts.config ?? sandConfig;
-    this.stage.addChild(this.shadows, this.jarsLayer, this.air);
+    this.stage.addChild(this.shadows, this.jarsLayer, this.fxLayer, this.air);
     this.air.visible = false;
     document.addEventListener('visibilitychange', this.onVisibility);
   }
@@ -164,10 +219,30 @@ export class GpuBoard {
     return this.pour !== null;
   }
 
-  /** Shows or hides the whole canvas (a board on the DOM fallback hides it). */
+  /** The jar a pour is carrying away from its button, or `null` (its DOM marks hide meanwhile). */
+  get away(): number | null {
+    return this.pour && this.pour.phase !== 'tail' ? this.pour.from : null;
+  }
+
+  /** Shows or hides the whole canvas. */
   setVisible(on: boolean): void {
     (this.renderer.canvas as HTMLCanvasElement).hidden = !on;
     if (!on) this.completePour();
+  }
+
+  /**
+   * Sets the scene, glass piece, sand piece and patterns. A change redraws everything at the next
+   * `sync` or `layout`. Returns true when it changed.
+   */
+  setLook(look: BoardLook): boolean {
+    const key = JSON.stringify(look);
+    if (key === this.lookKey) return false;
+    this.look = look;
+    this.lookKey = key;
+    this.clearCaches();
+    this.tracker.reset();
+    for (const v of this.views) this.applyArt(v);
+    return true;
   }
 
   /**
@@ -176,26 +251,26 @@ export class GpuBoard {
    */
   layout(geoms: readonly JarGeometry[], board: Board, selected: number | null): void {
     this.completePour();
-    this.renderer.resize(window.innerWidth, window.innerHeight);
-    const g0 = geoms[0];
-    if (!g0) return;
+    this.endFx();
     const res = this.renderer.resolution;
-    const key = [g0.glass.width, g0.glass.height, g0.cellH, res, board.capacity].map((v) => v.toFixed(2)).join('/');
-    if (key !== this.artKey) this.buildArt(g0, board.capacity, res, key);
+    this.renderer.resize(window.innerWidth, window.innerHeight);
+    if (res !== this.renderer.resolution) this.clearCaches();
     while (this.views.length > geoms.length) this.destroyView(this.views.pop()!);
     while (this.views.length < geoms.length) this.views.push(this.makeView(geoms[this.views.length]));
     this.views.forEach((v, i) => {
       v.geom = geoms[i];
-      this.placeArt(v);
+      v.jar = null; // a new layout draws each jar as it is, with no thaw or unlock
+      this.applyArt(v, board.jars[i]);
     });
     this.tracker.reset();
     this.sync(board, selected, true);
   }
 
   /**
-   * Brings the canvas up to `board` and the selection: redraws only jars whose units changed, and
-   * eases the selected jar's lift. A pour in progress owns its two jars until it ends; a board
-   * change after it released the input snaps it to its end first (Undo, Restart, a new pour).
+   * Brings the canvas up to `board` and the selection: redraws only jars that changed (their units
+   * or mechanics), plays a thaw or an unlock where one ended, and eases the selected jar's lift.
+   * A pour in progress owns its two jars until it ends; a board change after it released the input
+   * snaps it to its end first (Undo, Restart, a new pour).
    */
   sync(board: Board, selected: number | null, instant = false): void {
     if (board.jars.length !== this.views.length) return;
@@ -207,15 +282,18 @@ export class GpuBoard {
     for (const i of this.tracker.diff(keys)) {
       if (owned.includes(i)) continue;
       const v = this.views[i];
-      v.grid = gridFromJar(board.jars[i], board.capacity, this.opts.dims, 1 + i * 7919);
-      this.paint(v, board, i);
+      const jar = board.jars[i];
+      if (!instant && v.jar) this.mechanicFx(i, v.jar, jar);
+      v.grid = gridFromJar(jar, board.capacity, this.opts.dims, 1 + i * 7919);
+      this.redraw(v, jar, board.capacity);
     }
     // Owned jars are re-marked as undrawn so they are redrawn if the pour is cancelled.
     for (const i of owned) this.tracker.mark(i, '');
     this.selected = selected;
     const now = performance.now();
     this.views.forEach((v, i) => {
-      const to = selected === i && !(this.pour && this.pour.from === i && this.pour.phase !== 'tail') ? 1 : 0;
+      const carried = this.pour && this.pour.from === i && this.pour.phase !== 'tail';
+      const to = selected === i && !carried ? 1 : 0;
       if (to === v.liftTo && !instant) return;
       v.liftFrom = v.lift;
       v.liftTo = to;
@@ -223,6 +301,61 @@ export class GpuBoard {
       if (instant || this.opts.reducedMotion()) v.lift = to;
     });
     this.request();
+  }
+
+  /**
+   * The hourglass flip on jar `i` (D96): its sand already shows the new order, and turns over about
+   * its own middle after `delay` ms, as the DOM's `flipFx`. Reduced motion: nothing moves.
+   */
+  flip(i: number, delay: number): void {
+    const v = this.views[i];
+    if (!v || this.opts.reducedMotion() || !this.board) return;
+    const unit = v.geom.cellH * bandRows(this.board.capacity, this.opts.dims);
+    const mid = (this.board.jars[i].units.length * unit) / 2;
+    v.sandLayer.pivot.set(0, -mid);
+    v.sandLayer.position.set(0, -mid);
+    this.addFx({
+      jar: i, kind: 'flip', start: performance.now() + delay, ms: this.opts.motion.flipMs, sprite: null,
+      at: (u) => {
+        const a = Math.PI * (1 - easeFlip(Math.max(0, u)));
+        v.sandLayer.scale.y = Math.cos(a);
+      },
+      end: () => {
+        v.sandLayer.scale.y = 1;
+        v.sandLayer.pivot.set(0, 0);
+        v.sandLayer.position.set(0, 0);
+      },
+    });
+  }
+
+  /**
+   * A clam's shell swinging open on jar `i` (D96, §2.6): the jar is drawn open already; the shell
+   * stays closed over it for `delay` ms, then tips back on its hinge and fades, as the DOM's `clamOpenFx`.
+   */
+  clamOpen(i: number, delay: number): void {
+    const v = this.views[i];
+    if (!v || this.opts.reducedMotion()) return;
+    const shell = this.shellSprite(v);
+    const foot = v.root.toGlobal({ x: shell.x, y: shell.y + shell.height });
+    shell.anchor.set(0, 1);
+    shell.position.set(foot.x, foot.y);
+    this.fxLayer.addChild(shell);
+    const h = shell.height;
+    this.addFx({
+      jar: i, kind: 'clam', start: performance.now() + delay, ms: this.opts.motion.clamOpenMs, sprite: shell,
+      at: (u) => {
+        const e = easeClam(Math.max(0, u));
+        const deg = e < 0.45 ? (34 * e) / 0.45 : 34 + ((78 - 34) * (e - 0.45)) / 0.55;
+        shell.height = h * Math.cos((deg * Math.PI) / 180);
+        shell.alpha = e < 0.45 ? 1 : 1 - (e - 0.45) / 0.55;
+      },
+      end: () => shell.destroy(),
+    });
+  }
+
+  /** Ends every flip and clam opening at once (a board change other than a pour, as `cancelFlips`). */
+  cancelFlips(): void {
+    this.endFx(['flip', 'clam']);
   }
 
   /**
@@ -235,10 +368,12 @@ export class GpuBoard {
     const src = this.views[from];
     const dst = this.views[to];
     const side = pourSide(src.geom, dst.geom, window.innerWidth);
-    const { cols } = this.opts.dims;
+    const { cols, rows } = this.opts.dims;
     // The lip waits over the opening, a little in from the near wall, and the stream falls straight down from it.
     const streamCol = (side > 0 ? LIP_INSET : 1 - LIP_INSET) * cols;
-    const sim = planPour(board, from, to, this.opts.dims, seed, { side, config: this.config, streamCol, streamWidth: STREAM_PX / dst.geom.cellW });
+    const sourceMouth = mouthRow(src.geom, rows);
+    const targetMouth = mouthRow(dst.geom, rows);
+    const sim = planPour(board, from, to, this.opts.dims, seed, { side, config: this.config, streamCol, streamWidth: STREAM_PX / dst.geom.cellW, sourceMouth, targetMouth });
     // The grids are the same sand: keep the grains' shades so nothing shimmers at the start.
     sim.source.shade.set(src.grid.shade);
     sim.target.shade.set(dst.grid.shade);
@@ -249,11 +384,11 @@ export class GpuBoard {
     src.root.pivot.set(lip.x, lip.y);
     src.root.position.set(startLip.x, startLip.y);
     this.jarsLayer.addChild(src.root);
-    this.prepareAir(dst.geom);
+    this.prepareAir(dst.geom, targetMouth);
     return new Promise<void>((resolve, reject) => {
       this.pour = {
-        from, to, sim, side, hooks, resolve, reject, startLip,
-        waitLip: { x: dst.geom.x - dst.geom.innerWidth / 2 + streamCol * dst.geom.cellW, y: pourLip(dst.geom, side, this.config.airRows).y },
+        from, to, sim, side, hooks, resolve, reject, startLip, targetMouth,
+        waitLip: { x: dst.geom.x - dst.geom.innerWidth / 2 + streamCol * dst.geom.cellW, y: pourLip(dst.geom, side, this.config.airRows, targetMouth).y },
         start: performance.now(), phase: 'move', backStart: 0, carry: 0, spilled: false, after: null, released: false,
       };
       src.liftTo = 0;
@@ -283,25 +418,57 @@ export class GpuBoard {
     this.renderer.destroy({ removeView: true });
   }
 
-  // ---- drawing -------------------------------------------------------------------------------
+  // ---- art -----------------------------------------------------------------------------------
 
-  private buildArt(g: JarGeometry, capacity: number, res: number, key: string): void {
-    for (const t of [this.backTex, this.frontTex, this.shadowTex, this.markTex]) t?.destroy(true);
-    this.art = drawJarArt(g, res);
-    this.artKey = key;
-    const tex = (c: HTMLCanvasElement) => new Texture({ source: new CanvasSource({ resource: c, resolution: res, scaleMode: 'linear' }) });
-    this.backTex = tex(this.art.back);
-    this.frontTex = tex(this.art.front);
-    this.shadowTex = tex(this.art.shadow);
-    this.markTex = tex(drawMark(g.cellH * bandRows(capacity, this.opts.dims), res));
-    const { cols, rows } = this.opts.dims;
-    const r = this.art.innerRadius;
-    this.mask = cornerMask(cols * SUB, rows * SUB, (r / g.cellW) * SUB, (r / g.cellH) * SUB);
-    for (const v of this.views) {
-      v.back.texture = this.backTex;
-      v.front.texture = this.frontTex;
-      v.shadow.texture = this.shadowTex;
+  private clearCaches(): void {
+    for (const t of this.textures.values()) t.destroy(true);
+    this.textures.clear();
+    this.arts.clear();
+    this.grains.clear();
+  }
+
+  /** A cached texture, made by `make` (a canvas at the renderer's resolution) the first time. */
+  private tex(key: string, make: (res: number) => HTMLCanvasElement, scaleMode: 'linear' | 'nearest' = 'linear'): Texture {
+    let t = this.textures.get(key);
+    if (!t) {
+      const res = this.renderer.resolution;
+      t = new Texture({ source: new CanvasSource({ resource: make(res), resolution: res, scaleMode }) });
+      this.textures.set(key, t);
     }
+    return t;
+  }
+
+  private sizeKey(g: JarGeometry): string {
+    return [g.glass.width, g.glass.height, g.cellW, g.cellH].map((n) => n.toFixed(2)).join('x');
+  }
+
+  /** The glass art for a jar of this size, funnel or not, in the current look. */
+  private artFor(g: JarGeometry, funnel: boolean): { art: JarArt; back: Texture; front: Texture; shadow: Texture } {
+    const key = `${this.sizeKey(g)}|${funnel ? 'f' : ''}`;
+    let art = this.arts.get(key);
+    if (!art) {
+      art = drawJarArt(g, this.renderer.resolution, this.look.glass, funnel);
+      this.arts.set(key, art);
+    }
+    const a = art;
+    return { art: a, back: this.tex(`back|${key}`, () => a.back), front: this.tex(`front|${key}`, () => a.front), shadow: this.tex(`shadow|${key}`, () => a.shadow) };
+  }
+
+  /** The corner mask, sand texture and patterns for a jar of this size. */
+  private grainFor(g: JarGeometry, capacity: number, innerRadius: number): GrainLook {
+    const key = `${this.sizeKey(g)}|${capacity}`;
+    let look = this.grains.get(key);
+    if (!look) {
+      const { cols, rows } = this.opts.dims;
+      const space = { width: cols * SUB, height: rows * SUB, texelW: g.cellW / SUB, texelH: g.cellH / SUB, unitRows: bandRows(capacity, this.opts.dims) * SUB };
+      look = {
+        mask: cornerMask(space.width, space.height, (innerRadius / g.cellW) * SUB, (innerRadius / g.cellH) * SUB),
+        texture: sandOverlay(space, this.look.sand),
+        patterns: this.look.patterns ? this.opts.palette.map((_, c) => patternOverlay(space, c % PATTERNS.length)) : null,
+      };
+      this.grains.set(key, look);
+    }
+    return look;
   }
 
   private makeView(geom: JarGeometry): JarView {
@@ -314,16 +481,19 @@ export class GpuBoard {
     const texture = new Texture({ source: new CanvasSource({ resource: canvas, scaleMode: 'nearest' }) });
     const v: JarView = {
       root: new Container(),
-      back: new Sprite(this.backTex!),
+      back: new Sprite(),
+      sandLayer: new Container(),
       sand: new Sprite(texture),
       marks: new Container(),
-      front: new Sprite(this.frontTex!),
-      shadow: new Sprite(this.shadowTex!),
+      front: new Sprite(),
+      decor: new Container(),
+      shadow: new Sprite(),
       canvas, ctx, image, texels: new Uint32Array(image.data.buffer), texture,
       grid: gridFromJar({ units: [], hidden: 0 }, 1, this.opts.dims),
-      geom, lift: 0, liftFrom: 0, liftTo: 0, liftStart: 0,
+      geom, jar: null, lift: 0, liftFrom: 0, liftTo: 0, liftStart: 0,
     };
-    v.root.addChild(v.back, v.sand, v.marks, v.front);
+    v.sandLayer.addChild(v.sand, v.marks);
+    v.root.addChild(v.back, v.sandLayer, v.front, v.decor);
     this.shadows.addChild(v.shadow);
     this.jarsLayer.addChild(v.root);
     return v;
@@ -335,17 +505,21 @@ export class GpuBoard {
     v.texture.destroy(true);
   }
 
-  private placeArt(v: JarView): void {
-    const a = this.art!;
+  /** Puts a jar's glass art and sand sprite in place for its geometry and mechanics. */
+  private applyArt(v: JarView, jar: Jar | null = v.jar): void {
     const g = v.geom;
-    v.back.position.set(a.left, a.top);
-    v.front.position.set(a.left, a.top);
-    v.back.setSize(a.width, a.height);
-    v.front.setSize(a.width, a.height);
+    const { art, back, front, shadow } = this.artFor(g, jar?.funnel === true);
+    v.back.texture = back;
+    v.front.texture = front;
+    v.shadow.texture = shadow;
+    v.back.position.set(art.left, art.top);
+    v.front.position.set(art.left, art.top);
+    v.back.setSize(art.width, art.height);
+    v.front.setSize(art.width, art.height);
     v.sand.position.set(-g.innerWidth / 2, -g.gridHeight);
     v.sand.setSize(g.innerWidth, g.gridHeight);
     v.shadow.anchor.set(0.5);
-    v.shadow.setSize(a.shadowWidth, a.shadowHeight);
+    v.shadow.setSize(art.shadowWidth, art.shadowHeight);
     v.shadow.position.set(g.x, g.y + g.base);
     this.placeRest(v);
   }
@@ -358,19 +532,34 @@ export class GpuBoard {
     v.shadow.alpha = 1 - 0.35 * v.lift;
   }
 
-  private paint(v: JarView, board: Board, i: number): void {
-    paintGrid(v.grid, this.opts.palette, this.opts.neutral, v.texels, SUB, this.mask ?? undefined);
+  /** Redraws a jar: its art (a funnel's glass differs), its sand, its "?" marks and its mechanic marks. */
+  private redraw(v: JarView, jar: Jar, capacity: number): void {
+    if ((v.jar?.funnel === true) !== (jar.funnel === true) || !v.back.texture) this.applyArt(v, jar);
+    v.jar = jar;
+    this.paintSand(v, jar, capacity);
+    this.drawMarks(v, jar.hidden, capacity);
+    this.decorate(v, jar);
+  }
+
+  private paintLook(v: JarView, jar: Jar | null, capacity: number): PaintLook {
+    const art = this.artFor(v.geom, jar?.funnel === true).art;
+    const grain = this.grainFor(v.geom, capacity, art.innerRadius);
+    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1 };
+  }
+
+  private paintSand(v: JarView, jar: Jar | null, capacity: number): void {
+    paintGrid(v.grid, this.opts.palette, this.opts.neutral, v.texels, SUB, this.paintLook(v, jar, capacity));
     v.ctx.putImageData(v.image, 0, 0);
     v.texture.source.update();
-    this.drawMarks(v, board.jars[i].hidden, board.capacity);
   }
 
   /** The "?" on each hidden unit: hidden units sit at the bottom and never move in a pour. */
   private drawMarks(v: JarView, hidden: number, capacity: number): void {
     const unit = v.geom.cellH * bandRows(capacity, this.opts.dims);
     v.marks.removeChildren().forEach((m) => m.destroy());
+    const mark = this.tex(`mark|${unit.toFixed(2)}`, (res) => drawMark(unit, res));
     for (let k = 0; k < hidden; k++) {
-      const m = new Sprite(this.markTex!);
+      const m = new Sprite(mark);
       m.anchor.set(0.5);
       m.setSize(unit, unit);
       m.position.set(0, -(k + 0.5) * unit);
@@ -378,7 +567,145 @@ export class GpuBoard {
     }
   }
 
-  private prepareAir(target: JarGeometry): void {
+  /** The jar's box in jar-local space: the button (the DOM's `--jar-w` wide) and the glass. */
+  private local(v: JarView) {
+    const g = v.geom;
+    const w = g.button.width;
+    return {
+      w,
+      left: g.button.left - g.x,
+      top: g.button.top - g.y,
+      bottom: g.button.top + g.button.height - g.y,
+      jarH: g.button.height - w * 0.18,
+      glassLeft: g.glass.left - g.x,
+      glassTop: g.glass.top - g.y,
+    };
+  }
+
+  /** The mechanic marks, as style.css places them (from the button's box and `--jar-w`). */
+  private decorate(v: JarView, jar: Jar): void {
+    v.decor.removeChildren().forEach((c) => c.destroy());
+    const b = this.local(v);
+    const pat = (c: number) => (this.look.patterns ? c % PATTERNS.length : null);
+    v.sandLayer.visible = jar.clam === undefined; // a closed clam hides its sand (D96, §2.6)
+    if (jar.funnel) {
+      const s = new Sprite(this.tex(`funnel|${b.w.toFixed(2)}`, (r) => drawFunnelMark(b.w, r)));
+      s.position.set(-(b.w * 0.95) / 2, b.top + b.w * 0.18 - b.w * 0.3);
+      v.decor.addChild(s);
+    }
+    if (jar.frozen) v.decor.addChild(this.iceSprite(v));
+    if (jar.lock !== undefined) v.decor.addChild(this.padlockSprite(v, jar.lock));
+    if (jar.sieve !== undefined) {
+      const out = Math.max(2, b.w * 0.06);
+      const width = b.w + 2 * out;
+      const height = Math.max(11, b.w * 0.25);
+      const color = this.opts.paletteHex[jar.sieve];
+      const s = new Sprite(this.tex(`sieve|${width.toFixed(2)}|${color}|${pat(jar.sieve)}`, (r) => drawSieveBand(width, height, color, this.look.ink, pat(jar.sieve!), r)));
+      s.position.set(b.left - out, b.top + b.w * 0.18 - 2);
+      v.decor.addChild(s);
+    }
+    if (jar.clam !== undefined) v.decor.addChild(this.shellSprite(v));
+  }
+
+  private iceSprite(v: JarView): Sprite {
+    const g = v.geom;
+    const rt = g.button.width * 0.12;
+    const rb = g.button.width * 0.38;
+    const s = new Sprite(this.tex(`ice|${g.glass.width.toFixed(2)}x${g.glass.height.toFixed(2)}`, (r) => drawIce(g.glass.width, g.glass.height, rt, rb, r)));
+    s.position.set(g.glass.left - g.x, g.glass.top - g.y);
+    s.setSize(g.glass.width, g.glass.height);
+    return s;
+  }
+
+  private padlockSprite(v: JarView, lock: number): Sprite {
+    const b = this.local(v);
+    const color = this.opts.paletteHex[lock];
+    const pat = this.look.patterns ? lock % PATTERNS.length : null;
+    const key = `lock|${b.w.toFixed(2)}|${color}|${pat}|${this.look.ink}`;
+    const texture = this.tex(key, (r) => drawPadlock(b.w, color, this.look.ink, pat, r).canvas);
+    const a = padlockMetrics(b.w);
+    const s = new Sprite(texture);
+    s.setSize(a.width, a.height);
+    // style.css: top = --jar-w × 0.18 − 2 px, then translate(−50%, −30%) of the box.
+    const boxTop = b.top + b.w * 0.18 - 2 - 0.3 * a.boxHeight;
+    s.position.set(-a.width / 2, boxTop - a.boxTop);
+    return s;
+  }
+
+  private shellSprite(v: JarView): Sprite {
+    const b = this.local(v);
+    const width = b.w + 2;
+    const height = b.jarH + b.w * 0.12;
+    const night = this.look.glass.night;
+    const s = new Sprite(this.tex(`clam|${width.toFixed(2)}x${height.toFixed(2)}|${night}`, (r) => drawClamShell(width, height, b.w, night, r)));
+    s.position.set(b.left - 1, b.bottom + 1 - height);
+    s.setSize(width, height + 2);
+    return s;
+  }
+
+  /** Starts the thaw or unlock effect where a jar's ice or padlock just went (as `renderMechanics`). */
+  private mechanicFx(i: number, was: Jar, now: Jar): void {
+    if (this.opts.reducedMotion()) return;
+    const v = this.views[i];
+    const place = (s: Sprite) => {
+      const p = v.root.toGlobal({ x: s.x + s.width / 2, y: s.y + s.height / 2 });
+      s.anchor.set(0.5);
+      s.position.set(p.x, p.y);
+      this.fxLayer.addChild(s);
+      return { x: p.x, y: p.y, w: s.width, h: s.height };
+    };
+    if (was.frozen && !now.frozen) {
+      const s = this.iceSprite(v);
+      const o = place(s);
+      this.addFx({
+        jar: i, kind: 'thaw', start: performance.now(), ms: this.opts.motion.thawMs, sprite: s,
+        at: (u) => {
+          const e = easeIn(Math.max(0, u));
+          const k = e < 0.3 ? 1 + 0.04 * (e / 0.3) : 1.04 - 0.19 * ((e - 0.3) / 0.7);
+          s.setSize(o.w * k, o.h * k);
+          s.y = o.y + (e < 0.3 ? 0 : 0.1 * o.h * ((e - 0.3) / 0.7));
+          s.alpha = e < 0.3 ? 1 : 1 - (e - 0.3) / 0.7;
+        },
+        end: () => s.destroy(),
+      });
+    }
+    if (was.lock !== undefined && now.lock === undefined) {
+      const s = this.padlockSprite(v, was.lock);
+      const o = place(s);
+      this.addFx({
+        jar: i, kind: 'unlock', start: performance.now(), ms: this.opts.motion.unlockMs, sprite: s,
+        at: (u) => {
+          const e = easeIn(Math.max(0, u));
+          const lift = e < 0.25 ? 0.3 * (e / 0.25) : 0.3 + 1.6 * ((e - 0.25) / 0.75);
+          const rot = e < 0.25 ? -12 * (e / 0.25) : -12 + 37 * ((e - 0.25) / 0.75);
+          s.y = o.y - lift * o.h;
+          s.rotation = (rot * Math.PI) / 180;
+          s.alpha = e < 0.25 ? 1 : 1 - (e - 0.25) / 0.75;
+          const k = e < 0.25 ? 1 : 1 - 0.2 * ((e - 0.25) / 0.75);
+          s.setSize(o.w * k, o.h * k);
+        },
+        end: () => s.destroy(),
+      });
+    }
+  }
+
+  private addFx(f: Fx): void {
+    this.fx.push(f);
+    f.at(-1);
+    this.request();
+  }
+
+  private endFx(kinds?: readonly Fx['kind'][]): void {
+    const keep: Fx[] = [];
+    for (const f of this.fx) {
+      if (kinds && !kinds.includes(f.kind)) keep.push(f);
+      else f.end();
+    }
+    this.fx = keep;
+    this.request();
+  }
+
+  private prepareAir(target: JarGeometry, mouth: number): void {
     const { cols } = this.opts.dims;
     const rows = this.config.airRows;
     if (!this.airCanvas || this.airCanvas.width !== cols * SUB || this.airCanvas.height !== rows * SUB) {
@@ -392,14 +719,14 @@ export class GpuBoard {
       this.airTexture = new Texture({ source: new CanvasSource({ resource: this.airCanvas, scaleMode: 'nearest' }) });
       this.air.texture = this.airTexture;
     }
-    this.air.position.set(target.x - target.innerWidth / 2, target.y - target.gridHeight - rows * target.cellH);
+    this.air.position.set(target.x - target.innerWidth / 2, target.y - target.gridHeight + (mouth - rows) * target.cellH);
     this.air.setSize(target.innerWidth, rows * target.cellH);
     this.air.visible = true;
   }
 
   private paintAirNow(p: Pour): void {
     const rows = this.config.airRows;
-    paintParticles(p.sim.particles, this.opts.dims.cols, -rows, rows, this.opts.palette, this.opts.neutral, this.airTexels!, SUB, true);
+    paintParticles(p.sim.particles, this.opts.dims.cols, p.targetMouth - rows, rows, this.opts.palette, this.opts.neutral, this.airTexels!, SUB, true);
     this.airCtx!.putImageData(this.airImage!, 0, 0);
     this.airTexture!.source.update();
   }
@@ -411,14 +738,13 @@ export class GpuBoard {
     this.raf = requestAnimationFrame(this.frame);
   }
 
-  private last = 0;
-
   private readonly frame = (now: number): void => {
     this.raf = 0;
     const dt = this.last ? Math.min(100, Math.max(0, now - this.last)) : 0;
     let moving = false;
     try {
       moving = this.animateLifts(now) || moving;
+      moving = this.animateFx(now) || moving;
       if (this.pour) moving = this.pourFrame(this.pour, now, dt) || moving;
     } catch (e) {
       const p = this.pour;
@@ -430,6 +756,21 @@ export class GpuBoard {
     this.last = moving ? now : 0;
     if (moving) this.request();
   };
+
+  private animateFx(now: number): boolean {
+    if (!this.fx.length) return false;
+    const keep: Fx[] = [];
+    for (const f of this.fx) {
+      const u = (now - f.start) / f.ms;
+      if (u >= 1) f.end();
+      else {
+        f.at(u);
+        keep.push(f);
+      }
+    }
+    this.fx = keep;
+    return keep.length > 0;
+  }
 
   private animateLifts(now: number): boolean {
     let moving = false;
@@ -513,12 +854,11 @@ export class GpuBoard {
   }
 
   private repaintPour(p: Pour, src: JarView, dst: JarView): void {
-    paintGrid(src.grid, this.opts.palette, this.opts.neutral, src.texels, SUB, this.mask ?? undefined);
-    src.ctx.putImageData(src.image, 0, 0);
-    src.texture.source.update();
-    paintGrid(dst.grid, this.opts.palette, this.opts.neutral, dst.texels, SUB, this.mask ?? undefined);
+    const cap = this.board?.capacity ?? 4;
+    this.paintSand(src, src.jar, cap);
+    paintGrid(dst.grid, this.opts.palette, this.opts.neutral, dst.texels, SUB, this.paintLook(dst, dst.jar, cap));
     // Grains already inside the target fall behind its glass, in its own texture.
-    paintParticles(p.sim.particles, this.opts.dims.cols, 0, this.opts.dims.rows, this.opts.palette, this.opts.neutral, dst.texels, SUB, false);
+    paintParticles(p.sim.particles, this.opts.dims.cols, 0, this.opts.dims.rows, this.opts.palette, this.opts.neutral, dst.texels, SUB, false, p.targetMouth);
     dst.ctx.putImageData(dst.image, 0, 0);
     dst.texture.source.update();
     this.paintAirNow(p);
@@ -552,10 +892,13 @@ export class GpuBoard {
     }
     this.placeRest(src);
     this.jarsLayer.addChildAt(src.root, Math.min(p.from, this.jarsLayer.children.length - 1));
-    this.paint(src, after, p.from);
-    this.paint(dst, after, p.to);
-    this.tracker.mark(p.from, jarKey(after.jars[p.from]));
-    this.tracker.mark(p.to, jarKey(after.jars[p.to]));
+    for (const [v, i] of [[src, p.from], [dst, p.to]] as const) {
+      const was = v.jar;
+      const jar = after.jars[i];
+      if (was) this.mechanicFx(i, was, jar);
+      this.redraw(v, jar, after.capacity);
+      this.tracker.mark(i, jarKey(jar));
+    }
     // The board may have moved on already (a fast tap): catch up with it.
     const now = this.board ?? after;
     this.sync(now, this.selected);
@@ -568,6 +911,15 @@ export class GpuBoard {
       this.raf = 0;
       this.last = 0;
       this.completePour(); // a hidden tab never leaves a pour half done
+      this.endFx();
     } else this.request();
   };
+}
+
+/** A padlock's size and box, as `drawPadlock` lays it out (the texture may be cached). */
+function padlockMetrics(w: number): { width: number; height: number; boxTop: number; boxHeight: number } {
+  const bw = w * 0.46;
+  const bh = w * 0.38;
+  const pad = 2;
+  return { width: bw + 2 * pad, height: bh * 0.7 + bh + 2 * pad, boxTop: pad + bh * 0.7, boxHeight: bh };
 }

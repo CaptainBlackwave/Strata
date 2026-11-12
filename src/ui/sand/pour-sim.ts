@@ -27,8 +27,8 @@ export type PourPhase = 'tilt' | 'return' | 'settle' | 'done';
 
 /**
  * Falling grains, in the target's cell space: `x` runs across the target (0..cols) and `y`
- * is cells below its mouth. It starts at `-airRows` (the lip), is negative above the mouth, and
- * positive once the grain falls inside the target, toward the pile, where it lands.
+ * is cells below the top of its grid. It starts `airRows` above the target's mouth (row 0, or
+ * `targetMouth` for a narrow jar) and keeps falling inside the target to the pile, where it lands.
  * Only the first `count` entries are live.
  */
 export interface ParticleView {
@@ -81,6 +81,13 @@ export interface PourOptions {
   readonly streamCol?: number;
   /** The stream's width in cells around `streamCol` (default 1). */
   readonly streamWidth?: number;
+  /**
+   * The source's mouth row (default 0): a narrow jar's glass is shorter than its grid, so its
+   * grains spill here and never enter the rows above (sprint 19 S3).
+   */
+  readonly sourceMouth?: number;
+  /** The target's mouth row (default 0): the stream starts `airRows` above it and grains land below it. */
+  readonly targetMouth?: number;
 }
 
 /** Optional settings for one `step`. */
@@ -146,6 +153,9 @@ class Sim implements PourSim {
   /** The stream's column and width, when the pour has one. */
   streamCol: number | null = null;
   streamWidth = 1;
+  /** The source's and the target's mouth rows (0 unless the jar is narrow). */
+  sourceMouth = 0;
+  targetMouth = 0;
   /** Steps a grain takes to fall `airRows` from rest. */
   readonly fallSteps: number;
   readonly particles: ParticleView;
@@ -211,6 +221,8 @@ export function planPour(board: Board, from: number, to: number, dims: SandDims,
   const required = amount * grainsPerUnit(capacity, dims);
   const side = options.side ?? (to > from ? 1 : -1);
   const sim = new Sim(from, to, amount, color, required, side, dims, source, target, seed, createRng(seed), config);
+  sim.sourceMouth = Math.max(0, Math.min(dims.rows - 1, Math.floor(options.sourceMouth ?? 0)));
+  sim.targetMouth = Math.max(0, Math.min(dims.rows - 1, Math.floor(options.targetMouth ?? 0)));
   if (options.streamCol !== undefined) {
     sim.streamCol = Math.min(dims.cols, Math.max(0, options.streamCol));
     sim.streamWidth = Math.max(0, options.streamWidth ?? 1);
@@ -319,10 +331,11 @@ function flowSource(sim: Sim): boolean {
   const dirs = flowDirs(sim);
   if (dirs.length === 0) return false;
   let moved = false;
-  // A cell a grain could enter: an empty in-glass cell, or the open mouth above row 0 while the spill allows.
+  // A cell a grain could enter: an empty in-glass cell, or the open mouth (above `sourceMouth`) while the spill allows.
+  const mouth = sim.sourceMouth;
   const open = (x: number, y: number): boolean => {
     if (x < 0 || x >= cols || y >= rows) return false;
-    if (y < 0) return !sim.hold && sim.spilledThisStep < c.spillPerStep;
+    if (y < mouth) return !sim.hold && sim.spilledThisStep < c.spillPerStep;
     return cells[y * cols + x] === EMPTY;
   };
   const upward = dirs[0].dy < 0;
@@ -349,7 +362,7 @@ function flowSource(sim: Sim): boolean {
         // No squeezing through a diagonal gap between two solid cells.
         if (dx !== 0 && dy !== 0 && !open(x + dx, y) && !open(x, y + dy)) continue;
         moved = true;
-        if (ny < 0) {
+        if (ny < mouth) {
           spill(sim, cells[i], shade[i]);
           sim.spilledThisStep++;
         } else {
@@ -384,7 +397,7 @@ function spill(sim: Sim, cell: number, grainShade: number): void {
     sim.px[p] = x0;
     sim.pvx[p] = (land - x0) / sim.fallSteps;
   }
-  sim.py[p] = -c.airRows;
+  sim.py[p] = sim.targetMouth - c.airRows;
   sim.pvy[p] = 0;
   sim.pcell[p] = cell;
   sim.pshade[p] = grainShade;
@@ -405,17 +418,18 @@ function advanceAir(sim: Sim): boolean {
   const { cols, rows, cells, shade } = sim.target;
   const { px, py, pvx, pvy, pcell, pshade } = sim;
   // The lowest empty row from the mouth down column `c` (-1 when it is full to the mouth).
+  const mouth = sim.targetMouth;
   const restAt = (c: number): number => {
-    let r = -1;
+    let r = mouth - 1;
     while (r + 1 < rows && cells[(r + 1) * cols + c] === EMPTY) r++;
-    return r;
+    return r < mouth ? -1 : r;
   };
   let p = 0;
   while (p < sim.pcount) {
     pvy[p] += g;
     py[p] += pvy[p];
     px[p] += pvx[p];
-    if (py[p] < 0) { p++; continue; }
+    if (py[p] < mouth) { p++; continue; }
     const want = Math.min(cols - 1, Math.max(0, Math.floor(px[p])));
     const here = restAt(want);
     if (py[p] < here) { p++; continue; } // still falling inside the jar
@@ -443,7 +457,7 @@ function advanceAir(sim: Sim): boolean {
         }
       }
     }
-    if (bestRest < 0) { py[p] = 0; pvy[p] = 0; p++; continue; } // the mouth is full: wait in the air
+    if (bestRest < 0) { py[p] = mouth; pvy[p] = 0; p++; continue; } // the mouth is full: wait in the air
     const slot = bestRest * cols + best;
     cells[slot] = pcell[p];
     shade[slot] = pshade[p];

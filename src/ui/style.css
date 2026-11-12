@@ -4614,6 +4614,20 @@ canvas.gpu-board {
 #board[data-render='gpu'] .jar > .glass::before,
 #board[data-render='gpu'] .jar .sand,
 #board[data-render='gpu'] .jar .shine,
-#board[data-render='gpu'] .jar .tilt {
+#board[data-render='gpu'] .jar .tilt,
+#board[data-render='gpu'] .jar .ice,
+#board[data-render='gpu'] .jar .padlock,
+#board[data-render='gpu'] .jar .funnel-mark,
+#board[data-render='gpu'] .jar .sieve-band,
+#board[data-render='gpu'] .jar .clam-shell {
+  visibility: hidden;
+}
+/* S3: the canvas draws the mechanic marks; their text stays here so it follows the text size. The
+   clam's count shows on the canvas shell, and a jar carried off by a pour hides its hourglass count. */
+#board[data-render='gpu'] .jar .clam-shell b {
+  visibility: visible;
+}
+#board[data-render='gpu'] .jar.gpu-away .hourglass-mark,
+#board[data-render='gpu'] .jar.gpu-away .clam-shell b {
   visibility: hidden;
 }

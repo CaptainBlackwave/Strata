@@ -48,7 +48,7 @@ describe('paintGrid', () => {
     expect(mask[0]).toBe(1);
     const grid = gridFromJar({ units: [0, 0], hidden: 0 }, 2, DIMS, 1);
     const out = new Uint32Array(256);
-    paintGrid(grid, PALETTE, NEUTRAL_RGB, out, 2, mask);
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, out, 2, { mask });
     expect(alpha(out[15 * 16])).toBe(0);
     expect(alpha(out[15 * 16 + 8])).toBe(255);
   });
@@ -82,5 +82,37 @@ describe('paintGrid falling grains', () => {
     const lit = [...out.keys()].filter((t) => alpha(out[t]) === 255);
     expect(lit.length).toBe(4);
     for (const t of lit) expect(Math.abs(Math.floor(t / 16 / 2) - 3)).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('colour patterns and sand textures on the canvas (S3)', () => {
+  const space = { width: 32, height: 36, texelW: 1, texelH: 1.2, unitRows: 18 };
+  it('there is one pattern per palette colour, and each one differs', async () => {
+    const { PATTERNS, patternOverlay } = await import('../../../../src/ui/board-gpu/patterns');
+    const cfg = (await import('../../../../src/config/game-config.json')).default as { palette: unknown[] };
+    expect(PATTERNS.length).toBe(cfg.palette.length);
+    const sigs = PATTERNS.map((_, i) => Array.from(patternOverlay(space, i).keep).join(','));
+    expect(new Set(sigs).size).toBe(PATTERNS.length);
+  });
+  it('a pattern is anchored to the grain grid: every unit band repeats the same marks', async () => {
+    const { patternOverlay } = await import('../../../../src/ui/board-gpu/patterns');
+    const o = patternOverlay(space, 0);
+    const row = (ty: number) => Array.from(o.keep.slice(ty * 32, ty * 32 + 32)).join(',');
+    for (let ty = 0; ty < 18; ty++) expect(row(ty)).toBe(row(ty + 18));
+  });
+  it('patterns draw over colours, never over hidden sand', () => {
+    const grid = gridFromJar({ units: [1, 0], hidden: 1 }, 2, DIMS, 3);
+    const plain = new Uint32Array(256);
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, plain, 2);
+    const dark = { keep: new Float32Array(256).fill(0.5), add: new Float32Array(768) };
+    const out = new Uint32Array(256);
+    paintGrid(grid, PALETTE, NEUTRAL_RGB, out, 2, { patterns: [dark, dark] });
+    expect(red(out[2 * 16 * 2 + 4])).toBeLessThan(red(plain[2 * 16 * 2 + 4])); // the colour band
+    expect(out[15 * 16 + 4]).toBe(plain[15 * 16 + 4]); // the hidden band
+  });
+  it('the plain sand piece adds no texture; the paid ones do, from the DOM table', async () => {
+    const { sandOverlay } = await import('../../../../src/ui/board-gpu/patterns');
+    expect(sandOverlay(space, 'plain')).toBeNull();
+    for (const id of ['fine', 'glint', 'layered', 'ripple']) expect(Array.from(sandOverlay(space, id)!.keep).some((k) => k < 1)).toBe(true);
   });
 });
