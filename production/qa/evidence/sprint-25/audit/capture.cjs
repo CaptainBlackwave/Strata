@@ -101,7 +101,10 @@ const SCREENS = [
   // board screens: both board modes
   { area: 'board', name: 'board-250', boards: true, query: '?level=250', home: false, open: boardReady },
   { area: 'board', name: 'board-toast', boards: true, query: '?level=250', home: false, open: async (page) => {
-    await boardReady(page); await page.click('#btn-restart'); await page.waitForTimeout(350);
+    // A refused pour (a full jar onto a full jar) shows the board's toast.
+    await boardReady(page); await tapJar(page, 0); await page.waitForTimeout(250); await tapJar(page, 1);
+    await page.waitForFunction(() => (document.getElementById('toast')?.textContent || '').trim().length > 0, null, { timeout: 4000 });
+    await page.waitForTimeout(300);
   } },
   { area: 'board', name: 'booster-armed', boards: true, query: '?level=250', home: false,
     save: (s) => ({ ...s, wallet: { coins: 98765, boosters: { undo: 0, shuffle: 0, extraJar: 0, hint: 0 } } }),
@@ -116,6 +119,9 @@ const SCREENS = [
   } },
   { area: 'board', name: 'win-card', boards: true, query: '?level=1', home: false, open: (page) => winLevel(page) },
   { area: 'board', name: 'tutorial', boards: true, fresh: true, home: false, keepIntro: true, open: async (page) => {
+    // The dark run's near-empty save still raises What's new; close it so both scenes show the first screen.
+    await page.evaluate(() => document.querySelector('#whatsnew:not([hidden]) #btn-whatsnew-ok')?.click());
+    await page.waitForTimeout(600);
     await page.waitForFunction(() => document.querySelectorAll('#board .jar').length > 0, null, { timeout: 20000 });
     await page.waitForTimeout(1800);
   } },
@@ -224,7 +230,7 @@ async function shoot(browser, base, job) {
   const date = screen.date || TODAY;
   let save = screen.fresh ? null : richSave(date, scene.id);
   if (save && screen.save) save = screen.save(save);
-  if (screen.fresh) save = { themes: { owned: ['midday', 'moonlit'], selected: scene.id, auto: false } }; // see note in audit.md
+  if (screen.fresh) save = { seenWhatsNew: '9.9.9', themes: { owned: ['midday', 'moonlit'], selected: scene.id, auto: false } }; // dark only: picks the scene, nothing else
   const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1, serviceWorkers: 'block', ...(screen.ios ? { userAgent: IPHONE_UA, hasTouch: true } : {}) });
   await ctx.addInitScript(([key, save, text, fresh]) => {
     if (!sessionStorage.getItem('cap-seeded')) {
@@ -309,7 +315,10 @@ async function contactSheets(browser) {
       console.log(`${r.ok ? 'ok   ' : 'BROKE'} ${r.file}${r.ok ? `  theme=${r.theme} render=${r.render}` : `  ${r.error}`}${r.errors.length ? `  pageErrors=${r.errors.length}` : ''}`);
     }
   }));
-  fs.writeFileSync(path.join(OUT, 'capture-report.json'), JSON.stringify(results.sort((a, b) => a.file.localeCompare(b.file)), null, 2) + '\n');
+  // With ONLY, merge into the earlier report instead of replacing it.
+  const rp = path.join(OUT, 'capture-report.json');
+  const prev = ONLY && fs.existsSync(rp) ? JSON.parse(fs.readFileSync(rp, 'utf8')).filter((r) => !results.some((n) => n.file === r.file)) : [];
+  fs.writeFileSync(rp, JSON.stringify([...prev, ...results].sort((a, b) => a.file.localeCompare(b.file)), null, 2) + '\n');
   if (process.env.SHEETS !== '0') console.log('contact sheets:', (await contactSheets(browser)).join(', '));
   await browser.close();
   server.close();
