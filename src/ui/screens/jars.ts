@@ -347,7 +347,7 @@ export function dryFx(i: number, units: readonly number[], delay: number): void 
 /**
  * The tide turning on jar `i` (D194, §2.8): the jar already shows its new order. After `delay` ms
  * (the pour around it done, as the hourglass flip) its top unit, which came from the bottom, slides
- * up through the column while every other unit drops one place, so it starts exactly like the old
+ * up through the column, narrowing as it passes, while every other unit drops one place, so it starts exactly like the old
  * order (`fill: 'backwards'`). Wet counts and colour patterns are on the unit spans, so they move
  * with their sand. The wave on the mark bobs once. The caller plays it only when the turn can be
  * seen (`risesVisibly`). Reduced motion: no motion, the new order is simply drawn. The `flip`
@@ -369,8 +369,14 @@ export function tideFx(i: number, delay: number): void {
       u.style.position = 'relative';
       u.style.zIndex = '1'; // the rising unit slides over the rest
     }
-    // Units are laid bottom first (column-reverse), so "up" is a negative translate.
-    runs.push(u.animate([{ transform: `translateY(calc(${-from} * var(--unit-h)))` }, { transform: 'translateY(0)' }], timing));
+    // Units are laid bottom first (column-reverse), so "up" is a negative translate. The rising unit
+    // narrows on its way up, so the units dropping past it stay in view.
+    const y0 = `translateY(calc(${-from} * var(--unit-h)))`;
+    runs.push(
+      k === n - 1
+        ? u.animate([{ transform: `${y0} scaleX(1)` }, { transform: `translateY(calc(${-from / 2} * var(--unit-h))) scaleX(0.5)`, offset: 0.5 }, { transform: 'translateY(0) scaleX(1)' }], timing)
+        : u.animate([{ transform: y0 }, { transform: 'translateY(0)' }], timing),
+    );
   });
   const glyph = el.querySelector('.tide-mark svg') as SVGElement | null;
   if (glyph) runs.push(glyph.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-22%)' }, { transform: 'translateY(0)' }], { ...timing, fill: 'none' }));

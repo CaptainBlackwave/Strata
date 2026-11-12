@@ -1,0 +1,182 @@
+{
+  "dom": {
+    "introShown": 1,
+    "introText": "4\nTide jar\n\nEvery fourth pour on the board, the tide turns: the sand in the tide jar rises by one layer, and its bottom layer comes up to the top. The number on its wave counts the pours left. A sealed tide jar stays still.",
+    "labels241": [
+      "Jar 1: buried, buried, sage, lemon",
+      "Jar 2: buried, buried, lagoon, mint",
+      "Jar 3: buried, buried, cocoa, lemon",
+      "Jar 4: buried, buried, saffron, sage",
+      "Jar 5: buried, buried, mint, lemon",
+      "Jar 6: buried, buried, mint, denim",
+      "Jar 7: saffron, mint, coral, denim (tide jar, turns in 4 pours)",
+      "Jar 8: buried, buried, cocoa, terracotta",
+      "Jar 9: buried, buried, terracotta, coral",
+      "Jar 10: buried, buried, lemon, plum",
+      "Jar 11: empty",
+      "Jar 12: empty"
+    ],
+    "errors": [],
+    "craftedLabels": [
+      "Jar 1: terracotta; saffron; wet sage, dries in 3 pours (tide jar, turns after the next pour)",
+      "Jar 2: lagoon, lagoon, lagoon, lagoon (tide jar, still, sealed)",
+      "Jar 3: saffron, sage",
+      "Jar 4: sage",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "marks": [
+      {
+        "tide": true,
+        "still": false,
+        "count": "1"
+      },
+      {
+        "tide": true,
+        "still": true,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      }
+    ],
+    "riseAnims": 4,
+    "afterLabels": [
+      "Jar 1: saffron; wet sage, dries in 2 pours; terracotta (tide jar, turns in 4 pours)",
+      "Jar 2: lagoon, lagoon, lagoon, lagoon (tide jar, still, sealed)",
+      "Jar 3: saffron",
+      "Jar 4: sage, sage",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "announce": [
+      "5000 coins",
+      "Poured 1 sage into jar 4. The tide turned (jar 1)."
+    ],
+    "afterUnits": {
+      "units": [
+        1,
+        2,
+        0
+      ],
+      "hidden": 0,
+      "tide": {
+        "every": 4,
+        "left": 4
+      },
+      "wet": [
+        0,
+        2,
+        0
+      ]
+    },
+    "errors2": []
+  },
+  "gpu": {
+    "render": "gpu",
+    "introShown": 1,
+    "introText": "4\nTide jar\n\nEvery fourth pour on the board, the tide turns: the sand in the tide jar rises by one layer, and its bottom layer comes up to the top. The number on its wave counts the pours left. A sealed tide jar stays still.",
+    "labels241": [
+      "Jar 1: buried, buried, sage, lemon",
+      "Jar 2: buried, buried, lagoon, mint",
+      "Jar 3: buried, buried, cocoa, lemon",
+      "Jar 4: buried, buried, saffron, sage",
+      "Jar 5: buried, buried, mint, lemon",
+      "Jar 6: buried, buried, mint, denim",
+      "Jar 7: saffron, mint, coral, denim (tide jar, turns in 4 pours)",
+      "Jar 8: buried, buried, cocoa, terracotta",
+      "Jar 9: buried, buried, terracotta, coral",
+      "Jar 10: buried, buried, lemon, plum",
+      "Jar 11: empty",
+      "Jar 12: empty"
+    ],
+    "errors": [],
+    "craftedLabels": [
+      "Jar 1: terracotta; saffron; wet sage, dries in 3 pours (tide jar, turns after the next pour)",
+      "Jar 2: lagoon, lagoon, lagoon, lagoon (tide jar, still, sealed)",
+      "Jar 3: saffron, sage",
+      "Jar 4: sage",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "marks": [
+      {
+        "tide": true,
+        "still": false,
+        "count": "1"
+      },
+      {
+        "tide": true,
+        "still": true,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      },
+      {
+        "tide": false,
+        "still": false,
+        "count": ""
+      }
+    ],
+    "afterLabels": [
+      "Jar 1: saffron; wet sage, dries in 2 pours; terracotta (tide jar, turns in 4 pours)",
+      "Jar 2: lagoon, lagoon, lagoon, lagoon (tide jar, still, sealed)",
+      "Jar 3: saffron",
+      "Jar 4: sage, sage",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "announce": [
+      "5000 coins",
+      "Poured 1 sage into jar 4. The tide turned (jar 1)."
+    ],
+    "afterUnits": {
+      "units": [
+        1,
+        2,
+        0
+      ],
+      "hidden": 0,
+      "tide": {
+        "every": 4,
+        "left": 4
+      },
+      "wet": [
+        0,
+        2,
+        0
+      ]
+    },
+    "errors2": []
+  }
+}

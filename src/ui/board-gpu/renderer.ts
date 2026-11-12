@@ -533,7 +533,7 @@ export class GpuBoard {
   /**
    * The tide turning on jar `i` (D194, §2.8): its sand already shows the new order. For the rise its
    * sand sprite is hidden and drawn as two slices of the same texture: the top unit (which came from
-   * the bottom) slides up from the bottom place while the units under it drop one place, after
+   * the bottom) slides up from the bottom place, narrowing as it passes, while the units under it drop one place, after
    * `delay` ms, as the DOM's `tideFx`. The texture is the jar's own, so wet tones and colour
    * patterns move with their units. Reduced motion: nothing moves.
    */
@@ -564,7 +564,10 @@ export class GpuBoard {
       at: (u) => {
         const e = easeFlip(Math.max(0, u));
         // Start: the top unit in the bottom place, the rest one place higher (the old order).
-        top.position.set(x, -unit + (-(n - 1) * unit) * e);
+        // The rising unit narrows on its way up (to half at the middle), as the DOM's, so the others stay in view.
+        const sx = 1 - 0.5 * Math.sin(Math.PI * e);
+        top.width = v.geom.innerWidth * sx;
+        top.position.set(x + (v.geom.innerWidth * (1 - sx)) / 2, -unit + (-(n - 1) * unit) * e);
         rest.position.set(x, restY - unit * (1 - e));
       },
       end: () => {
