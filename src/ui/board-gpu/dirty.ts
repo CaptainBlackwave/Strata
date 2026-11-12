@@ -5,7 +5,8 @@ import type { Jar } from '../../core/board';
 
 /**
  * A jar's drawn state as a string: its units, bottom first, how many are hidden, and its mechanics
- * (narrow, funnel, frozen, lock, sieve, clam; the hourglass count is DOM text). Example: `'0,2,2|1'`
+ * (narrow, funnel, frozen, lock, sieve, clam; the hourglass count is DOM text) and which units are
+ * wet (D189, §2.7: wet sand is drawn darker; its counts are DOM text). Example: `'0,2,2|1'`
  */
 export function jarKey(jar: Jar): string {
   const m = [
@@ -16,6 +17,7 @@ export function jarKey(jar: Jar): string {
     jar.sieve !== undefined ? `s${jar.sieve}` : '',
     jar.clam !== undefined ? 'c' : '',
     jar.hourglass ? 'h' : '',
+    jar.wet ? `w${jar.wet.map((w) => (w > 0 ? 1 : 0)).join('')}` : '',
   ].join('');
   return `${jar.units.join(',')}|${jar.hidden}${m ? `|${m}` : ''}`;
 }
@@ -59,7 +61,7 @@ export interface DomDrawInput {
 
 /** A DOM jar's drawn state in two parts: its sand column, and everything else on the button. */
 export interface DomDrawKeys {
-  /** The units, bottom first, the hidden count and the patterns setting. */
+  /** The units, bottom first, the hidden count, the patterns setting and the wet counts (drawn on the units). */
   readonly sand: string;
   /** The mechanics with their counts (hourglass, clam), the seal, the patterns setting and the unit height. */
   readonly rest: string;
@@ -75,7 +77,7 @@ export function domDrawKeys(jar: Jar, d: DomDrawInput): DomDrawKeys {
   const p = d.patterns ? 'p1' : 'p0';
   const counts = `${jar.hourglass ? `h${jar.hourglass.left}/${jar.hourglass.every}` : ''}${jar.clam !== undefined ? `c${jar.clam}` : ''}`;
   return {
-    sand: `${jar.units.join(',')}|${jar.hidden}|${p}`,
+    sand: `${jar.units.join(',')}|${jar.hidden}|${p}${jar.wet ? `|w${jar.wet.join('.')}` : ''}`,
     rest: `${jarKey(jar)}|${counts}|${d.sealed ? 's' : ''}|${p}|u${d.unitHeight}`,
   };
 }

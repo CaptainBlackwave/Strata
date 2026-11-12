@@ -23,6 +23,13 @@ export type SessionEvent =
       readonly flipped?: readonly number[];
       /** Clam jars that opened right after this pour (D96, §2.6). Absent when none did. */
       readonly opened?: readonly number[];
+      /** Jars where wet sand dried right after this pour (D189, §2.7). Absent when none did. */
+      readonly dried?: readonly number[];
+      /**
+       * Jars other than the target that sealed on this pour because their last wet sand dried
+       * (§2.7), for the seal effect. Absent when none did.
+       */
+      readonly sealedDry?: readonly number[];
     }
   | { readonly type: 'undo' }
   | { readonly type: 'restart' }
@@ -172,7 +179,11 @@ export class GameSession {
     const sealed = isSealed(result.board.jars[to], result.board.capacity);
     const flipped = result.flipped.length ? { flipped: result.flipped } : {};
     const opened = result.opened.length ? { opened: result.opened } : {};
-    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped, ...opened });
+    const dried = result.dried.length ? { dried: result.dried } : {};
+    const before = this.history[this.history.length - 1];
+    const dry = result.dried.filter((i) => i !== to && isSealed(result.board.jars[i], result.board.capacity) && !isSealed(before.jars[i], before.capacity));
+    const sealedDry = dry.length ? { sealedDry: dry } : {};
+    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped, ...opened, ...dried, ...sealedDry });
     this.emitStatus();
     return true;
   }
@@ -351,14 +362,16 @@ export function searchHint(board: Board, budget: number): HintSearch {
  * Finds a re-deal of `board`'s free jars that the solver proves winnable, or `null`. Only
  * free jars are re-dealt: sealed, frozen, locked and funnel jars keep their sand. An unsealed
  * hourglass is a free jar: its sand is re-dealt and its count is kept (a shuffle is not a pour, D96). A closed clam keeps its sand and its count (D96, §2.6): it is shut,
- * and a shuffle is not a pour; once open it is a free jar like any other. Pure and
+ * and a shuffle is not a pour; once open it is a free jar like any other. Wet sand (D189, §2.7)
+ * keeps its count with its unit: each unit is re-dealt together with its count. Pure and
  * deterministic for a given `rng`, so a worker given the same seed finds the same board
  * (TD-13). All attempts together spend at most `shuffleTotalNodeBudget` states (F7, GA-SB-4).
  * Example: `findShuffle(board, sessionOptions(config), createRng(seed))`
  */
 export function findShuffle(board: Board, options: SessionOptions, rng: Rng): Board | null {
   const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.clam !== undefined || j.funnel ? -1 : i)).filter((i) => i >= 0);
-  const pool = open.flatMap((i) => board.jars[i].units);
+  // Each unit travels with its wet count (0 when dry), §2.7.
+  const pool = open.flatMap((i) => board.jars[i].units.map((c, k) => [c, board.jars[i].wet?.[k] ?? 0] as const));
   const before = exactKey(board);
   const attempts = options.shuffleAttempts ?? 40;
   const budget = options.shuffleNodeBudget ?? options.hintNodeBudget;
@@ -369,9 +382,12 @@ export function findShuffle(board: Board, options: SessionOptions, rng: Rng): Bo
     let k = 0;
     const jars: Jar[] = board.jars.map((j, i) => {
       if (!open.includes(i)) return j;
-      const units = pool.slice(k, k + j.units.length);
+      const dealt = pool.slice(k, k + j.units.length);
       k += j.units.length;
-      return { ...j, units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)) };
+      const units = dealt.map(([c]) => c);
+      const wet = dealt.map(([, w]) => w);
+      const { wet: _old, ...rest } = j;
+      return { ...rest, units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)), ...(wet.some((w) => w > 0) ? { wet } : {}) };
     });
     const next: Board = settle({ capacity: board.capacity, jars });
     if (exactKey(next) === before || isWon(next)) continue;

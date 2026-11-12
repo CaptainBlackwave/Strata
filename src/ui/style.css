@@ -1659,6 +1659,80 @@ button {
   color: var(--card);
 }
 
+/* Wet sand (sprint 23 W4, D189, design/gdd/jar-mechanics.md §2.7): a wet unit is drawn in a darker
+   damp tone of its own colour (set in --c by src/ui/logic/wet.ts, so every sand texture and the tilted
+   fill follow it), with a wet sheen and a few glints; with colour patterns on, its pattern is drawn as
+   usual over the darker colour, so it stays readable. A small drop and the pours left until it dries
+   sit on the unit, so they travel with the sand; at 1 the pill takes the scene's accent, as the
+   hourglass's does. Drawn for Strata. */
+.unit.wet {
+  position: relative;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.22);
+}
+.unit.wet:not([class*='pat-']) {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 55%),
+    radial-gradient(rgba(255, 255, 255, 0.42) 0.8px, transparent 1.3px),
+    radial-gradient(rgba(0, 0, 0, 0.16) 0.8px, transparent 1.2px);
+  background-size:
+    100% 100%,
+    9px 8px,
+    7px 5px;
+  background-position:
+    0 0,
+    2px 3px,
+    3px 2px;
+}
+.wet-mark {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
+  padding: 0.04em 0.36em 0.04em 0.26em;
+  border-radius: 999px;
+  border: 1.5px solid var(--card);
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: 0.6875rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.wet-mark svg {
+  flex: none;
+  width: 0.72em;
+  height: 0.94em;
+  overflow: visible;
+}
+.wet-mark path {
+  fill: #6fc3f2;
+  stroke: currentColor;
+  stroke-width: 0.9;
+}
+.unit.wet[data-wet='1'] .wet-mark {
+  background: var(--accent-text);
+  color: var(--card);
+}
+/* The drying shimmer: a soft light sweeping across a unit that just dried (jars.ts dryFx). The sand
+   column clips it at the glass; nothing plays under reduced motion. */
+.dry-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 15%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 85%);
+  opacity: 0;
+}
+
 /* Sieve jar (sprint 13 M2, D96): a collar round the jar's mouth in its band colour, with a fine
    mesh over it, so it reads as the jar's own fitting and never as sand. It sits on the rim, above
    the sand, under the cork; a sieve is never frozen, locked, narrow, a funnel or the hourglass
@@ -5785,6 +5859,15 @@ canvas.gpu-board {
 }
 #board[data-render='gpu'] .jar.gpu-away .hourglass-mark,
 #board[data-render='gpu'] .jar.gpu-away .clam-shell b {
+  visibility: hidden;
+}
+/* Sprint 23 W4: wet sand's drop and count, and the drying shimmer, stay DOM over the canvas's darker
+   wet sand (the canvas paints the damp tone); a jar carried off by a pour hides its counts. */
+#board[data-render='gpu'] .jar .wet-mark,
+#board[data-render='gpu'] .jar .dry-shimmer {
+  visibility: visible;
+}
+#board[data-render='gpu'] .jar.gpu-away .wet-mark {
   visibility: hidden;
 }
 

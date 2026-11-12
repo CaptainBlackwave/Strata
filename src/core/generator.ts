@@ -108,7 +108,7 @@ export interface FallbackStep<S extends LevelSpec = LevelSpec> {
 /**
  * A numbered level's fallback chain, so no level can ever fail to load: the full recipe,
  * then with a second ordinary spare (one-spare levels only), then without the hourglass,
- * the sieve and the clam but with the classic mechanics (levels with both kinds only, D96), then without
+ * the sieve, the clam and wet sand but with the classic mechanics (levels with both kinds only, D96), then without
  * mechanics (levels with mechanics only). Every step but the last is capped by total solver work
  * (`generator.stepNodeBudget`), which keeps level starts fast and identical on every device.
  * Example: `levelSteps(levelSpec(150, config), config).length // 2 or 3`
@@ -118,7 +118,7 @@ export function levelSteps(spec: LevelSpec, config: GameConfig): FallbackStep[] 
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : g.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, g.maxAttempts]);
   // An hourglass, sieve or clam with classic mechanics: try the classic ones alone before dropping them all (D96).
-  if ((spec.hourglass || spec.sieve || spec.clam) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
+  if ((spec.hourglass || spec.sieve || spec.clam || spec.wet) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
   if (hasAnyMechanic(spec)) tries.push([{ ...withoutMechanics(spec), spare: 2 }, g.maxAttempts]);
   const { cap, perAttempt } = stepBudgets(config);
   return tries.map(([s, maxAttempts], i) => {
@@ -301,12 +301,12 @@ function endsSealed(board: Board, result: SolveResult, at: number): boolean {
 
 /** True when a spec asks for any jar mechanic, the hourglass, the sieve and the clam included (D96). */
 export function hasAnyMechanic(spec: LevelSpec): boolean {
-  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true;
+  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true || spec.wet === true;
 }
 
 /** The spec with every mechanic dropped, the hourglass, the sieve and the clam included: a fallback step's recipe. */
 export function withoutMechanics<S extends LevelSpec>(spec: S): S {
-  const { hourglass: _dropped, sieve: _sieve, clam: _clam, ...rest } = spec;
+  const { hourglass: _dropped, sieve: _sieve, clam: _clam, wet: _wet, ...rest } = spec;
   return { ...rest, mechanics: [] } as unknown as S;
 }
 
@@ -320,7 +320,9 @@ export function withoutMechanics<S extends LevelSpec>(spec: S): S {
  * or the hourglass, banded in a colour drawn from the board's `spec.colors`; its burial is kept
  * (`proveDeal` may then move the band). The clam (D96, §2.6) is placed after that, on a filled
  * jar that is not sealed, frozen, locked, narrow, a funnel, the hourglass or the sieve, closed for
- * `opensAfter` pours; its burial is kept. The stream `rng` is only drawn from for mechanics the
+ * `opensAfter` pours; its burial is kept. Wet sand (D189, §2.7) is placed last of all: `units`
+ * (`debutUnits` on its unlock level) distinct visible units of filled jars that are not sealed,
+ * frozen, locked, a closed clam or a funnel, each wet for `dryAfter` pours, one draw per unit. The stream `rng` is only drawn from for mechanics the
  * spec has, so a spec without the hourglass, the sieve or the clam deals exactly the board it did
  * before they existed.
  */
@@ -366,6 +368,26 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
     const i = pick(filled().filter((k) => plainJar(jars[k])));
     if (i !== undefined) jars[i] = { ...jars[i], clam: opensAfter };
   }
+  if (spec.wet) {
+    const tune = config.mechanics.list.find((m) => m.id === 'wet');
+    const dryAfter = Math.max(1, Math.floor(tune?.dryAfter ?? 5));
+    const many = spec.level > 0 && spec.level === tune?.unlockAt ? (tune.debutUnits ?? tune.units) : tune?.units;
+    const count = Math.max(1, Math.floor(many ?? 3));
+    // Visible units of filled jars that can be poured from: not frozen, locked, a closed clam,
+    // sealed or a funnel. Buried units are never wet, so a droplet is never hidden (§2.7).
+    const spots: [number, number][] = [];
+    for (const i of filled()) {
+      const j = jars[i];
+      if (j.clam !== undefined || j.funnel || isSealed(j, board.capacity)) continue;
+      for (let k = j.hidden; k < j.units.length; k++) spots.push([i, k]);
+    }
+    for (let n = 0; n < count && spots.length; n++) {
+      const [i, k] = spots.splice(Math.floor(rng() * spots.length), 1)[0];
+      const wet = [...(jars[i].wet ?? new Array<number>(jars[i].units.length).fill(0))];
+      wet[k] = dryAfter;
+      jars[i] = { ...jars[i], wet };
+    }
+  }
   return { capacity: board.capacity, jars };
 }
 
@@ -374,6 +396,7 @@ export function hasMechanics(board: Board, spec: LevelSpec): boolean {
   if (spec.hourglass && !board.jars.some((j) => j.hourglass)) return false;
   if (spec.sieve && !board.jars.some((j) => j.sieve !== undefined)) return false;
   if (spec.clam && !board.jars.some((j) => j.clam !== undefined)) return false;
+  if (spec.wet && !board.jars.some((j) => j.wet !== undefined)) return false;
   return spec.mechanics.every((id) =>
     id === 'narrow' ? board.jars.some((j) => j.cap !== undefined)
     : id === 'frozen' ? board.jars.some((j) => j.frozen)

@@ -249,7 +249,8 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D185 | Release checks | An automated layout guard (every Home tab and sheet at 412px and 320px/150% text) before each release (owner, 2026-11-12) | — (`tools/qa/layout-guard.cjs`, `npm run guard:layout`) | built |
 | D186 | Phone check | A checklist for the owner to run 0.20 on a real phone (owner, 2026-11-12) | — | built (`production/qa/phone-checklist-0.20.md`) |
 | D187 | Releases | 0.20.2 for the loose ends, then 0.21.0 for the next mechanic (owner, 2026-11-12) | — | planned |
-| D188 | Next focus | New jar mechanics, starting with **Wet sand** (owner, 2026-11-12) | jar-mechanics | planned |
-| D189 | Wet sand rules | Wet units pour only onto their own colour (never into an empty jar) and dry after N pours on the board (owner, 2026-11-12) | jar-mechanics, pour-rules | planned |
-| D190 | Mechanic pace | One new mechanic every 40 levels from 201; Wet sand debuts on 201 (owner, 2026-11-12) | jar-mechanics, level-generation | planned |
-| D191 | Scope | Only Wet sand for now; the mechanic for 241 is chosen later (owner, 2026-11-12) | jar-mechanics | planned |
+| D188 | Next focus | New jar mechanics, starting with **Wet sand** (owner, 2026-11-12) | jar-mechanics | built |
+| D189 | Wet sand rules | Wet units pour only onto their own colour (never into an empty jar) and dry after N pours on the board (owner, 2026-11-12) | jar-mechanics, pour-rules | built |
+| D190 | Mechanic pace | One new mechanic every 40 levels from 201; Wet sand debuts on 201 (owner, 2026-11-12) | jar-mechanics, level-generation | built |
+| D191 | Scope | Only Wet sand for now; the mechanic for 241 is chosen later (owner, 2026-11-12) | jar-mechanics | built |
+| D192 | Wet sand share | **About 1 level in 8 from 201**: its own seeded roll (`ownChance` 0.065) on top of the shared mechanic draw; the board wins when sorted even if sand is still wet (the winning pour dries it); the look approved from screenshots (owner, 2026-11-12) | jar-mechanics, level-generation | built |

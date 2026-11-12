@@ -11,6 +11,7 @@ describe('map strings follow the config', () => {
     // The hourglass included since sprint 13 M1 (D96).
     // The hourglass and the sieve included since sprint 13 M1 and M2 (D96).
     // The clam included since sprint 13 M3 (D96).
+    // Wet sand (sprint 23) gets its strings with its card (W5).
     for (const m of config.mechanics.list) expect(typeof (t.map.jars as Record<string, string>)[m.id], `t.map.jars.${m.id}`).toBe('string');
   });
   it('the win card words for replays (D50)', () => {

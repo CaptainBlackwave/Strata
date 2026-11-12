@@ -187,6 +187,7 @@ const en = {
     hourglass: { name: 'Hourglass jar', rule: 'Every third pour on the board, the hourglass flips: its sand turns upside down. The number on it counts the pours left.', tap: 'Hourglass: it flips after every third pour.' },
     sieve: { name: 'Sieve jar', rule: 'A sieve jar only lets its own colour in: the colour of its band. Anything can be poured out.', tap: 'Sieve: only the colour of its band goes in.' },
     clam: { name: 'Clam jar', rule: 'A clam jar stays shut under its shell until the count runs out: every pour on the board counts down. Then it opens and plays like any jar.', tap: 'Clam: shut until the count on its shell runs out.' },
+    wet: { name: 'Wet sand', rule: 'Wet sand is darker, with a drop and a number on it. It only goes onto sand of its own colour, never into an empty jar. Every pour on the board dries it a little: at 0 it is ordinary sand. A full jar seals once its sand is dry.', tap: 'Wet sand: only onto its own colour. It dries as you pour.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -206,6 +207,16 @@ const en = {
     /** The mark beside the newest posting. */
     latest: 'Latest',
     releases: [
+      {
+        version: '0.21.0',
+        name: 'Wet sand',
+        lines: [
+          'A new jar mechanic from level 201: wet sand. It is darker, with a drop and a number on it.',
+          'Wet sand only pours onto sand of its own colour, never into an empty jar.',
+          'Every pour on the board dries it a little; at 0 it is ordinary sand, and a full jar seals once it is dry.',
+          'You will meet it on about one level in eight from level 201.',
+        ],
+      },
       {
         version: '0.20.2',
         name: 'Small polish',
@@ -434,7 +445,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',
@@ -460,7 +471,11 @@ const en = {
     sieve: (c: string) => `sieve, ${c} only`,
     /** A closed clam's state (D96, §2.6): `left` is the pours until it opens (1..opensAfter). An open clam has no state. */
     clam: (left: number) => (left === 1 ? 'clam, closed, opens after the next pour' : `clam, closed, opens in ${left} pours`),
+    /** A full jar of one colour that waits for its wet sand to dry before it seals (D189, §2.7). */
+    wet: 'full, seals when dry',
   },
+  /** One wet unit in a jar's screen-reader contents (D189, §2.7): `left` is the pours until it dries (1..dryAfter). */
+  wetUnit: (colour: string, left: number) => (left === 1 ? `wet ${colour}, dries after the next pour` : `wet ${colour}, dries in ${left} pours`),
   scenes: 'Scenes',
   sceneOwned: 'Owned',
   sceneInUse: 'In use',
@@ -531,6 +546,10 @@ const en = {
   clamRefused: (left: number) => (left === 1 ? 'This clam opens after the next pour.' : `This clam opens in ${left} pours.`),
   /** Said after the pour that opened a clam (D96, §2.6). `jar` is 1-based. */
   clamAnnounce: (jar: number) => `The clam opened (jar ${jar}).`,
+  /** Shown when wet sand is poured towards an empty jar (D189, §2.7). */
+  wetRefused: 'Wet sand only goes onto its own colour.',
+  /** Said after a pour that dried wet sand (D189, §2.7). `jar` is 1-based. */
+  dryAnnounce: (jar: number) => `Sand dried (jar ${jar}).`,
   jarEmpty: 'empty',
   buried: 'buried',
   sealed: 'sealed',

@@ -1,0 +1,113 @@
+{
+  "dom": {
+    "introShown": 1,
+    "introText": "5\nWet sand\n\nWet sand is darker, with a drop and a number on it. It only goes onto sand of its own colour, never into an empty jar. Every pour on the board dries it a little: at 0 it is ordinary sand. A full jar seals once its sand is dry.",
+    "labels201": [
+      "Jar 1: buried, buried, mint, terracotta",
+      "Jar 2: buried; buried; sage; wet terracotta, dries in 5 pours",
+      "Jar 3: buried, buried, plum, lagoon",
+      "Jar 4: buried, buried, cocoa, saffron",
+      "Jar 5: buried, buried, lemon, denim",
+      "Jar 6: buried, buried, sage, lagoon",
+      "Jar 7: buried, buried, saffron, plum",
+      "Jar 8: buried, buried, saffron, lemon",
+      "Jar 9: buried, buried, terracotta, denim",
+      "Jar 10: buried; buried; wet plum, dries in 5 pours; cocoa",
+      "Jar 11: empty",
+      "Jar 12: empty"
+    ],
+    "won": true,
+    "winCard": 1,
+    "errors": [],
+    "craftedLabels": [
+      "Jar 1: terracotta; terracotta; wet terracotta, dries in 2 pours; wet terracotta, dries in 3 pours (full, seals when dry)",
+      "Jar 2: saffron, saffron, saffron, saffron (sealed)",
+      "Jar 3: sage; lagoon; wet sage, dries in 4 pours",
+      "Jar 4: lagoon; sage; wet lagoon, dries after the next pour",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "sealedClass": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "toast": "Wet sand only goes onto its own colour.",
+    "afterDrySealed": [
+      true,
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "afterDryLabels": [
+      "Jar 1: terracotta, terracotta, terracotta, terracotta (sealed)",
+      "Jar 2: saffron, saffron, saffron, saffron (sealed)",
+      "Jar 3: sage, lagoon",
+      "Jar 4: lagoon; sage; wet sage, dries in 3 pours",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "errors2": []
+  },
+  "gpu": {
+    "render": "gpu",
+    "introShown": 1,
+    "introText": "5\nWet sand\n\nWet sand is darker, with a drop and a number on it. It only goes onto sand of its own colour, never into an empty jar. Every pour on the board dries it a little: at 0 it is ordinary sand. A full jar seals once its sand is dry.",
+    "labels201": [
+      "Jar 1: buried, buried, mint, terracotta",
+      "Jar 2: buried; buried; sage; wet terracotta, dries in 5 pours",
+      "Jar 3: buried, buried, plum, lagoon",
+      "Jar 4: buried, buried, cocoa, saffron",
+      "Jar 5: buried, buried, lemon, denim",
+      "Jar 6: buried, buried, sage, lagoon",
+      "Jar 7: buried, buried, saffron, plum",
+      "Jar 8: buried, buried, saffron, lemon",
+      "Jar 9: buried, buried, terracotta, denim",
+      "Jar 10: buried; buried; wet plum, dries in 5 pours; cocoa",
+      "Jar 11: empty",
+      "Jar 12: empty"
+    ],
+    "won": true,
+    "winCard": 1,
+    "errors": [],
+    "craftedLabels": [
+      "Jar 1: terracotta; terracotta; wet terracotta, dries in 2 pours; wet terracotta, dries in 3 pours (full, seals when dry)",
+      "Jar 2: saffron, saffron, saffron, saffron (sealed)",
+      "Jar 3: sage; lagoon; wet sage, dries in 4 pours",
+      "Jar 4: lagoon; sage; wet lagoon, dries after the next pour",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "sealedClass": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "toast": "Wet sand only goes onto its own colour.",
+    "afterDrySealed": [
+      true,
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "afterDryLabels": [
+      "Jar 1: terracotta, terracotta, terracotta, terracotta (sealed)",
+      "Jar 2: saffron, saffron, saffron, saffron (sealed)",
+      "Jar 3: sage, lagoon",
+      "Jar 4: lagoon; sage; wet sage, dries in 3 pours",
+      "Jar 5: empty",
+      "Jar 6: empty"
+    ],
+    "errors2": []
+  }
+}

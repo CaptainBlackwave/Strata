@@ -84,6 +84,7 @@ describe('specials (D49: tall jars, shell milestones, new-jar debuts)', () => {
     // The hourglass (D96) included: level 101's stone shows "New jar: hourglass" (sprint 13 M1).
     // The sieve (D96) included since its UI (sprint 13 M2): level 141's stone shows "New jar: sieve".
     // The clam (D96) included since its UI (sprint 13 M3): level 181's stone shows "New jar: clam".
+    // Wet sand (sprint 23) has no card until W5, so no debut badge yet.
     for (const m of cfg.mechanics.list) expect(specialsOf(m.unlockAt, cfg).debut).toBe(m.id);
     expect(specialsOf(181, cfg).debut).toBe('clam');
     expect(specialsOf(141, cfg).debut).toBe('sieve');

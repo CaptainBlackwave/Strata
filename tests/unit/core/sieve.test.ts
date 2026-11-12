@@ -5,7 +5,7 @@ import pins from '../../fixtures/boards-101-140.json';
 import { type Board, type Jar, boardKey, canPour, isSealed, isStuck, isWon, legalMoves, lostReason, makeBoard, pour, pourRefusal, usefulMoves } from '../../../src/core/board';
 import { type DailyConfig, dailySpec } from '../../../src/core/daily';
 import { applyMechanics, generateLevel, hasMechanics, levelSteps, proveDeal } from '../../../src/core/generator';
-import { type GameConfig, type LevelSpec, hasMechanicCard, isClassicMechanic, levelSpec, pickMechanics, specMechanics } from '../../../src/core/levels';
+import { type GameConfig, type LevelSpec, isClassicMechanic, levelSpec, pickMechanics, specMechanics } from '../../../src/core/levels';
 import { createRng } from '../../../src/core/rng';
 import { GameSession, findShuffle } from '../../../src/core/session';
 import { solve } from '../../../src/core/solver';
@@ -208,8 +208,6 @@ describe('sieve colour choice (proveDeal)', () => {
 describe('sieve placement and generation', () => {
   it('is a card mechanic since its UI (sprint 13 M2), but not classic, so never in the daily rotation', () => {
     expect(isClassicMechanic('sieve')).toBe(false);
-    expect(hasMechanicCard('sieve')).toBe(true);
-    expect(hasMechanicCard('hourglass')).toBe(true);
     expect(specMechanics(levelSpec(UNLOCK, cfg))).toEqual(['sieve']);
   });
 

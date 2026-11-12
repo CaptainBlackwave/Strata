@@ -9,9 +9,10 @@ import type { MechanicId } from '../../core/levels';
 /**
  * The note for a refused pour into a jar: `'mechanic'` (frozen or locked: the jar's own tap text),
  * `'clam'` (a closed clam: "This clam opens in N pours.", D96 §2.6), `'sieve'` (a wrong colour
- * into a sieve: "Only <colour> sand …"), `'sealed'`, `'full'` or `'colour'`.
+ * into a sieve: "Only <colour> sand …"), `'wet'` (wet sand towards an empty jar: "Wet sand only goes
+ * onto its own colour.", D189 §2.7), `'sealed'`, `'full'` or `'colour'`.
  */
-export type RefusalNote = 'mechanic' | 'clam' | 'sieve' | 'sealed' | 'full' | 'colour';
+export type RefusalNote = 'mechanic' | 'clam' | 'sieve' | 'wet' | 'sealed' | 'full' | 'colour';
 
 /**
  * The note for a pour refused with `reason` into a jar that is (`targetSealed`) or is not sealed.
@@ -23,6 +24,8 @@ export function refusalNote(reason: PourRefusal | null, targetSealed: boolean): 
   if (reason === 'closed') return 'mechanic';
   // A closed clam is never sealed (it is dealt unsealed and nothing pours in while it is shut).
   if (reason === 'clam') return 'clam';
+  // Only an empty target refuses wet sand, and an empty jar is never sealed.
+  if (reason === 'wet') return 'wet';
   if (reason === 'sieve' || reason === 'full' || reason === 'colour') return targetSealed ? 'sealed' : reason;
   return null;
 }
