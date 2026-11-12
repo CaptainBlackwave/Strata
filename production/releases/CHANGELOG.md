@@ -28,6 +28,17 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.18.0 (2026-11-12): sprint 19, real sand
+**For players**
+- A new Realistic board, on by default: soft matte glass jars and real grains of sand that slide to the lip, spill in a thin stream and pile up as they land.
+- Every special jar, jar style, scene and colour-blind pattern works on it, along with corks, hints and the win glow.
+- Settings > Realistic sand switches to the Classic board and back at any time, free. Phones without WebGL keep Classic.
+- The sand pours from the jar's lip and the jar empties as it pours (fixed in 0.17.x on the Classic board too).
+
+**Under the hood**
+- Owner decisions D153–D165 and ADR-0001 (`docs/architecture/adr-0001-gpu-sand-board.md`): a PixiJS v8 board loaded on demand (about 103 KB gzipped), a pure sand simulation in `src/ui/sand/` (only the poured bands move, tested every step), the HTML jar buttons kept for input and accessibility, and a fall-back to Classic if WebGL is lost mid-game.
+- Performance at 4× throttle in software WebGL: median frame 16.7 ms, p95 50 ms (pessimistic; real phones use the GPU).
+
 ## 0.17.0 (2026-11-11): sprint 18, a softer touch
 **For players**
 - The pour: sand streams in grains and settles into a soft pile that levels out; the pour and landing sounds follow how much sand moves.

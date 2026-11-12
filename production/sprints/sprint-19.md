@@ -1,6 +1,6 @@
 # Sprint 19: Real sand
 
-> **Status: planned (2026-11-11), approved by the owner (D157, D158).** Architecture: `docs/architecture/adr-0001-gpu-sand-board.md`. Prototype: `prototypes/gpu-sand/` (variant C). Target release: **0.18.0, as soon as ready**, December included. About 3–4 weeks.
+> **Status: built and released as 0.18.0 (2026-11-12), approved by the owner (D157, D158); released on the owner's word ("push everything live") before the phone performance check.** Architecture: `docs/architecture/adr-0001-gpu-sand-board.md`. Prototype: `prototypes/gpu-sand/` (variant C). Target release: **0.18.0, as soon as ready**, December included. About 3–4 weeks.
 
 ## Change of direction (2026-11-12, D159–D163)
 A player suggested, and the owner agreed, that the real-sand board should be a **cosmetic** rather than a replacement. Today's board stays the free default ("Classic"); "Real sand" is a one-time 2,500-coin purchase in a new **Board** row of the Jar styles sheet, switched freely once owned. The glass becomes **soft and matte**. It goes on sale only once every level works on it. The DOM board is therefore a first-class look, not only a fallback.
