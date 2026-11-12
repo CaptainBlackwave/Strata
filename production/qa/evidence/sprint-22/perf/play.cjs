@@ -1,4 +1,4 @@
-// Sprint 21 P2 regression play-through (strata-8j3): the Classic and Realistic boards still draw every
+// Sprint 22 L1 regression play-through (copied from sprint 21 P2, strata-8j3): the Classic and Realistic boards still draw every
 // change now that a redraw touches only the jars that changed. Level 12 at 390x844: two pours, Undo,
 // Shuffle, then the solver's path to the win. After every action the DOM jars are checked against the
 // rules' board (unit count and colours per jar, sealed, selected), and screenshots are kept.
@@ -102,7 +102,7 @@ async function play(browser, board) {
 (async () => {
   const browser = await chromium.launch();
   const out = {};
-  for (const board of ['dom', 'gpu']) out[board] = await play(browser, board);
+  for (const board of (process.env.BOARDS || 'dom,gpu').split(',')) out[board] = await play(browser, board);
   fs.writeFileSync(path.join(__dirname, 'play-results.json'), JSON.stringify(out, null, 2) + '\n');
   for (const [b, l] of Object.entries(out)) console.log(b, 'render', l.render, 'steps', l.steps.length, 'allMatched', l.allMatched, 'won', l.won, 'winCard', l.winCard, 'errors', l.errors.length, JSON.stringify(l.steps.filter((s) => s.mismatches.length).slice(0, 3)));
   await browser.close();
