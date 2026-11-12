@@ -426,7 +426,8 @@ body {
   font-family: var(--font);
   color: var(--ink);
   background:
-    radial-gradient(120% 50% at 50% 108%, var(--sea) 0 38%, transparent 38.5%),
+    /* Sprint 25 U4 (audit B4): a full-width shallow-water band at the foot of the screen, not a cropped arc. */
+    linear-gradient(180deg, transparent 0 calc(100% - 9rem), color-mix(in srgb, var(--sea) 45%, transparent) calc(100% - 9rem), var(--sea)),
     radial-gradient(90% 60% at 85% -10%, var(--sky) 0 40%, transparent 60%),
     linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
   -webkit-tap-highlight-color: transparent;
@@ -438,112 +439,171 @@ body {
 #app {
   height: 100%;
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
+  /* Sprint 25 U4: the HUD, the board, the stuck banner, the toast's slot (between the board and the
+     toolbar, so a toast never covers jars, audit B6), the toolbar. Each takes its row explicitly. */
+  --toast-slot: calc(var(--fs-2) * 1.25 + 3 * var(--sp-2));
+  grid-template-rows: auto minmax(0, 1fr) auto var(--toast-slot) auto;
   grid-template-columns: minmax(0, 1fr); /* lets the HUD title shrink at large text (AX-20) */
   padding: max(var(--sp-3), env(safe-area-inset-top)) var(--sp-4) max(var(--sp-3), env(safe-area-inset-bottom));
   max-width: 900px;
   margin: 0 auto;
 }
 
-/* ---- HUD ---- */
+/* ---- HUD (sprint 25 U4, direction B) ----
+   A band across the top with a lip, in two fixed rows that never wrap (audit B1):
+   row 1 the eyebrow and level (left), the challenge tag and pours (right);
+   row 2 Restart and Settings (left), the coins chip (right). */
 .hud {
+  --surf: color-mix(in srgb, var(--hue-profile) 16%, var(--card));
+  --hud-lip: color-mix(in srgb, color-mix(in srgb, var(--hue-profile) 40%, var(--card)) var(--lip-k), var(--lip-mix));
+  grid-row: 1;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: var(--sp-2);
-  padding: var(--sp-1) 2px var(--sp-2);
+  /* the band reaches the screen's edges and top: undo #app's padding */
+  margin: calc(-1 * max(var(--sp-3), env(safe-area-inset-top))) calc(-1 * var(--sp-4)) 0;
+  padding: max(var(--sp-3), env(safe-area-inset-top)) var(--sp-4) var(--sp-3);
+  background: var(--grain), var(--surf);
+  border-radius: 0 0 var(--r-l) var(--r-l);
+  box-shadow: 0 var(--lip-h) 0 var(--hud-lip), var(--sh-2);
 }
-/* Restart, coins and Settings stay together; at large text on a narrow phone they wrap to
-   their own row under the title instead of cutting "Level 120" and the Tall jars tag. */
-.hud-actions {
+.hud-r1,
+.hud-r2 {
   display: flex;
   align-items: center;
-  gap: inherit;
-  margin-left: auto;
+  gap: var(--sp-2) var(--sp-3);
+  min-width: 0;
+}
+.hud-r1 {
+  align-items: flex-end;
 }
 .hud-title {
   flex: 1 1 auto;
-  min-width: min(6.75em, 100%);
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
   line-height: 1.1;
-  margin-right: auto;
 }
 .brand {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: var(--fw-bold);
-  font-size: var(--fs-2);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
-.tag {
-  display: inline-block;
-  white-space: nowrap;
-  font-style: normal;
-  margin-left: var(--sp-2);
-  padding: 2px var(--sp-2);
-  border-radius: var(--r-pill);
-  background: var(--accent-text);
-  color: var(--accent-ink);
-  letter-spacing: 0.08em;
-  font-size: var(--fs-1);
-  vertical-align: 1px;
-}
-.tag[hidden] {
-  display: none;
 }
 .level-label {
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-black);
   /* Large text on a narrow phone: cap the heading by the screen width so it isn't cut (AX-20). */
-  font-size: min(var(--fs-4), 6.5vw);
+  font-size: min(var(--fs-5), 8vw);
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.hud-moves {
-  white-space: nowrap;
-  font-size: var(--fs-2);
-  color: var(--ink-soft);
-  background: var(--surface);
-  padding: var(--sp-2) var(--sp-3);
+.hud-side {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  text-align: right;
+}
+.tag {
+  display: inline-block;
+  max-width: 100%;
+  font-style: normal;
+  padding: 2px var(--sp-2);
   border-radius: var(--r-pill);
-}
-.hud-moves #moves {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent-text);
+  font-size: var(--fs-1);
   font-weight: var(--fw-bold);
-  color: var(--ink);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  overflow-wrap: normal;
 }
-
-@media (max-width: 360px) {
-  .hud {
-    gap: var(--sp-2);
-  }
-  .brand-name {
-    display: none;
-  }
-  .tag {
-    margin-left: 0;
-  }
+.tag[hidden] {
+  display: none;
+}
+.subhud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  column-gap: 0.25em;
+  row-gap: 2px;
+  font-size: var(--fs-2);
+  font-weight: var(--fw-bold);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.subhud #moves {
+  font-size: min(var(--fs-4), 6vw);
+  font-weight: var(--fw-black);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.hud-r2 .coins {
+  margin-left: auto;
+  min-height: 44px;
+  padding-inline: var(--sp-2) var(--sp-4);
 }
 
 /* ---- Board ---- */
 .board {
+  grid-row: 2;
   position: relative;
   min-height: 0;
   display: grid;
   place-items: center;
 }
+/* Sprint 25 U4: one .jar-row per layout row (jars.ts), each standing on a wooden .jar-shelf. The
+   rows stretch to the widest one, so every shelf on a board is the same length. The Realistic board
+   draws its planks on the canvas from these elements' boxes (board-gpu/shelf.ts), so both line up. */
 .rows {
+  --shelf-h: clamp(6px, calc(var(--jar-w) * 0.15), 11px);
+  --shelf-lip: 3px;
+  --shelf-over: min(calc(var(--gap-x) / 2), calc(var(--jar-w) * 0.3));
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-content: center;
-  column-gap: var(--gap-x);
+  flex-direction: column;
+  align-items: stretch;
   row-gap: var(--gap-y);
-  max-width: calc(var(--cols) * (var(--jar-w) + var(--gap-x)));
   padding-top: var(--sp-5);
+  padding-bottom: calc(var(--shelf-h) + var(--shelf-lip));
+}
+.jar-row {
+  position: relative; /* no z-index: a pouring jar (z 5) still rises over the other rows */
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  column-gap: var(--gap-x);
+}
+.jar-shelf {
+  /* Wood is art: the same plank in every scene (keep in step with board-gpu/shelf.ts SHELF_WOOD). */
+  --wood-hi: #d9b27a;
+  --wood-lo: #b58a52;
+  --wood-lip: #8f6736;
+  position: absolute;
+  top: 100%;
+  left: calc(-1 * var(--shelf-over));
+  right: calc(-1 * var(--shelf-over));
+  height: var(--shelf-h);
+  border-radius: calc(var(--shelf-h) / 2);
+  background: linear-gradient(180deg, var(--wood-hi), var(--wood-lo));
+  box-shadow:
+    0 var(--shelf-lip) 0 var(--wood-lip),
+    0 calc(var(--shelf-lip) + 4px) 8px -4px color-mix(in srgb, var(--shadow-c) 30%, transparent);
+  pointer-events: none;
+}
+#board[data-render='gpu'] .jar-shelf {
+  visibility: hidden; /* the canvas draws it, under its jars */
 }
 
 /*
@@ -606,8 +666,11 @@ button {
   border-top-width: 0;
   border-radius: calc(var(--jar-w) * 0.12) calc(var(--jar-w) * 0.12) calc(var(--jar-w) * 0.38) calc(var(--jar-w) * 0.38);
   background: var(--glass);
+  /* Audit B3: a faint shade inside the walls, so an empty jar reads as glass, not cream sand. */
   box-shadow:
     inset 0 -6px 10px rgba(255, 255, 255, 0.35),
+    inset 5px 0 8px -5px color-mix(in srgb, var(--ink) 16%, transparent),
+    inset -5px 0 8px -5px color-mix(in srgb, var(--ink) 16%, transparent),
     0 6px 0 var(--ground);
   overflow: hidden;
 }
@@ -823,13 +886,18 @@ button {
   pointer-events: none;
 }
 
-/* ---- Toolbar ---- */
+/* ---- Toolbar (sprint 25 U4): four lipped paper tiles, the icon always shown, the count in a
+   corner badge, the label shrunk with the screen so it never touches the tile's edges (audit B2). */
 .toolbar {
+  grid-row: 5;
   position: relative;
-  display: flex;
-  justify-content: center;
-  gap: var(--sp-3);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-2);
+  width: min(100%, 27rem);
+  margin-inline: auto;
   padding-top: var(--sp-2);
+  padding-bottom: var(--lip-h);
 }
 /* UX-board-9: why the tools are off in the tutorial, just above them. */
 .tools-note {
@@ -848,23 +916,30 @@ button {
   display: none;
 }
 .tool {
+  --surf: var(--card);
+  --lip: color-mix(in srgb, var(--surf) var(--lip-k), var(--lip-mix));
   position: relative;
-  flex: 1 1 0;
-  max-width: 96px;
+  min-width: 0;
+  min-height: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--sp-1);
-  padding: var(--sp-2) var(--sp-1) var(--sp-2);
+  padding: var(--sp-3) 2px var(--sp-2);
   font: inherit;
-  font-size: var(--fs-1);
+  font-size: min(var(--fs-2), 4vw);
   font-weight: var(--fw-bold);
+  line-height: 1.15;
   color: var(--ink);
-  background: var(--card);
-  border: 0;
+  background: var(--grain), var(--surf);
+  border: 2px solid var(--edge);
   border-radius: var(--r-m);
-  box-shadow: 0 var(--lip-h-sm) 0 var(--lip), var(--sh-1);
+  box-shadow: 0 var(--lip-h) 0 var(--lip), var(--sh-1);
   cursor: pointer;
+  transition:
+    transform var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out);
 }
 .tool:active:not(:disabled) {
   transform: translateY(var(--press-y));
@@ -880,67 +955,65 @@ button {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
+.tool-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .tool svg {
+  flex: none;
   width: 24px;
   height: 24px;
+  color: var(--accent-text);
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* Duotone: the closed shapes (the jar, the bulb) get a pale accent fill. */
+#btn-jar svg,
+#btn-hint svg {
+  fill: color-mix(in srgb, var(--accent) 28%, transparent);
+}
 .badge {
   position: absolute;
-  top: 4px;
-  right: 14%;
-  min-width: 1.65em;
-  height: 1.65em;
-  padding: 0 0.45em;
-  border-radius: 0.85em;
-  background: var(--accent-text); /* small 11 px count: F4 */
+  top: -9px;
+  right: -6px;
+  min-width: 1.8em;
+  height: 1.8em;
+  padding: 0 0.4em;
+  border-radius: var(--r-pill);
+  background: var(--accent-text); /* small count: F4 */
   color: var(--accent-ink);
-  font-size: var(--fs-1);
-  line-height: 1.65em;
+  font-size: min(var(--fs-1), 3.5vw);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.8em;
+  text-align: center;
   /* At large text the price's coin dot and number wrapped onto two lines, and the number fell onto the tool's name. */
   white-space: nowrap;
-}
-/*
- * Large text (F9, device pass 0.9.1): a tool narrower than 4.5 of its own ems has no room for a
- * corner badge beside its icon (at 200% text the badge covered the icon and the tool's name). The
- * badge then takes the icon's place, at full text size, and that icon is hidden: the name and the
- * count say what the tool is. The toolbar keeps its height, so the board keeps its room (a taller
- * toolbar shrank level 141's jars to 9 px on a 320 px screen).
- */
-.tool {
-  container-type: inline-size;
-}
-@container (max-width: 4.5em) {
-  .tool .badge {
-    top: 7px;
-    left: 50%;
-    right: auto;
-    height: 1.3em;
-    line-height: 1.3em;
-    transform: translateX(-50%);
-  }
-  .tool:has(> .badge:not([hidden])) > svg {
-    visibility: hidden;
-  }
+  box-shadow: 0 0 0 2px var(--bg-bottom);
 }
 
-/* ---- Toast ---- */
+/* ---- Toast (sprint 25 U4): in its own slot between the board and the toolbar, never over the jars
+   (audit B6). A two-line toast grows upward from the slot's bottom. ---- */
 .toast {
-  position: fixed;
-  left: 50%;
-  bottom: calc(96px + env(safe-area-inset-bottom));
-  transform: translate(-50%, 12px);
-  max-width: calc(100% - 32px);
+  grid-row: 4;
+  justify-self: center;
+  align-self: end;
+  position: relative;
+  margin-bottom: var(--sp-1);
+  transform: translateY(8px);
+  max-width: 100%;
   padding: var(--sp-2) var(--sp-4);
   border-radius: var(--r-m);
   background: var(--toast-bg);
   color: var(--toast-fg);
   font-size: var(--fs-2);
   font-weight: var(--fw-bold);
+  line-height: 1.25;
   text-align: center;
   box-shadow: var(--sh-3);
   opacity: 0;
@@ -952,7 +1025,7 @@ button {
 }
 .toast.show {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: none;
 }
 
 /* ---- Win card ---- */
@@ -1054,16 +1127,6 @@ button {
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, var(--gold-light) 0 18%, var(--gold) 20% 62%, var(--gold-deep) 64%);
   box-shadow: inset 0 -2px 0 rgba(140, 90, 20, 0.35);
-}
-.subhud {
-  text-align: right;
-  font-size: var(--fs-2);
-  color: var(--ink-soft);
-  margin-top: calc(-1 * var(--sp-1));
-}
-.subhud #moves {
-  font-weight: var(--fw-bold);
-  color: var(--ink);
 }
 .badge.price {
   background: var(--gold);
@@ -1784,9 +1847,6 @@ button {
 }
 
 /* ==== Sprint 3: jar mechanics (production/sprints/sprint-3.md) ==== */
-.rows {
-  align-items: flex-end;
-}
 .padlock,
 .funnel-mark,
 .ice {
@@ -2521,7 +2581,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 }
 
 /* The moon appears on the home screen only, where the top of the sky is empty */
-body[data-theme='moonlit'] .home::before {
+body[data-theme='moonlit'] .hero-sky::after {
   content: '';
   position: absolute;
   z-index: -1; /* audit X1: behind the header and its gear, never on top of them */
@@ -3014,6 +3074,7 @@ svg.fx-stone {
 /* ==== Sprint 6 fixes (production/qa/sprint-6-findings.md) ==== */
 /* Stuck banner (F2): stays on the board until the board changes. */
 .stuck-banner {
+  grid-row: 3;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
@@ -3163,7 +3224,7 @@ input[type='text'] {
 }
 
 /* High summer (tier 1): a bright sun in the empty top-right of the home sky; a warm haze on the board's horizon */
-body[data-theme='highsummer'] .home::before {
+body[data-theme='highsummer'] .hero-sky::after {
   content: '';
   position: absolute;
   z-index: -1;
@@ -3337,7 +3398,7 @@ body[data-theme='wintersnow'] {
 }
 
 /* Harvest moon (tier 2): a large warm moon in the empty top-right of the home sky, clear of the logo (lanterns are scene-fx.ts) */
-body[data-theme='harvestmoon'] .home::before {
+body[data-theme='harvestmoon'] .hero-sky::after {
   content: '';
   position: absolute;
   z-index: -1;
@@ -3367,8 +3428,13 @@ body[data-theme='harvestmoon']::before {
 
 /* UX-board-7: a booster waiting for its buy tap is filled like the armed Restart (F6). */
 .tool.armed {
+  --surf: var(--coral-text);
   color: var(--card);
-  background: var(--coral-text);
+  border-color: var(--lip);
+}
+.tool.armed svg {
+  color: inherit;
+  fill: none;
 }
 
 /* TD-13: Hint or Shuffle waiting for the worker. Busy, not dimmed like a disabled tool; the
@@ -3378,7 +3444,7 @@ body[data-theme='harvestmoon']::before {
   cursor: progress;
 }
 .tool.thinking {
-  box-shadow: 0 0 0 3px var(--accent), var(--sh-1);
+  box-shadow: 0 0 0 3px var(--accent), 0 var(--lip-h) 0 var(--lip);
 }
 @media (prefers-reduced-motion: no-preference) {
   .tool.thinking svg {
@@ -4489,18 +4555,6 @@ body[data-theme='harvestmoon']::before {
 .home[data-tab='profile'] {
   --band: var(--band-profile);
 }
-/* Audit X1: the scene's sun or moon hangs in the sky under the header (the views' grid row), behind
-   the content, and only on Play, where that sky is empty. */
-.home::before {
-  grid-row: 2;
-  grid-column: 1;
-}
-.home:not([data-tab='play'])::before {
-  visibility: hidden;
-}
-body:is([data-theme='lighthousenight'], [data-theme='springblossom'], [data-theme='autumnshore'], [data-theme='seafog']) .home::before {
-  visibility: visible; /* full-screen washes, not a sun or moon */
-}
 .home-top {
   position: relative;
   container-type: inline-size;
@@ -4523,7 +4577,7 @@ body:is([data-theme='lighthousenight'], [data-theme='springblossom'], [data-them
   flex: 1 1 auto;
   margin: 0;
   min-width: 0;
-  font-size: var(--fs-5);
+  font-size: min(var(--fs-5), 9vw); /* "Today" stays beside the coins at 320 px with 150% text */
   font-weight: var(--fw-black);
   line-height: 1.15;
   letter-spacing: -0.01em;
@@ -5833,13 +5887,73 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   box-shadow: 0 var(--lip-h-sm) 0 var(--lip);
 }
 .home .me .me-text {
-  flex: 1 1 10em;
+  flex: 1 1 6em;
 }
 .home .me .me-text strong {
   overflow-wrap: normal;
 }
 .home .me .ghost {
   flex: none;
+}
+/* The streak track's day labels hang under its line: the box holds them, so the next row never touches. */
+.home .strk {
+  height: calc(26px + 1rem);
+  margin-bottom: var(--sp-3);
+}
+.home .me-settings li {
+  flex-wrap: wrap;
+}
+.home .me-set-text {
+  flex: 1 1 7em;
+}
+.home .me-settings li > button {
+  margin-left: auto;
+}
+/* 320 px at 150% text: less padding, so text columns stay a few words wide. */
+@media (max-width: 360px) {
+  .home .page {
+    padding-inline: var(--sp-3);
+  }
+}
+@container (max-width: 18em) {
+  .home .hcard {
+    padding: var(--sp-3);
+  }
+  /* The collected tick moves onto the reward's tile, so the name gets the row's width. */
+  .reward-list li {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+  .reward-list li .tick {
+    grid-row: 1;
+    grid-column: 1;
+    align-self: end;
+    justify-self: end;
+    margin: 0 -6px -6px 0;
+    padding: 2px;
+    border-radius: 50%;
+    color: var(--accent-ink);
+    background: var(--accent);
+    stroke-width: 3;
+  }
+}
+/* The Play tab's streak card on a narrow panel: the tile and chevron on top, the text the full width
+   under them (never "Next / streak / reward"). */
+@container (max-width: 20em) {
+  .home .streak-top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: 'art . chev' 'text text text';
+    row-gap: var(--sp-2);
+  }
+  .home .streak-top .reward-art {
+    grid-area: art;
+  }
+  .home .streak-top .mini-text {
+    grid-area: text;
+  }
+  .home .streak-top .chev {
+    grid-area: chev;
+  }
 }
 @container (max-width: 20em) {
   .home .me .me-text {

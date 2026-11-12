@@ -82,7 +82,19 @@ export function buildJars(): void {
   boardEl.replaceChildren();
   const rows = document.createElement('div');
   rows.className = 'rows';
+  // Sprint 25 U4: one row element per layout row, each with its wooden shelf (style.css .jar-shelf).
+  // The Realistic board reads the shelves' boxes and draws the planks on its canvas (board-gpu/shelf.ts).
+  let row: HTMLElement | null = null;
   state.jarEls = board.jars.map((_, i) => {
+    if (i % layout.cols === 0) {
+      row = document.createElement('div');
+      row.className = 'jar-row';
+      const shelf = document.createElement('span');
+      shelf.className = 'jar-shelf';
+      shelf.setAttribute('aria-hidden', 'true');
+      row.appendChild(shelf);
+      rows.appendChild(row);
+    }
     const jar = document.createElement('button');
     jar.type = 'button';
     jar.className = 'jar';
@@ -96,7 +108,7 @@ export function buildJars(): void {
       SIEVE_BAND +
       CLAM_SHELL;
     jar.addEventListener('click', () => tapHandler(i));
-    rows.appendChild(jar);
+    row!.appendChild(jar);
     return jar;
   });
   boardEl.appendChild(rows);

@@ -10,7 +10,7 @@ import { defaultDims } from '../sand';
 import { boardEl, reducedMotion } from '../dom';
 import { ANIM, audio, config, state } from '../state';
 import { GPU_FLAG_KEY, type BoardMode, chooseBoardMode, detectWebGL } from './switch';
-import { type JarGeometry, jarGeometry, restRect } from './geometry';
+import { type JarGeometry, type Rect, jarGeometry, restRect } from './geometry';
 import { hexToRgb } from './paint';
 import type { GlassLook } from './art';
 import type { BoardLook, GpuBoard, GpuMotion } from './renderer';
@@ -168,6 +168,14 @@ function readGeometry(): JarGeometry[] {
   });
 }
 
+/** The wooden shelves' boxes (sprint 25 U4): the canvas paints its planks exactly where the DOM lays them. */
+function readShelves(): Rect[] {
+  return [...boardEl.querySelectorAll<HTMLElement>('.jar-shelf')].map((el) => {
+    const r = el.getBoundingClientRect();
+    return { left: r.left, top: r.top, width: r.width, height: r.height };
+  });
+}
+
 /** The scene's and the worn glass's resolved colours; `null` until read (and after a change). */
 let tokens: { glass: GlassLook; ink: string } | null = null;
 
@@ -265,7 +273,7 @@ export function gpuLayout(): void {
   gpu.setVisible(active);
   if (!active) return;
   gpu.setLook(currentLook());
-  gpu.layout(readGeometry(), board, state.selected);
+  gpu.layout(readGeometry(), board, state.selected, readShelves());
 }
 
 /** A jar was redrawn or the selection changed: the canvas catches up (only changed jars redraw). */

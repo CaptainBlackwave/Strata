@@ -42,8 +42,52 @@ export function firstFocusable(layer: HTMLElement): HTMLElement | null {
 export function openLayer(el: HTMLElement, first: HTMLElement | null = null, opener: FocusTarget | null = document.activeElement as HTMLElement | null): void {
   layers.open(el, opener === document.body ? null : opener);
   const target = canFocus(first) ? first : firstFocusable(el);
-  target?.focus();
+  if (!target) return;
+  // Audit X2: a layer always opens at its top. Focusing a control far down a tall sheet (Copy at the
+  // foot of Stats at 320 px with 150% text) scrolled it to the bottom, past its title. So focus
+  // without scrolling, reset the scroll, and if the control is then out of view, focus the header's
+  // close button instead (the first control in the sheet), so focus and the view agree.
+  target.focus({ preventScroll: true });
+  const scrollers = [el, ...el.querySelectorAll<HTMLElement>('.sheet-card, .cabinet-card, .win-card, .whatsnew-log')];
+  for (const s of scrollers) s.scrollTop = 0;
+  if (inView(target, scrollers)) return;
+  const head = el.querySelector<HTMLElement>('.sheet-x');
+  if (canFocus(head)) head.focus({ preventScroll: true });
+  else target.scrollIntoView({ block: 'nearest' });
 }
+
+/** Whether `el` lies fully inside each of `scrollers` that contains it (so it shows without scrolling). */
+function inView(el: HTMLElement, scrollers: readonly HTMLElement[]): boolean {
+  const r = el.getBoundingClientRect();
+  return scrollers.every((s) => {
+    if (!s.contains(el) || s.scrollHeight <= s.clientHeight) return true;
+    const b = s.getBoundingClientRect();
+    return r.top >= b.top - 1 && r.bottom <= b.bottom + 1;
+  });
+}
+
+/**
+ * Audit X3: the focus ring is for keyboard users. Programmatic focus (a card focusing its button on
+ * open) matched :focus-visible before any input, so a blue ring showed on first open of the welcome,
+ * install and intro cards. The last input kind is kept on <html data-input>: "pointer" until a key
+ * is pressed, then "key" until the next tap or click; style.css hides the ring in "pointer" mode.
+ */
+function trackInput(): void {
+  const root = document.documentElement;
+  root.dataset.input = 'pointer';
+  const set = (kind: 'pointer' | 'key') => {
+    if (root.dataset.input !== kind) root.dataset.input = kind;
+  };
+  window.addEventListener('pointerdown', () => set('pointer'), { capture: true, passive: true });
+  window.addEventListener(
+    'keydown',
+    (e) => {
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) set('key');
+    },
+    { capture: true },
+  );
+}
+trackInput();
 
 /**
  * Closes `el`. With `restore`, focus returns to its opener, or to the new top layer's
