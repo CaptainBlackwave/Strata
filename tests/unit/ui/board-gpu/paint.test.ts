@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NEUTRAL, gridFromJar } from '../../../../src/ui/sand';
-import { cornerMask, hexToRgb, paintAir, paintGrid } from '../../../../src/ui/board-gpu/paint';
+import { cornerMask, hexToRgb, paintGrid, paintParticles } from '../../../../src/ui/board-gpu/paint';
 
 const DIMS = { cols: 8, rows: 8 };
 const PALETTE = [hexToRgb('#c8553d'), hexToRgb('#2a9d8f')];
@@ -54,13 +54,21 @@ describe('paintGrid', () => {
   });
 });
 
-describe('paintAir', () => {
-  it('draws each live grain once and clears the rest', () => {
-    const view = { count: 1, x: new Float32Array([4.2, 1]), y: new Float32Array([-4, -1]), cell: new Uint8Array([1, 2]), shade: new Uint8Array([0, 0]) };
+describe('paintParticles', () => {
+  const view = { count: 1, x: new Float32Array([4.2, 1]), y: new Float32Array([-4, 3]), cell: new Uint8Array([1, 2]), shade: new Uint8Array([0, 0]) };
+  it('in the air: draws each live grain once and clears the rest', () => {
     const out = new Uint32Array(8 * 2 * 8 * 2).fill(0xffffffff);
-    paintAir(view, 8, 8, PALETTE, NEUTRAL_RGB, out, 2);
-    const lit = [...out].filter((px) => alpha(px) === 255).length;
-    expect(lit).toBe(4); // one grain, 2 × 2 texels
+    paintParticles(view, 8, -8, 8, PALETTE, NEUTRAL_RGB, out, 2, true);
+    expect([...out].filter((px) => alpha(px) === 255).length).toBe(4); // one grain, 2 × 2 texels
+  });
+  it('inside the target: only fills empty texels, so settled sand is never covered', () => {
+    const inside = { ...view, count: 2, y: new Float32Array([-4, 3]) };
+    const empty = new Uint32Array(16 * 16);
+    paintParticles(inside, 8, 0, 8, PALETTE, NEUTRAL_RGB, empty, 2, false);
+    expect([...empty].filter((px) => alpha(px) === 255).length).toBe(4); // the grain above the mouth is not drawn here
+    const full = new Uint32Array(16 * 16).fill(0xff123456);
+    paintParticles(inside, 8, 0, 8, PALETTE, NEUTRAL_RGB, full, 2, false);
+    expect([...full].every((px) => px === 0xff123456)).toBe(true);
   });
 });
 

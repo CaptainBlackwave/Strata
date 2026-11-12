@@ -26,8 +26,9 @@ import { EMPTY, type SandDims, type SandGrid, bandRows, grainsPerUnit, gridFromJ
 export type PourPhase = 'tilt' | 'return' | 'settle' | 'done';
 
 /**
- * Grains in the air, in the target's cell space: `x` runs across the target (0..cols) and `y`
- * is cells below its mouth, so it is negative while falling (it starts at `-airRows`, the lip).
+ * Falling grains, in the target's cell space: `x` runs across the target (0..cols) and `y`
+ * is cells below its mouth. It starts at `-airRows` (the lip), is negative above the mouth, and
+ * positive once the grain falls inside the target, toward the pile, where it lands.
  * Only the first `count` entries are live.
  */
 export interface ParticleView {
@@ -72,6 +73,23 @@ export interface PourOptions {
   readonly side?: 1 | -1;
   /** Tuning; defaults to game-config.json `sand`. */
   readonly config?: SandConfig;
+  /**
+   * Where the stream falls, as a column in the target's cells (the lip held over the opening).
+   * Given, each grain falls straight down within `streamWidth` of it (strata-085). Absent, grains
+   * leave from the target's near edge and fan out across `streamSpread` of its width.
+   */
+  readonly streamCol?: number;
+  /** The stream's width in cells around `streamCol` (default 1). */
+  readonly streamWidth?: number;
+}
+
+/** Optional settings for one `step`. */
+export interface StepOptions {
+  /**
+   * Hold the spill: the jar still tips and its grains still flow to the mouth, but none leaves
+   * (strata-r8z: the renderer holds it until the lip is over the target).
+   */
+  readonly holdSpill?: boolean;
 }
 
 /** How much `finish` had to change. */
@@ -123,6 +141,11 @@ class Sim implements PourSim {
   pass = 0;
   /** Grains spilled in the current step, against `spillPerStep`. */
   spilledThisStep = 0;
+  /** The spill is held this step. */
+  hold = false;
+  /** The stream's column and width, when the pour has one. */
+  streamCol: number | null = null;
+  streamWidth = 1;
   /** Steps a grain takes to fall `airRows` from rest. */
   readonly fallSteps: number;
   readonly particles: ParticleView;
@@ -188,6 +211,10 @@ export function planPour(board: Board, from: number, to: number, dims: SandDims,
   const required = amount * grainsPerUnit(capacity, dims);
   const side = options.side ?? (to > from ? 1 : -1);
   const sim = new Sim(from, to, amount, color, required, side, dims, source, target, seed, createRng(seed), config);
+  if (options.streamCol !== undefined) {
+    sim.streamCol = Math.min(dims.cols, Math.max(0, options.streamCol));
+    sim.streamWidth = Math.max(0, options.streamWidth ?? 1);
+  }
   // The poured bands are the top `amount` of the source's units; only they may move.
   const band = bandRows(capacity, dims);
   const n = src.units.length;
@@ -197,13 +224,14 @@ export function planPour(board: Board, from: number, to: number, dims: SandDims,
   return sim;
 }
 
-/** Advances the pour one tick. Does nothing once `done`. */
-export function step(pourSim: PourSim): void {
+/** Advances the pour one tick. Does nothing once `done`. `holdSpill` keeps every grain in the source this step. */
+export function step(pourSim: PourSim, options: StepOptions = {}): void {
   const sim = asSim(pourSim);
   if (sim.phase === 'done') return;
   const c = sim.config;
   sim.steps++;
   sim.spilledThisStep = 0;
+  sim.hold = options.holdSpill === true;
   const maxTilt = c.maxTiltDeg * DEG;
   if (sim.phase === 'tilt') {
     sim.tilt = Math.min(maxTilt, sim.tilt + c.tiltPerStepDeg * DEG);
@@ -294,7 +322,7 @@ function flowSource(sim: Sim): boolean {
   // A cell a grain could enter: an empty in-glass cell, or the open mouth above row 0 while the spill allows.
   const open = (x: number, y: number): boolean => {
     if (x < 0 || x >= cols || y >= rows) return false;
-    if (y < 0) return sim.spilledThisStep < c.spillPerStep;
+    if (y < 0) return !sim.hold && sim.spilledThisStep < c.spillPerStep;
     return cells[y * cols + x] === EMPTY;
   };
   const upward = dirs[0].dy < 0;
@@ -346,11 +374,17 @@ function spill(sim: Sim, cell: number, grainShade: number): void {
   const c = sim.config;
   const cols = sim.dims.cols;
   const p = sim.pcount++;
-  const x0 = sim.side > 0 ? 0 : cols;
-  const land = cols / 2 + (sim.rng() - 0.5) * c.streamSpread * cols;
-  sim.px[p] = x0;
+  if (sim.streamCol !== null) {
+    // A narrow stream straight down under the lip.
+    sim.px[p] = sim.streamCol + (sim.rng() - 0.5) * sim.streamWidth;
+    sim.pvx[p] = 0;
+  } else {
+    const x0 = sim.side > 0 ? 0 : cols;
+    const land = cols / 2 + (sim.rng() - 0.5) * c.streamSpread * cols;
+    sim.px[p] = x0;
+    sim.pvx[p] = (land - x0) / sim.fallSteps;
+  }
   sim.py[p] = -c.airRows;
-  sim.pvx[p] = (land - x0) / sim.fallSteps;
   sim.pvy[p] = 0;
   sim.pcell[p] = cell;
   sim.pshade[p] = grainShade;
@@ -358,26 +392,59 @@ function spill(sim: Sim, cell: number, grainShade: number): void {
   sim.looseLeft--;
 }
 
-/** Moves the air's grains one tick; a grain reaching the mouth enters the target's top row. */
+/**
+ * Moves the falling grains one tick. Above the mouth a grain falls freely; inside the target it
+ * keeps falling down its column until it meets the pile, then rolls downhill (to whichever side
+ * goes lower, one column per row of drop) and rests there. So a narrow stream heaps into a cone
+ * instead of a tower, and its width never limits how fast it pours. With every column full to the
+ * mouth a grain waits in the air.
+ */
 function advanceAir(sim: Sim): boolean {
   if (sim.pcount === 0) return false;
   const g = sim.config.airGravity;
-  const { cols, cells, shade } = sim.target;
+  const { cols, rows, cells, shade } = sim.target;
   const { px, py, pvx, pvy, pcell, pshade } = sim;
+  // The lowest empty row from the mouth down column `c` (-1 when it is full to the mouth).
+  const restAt = (c: number): number => {
+    let r = -1;
+    while (r + 1 < rows && cells[(r + 1) * cols + c] === EMPTY) r++;
+    return r;
+  };
   let p = 0;
   while (p < sim.pcount) {
     pvy[p] += g;
     py[p] += pvy[p];
     px[p] += pvx[p];
     if (py[p] < 0) { p++; continue; }
-    py[p] = 0;
     const want = Math.min(cols - 1, Math.max(0, Math.floor(px[p])));
-    let slot = -1;
-    for (let r = 0; r < cols && slot < 0; r++) {
-      if (want - r >= 0 && cells[want - r] === EMPTY) slot = want - r;
-      else if (want + r < cols && cells[want + r] === EMPTY) slot = want + r;
+    const here = restAt(want);
+    if (py[p] < here) { p++; continue; } // still falling inside the jar
+    let best = want;
+    let bestRest = here;
+    const first = sim.rng() < 0.5 ? -1 : 1;
+    for (const dir of [first, -first]) {
+      let c = want;
+      let r = here;
+      while (c + dir >= 0 && c + dir < cols) {
+        const next = restAt(c + dir);
+        if (next <= r) break;
+        c += dir;
+        r = next;
+      }
+      if (r > bestRest) { best = c; bestRest = r; }
     }
-    if (slot < 0) { p++; continue; } // the mouth is blocked: wait in the air
+    if (bestRest < 0) {
+      // Full to the mouth around here: take the nearest column with room, as a brimming jar's last grains must.
+      for (let r = 1; r < cols && bestRest < 0; r++) {
+        for (const c of [want - r, want + r]) {
+          if (c < 0 || c >= cols || bestRest >= 0) continue;
+          const rest = restAt(c);
+          if (rest >= 0) { best = c; bestRest = rest; }
+        }
+      }
+    }
+    if (bestRest < 0) { py[p] = 0; pvy[p] = 0; p++; continue; } // the mouth is full: wait in the air
+    const slot = bestRest * cols + best;
     cells[slot] = pcell[p];
     shade[slot] = pshade[p];
     sim.landed++;
