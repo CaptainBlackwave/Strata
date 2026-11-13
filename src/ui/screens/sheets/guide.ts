@@ -36,7 +36,7 @@ export function miniJar(id: MechanicId): string {
     : id === 'lighthouse' ? LIGHTHOUSE_MARK.replace('<b></b>', `<b>${everyOf('lighthouse', 4)}</b>`)
     : '';
   // The sieve shows its band and its goal mark, open (D216): the guide's sieve is not yet filled.
-  const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) + SIEVE_GOAL : '';
+  const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) + SIEVE_GOAL.replace('class="sieve-goal"', `class="sieve-goal" style="--band:${config.palette[0].hex}"`) : '';
   // The clam is shut and shows its full count, like a freshly dealt one.
   const opensAfter = config.mechanics.list.find((m) => m.id === 'clam')?.opensAfter ?? 6;
   const shell = id === 'clam' ? CLAM_SHELL.replace('<b></b>', `<b>${opensAfter}</b>`) : '';

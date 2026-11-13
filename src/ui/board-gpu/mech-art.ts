@@ -478,11 +478,11 @@ export function drawPill(p: PillLook, res: number): HTMLCanvasElement {
   g.lineWidth = 1.5;
   g.stroke();
   if (p.glyph === 'goal') {
-    // SIEVE_GOAL, open: a ring outline in the badge's middle (its r 4.2 of a 12 box, at 0.95em in a 1.3em badge).
+    // SIEVE_GOAL, open: a ring outline in the band colour, in the badge's middle (its r 4.2 of a 12 box, at 1.7em in a 2em badge).
     g.strokeStyle = p.fg;
-    g.lineWidth = 1.4 * (p.height * 0.73) / 12;
+    g.lineWidth = 2 * (p.height * 0.85) / 12;
     g.beginPath();
-    g.arc(p.width / 2, p.height / 2, p.height * 0.73 * (4.2 / 12), 0, Math.PI * 2);
+    g.arc(p.width / 2, p.height / 2, p.height * 0.85 * (4.2 / 12), 0, Math.PI * 2);
     g.stroke();
     return c;
   }

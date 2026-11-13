@@ -214,6 +214,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.24.1',
+        name: 'The sieve is a goal',
+        lines: [
+          'A level with a sieve jar now ends only when the sieve is full and sealed in its colour.',
+          'The sieve wears a ring in its colour that fills in with a tick once it is sealed.',
+          'If its colour gets sealed in another jar, the board tells you, so you can Undo or Restart.',
+          'Some levels with a sieve have a new board so they can be won this way.',
+        ],
+      },
+      {
         version: '0.24.0',
         name: 'A crab and a lighthouse',
         lines: [

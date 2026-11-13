@@ -1,6 +1,6 @@
 # Sprint 28: The sieve is a goal (0.24.1)
 
-> **Status: approved by the owner (2026-11-13); building.** From player feedback after 0.24.0: a level-145 video shows the sieve (the lidded jar that only takes pink) emptied and left empty, and the level still won "Perfect!". Players read the sieve as a gate and a goal, so a win that ignores it makes it pointless. Decisions D214–D217. Target: **0.24.1**, a fix release on its own.
+> **Status: built (2026-11-13), approved by the owner (goal mark enlarged and coloured with the band at the owner's request); releasing as 0.24.1.** Evidence: `production/qa/evidence/sprint-28/`. From player feedback after 0.24.0: a level-145 video shows the sieve (the lidded jar that only takes pink) emptied and left empty, and the level still won "Perfect!". Players read the sieve as a gate and a goal, so a win that ignores it makes it pointless. Decisions D214–D217. Target: **0.24.1**, a fix release on its own.
 
 ## Why
 Rule 4 of the sieve (`jar-mechanics.md` §2.5) says a level "ends with it sealed in its band **or empty**". The generator already prefers bands whose proof ends with the sieve sealed, but nothing requires it, so players can sort the band colour in an ordinary jar and walk past the sieve. The owner chose to make sealing the sieve part of winning (D214).

@@ -301,6 +301,7 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   if (jar.sieve !== undefined) {
     const band = el.querySelector('.sieve-band') as HTMLElement;
     band.style.setProperty('--band', config.palette[jar.sieve].hex);
+    (el.querySelector('.sieve-goal') as HTMLElement).style.setProperty('--band', config.palette[jar.sieve].hex);
     band.className = `sieve-band${state.save.settings.patterns ? ` pat-${jar.sieve % PATTERNS}` : ''}`;
   }
   // A closed clam's shell and count (D96, §2.6). Undo of the opening pour closes it again here.
