@@ -275,3 +275,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D211 | Releases | 0.23.1 polish first, then both jars as 0.24.0 (owner, 2026-11-13) | — | built |
 | D212 | Crab and lighthouse details | Keep sand poured from a dark lighthouse jar showing its colour as it falls; leave the three one-spare levels in 500-610 that drop the crab (529, 532, 562) as they are; the look approved from screenshots (owner, 2026-11-13) | jar-mechanics | built |
 | D213 | Board shelves | **Removed** from the board after player feedback that they were distracting (`boardLook.shelves: false`, both boards); Home's hero shelf stays (owner, 2026-11-13) | feel-audio-ui | built |
+| D214 | Sieve is a goal | A level is won only when every sieve is sealed in its band; every sieve level is proven under that rule (player feedback on level 145; owner, 2026-11-13) | jar-mechanics | planned |
+| D215 | Sieve dead end | Sealing the band colour outside the sieve is allowed, then reported lost ("<colour> was sealed outside its sieve") with Undo and Restart (owner, 2026-11-13) | jar-mechanics | planned |
+| D216 | Sieve goal shown | Intro card, Jar guide and screen reader say "Fill it with <colour> to finish"; a goal mark on the sieve fills in when sealed (owner, 2026-11-13) | feel-audio-ui | planned |
+| D217 | Release | Ships alone as 0.24.1 (owner, 2026-11-13) | — | planned |
