@@ -5,7 +5,7 @@ import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
-import { CLAM_SHELL, CRAB_MARK, HOURGLASS_MARK, LIGHTHOUSE_MARK, SIEVE_BAND, TIDE_MARK, WET_MARK } from '../jars';
+import { CLAM_SHELL, CRAB_MARK, HOURGLASS_MARK, LIGHTHOUSE_MARK, SIEVE_BAND, SIEVE_GOAL, TIDE_MARK, WET_MARK } from '../jars';
 import { wetHex } from '../../logic/wet';
 
 /** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
@@ -35,7 +35,8 @@ export function miniJar(id: MechanicId): string {
     : id === 'crab' ? CRAB_MARK.replace('<b></b>', `<b>${everyOf('crab', 3)}</b>`)
     : id === 'lighthouse' ? LIGHTHOUSE_MARK.replace('<b></b>', `<b>${everyOf('lighthouse', 4)}</b>`)
     : '';
-  const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) : '';
+  // The sieve shows its band and its goal mark, open (D216): the guide's sieve is not yet filled.
+  const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) + SIEVE_GOAL : '';
   // The clam is shut and shows its full count, like a freshly dealt one.
   const opensAfter = config.mechanics.list.find((m) => m.id === 'clam')?.opensAfter ?? 6;
   const shell = id === 'clam' ? CLAM_SHELL.replace('<b></b>', `<b>${opensAfter}</b>`) : '';

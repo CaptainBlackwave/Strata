@@ -55,7 +55,8 @@ describe('sieve strings (D96)', () => {
     expect(t.sieveRefused('terracotta')).toBe('Only terracotta sand can go in this sieve.');
   });
   it('the screen reader hears the band colour', () => {
-    expect(t.jarStates.sieve('lagoon')).toBe('sieve, lagoon only');
+    expect(t.jarStates.sieve('lagoon')).toBe('sieve, lagoon only, fill it with lagoon to finish');
+    expect(t.jarStates.sieve('lagoon', true)).toBe('sieve, lagoon only');
   });
   it('the card names the sieve and says what it does', () => {
     expect(t.mechanics.sieve.name).toBe('Sieve jar');

@@ -2406,6 +2406,56 @@ button {
     repeating-linear-gradient(90deg, rgba(40, 30, 20, 0.5) 0 1px, transparent 1px 3px),
     linear-gradient(0deg, transparent 1.5px, rgba(40, 30, 20, 0.5) 1.5px 2.5px, transparent 2.5px);
 }
+/* The sieve's goal mark (sprint 28 S3, D216, jar-mechanics.md 2.5): a small round badge on the jar's
+   base, where the hourglass pill sits (a sieve is never the hourglass, a tide jar or a lighthouse
+   jar), in the scene's toast colours and sized in rem so it grows with text. Open, it is a ring (an
+   outline): the sieve still has to be filled. Sealed in its band, the ring fills in with a tick. */
+.sieve-goal {
+  display: none;
+}
+:is(.jar, .mini-jar).sieve .sieve-goal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 58%);
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 50%;
+  border: 1.5px solid var(--card);
+  background: var(--toast-bg);
+  color: var(--toast-fg);
+  font-size: var(--fs-1);
+  pointer-events: none;
+}
+.sieve-goal svg {
+  width: 0.95em;
+  height: 0.95em;
+  overflow: visible;
+}
+.sieve-goal .sg-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+.sieve-goal .sg-tick {
+  fill: none;
+  stroke: var(--toast-bg);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  visibility: hidden;
+}
+.jar.sieve.sealed .sieve-goal .sg-ring {
+  fill: currentColor;
+}
+.jar.sieve.sealed .sieve-goal .sg-tick {
+  visibility: visible;
+}
+
 /* Clam jar (sprint 13 M3, D96): while it is closed a ribbed shell covers the whole glass, so its
    sand cannot be seen (jar-mechanics.md 2.6). The shell is a fan of ribs and growth rings from a
    hinge at the jar's foot, its crown domed into the cork room. The pours left until it opens sit
@@ -7285,6 +7335,7 @@ canvas.gpu-board {
 }
 #board[data-render='gpu'] .jar.gpu-away .hourglass-mark,
 #board[data-render='gpu'] .jar.gpu-away .tide-mark,
+#board[data-render='gpu'] .jar.gpu-away .sieve-goal,
 #board[data-render='gpu'] .jar.gpu-away .lh-mark,
 #board[data-render='gpu'] .jar.gpu-away .clam-shell b {
   visibility: hidden;

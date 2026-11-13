@@ -29,7 +29,7 @@ export function jarSummary(jar: Jar, sealed: boolean, colour: (c: number) => str
     jar.lock !== undefined ? t.jarStates.locked(colour(jar.lock)) : '',
     jar.funnel ? t.jarStates.funnel : '',
     jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
-    jar.sieve !== undefined ? t.jarStates.sieve(colour(jar.sieve)) : '',
+    jar.sieve !== undefined ? t.jarStates.sieve(colour(jar.sieve), sealed) : '',
     jar.tide ? (sealed ? t.jarStates.tideStill : t.jarStates.tide(jar.tide.left)) : '',
     beam,
     jar.crab ? t.jarStates.crab(jar.crab.left) : '',
