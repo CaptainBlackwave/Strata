@@ -30,6 +30,15 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.23.1 (2026-11-13): night touches
+**For players**
+- Night scenes: the sea band at the foot of the screen has a soft horizon and depth instead of a flat slab; night wood is warmer and lighter. All shelves (Home, Classic and Realistic boards) now show a fine wood grain.
+- The message slot fits two lines, so a long message at large text sizes stays clear of the bottom shelf.
+- The Today band is a softer coral by night (it read maroon).
+
+**Under the hood**
+- Owner decisions D204-D205 (`production/sprints/sprint-26.md`). New tokens `--wood-grain` and `--wood-grain-lines`, also drawn on the canvas shelf; a test checks ink on the night Today band is at least 4.5:1 in all 7 night scenes. `capture.cjs` takes `SCENES=`. Phone checklist: `production/qa/phone-checklist-0.23.md`.
+
 ## 0.23.0 (2026-11-12): sprint 25, a fresh coat of paint
 **For players**
 - A visual refresh in the "beach-hut" style chosen from three mock-ups: warm paper cards with a pressable edge, bold headings, two-tone icons, and a colour band for each part of Home (Play teal, Today coral, Collection sand, Profile blue).

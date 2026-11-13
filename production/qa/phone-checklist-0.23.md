@@ -1,6 +1,6 @@
-# Phone checklist for 0.22 (about 15 minutes)
+# Phone checklist for 0.23 (about 20 minutes)
 
-Open https://captainblackwave.github.io/Strata/ on your phone. If an older version is cached, open it once, go back to Home, and it updates (What's new should list 0.22.0, "The tide jar", at the top).
+Open https://captainblackwave.github.io/Strata/ on your phone. If an older version is cached, open it once, go back to Home, and it updates (What's new should list 0.23.1 or later at the top).
 
 Reply with the number and ✅ or ❌, plus a word on anything that looks off.
 
@@ -36,3 +36,13 @@ Reply with the number and ✅ or ❌, plus a word on anything that looks off.
 21. After 4 pours the tide turns: the bottom layer slides up to the top. The number counts down 4, 3, 2, 1 and starts again.
 22. Once a tide jar is full of one colour it seals, the wave mark fades, and it never turns again.
 23. Both new jars look right on Classic too (Settings → Realistic sand off).
+
+## The new look (0.23)
+24. Home: each tab has its own colour band at the top (Play teal, Today coral, Collection sand, Profile blue), and the selected tab in the bar wears that colour.
+25. Cards and buttons have a darker edge underneath and sink slightly when you press them.
+26. The Home jars stand on a wooden shelf; on a board, every row of jars sits on a shelf too (Classic and Realistic). On a big level (14–16 jars) the shelves line up under the jars.
+27. The board's top bar has two rows: level and pours on top; Restart, Settings and coins below. Messages ("That jar is full") show just above the buttons, not over the jars.
+28. Open Settings, Stats, Streak rewards and the Jar guide: each opens at the top with a title bar and one ✕ close button. Scroll a long one: the title bar stays at the top (please check this one especially on iPhone Safari).
+29. Win a level: the win card shows goals as a ticked list and one Continue button, with Home and Challenge a friend as links below.
+30. With phone text size set large: nothing breaks in the middle of a word, and no card shows one word per line.
+31. Switch to a night scene (Collection → Scenes): cards, the sea at the bottom and the wooden shelves all look right in the dark, and the moon doesn't cover the settings gear.

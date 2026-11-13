@@ -1,6 +1,6 @@
 # Sprint 26: Night polish (0.23.1)
 
-> **Status: planned (2026-11-13), awaiting the owner's approval.** From the owner interview after 0.23.0 (D204, D205). Target: **0.23.1**, now.
+> **Status: built (2026-11-13), approved by the owner; released as 0.23.1.** Evidence: `production/qa/evidence/sprint-26/`. From the owner interview after 0.23.0 (D204, D205). Target: **0.23.1**, now.
 
 | ID | Task | Acceptance criteria |
 |----|------|---------------------|

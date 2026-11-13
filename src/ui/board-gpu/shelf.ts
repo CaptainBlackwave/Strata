@@ -11,10 +11,12 @@ export interface ShelfWood {
   readonly top: string;
   readonly bottom: string;
   readonly lip: string;
+  /** The grain lines along the plank (style.css `--wood-grain`, sprint 26 N1); none when absent. */
+  readonly grain?: string;
 }
 
 /** The daytime `--wood-*` tokens (style.css `:root`): the fallback before the tokens are read. */
-export const SHELF_WOOD: ShelfWood = { top: '#dcb57d', bottom: '#b88c55', lip: '#8f6736' };
+export const SHELF_WOOD: ShelfWood = { top: '#dcb57d', bottom: '#b88c55', lip: '#8f6736', grain: 'rgba(143, 103, 54, 0.16)' };
 
 /** The plank's lip below its face, in CSS px (style.css `--shelf-lip`). */
 export const SHELF_LIP = 3;
@@ -58,9 +60,14 @@ export function drawShelf(width: number, height: number, res: number, wood: Shel
   ctx.fillStyle = face;
   roundRect(ctx, 0, 0, width, height, r);
   ctx.fill();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.28)'; // the top highlight (the CSS inset 0 2px 0)
   ctx.save();
   ctx.clip();
+  if (wood.grain) {
+    // Sprint 26 N1: the grain, as the CSS layers paint it (a row in both layers is painted twice).
+    ctx.fillStyle = wood.grain;
+    for (const [first, step] of [[3, 4], [6, 7]] as const) for (let y = first; y < height; y += step) ctx.fillRect(0, y, width, 1);
+  }
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.28)'; // the top highlight (the CSS inset 0 2px 0)
   ctx.fillRect(0, 0, width, 2);
   ctx.restore();
   return canvas;

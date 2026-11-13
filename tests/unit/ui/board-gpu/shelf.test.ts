@@ -24,3 +24,16 @@ describe('wooden shelves (sprint 25 U4)', () => {
     expect(shelfBox(face)).toEqual({ left: 12, top: 300, width: 280, height: 10 + SHELF_LIP + SHELF_SHADOW });
   });
 });
+
+describe('wood grain (sprint 26 N1)', () => {
+  it('both CSS shelves paint the grain lines, and the canvas fallback is the daytime --wood-grain', () => {
+    const root = css.slice(css.indexOf('\n:root {'), css.indexOf('\n}', css.indexOf('\n:root {')));
+    expect(root).toContain('--wood-grain: color-mix(in srgb, var(--wood-lip) 16%, transparent);'); // #8f6736 at 16%
+    expect(SHELF_WOOD.grain).toBe('rgba(143, 103, 54, 0.16)');
+    expect(root).toMatch(/--wood-grain-lines:\s+repeating-linear-gradient\(180deg, transparent 0 3px, var\(--wood-grain\) 3px 4px\),\s+repeating-linear-gradient\(180deg, transparent 0 6px, var\(--wood-grain\) 6px 7px\);/);
+    const shelf = css.slice(css.indexOf('\n.jar-shelf {'), css.indexOf('}', css.indexOf('\n.jar-shelf {')));
+    expect(shelf).toContain('var(--wood-grain-lines)');
+    const hero = css.slice(css.indexOf('\n.hero .hero-logo::after {'), css.indexOf('}', css.indexOf('\n.hero .hero-logo::after {')));
+    expect(hero).toContain('var(--wood-grain-lines)');
+  });
+});
