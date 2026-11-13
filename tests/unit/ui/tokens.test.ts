@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error node:fs types are not installed
 import { readFileSync } from 'node:fs';
 import { sceneScheme } from '../../../src/ui/theme-tokens';
+import { contrastRatio } from '../../../src/core/themes';
 import cfg from '../../../src/config/game-config.json';
 
 const read = readFileSync as (path: URL, enc: string) => string;
@@ -155,5 +156,23 @@ describe('sheet header and close (sprint 25 U2, audit X4)', () => {
   it('has no bottom Close buttons or older close classes left', () => {
     expect(html).not.toMatch(/sheet-close|track-close|cabinet-head/);
     expect(html).not.toMatch(/id="btn-close-[^"]+"[^>]*class="(primary|secondary)/);
+  });
+});
+
+describe('night Today band (sprint 26 N3)', () => {
+  const night = declarations(css).filter((d) => d.chain.length === 1 && d.chain[0] === ":root[data-scheme='dark']");
+  const band = /^color-mix\(in srgb, (#[0-9a-f]{6}) (\d+)%, var\(--card\)\)$/i.exec(night.find((d) => d.prop === '--band-today')?.value ?? '');
+  /** `color-mix(in srgb, a p, b)` for two #rrggbb colours. */
+  const mix = (a: string, p: number, b: string): string => {
+    const ch = (h: string, i: number): number => parseInt(h.slice(1 + 2 * i, 3 + 2 * i), 16);
+    return '#' + [0, 1, 2].map((i) => Math.round(ch(a, i) * p + ch(b, i) * (1 - p)).toString(16).padStart(2, '0')).join('');
+  };
+
+  it('mixes a fixed coral into the card, and the scene ink on it reads in every night scene', () => {
+    expect(band, 'the night --band-today is color-mix(in srgb, #hex N%, var(--card))').not.toBeNull();
+    for (const t of cfg.themes.list.filter((x) => sceneScheme(x.tokens.card) === 'dark')) {
+      const bg = mix(band![1], Number(band![2]) / 100, t.tokens.card);
+      expect(contrastRatio(t.tokens.ink, bg), `${t.id} ink on ${bg}`).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

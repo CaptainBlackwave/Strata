@@ -210,6 +210,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.23.1',
+        name: 'Night touches',
+        lines: [
+          'At night the sea at the foot of the screen has depth, and the wooden shelves look warm, with a fine grain.',
+          'A two-line message no longer covers the bottom shelf.',
+          'The Today colour is softer in night scenes.',
+        ],
+      },
+      {
         version: '0.23.0',
         name: 'A fresh coat of paint',
         lines: [

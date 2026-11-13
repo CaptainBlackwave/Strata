@@ -126,6 +126,11 @@
   --wood-top: #dcb57d;
   --wood-bottom: #b88c55;
   --wood-lip: #8f6736;
+  /* Sprint 26 N1: the grain lines along the plank (Home's shelf, .jar-shelf and the canvas, shelf.ts). */
+  --wood-grain: color-mix(in srgb, var(--wood-lip) 16%, transparent);
+  --wood-grain-lines:
+    repeating-linear-gradient(180deg, transparent 0 3px, var(--wood-grain) 3px 4px),
+    repeating-linear-gradient(180deg, transparent 0 6px, var(--wood-grain) 6px 7px);
 }
 /* Night scenes: theme.ts sets data-scheme from the card colour's luminance (sceneScheme). */
 :root[data-scheme='dark'] {
@@ -139,12 +144,15 @@
   --edge: color-mix(in srgb, var(--card) 78%, var(--lip-mix));
   --grain: radial-gradient(color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1.3px) 0 0 / 7px 7px;
   --band-play: color-mix(in srgb, var(--hue-play) 46%, var(--card));
-  --band-today: color-mix(in srgb, var(--hue-today) 40%, var(--card));
+  /* Sprint 26 N3: coral into navy read maroon; by night the Today band mixes a paler, peachier coral, less of it. */
+  --band-today: color-mix(in srgb, #f4a68c 36%, var(--card));
   --band-collection: color-mix(in srgb, var(--hue-collection) 36%, var(--card));
   --band-profile: color-mix(in srgb, var(--hue-profile) 46%, var(--card));
-  --wood-top: color-mix(in srgb, #b98f5c 70%, var(--bg-top));
-  --wood-bottom: color-mix(in srgb, #8d6740 70%, var(--bg-top));
-  --wood-lip: color-mix(in srgb, #5e4228 70%, var(--bg-top));
+  /* Sprint 26 N1: warmer and a touch lighter than sprint 25's (70% into the sky read dim), with darker grain. */
+  --wood-top: color-mix(in srgb, #c08f58 82%, var(--bg-top));
+  --wood-bottom: color-mix(in srgb, #93673b 82%, var(--bg-top));
+  --wood-lip: color-mix(in srgb, #5f3f22 80%, var(--bg-top));
+  --wood-grain: color-mix(in srgb, #2a1608 30%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -444,13 +452,32 @@ body {
   -webkit-user-select: none;
   touch-action: manipulation;
 }
+/* Sprint 26 N1: by night the sea band has depth: a soft horizon (no hard edge), a little light along it
+   with a faint shimmer line, and deeper water toward the foot of the screen. Static. */
+:root[data-scheme='dark'] body {
+  background:
+    linear-gradient(180deg, transparent 0 calc(100% - 7.9rem), color-mix(in srgb, var(--ink) 9%, transparent) calc(100% - 7.75rem), transparent calc(100% - 7.5rem)),
+    linear-gradient(180deg, transparent 0 calc(100% - 6.1rem), color-mix(in srgb, var(--ink) 4%, transparent) calc(100% - 6rem), transparent calc(100% - 5.8rem)),
+    linear-gradient(
+      180deg,
+      transparent 0 calc(100% - 10.5rem),
+      color-mix(in srgb, var(--sea) 55%, transparent) calc(100% - 8.6rem),
+      color-mix(in srgb, var(--sea) 88%, var(--ink)) calc(100% - 7.8rem),
+      var(--sea) calc(100% - 5.5rem),
+      color-mix(in srgb, var(--sea) 62%, #000) 100%
+    ),
+    radial-gradient(90% 60% at 85% -10%, var(--sky) 0 40%, transparent 60%),
+    linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+}
 
 #app {
   height: 100%;
   display: grid;
   /* Sprint 25 U4: the HUD, the board, the stuck banner, the toast's slot (between the board and the
      toolbar, so a toast never covers jars, audit B6), the toolbar. Each takes its row explicitly. */
-  --toast-slot: calc(var(--fs-2) * 1.25 + 3 * var(--sp-2));
+  /* Sprint 26 N2: two lines (the longest toasts wrap at 320 px / 150% text) with the toast's tighter padding. */
+  --toast-pad-y: 6px;
+  --toast-slot: calc(var(--fs-2) * 1.25 * 2 + 2 * var(--toast-pad-y) + 2px);
   grid-template-rows: auto minmax(0, 1fr) auto var(--toast-slot) auto;
   grid-template-columns: minmax(0, 1fr); /* lets the HUD title shrink at large text (AX-20) */
   padding: max(var(--sp-3), env(safe-area-inset-top)) var(--sp-4) max(var(--sp-3), env(safe-area-inset-bottom));
@@ -602,7 +629,7 @@ body {
   right: calc(-1 * var(--shelf-over));
   height: var(--shelf-h);
   border-radius: calc(var(--shelf-h) / 2);
-  background: linear-gradient(180deg, var(--wood-top), var(--wood-bottom));
+  background: var(--wood-grain-lines), linear-gradient(180deg, var(--wood-top), var(--wood-bottom));
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.28),
     0 var(--shelf-lip) 0 var(--wood-lip),
@@ -1011,10 +1038,10 @@ button {
   justify-self: center;
   align-self: end;
   position: relative;
-  margin-bottom: var(--sp-1);
+  margin-bottom: 2px;
   transform: translateY(8px);
   max-width: 100%;
-  padding: var(--sp-2) var(--sp-4);
+  padding: var(--toast-pad-y) var(--sp-3);
   border-radius: var(--r-m);
   background: var(--toast-bg);
   color: var(--toast-fg);
@@ -4931,6 +4958,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   border-radius: var(--r-s);
   background:
     repeating-linear-gradient(90deg, transparent 0 46px, color-mix(in srgb, var(--wood-lip) 22%, transparent) 46px 48px),
+    var(--wood-grain-lines),
     linear-gradient(180deg, var(--wood-top), var(--wood-bottom));
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.28), 0 3px 0 var(--wood-lip), var(--sh-2);
   pointer-events: none;
