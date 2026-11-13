@@ -578,6 +578,8 @@ const en = {
   jarSealedFull: 'That jar is sealed',
   hintBudget: 'Couldn\u2019t find a hint this time. Try again, or shuffle.',
   cantWin: 'This board can\u2019t be won now: Undo or Restart.',
+  /** The sieve dead end (D215): its band colour was sealed in another jar. `colour` is the band colour's name. */
+  sieveLost: (colour: string) => `${colour.charAt(0).toUpperCase()}${colour.slice(1)} was sealed outside its sieve: Undo or Restart.`,
   hintToast: (from: number, to: number) => `Hint: pour jar ${from} into jar ${to}`,
   hintFrom: 'From',
   hintTo: 'To',

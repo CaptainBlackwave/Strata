@@ -575,12 +575,23 @@ export function settle(board: Board): Board {
 }
 
 /**
- * Teardown rule R8: won when every jar is empty or sealed. A complete jar that is still wet
- * counts (§2.7): its colour is all in it, so it can never move again, and the winning pour dries
- * the board (`pour`), so a won board is all sealed.
+ * Teardown rule R8: won when every jar is empty or sealed, and every sieve is sealed in its band
+ * (D214, §2.5): an empty sieve is not a finished board. A complete jar that is still wet counts
+ * (§2.7): its colour is all in it, so it can never move again, and the winning pour dries the
+ * board (`pour`), so a won board is all sealed (a sieve included).
+ * Example: `isWon(boardWithEmptySieve) // false`
  */
 export function isWon(board: Board): boolean {
-  return board.jars.every((j) => j.units.length === 0 || isComplete(j, board.capacity));
+  return board.jars.every((j) => (j.sieve !== undefined ? isSieveDone(j, board.capacity) : j.units.length === 0 || isComplete(j, board.capacity)));
+}
+
+/**
+ * True when a sieve holds its goal (D214, §2.5): complete in its band colour. Still-wet sand counts,
+ * as in `isWon`, since the winning pour dries the board. False for a jar that is not a sieve.
+ * Example: `isSieveDone({ units: [2, 2, 2, 2], hidden: 0, sieve: 2 }, 4) // true`
+ */
+export function isSieveDone(jar: Jar, capacity: number): boolean {
+  return jar.sieve !== undefined && isComplete(jar, capacity) && jar.units[0] === jar.sieve;
 }
 
 /** Every legal pour on the board. */
@@ -629,8 +640,8 @@ export function isStuck(board: Board): boolean {
   return !isWon(board) && usefulMoves(board).length === 0;
 }
 
-/** Why a board can certainly no longer be won (decision D-c). */
-export type LostReason = 'funnel' | 'lock';
+/** Why a board can certainly no longer be won (decision D-c; `'sieve'` from D215). */
+export type LostReason = 'funnel' | 'lock' | 'sieve';
 
 function countColor(jar: Jar, color: Color): number {
   let n = 0;
@@ -653,11 +664,17 @@ function countColor(jar: Jar, color: Color): number {
  *   same key, inside funnels (except the one funnel that could seal it) or inside jars
  *   behind another lock that can never open are out of reach.
  *
+ * - `'sieve'` (D215, §2.5): a sieve that is not yet complete in its band can never be, because
+ *   too much of its band colour is sealed in other jars. Sealed sand never moves again, so a band
+ *   needs `capacity` units outside sealed jars for each of its unfinished sieves. A complete jar
+ *   that is still wet is not sealed yet (§2.7) and counts as free sand.
+ *
  * Example: `lostReason(boardWithMixedFunnel) // 'funnel'`
  */
 export function lostReason(board: Board): LostReason | null {
   const b = settle(board);
   const cap = b.capacity;
+  if (sieveLost(b)) return 'sieve';
   const sealableFunnel = (j: Jar) => j.funnel === true && (j.cap ?? cap) === cap && (j.units.length === 0 || isMonochrome(j));
   for (const f of b.jars) {
     if (!f.funnel || f.units.length === 0) continue;
@@ -693,6 +710,37 @@ export function lostReason(board: Board): LostReason | null {
     }
   }
   return locked.some((j) => dead.has(j.lock!)) ? 'lock' : null;
+}
+
+/**
+ * The band colour of a sieve that can never be complete (D215, §2.5), or `null`: a band whose
+ * sand outside sealed jars is less than `capacity` for each of its unfinished sieves, with some of
+ * it sealed in a jar that is not a sieve. Only sealed sand is counted out (it never moves again).
+ * Example: `sieveLostColor(boardWithPinkSealedOutsideItsSieve) // the pink index`
+ */
+export function sieveLostColor(board: Board): Color | null {
+  const cap = board.capacity;
+  for (const s of board.jars) {
+    if (s.sieve === undefined || isSieveDone(s, cap)) continue;
+    const band = s.sieve;
+    let need = 0;
+    let free = 0;
+    let sealedOutside = false;
+    for (const j of board.jars) {
+      if (j.sieve === band && !isSieveDone(j, cap)) need += cap;
+      if (isSealed(j, cap)) {
+        if (j.sieve === undefined && j.units[0] === band) sealedOutside = true;
+        continue;
+      }
+      free += countColor(j, band);
+    }
+    if (sealedOutside && free < need) return band;
+  }
+  return null;
+}
+
+function sieveLost(board: Board): boolean {
+  return sieveLostColor(board) !== null;
 }
 
 /**

@@ -1,6 +1,6 @@
 /** The board screen: starting levels, session events, input, Restart, the stuck banner, boosters and hints. */
 import { type Versus, versusOnStart } from '../logic/challenge';
-import { type Board, canPour, isClosed, isSealed, pourRefusal } from '../../core/board';
+import { type Board, canPour, isClosed, isSealed, pourRefusal, sieveLostColor } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { generateWeekly, parseWeek } from '../../core/weekly';
 import { type EventsConfig, eventById, generateEventBoard } from '../../core/events';
@@ -315,7 +315,7 @@ export function onSessionEvent(e: SessionEvent): void {
       state.pendingWin = true;
       break;
     case 'stuck':
-      showStuckBanner(state.session.lostReason ? t.cantWin : t.stuck);
+      showStuckBanner(state.session.lostReason ? lostMessage() : t.stuck);
       break;
   }
   if (e.type !== 'stuck' && e.type !== 'won') {
@@ -324,7 +324,7 @@ export function onSessionEvent(e: SessionEvent): void {
     disarmRestart();
     disarmBooster();
     // A board that is certainly lost says so at once (D21); the solver-proven case comes from Hint.
-    if (state.session.status !== 'won' && state.session.lostReason) showStuckBanner(t.cantWin);
+    if (state.session.status !== 'won' && state.session.lostReason) showStuckBanner(lostMessage());
   }
   shownBoard = state.session.board;
   scheduleHud(); // with the live region, one batch of text writes in the next frame (sprint 22 L1)
@@ -365,6 +365,13 @@ export function disarmRestart(): void {
  * board changes. Any variant ("no pours left", "this board can't be won now") calls this
  * with its own text from strings.ts. The board re-fits around the banner once idle.
  */
+/** The dead-end message for the current board (D21): the sieve names its colour (D215), the rest say it can't be won. */
+function lostMessage(): string {
+  if (state.session.lostReason !== 'sieve') return t.cantWin;
+  const band = sieveLostColor(state.session.board);
+  return band === null ? t.cantWin : t.sieveLost(config.palette[band].id);
+}
+
 export function showStuckBanner(message: string): void {
   const banner = $('stuck');
   const wasHidden = banner.hidden;

@@ -1,5 +1,5 @@
 {
- "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-320 as built before the crab jar and the lighthouse jar (sprint 27 K3, from commit 4b5b4b3). The crab jar unlocks at 281 and the lighthouse jar at 321: levels 1-280 must never change, and 281-320 only where a crab is placed.",
+ "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-320 as built before the crab jar and the lighthouse jar (sprint 27 K3, from commit 4b5b4b3). The crab jar unlocks at 281 and the lighthouse jar at 321: levels 1-280 must never change, and 281-320 only where a crab is placed. Re-hashed on purpose for the sieve goal (sprint 28 S1, D214): only the sieve levels whose board changed, 141, 158, 202, 216, 276, 319; every other level is unchanged.",
  "hashes": {
   "1": "2ed94f4c",
   "2": "3750eaba",
@@ -141,7 +141,7 @@
   "138": "b5149657",
   "139": "8c45bfb3",
   "140": "c6001860",
-  "141": "4e2ff511",
+  "141": "60f0c9d8",
   "142": "1489c3a5",
   "143": "c43e397d",
   "144": "aff16329",
@@ -158,7 +158,7 @@
   "155": "db737338",
   "156": "4b743f33",
   "157": "1b4b56c5",
-  "158": "9b3b5004",
+  "158": "a9800a63",
   "159": "985e9447",
   "160": "623ed077",
   "161": "a5daea8b",
@@ -202,7 +202,7 @@
   "199": "4f4e2b7b",
   "200": "2794512",
   "201": "9ceb4715",
-  "202": "4c49c600",
+  "202": "1e7088c3",
   "203": "872ea006",
   "204": "70e86d79",
   "205": "70f5143e",
@@ -216,7 +216,7 @@
   "213": "566fc1b5",
   "214": "7e40364b",
   "215": "2b3f7dbd",
-  "216": "dc132ea4",
+  "216": "74a8465a",
   "217": "64bb9901",
   "218": "e3ccd090",
   "219": "dd2c44ae",
@@ -276,7 +276,7 @@
   "273": "83d7f015",
   "274": "9785b113",
   "275": "c9e7d80a",
-  "276": "5fbe729d",
+  "276": "ae5bd6e4",
   "277": "63af8e24",
   "278": "655a87d2",
   "279": "a783c3fe",
@@ -319,7 +319,7 @@
   "316": "1b7e5c42",
   "317": "155dff74",
   "318": "8368b075",
-  "319": "3ea81517",
+  "319": "2b7c8625",
   "320": "287a4c72"
  }
 }
