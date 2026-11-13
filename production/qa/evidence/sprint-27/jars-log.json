@@ -1,0 +1,281 @@
+{
+  "intro281": {
+    "shown": 1,
+    "text": "3\nCrab jar\n\nA crab sits on one jar’s lid. You can pour into that jar, but not out of it. Every third pour on the board the crab walks to the next jar along; the number on it counts the pours left. It never sits on a sealed jar.",
+    "errors": []
+  },
+  "labels281": [
+    "Jar 1: buried, buried, cocoa, denim",
+    "Jar 2: buried, buried, lemon, saffron",
+    "Jar 3: buried, buried, sage, lemon",
+    "Jar 4: buried, buried, terracotta, sage",
+    "Jar 5: buried, buried, cocoa, plum",
+    "Jar 6: buried, buried, coral, cocoa",
+    "Jar 7: buried, buried, terracotta, denim",
+    "Jar 8: buried, buried, mint, saffron (crab on this jar, moves in 3 pours)",
+    "Jar 9: buried, buried, denim, saffron",
+    "Jar 10: buried, buried, lemon, lagoon",
+    "Jar 11: buried, buried, mint, denim",
+    "Jar 12: empty",
+    "Jar 13: empty"
+  ],
+  "intro321": {
+    "shown": 1,
+    "text": "4\nLighthouse jar\n\nThe lighthouse jar’s sand is dark, so you can’t see its colours. Every fourth pour on the board the beam lights it, and its colours show until your next pour. The number on its lighthouse counts the pours left. It pours like any jar, and stays lit once sealed.",
+    "errors": []
+  },
+  "labels321": [
+    "Jar 1: buried, buried, cocoa, lagoon",
+    "Jar 2: buried, buried, rose, lagoon",
+    "Jar 3: buried, buried, denim, coral",
+    "Jar 4: buried, buried, lagoon, denim",
+    "Jar 5: buried, buried, denim, lemon",
+    "Jar 6: buried, buried, coral, plum",
+    "Jar 7: 4 layers (dark, lit in 4 pours)",
+    "Jar 8: buried, buried, lemon, cocoa",
+    "Jar 9: buried, buried, denim, sage",
+    "Jar 10: buried, buried, mint, saffron",
+    "Jar 11: buried, buried, rose, rose",
+    "Jar 12: empty",
+    "Jar 13: empty"
+  ],
+  "dom-light": {
+    "labels": [
+      "Jar 1: terracotta, saffron, sage (crab on this jar, moves after the next pour)",
+      "Jar 2: 3 layers (dark, lit after the next pour)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron, sage",
+      "Jar 5: terracotta, sage",
+      "Jar 6: empty"
+    ],
+    "toast": [
+      "The crab is on that jar."
+    ],
+    "selectedAfterCrabTap": null,
+    "animsMid": 7,
+    "afterLabels": [
+      "Jar 1: terracotta, saffron, sage",
+      "Jar 2: sage, terracotta, saffron (lighthouse jar, lit until the next pour, crab on this jar, moves in 3 pours)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron",
+      "Jar 5: terracotta, sage, sage",
+      "Jar 6: empty"
+    ],
+    "announce": [
+      "5000 coins",
+      "The crab is on that jar.",
+      "Poured 1 sage into jar 5. The crab moved to jar 2. The beam lit jar 2."
+    ],
+    "board": [
+      {
+        "units": [
+          0,
+          1,
+          2
+        ],
+        "hidden": 0
+      },
+      {
+        "units": [
+          2,
+          0,
+          1
+        ],
+        "hidden": 0,
+        "lighthouse": {
+          "every": 4,
+          "left": 4,
+          "lit": true
+        },
+        "crab": {
+          "every": 3,
+          "left": 3
+        }
+      }
+    ],
+    "errors": []
+  },
+  "dom-dark": {
+    "labels": [
+      "Jar 1: terracotta, saffron, sage (crab on this jar, moves after the next pour)",
+      "Jar 2: 3 layers (dark, lit after the next pour)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron, sage",
+      "Jar 5: terracotta, sage",
+      "Jar 6: empty"
+    ],
+    "toast": [
+      "The crab is on that jar."
+    ],
+    "selectedAfterCrabTap": null,
+    "animsMid": 7,
+    "afterLabels": [
+      "Jar 1: terracotta, saffron, sage",
+      "Jar 2: sage, terracotta, saffron (lighthouse jar, lit until the next pour, crab on this jar, moves in 3 pours)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron",
+      "Jar 5: terracotta, sage, sage",
+      "Jar 6: empty"
+    ],
+    "announce": [
+      "5000 coins",
+      "The crab is on that jar.",
+      "Poured 1 sage into jar 5. The crab moved to jar 2. The beam lit jar 2."
+    ],
+    "board": [
+      {
+        "units": [
+          0,
+          1,
+          2
+        ],
+        "hidden": 0
+      },
+      {
+        "units": [
+          2,
+          0,
+          1
+        ],
+        "hidden": 0,
+        "lighthouse": {
+          "every": 4,
+          "left": 4,
+          "lit": true
+        },
+        "crab": {
+          "every": 3,
+          "left": 3
+        }
+      }
+    ],
+    "errors": []
+  },
+  "gpu-light": {
+    "render": "gpu",
+    "labels": [
+      "Jar 1: terracotta, saffron, sage (crab on this jar, moves after the next pour)",
+      "Jar 2: 3 layers (dark, lit after the next pour)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron, sage",
+      "Jar 5: terracotta, sage",
+      "Jar 6: empty"
+    ],
+    "toast": [
+      "The crab is on that jar."
+    ],
+    "selectedAfterCrabTap": null,
+    "animsMid": 3,
+    "afterLabels": [
+      "Jar 1: terracotta, saffron, sage",
+      "Jar 2: sage, terracotta, saffron (lighthouse jar, lit until the next pour, crab on this jar, moves in 3 pours)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron",
+      "Jar 5: terracotta, sage, sage",
+      "Jar 6: empty"
+    ],
+    "announce": [
+      "5000 coins",
+      "The crab is on that jar.",
+      "Poured 1 sage into jar 5. The crab moved to jar 2. The beam lit jar 2."
+    ],
+    "board": [
+      {
+        "units": [
+          0,
+          1,
+          2
+        ],
+        "hidden": 0
+      },
+      {
+        "units": [
+          2,
+          0,
+          1
+        ],
+        "hidden": 0,
+        "lighthouse": {
+          "every": 4,
+          "left": 4,
+          "lit": true
+        },
+        "crab": {
+          "every": 3,
+          "left": 3
+        }
+      }
+    ],
+    "errors": []
+  },
+  "gpu-dark": {
+    "render": "gpu",
+    "labels": [
+      "Jar 1: terracotta, saffron, sage (crab on this jar, moves after the next pour)",
+      "Jar 2: 3 layers (dark, lit after the next pour)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron, sage",
+      "Jar 5: terracotta, sage",
+      "Jar 6: empty"
+    ],
+    "toast": [
+      "The crab is on that jar."
+    ],
+    "selectedAfterCrabTap": null,
+    "animsMid": 3,
+    "afterLabels": [
+      "Jar 1: terracotta, saffron, sage",
+      "Jar 2: sage, terracotta, saffron (lighthouse jar, lit until the next pour, crab on this jar, moves in 3 pours)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron",
+      "Jar 5: terracotta, sage, sage",
+      "Jar 6: empty"
+    ],
+    "announce": [
+      "5000 coins",
+      "The crab is on that jar.",
+      "Poured 1 sage into jar 5. The crab moved to jar 2. The beam lit jar 2."
+    ],
+    "board": [
+      {
+        "units": [
+          0,
+          1,
+          2
+        ],
+        "hidden": 0
+      },
+      {
+        "units": [
+          2,
+          0,
+          1
+        ],
+        "hidden": 0,
+        "lighthouse": {
+          "every": 4,
+          "left": 4,
+          "lit": true
+        },
+        "crab": {
+          "every": 3,
+          "left": 3
+        }
+      }
+    ],
+    "errors": []
+  },
+  "reduced": {
+    "anims": 1,
+    "sweep": 0,
+    "crabOn": 1,
+    "afterUndo": [
+      "Jar 1: terracotta, saffron, sage (crab on this jar, moves after the next pour)",
+      "Jar 2: 3 layers (dark, lit after the next pour)",
+      "Jar 3: lagoon, lagoon, lagoon, lagoon (sealed)",
+      "Jar 4: saffron, sage",
+      "Jar 5: terracotta, sage",
+      "Jar 6: empty"
+    ]
+  }
+}
