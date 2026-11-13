@@ -33,7 +33,8 @@ export function refusalNote(reason: PourRefusal | null, targetSealed: boolean): 
 /**
  * The mechanic whose tap text explains a tap on `jar` that could not lift it, or `null`.
  * An empty sieve explains its band; a sealed sieve is just sealed. A closed clam explains its
- * count first, whatever else it is (D96, §2.6); an open clam is an ordinary jar.
+ * count first, whatever else it is (D96, §2.6); an open clam is an ordinary jar. A jar with the crab
+ * on it says so ("The crab is on that jar.", §2.9) unless it is shut by its own mechanic first.
  * Example: `tapMechanic({ units: [], hidden: 0, sieve: 2 }, false) // 'sieve'`
  */
 export function tapMechanic(jar: Jar, sealed: boolean): MechanicId | null {
@@ -41,6 +42,8 @@ export function tapMechanic(jar: Jar, sealed: boolean): MechanicId | null {
   if (jar.frozen) return 'frozen';
   if (jar.lock !== undefined) return 'locked';
   if (jar.funnel) return 'funnel';
+  // The crab (D207, §2.9) blocks lifting its jar: a source-side refusal, so `refusalNote` never sees it.
+  if (jar.crab) return 'crab';
   if (jar.cap !== undefined) return 'narrow';
   if (jar.sieve !== undefined && !sealed) return 'sieve';
   return null;

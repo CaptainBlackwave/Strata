@@ -5,7 +5,7 @@ import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
-import { CLAM_SHELL, HOURGLASS_MARK, SIEVE_BAND, TIDE_MARK, WET_MARK } from '../jars';
+import { CLAM_SHELL, CRAB_MARK, HOURGLASS_MARK, LIGHTHOUSE_MARK, SIEVE_BAND, TIDE_MARK, WET_MARK } from '../jars';
 import { wetHex } from '../../logic/wet';
 
 /** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
@@ -19,14 +19,22 @@ export function miniJar(id: MechanicId): string {
   // Wet sand (D189, §2.7): a dry lagoon unit under a freshly wet one, which shows its full count.
   const dryAfter = config.mechanics.list.find((m) => m.id === 'wet')?.dryAfter ?? 5;
   const wetTop = id === 'wet' ? `<span class="unit wet" data-wet="${dryAfter}" style="--c:${wetHex('#2a9d8f')}">${WET_MARK.replace('<b></b>', `<b>${dryAfter}</b>`)}</span>` : '';
-  const sand = units.map((c) => `<span class="unit" style="--c:${c}"></span>`).join('') + wetTop;
+  // The lighthouse jar (D208, D209, §2.10) is shown dark, as it is dealt: dark sand with no colour.
+  const sand = (id === 'lighthouse' ? units.map(() => '<span class="unit dark"></span>') : units.map((c) => `<span class="unit" style="--c:${c}"></span>`)).join('') + wetTop;
   const extra = id === 'frozen' ? '<span class="ice"></span>' : '';
   const top = id === 'locked' ? `<span class="padlock" style="--lock:${lockC}"></span>` : id === 'funnel' ? '<span class="funnel-mark"></span>' : '';
   // The hourglass shows its full count, like a freshly dealt one.
   const every = config.mechanics.list.find((m) => m.id === 'hourglass')?.every ?? 3;
   // The tide jar (D194, §2.8) shows its full count too, over mixed sand that a turn would lift.
   const tideEvery = config.mechanics.list.find((m) => m.id === 'tide')?.every ?? 4;
-  const mark = id === 'hourglass' ? HOURGLASS_MARK.replace('></b>', `>${every}</b>`) : id === 'tide' ? TIDE_MARK.replace('<b></b>', `<b>${tideEvery}</b>`) : '';
+  // The crab (§2.9) and the lighthouse (§2.10) show their full counts too.
+  const everyOf = (m: MechanicId, d: number) => config.mechanics.list.find((x) => x.id === m)?.every ?? d;
+  const mark =
+    id === 'hourglass' ? HOURGLASS_MARK.replace('></b>', `>${every}</b>`)
+    : id === 'tide' ? TIDE_MARK.replace('<b></b>', `<b>${tideEvery}</b>`)
+    : id === 'crab' ? CRAB_MARK.replace('<b></b>', `<b>${everyOf('crab', 3)}</b>`)
+    : id === 'lighthouse' ? LIGHTHOUSE_MARK.replace('<b></b>', `<b>${everyOf('lighthouse', 4)}</b>`)
+    : '';
   const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) : '';
   // The clam is shut and shows its full count, like a freshly dealt one.
   const opensAfter = config.mechanics.list.find((m) => m.id === 'clam')?.opensAfter ?? 6;

@@ -3,7 +3,7 @@
  * design/gdd/jar-mechanics.md 2.6). Pure and DOM-free, so tests/unit/ui/clam-ui.test.ts checks it
  * in Node. `updateJar` (src/ui/screens/jars.ts) wraps it in `t.jarLabel`.
  */
-import { type Jar, isComplete } from '../../core/board';
+import { type Jar, isComplete, isLit } from '../../core/board';
 import { t } from '../strings';
 
 /**
@@ -14,9 +14,14 @@ import { t } from '../strings';
  * left, "wet lagoon, dries in 3 pours", and the units are then listed with semicolons so its own
  * comma reads as part of it; a full jar of one colour still wet says "full, seals when dry". A tide
  * jar (D194, §2.8) names its pours left, "tide jar, turns in 3 pours", or, sealed, "tide jar, still".
+ * The crab (D207, §2.9) names its pours left, "crab on this jar, moves in 2 pours". A dark lighthouse
+ * jar (D209, §2.10) names no colour, like buried sand: "3 layers (dark, lit in 2 pours)"; lit, it
+ * lists its colours "(lighthouse jar, lit until the next pour)".
  * `capacity` is the board's (a complete jar is full at it). Example: `jarSummary({ units: [], hidden: 0 }, false, name) // 'empty'`
  */
 export function jarSummary(jar: Jar, sealed: boolean, colour: (c: number) => string, capacity = Infinity): string {
+  const dark = jar.lighthouse !== undefined && !sealed && !isLit(jar, capacity);
+  const beam = jar.lighthouse ? (dark ? t.jarStates.lighthouse(jar.lighthouse.left) : sealed ? t.jarStates.lighthouseSealed : t.jarStates.lighthouseLit) : '';
   const states = [
     jar.clam !== undefined ? t.jarStates.clam(jar.clam) : '',
     jar.cap !== undefined ? t.jarStates.narrow : '',
@@ -26,12 +31,15 @@ export function jarSummary(jar: Jar, sealed: boolean, colour: (c: number) => str
     jar.hourglass ? t.jarStates.hourglass(jar.hourglass.left) : '',
     jar.sieve !== undefined ? t.jarStates.sieve(colour(jar.sieve)) : '',
     jar.tide ? (sealed ? t.jarStates.tideStill : t.jarStates.tide(jar.tide.left)) : '',
-    !sealed && jar.wet && isComplete(jar, capacity) ? t.jarStates.wet : '',
+    beam,
+    jar.crab ? t.jarStates.crab(jar.crab.left) : '',
+    // A complete wet jar is one colour: a dark jar must not say so.
+    !dark && !sealed && jar.wet && isComplete(jar, capacity) ? t.jarStates.wet : '',
     sealed ? t.sealed : '',
   ].filter(Boolean);
   if (jar.clam !== undefined) return states.join(', ');
   const wet = jar.wet?.some((w) => w > 0) ?? false;
   const name = (c: number, k: number) => (k < jar.hidden ? t.buried : (jar.wet?.[k] ?? 0) > 0 ? t.wetUnit(colour(c), jar.wet![k]) : colour(c));
-  const contents = jar.units.length ? jar.units.map(name).join(wet ? '; ' : ', ') : t.jarEmpty;
+  const contents = !jar.units.length ? t.jarEmpty : dark ? t.darkLayers(jar.units.length) : jar.units.map(name).join(wet ? '; ' : ', ');
   return states.length ? `${contents} (${states.join(', ')})` : contents;
 }
