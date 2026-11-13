@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { type Board, type Jar, isSealed, isSieveDone, isStuck, isWon, lostReason, makeBoard, pour, sieveLostColor } from '../../../src/core/board';
+import { type DailyConfig, generateDaily } from '../../../src/core/daily';
 import { generateLevel } from '../../../src/core/generator';
 import { type GameConfig } from '../../../src/core/levels';
 import { solve } from '../../../src/core/solver';
@@ -74,9 +75,12 @@ describe('the sieve is a goal (S1, D214)', () => {
     expect(isSealed(s.jars[0], 2)).toBe(true);
   });
 
-  it('levels 141-1000: every sieve level is built with its sieve and its proof ends with the sieve sealed', () => {
+  it('levels 141-1000: every sieve level is built with its sieve and its proof ends with the sieve sealed', async () => {
     let count = 0;
     for (let l = 141; l <= 1000; l++) {
+      // Yield between levels: a synchronous minutes-long loop starves Vitest's worker RPC
+      // ("Timeout calling onTaskUpdate"), as in placement-ramp.test.ts.
+      await new Promise((r) => setTimeout(r, 0));
       const g = generateLevel(l, cfg);
       const at = g.board.jars.findIndex((j) => j.sieve !== undefined);
       if (at < 0) continue;
@@ -90,6 +94,23 @@ describe('the sieve is a goal (S1, D214)', () => {
     }
     expect(count).toBeGreaterThan(30);
   }, 600_000);
+});
+
+describe('dailies with a sieve follow the goal (S4)', () => {
+  // The first sieve daily (2026-12-05) and one whose board changed with the goal (2027-05-01).
+  for (const day of ['2026-12-05', '2027-05-01']) {
+    it(`the ${day} daily has a sieve and plays to a win with it sealed`, () => {
+      const g = generateDaily(day, cfg as GameConfig & DailyConfig);
+      const at = g.board.jars.findIndex((j) => j.sieve !== undefined);
+      expect(at).toBeGreaterThanOrEqual(0);
+      const r = solve(g.board, cfg.generator.solverNodeBudget);
+      expect(r.solvable).toBe(true);
+      let b = g.board;
+      for (const m of r.path) b = pour(b, m.from, m.to).board;
+      expect(isWon(b)).toBe(true);
+      expect(isSealed(b.jars[at], b.capacity)).toBe(true);
+    });
+  }
 });
 
 describe('sealed outside its sieve is a dead end (S2, D215)', () => {

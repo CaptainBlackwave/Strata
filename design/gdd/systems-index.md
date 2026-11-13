@@ -277,5 +277,5 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D213 | Board shelves | **Removed** from the board after player feedback that they were distracting (`boardLook.shelves: false`, both boards); Home's hero shelf stays (owner, 2026-11-13) | feel-audio-ui | built |
 | D214 | Sieve is a goal | A level is won only when every sieve is sealed in its band; every sieve level is proven under that rule (player feedback on level 145; owner, 2026-11-13) | jar-mechanics | built (sprint 28 S1) |
 | D215 | Sieve dead end | Sealing the band colour outside the sieve is allowed, then reported lost ("<colour> was sealed outside its sieve") with Undo and Restart (owner, 2026-11-13) | jar-mechanics | built (sprint 28 S2) |
-| D216 | Sieve goal shown | Intro card, Jar guide and screen reader say "Fill it with <colour> to finish"; a goal mark on the sieve fills in when sealed (owner, 2026-11-13) | feel-audio-ui | planned |
+| D216 | Sieve goal shown | Intro card, Jar guide and screen reader say "Fill it with <colour> to finish"; a goal mark on the sieve fills in when sealed (owner, 2026-11-13) | feel-audio-ui | built (sprint 28 S3) |
 | D217 | Release | Ships alone as 0.24.1 (owner, 2026-11-13) | — | planned |
