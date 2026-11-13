@@ -10,9 +10,16 @@ import { jarSummary } from '../logic/jar-label';
 import { CLAM_OPEN_MS, shellCount } from '../logic/clam';
 import { DRY_MS, wetHex, wetLeft } from '../logic/wet';
 import { TIDE_MS, riseFrom, tideCount } from '../logic/tide';
+import { CRAB_MS, crabCount, scuttleFrames, scuttleFrom } from '../logic/crab';
+import { BEAM_MS, beamCount, beamFrames, isDark } from '../logic/lighthouse';
 import { audio, config, state } from '../state';
+import rawConfig from '../../config/game-config.json';
+
 import { type DomDrawKeys, domDrawKeys, domRedraw } from '../board-gpu/dirty';
 import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuHop, gpuInvalidate, gpuLayout, gpuNope, gpuSeal, gpuTide } from '../board-gpu/hooks';
+
+/** Whether the board draws a wooden shelf under each row of jars (D213: off after player feedback). */
+const boardShelves: boolean = rawConfig.boardLook.shelves;
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
@@ -59,6 +66,33 @@ export const TIDE_MARK =
   '<span class="tide-mark" aria-hidden="true"><svg viewBox="0 0 14 10" focusable="false">' +
   '<path d="M1 3.6c2-2.2 4-2.2 6 0s4 2.2 6 0M1 7.6c2-2.2 4-2.2 6 0s4 2.2 6 0"/></svg><b></b></span>';
 
+/**
+ * The crab (D207, §2.9): a small friendly crab sitting on the jar's rim, a little to the right so the
+ * padlock, funnel mark or cork stay in view, with the pours left until it moves in a pill on its back
+ * (the empty `<b>`). Drawn for Strata: an oval shell, two raised claws, three legs a side and eyes on
+ * stalks, in a warm coral that reads on every scene.
+ */
+export const CRAB_MARK =
+  '<span class="crab-mark" aria-hidden="true"><svg viewBox="0 0 36 24" focusable="false">' +
+  '<path class="crab-leg" d="M9 15l-6 2M9.5 17.5l-5 4M12 19l-3 4M27 15l6 2M26.5 17.5l5 4M24 19l3 4"/>' +
+  '<path class="crab-arm" d="M10 12.5L6 8.5M26 12.5l4-4"/>' +
+  '<path class="crab-claw" d="M6.8 9.2C3 9.4 1.2 6.6 2 3.6c.9 1.6 2.4 2.2 3.9 1.9-.6-1.2-.4-2.8.6-3.6.7 2.6 2.4 4.4.3 7.3zM29.2 9.2c3.8.2 5.6-2.6 4.8-5.6-.9 1.6-2.4 2.2-3.9 1.9.6-1.2.4-2.8-.6-3.6-.7 2.6-2.4 4.4-.3 7.3z"/>' +
+  '<path class="crab-stalk" d="M15 10.5V7M21 10.5V7"/>' +
+  '<ellipse class="crab-shell" cx="18" cy="15" rx="9.5" ry="6.6"/>' +
+  '<circle class="crab-eye" cx="15" cy="6" r="2.1"/><circle class="crab-eye" cx="21" cy="6" r="2.1"/>' +
+  '<circle class="crab-pupil" cx="15.4" cy="6.2" r="0.95"/><circle class="crab-pupil" cx="21.4" cy="6.2" r="0.95"/>' +
+  '<path class="crab-smile" d="M15.6 16.2c1.4 1.3 3.4 1.3 4.8 0"/></svg><b></b></span>';
+
+/**
+ * The lighthouse jar's mark (D208, §2.10): a pill on the jar's base with a small striped lighthouse
+ * and the pours until the beam lights the jar, in the empty `<b>`. While the jar is lit its lamp
+ * glows; a sealed one shows the lighthouse alone. Drawn for Strata: a tapered tower, a lamp room and a cap.
+ */
+export const LIGHTHOUSE_MARK =
+  '<span class="lh-mark" aria-hidden="true"><svg viewBox="0 0 10 14" focusable="false">' +
+  '<path class="lh-tower" d="M3.2 13.2 4 5.6h2l.8 7.6z"/><path class="lh-stripe" d="M3.55 10.1h2.9M3.85 7.6h2.3"/>' +
+  '<rect class="lh-lamp" x="3.6" y="3" width="2.8" height="2.4" rx=".4"/><path class="lh-cap" d="M3.1 3 5 1.1 6.9 3z"/></svg><b></b></span>';
+
 let tapHandler: (i: number) => void = () => {};
 
 /** Registers what a tap on jar `i` does. The board sets it at boot, so this file need not import the board. */
@@ -81,7 +115,7 @@ export function buildJars(): void {
 
   boardEl.replaceChildren();
   const rows = document.createElement('div');
-  rows.className = 'rows';
+  rows.className = boardShelves ? 'rows' : 'rows no-shelves';
   // Sprint 25 U4: one row element per layout row, each with its wooden shelf (style.css .jar-shelf).
   // The Realistic board reads the shelves' boxes and draws the planks on its canvas (board-gpu/shelf.ts).
   let row: HTMLElement | null = null;
@@ -89,10 +123,13 @@ export function buildJars(): void {
     if (i % layout.cols === 0) {
       row = document.createElement('div');
       row.className = 'jar-row';
-      const shelf = document.createElement('span');
-      shelf.className = 'jar-shelf';
-      shelf.setAttribute('aria-hidden', 'true');
-      row.appendChild(shelf);
+      // D213: shelves are off by default (player feedback: distracting); boardLook.shelves turns them back on.
+      if (boardShelves) {
+        const shelf = document.createElement('span');
+        shelf.className = 'jar-shelf';
+        shelf.setAttribute('aria-hidden', 'true');
+        row.appendChild(shelf);
+      }
       rows.appendChild(row);
     }
     const jar = document.createElement('button');
@@ -105,6 +142,8 @@ export function buildJars(): void {
       '<span class="hint-badge" aria-hidden="true"></span>' +
       HOURGLASS_MARK +
       TIDE_MARK +
+      LIGHTHOUSE_MARK +
+      CRAB_MARK +
       SIEVE_BAND +
       CLAM_SHELL;
     jar.addEventListener('click', () => tapHandler(i));
@@ -124,9 +163,9 @@ export function renderAllJars(shake = false): void {
   if (shake) gpuHop(); // sprint 19 S5: the canvas jars hop too
 }
 
-/** A unit's drawn colour: buried sand is neutral, wet sand (D189, §2.7) its darker damp tone. */
-export function unitColor(color: number, buried: boolean, wet = false): string {
-  return buried ? 'var(--buried)' : wet ? wetHex(config.palette[color].hex) : config.palette[color].hex;
+/** A unit's drawn colour: buried sand is neutral, dark sand (§2.10) has no colour, wet sand (D189, §2.7) its darker damp tone. */
+export function unitColor(color: number, buried: boolean, wet = false, dark = false): string {
+  return dark ? 'var(--dark-sand)' : buried ? 'var(--buried)' : wet ? wetHex(config.palette[color].hex) : config.palette[color].hex;
 }
 
 /** What each jar button was last drawn from (sprint 21 P2). A rebuilt button starts unknown, so it is drawn in full. */
@@ -149,7 +188,7 @@ export function updateJar(i: number, growFrom = Infinity): void {
   const todo = domRedraw(last?.keys ?? null, keys, last?.selected ?? false, selected, growFrom < jar.units.length);
   if (!todo.sand && !todo.rest && !todo.selection) return;
   drawn.set(el, { keys, selected });
-  if (todo.sand) drawSand(el, jar, growFrom);
+  if (todo.sand) drawSand(el, jar, growFrom, isDark(jar, board.capacity));
   if (todo.rest) {
     el.classList.toggle('sealed', sealed);
     if (!sealed) el.classList.remove('just-sealed');
@@ -165,8 +204,12 @@ export function updateJar(i: number, growFrom = Infinity): void {
   gpuInvalidate(); // sprint 19 S2: redraws this jar on the canvas board, if it changed
 }
 
-/** Rebuilds jar button `el`'s sand column from `jar`. Units at index `growFrom` and above animate in. */
-function drawSand(el: HTMLElement, jar: Jar, growFrom: number): void {
+/**
+ * Rebuilds jar button `el`'s sand column from `jar`. Units at index `growFrom` and above animate in.
+ * A `dark` lighthouse jar (D209, §2.10) draws every unit as dark sand: no colour and no colour-blind
+ * pattern; a wet unit keeps its drop and count, which name no colour.
+ */
+function drawSand(el: HTMLElement, jar: Jar, growFrom: number, dark = false): void {
   const sand = el.querySelector('.sand') as HTMLElement;
   sand.replaceChildren(
     ...jar.units.map((color, k) => {
@@ -174,6 +217,14 @@ function drawSand(el: HTMLElement, jar: Jar, growFrom: number): void {
       u.className = 'unit';
       if (k < jar.hidden) {
         u.classList.add('buried');
+      } else if (dark) {
+        u.classList.add('dark');
+        const left = wetLeft(jar, k);
+        if (left > 0) {
+          u.classList.add('wet');
+          u.dataset.wet = String(left);
+          u.innerHTML = WET_MARK.replace('<b></b>', `<b>${left}</b>`);
+        }
       } else {
         const left = wetLeft(jar, k);
         u.style.setProperty('--c', left > 0 ? wetHex(config.palette[color].hex) : config.palette[color].hex);
@@ -216,6 +267,23 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   if (el.dataset.tide !== turnsIn) {
     el.dataset.tide = turnsIn;
     (el.querySelector('.tide-mark b') as HTMLElement).textContent = turnsIn;
+  }
+  // The crab and its count (D207, §2.9); at 1 its pill takes the accent, as the hourglass's does.
+  el.classList.toggle('crab', jar.crab !== undefined);
+  const movesIn = crabCount(jar);
+  if (el.dataset.crab !== movesIn) {
+    el.dataset.crab = movesIn;
+    (el.querySelector('.crab-mark b') as HTMLElement).textContent = movesIn;
+  }
+  // The lighthouse jar's mark and count (D208, §2.10): its lamp glows while lit; sealed, it stays lit with no count.
+  const capacity = state.session.board.capacity;
+  el.classList.toggle('lighthouse', jar.lighthouse !== undefined);
+  const litIn = beamCount(jar, capacity);
+  el.classList.toggle('lh-lit', jar.lighthouse !== undefined && !isDark(jar, capacity));
+  el.classList.toggle('lh-still', jar.lighthouse !== undefined && litIn === '');
+  if (el.dataset.beam !== litIn) {
+    el.dataset.beam = litIn;
+    (el.querySelector('.lh-mark b') as HTMLElement).textContent = litIn;
   }
   // The sieve's band is jar state too (it never changes in play, but a rebuilt board may differ).
   el.classList.toggle('sieve', jar.sieve !== undefined);
@@ -400,6 +468,78 @@ export function tideFx(i: number, delay: number): void {
   }
 }
 
+/** A jar button's resting place on the board, from its layout offsets (transforms such as a lift or a pour ignored). */
+function restPlace(el: HTMLElement): { x: number; y: number } {
+  let x = 0;
+  let y = 0;
+  for (let n: HTMLElement | null = el; n && n !== boardEl; n = n.offsetParent as HTMLElement | null) {
+    x += n.offsetLeft;
+    y += n.offsetTop;
+  }
+  return { x, y };
+}
+
+/**
+ * The crab stepping from jar `from` to jar `to` (D207, §2.9). The new jar already shows the crab and
+ * its fresh count; its crab is drawn back on the old jar (`fill: 'backwards'`) until `delay` ms have
+ * passed (the pour around it done), then scuttles sideways along the row in a few little hops. On the
+ * Realistic board the crab is this same DOM art over the canvas, so both boards play it. Reduced
+ * motion: no motion, the crab is simply drawn on its new jar. A board change cancels it with the flips.
+ */
+export function crabFx(from: number, to: number, delay: number): void {
+  const a = state.jarEls[from];
+  const b = state.jarEls[to];
+  if (!a || !b || reducedMotion()) return;
+  const crab = b.querySelector('.crab-mark') as HTMLElement | null;
+  if (!crab) return;
+  const run = crab.animate(scuttleFrames(scuttleFrom(restPlace(a), restPlace(b))), { duration: CRAB_MS, delay, easing: 'ease-in-out', fill: 'backwards' });
+  b.classList.add('crab-moving');
+  flips.add(run);
+  const done = () => {
+    flips.delete(run);
+    b.classList.remove('crab-moving');
+  };
+  run.addEventListener('finish', done);
+  run.addEventListener('cancel', done);
+}
+
+/**
+ * The beam lighting lighthouse jar `i` (D208, §2.10). The jar is already drawn lit (its colours
+ * show). Over its sand a cover of dark sand is held for `delay` ms (the pour's sand landing), then a
+ * soft band of light crosses the glass and wipes the cover away behind it, so the colours appear
+ * where the light has passed. The overlay is DOM inside the glass, so it shows over the Realistic
+ * board's canvas too. Reduced motion: nothing plays, the colours simply show. A board change cancels it.
+ */
+export function beamFx(i: number, delay: number): void {
+  const el = state.jarEls[i];
+  const jar = state.session.board.jars[i];
+  if (!el || !jar || reducedMotion()) return;
+  const glass = el.querySelector('.glass') as HTMLElement;
+  glass.querySelector('.lh-sweep')?.remove();
+  const sweep = document.createElement('span');
+  sweep.className = 'lh-sweep';
+  sweep.setAttribute('aria-hidden', 'true');
+  sweep.style.setProperty('--n', String(jar.units.length));
+  sweep.innerHTML = '<span class="lh-cover"></span><span class="lh-band"></span>';
+  glass.appendChild(sweep);
+  const frames = beamFrames();
+  const timing: KeyframeAnimationOptions = { duration: BEAM_MS, delay, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'both' };
+  const runs = [
+    (sweep.firstElementChild as HTMLElement).animate(frames.cover, timing),
+    (sweep.lastElementChild as HTMLElement).animate(frames.band, timing),
+  ];
+  let left = runs.length;
+  for (const a of runs) {
+    flips.add(a);
+    const done = () => {
+      flips.delete(a);
+      if (--left === 0) sweep.remove();
+    };
+    a.addEventListener('finish', done);
+    a.addEventListener('cancel', done);
+  }
+}
+
 /** Stops every flip and clam-opening animation: the board was redrawn by something other than a pour. */
 export function cancelFlips(): void {
   for (const a of [...flips]) a.cancel();
@@ -464,6 +604,7 @@ export function sealFx(i: number, color: string, step = 0): void {
 export function makeTiltFill(jarEl: HTMLElement, i: number) {
   const glass = jarEl.querySelector('.glass') as HTMLElement;
   const jar = state.session.board.jars[i];
+  const dark = isDark(jar, state.session.board.capacity); // a dark lighthouse jar tips dark sand (§2.10)
   const Hg = glass.clientHeight;
   const W = glass.clientWidth;
   const fill = document.createElement('span');
@@ -474,7 +615,7 @@ export function makeTiltFill(jarEl: HTMLElement, i: number) {
   band.style.left = `${-Hg * 1.5}px`;
   const stripes = jar.units.map((c, k) => {
     const s = document.createElement('span');
-    s.style.background = unitColor(c, k < jar.hidden, wetLeft(jar, k) > 0);
+    s.style.background = unitColor(c, k < jar.hidden, wetLeft(jar, k) > 0, dark);
     s.style.height = `${state.unitHeight + (k === 0 ? 40 : 0)}px`;
     return s;
   });

@@ -80,6 +80,12 @@ export interface PaintLook {
    * wet. Absent or null: nothing is wet.
    */
   readonly wet?: { readonly rows: Uint8Array; readonly palette: readonly Rgb[] } | null;
+  /**
+   * A dark lighthouse jar (D209, §2.10): every grain is painted in this one colour, with no
+   * colour-blind pattern, no damp tone and no seam between strata, so nothing tells its colours
+   * apart. The grains keep their own shade, so the sand still has a faint grain. Absent or null: lit.
+   */
+  readonly dark?: Rgb | null;
 }
 
 /**
@@ -156,7 +162,7 @@ export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb,
         continue;
       }
       const pal = look.wet && look.wet.rows[y] === 1 && cell !== NEUTRAL ? look.wet.palette : palette;
-      paintCell(grid, i, x, y, cellRgb(cell, pal, neutral), out, w, sub, t0, mask, false, look);
+      paintCell(grid, i, x, y, look.dark ?? cellRgb(cell, pal, neutral), out, w, sub, t0, mask, false, look);
     }
   }
   for (let y = 1; y < rows - 1; y++) {
@@ -167,7 +173,7 @@ export function paintGrid(grid: SandGrid, palette: readonly Rgb[], neutral: Rgb,
       const ty = Math.min(rows - 1, Math.max(0, y + (((s >> 2) & 7) - 3.5) * 0.6));
       const tx = Math.min(cols - 1, Math.max(0, x + ((s & 3) - 1.5) * 0.4));
       const t0 = Math.floor(ty * sub) * w + Math.floor(tx * sub);
-      paintCell(grid, i, x, y, cellRgb(cells[i], palette, neutral), out, w, sub, t0, mask, true, null);
+      paintCell(grid, i, x, y, look.dark ?? cellRgb(cells[i], palette, neutral), out, w, sub, t0, mask, true, null);
     }
   }
   if (look.smooth) smoothSurface(grid, out, sub, surfaceLine(grid, look.smooth), mask);
@@ -232,10 +238,10 @@ function paintCell(grid: SandGrid, i: number, x: number, y: number, c: Rgb, out:
   if (x > 0 && cells[i - 1] === EMPTY) k += 0.05;
   if (x < cols - 1 && cells[i + 1] === EMPTY) k -= 0.06;
   // A thin shadow under a stratum line, where a different colour lies on top.
-  const seam = !exposed && above !== cell;
+  const seam = !exposed && above !== cell && !look?.dark;
   // A falling grain (look null) is drawn plain: textures and patterns belong to the resting sand.
   const texture = look?.texture ?? null;
-  const pattern = look?.patterns && cell !== NEUTRAL ? look.patterns[cell - 1] ?? null : null;
+  const pattern = look?.patterns && cell !== NEUTRAL && !look.dark ? look.patterns[cell - 1] ?? null : null;
   const sat = look?.saturation ?? 1;
   for (let sy = 0; sy < sub; sy++) {
     for (let sx = 0; sx < sub; sx++) {

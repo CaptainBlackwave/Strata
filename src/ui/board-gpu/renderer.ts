@@ -7,7 +7,7 @@
  * when the tab is hidden. Loaded on demand, so the DOM board's bundle carries none of Pixi.
  */
 import { CanvasSource, Container, Rectangle, Sprite, Texture, Ticker, WebGLRenderer } from 'pixi.js';
-import { type Board, type Jar, isSealed } from '../../core/board';
+import { type Board, type Jar, isLit, isSealed } from '../../core/board';
 import { type PourSim, type SandConfig, type SandDims, type SandGrid, bandRows, done, finish, gridFromJar, planPour, sandConfig, step, stepsDue } from '../sand';
 import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from './art';
 import { DirtyTracker, jarKey } from './dirty';
@@ -27,6 +27,8 @@ const STREAM_PX = 3;
 const LIP_INSET = 0.3;
 /** A locked jar's sand is dulled like the DOM's `.jar.locked .glass { filter: saturate(0.85) }`. */
 const LOCKED_SATURATION = 0.85;
+/** Dark sand (style.css `--dark-sand`) when the option is not given (§2.10). */
+const DARK_SAND: Rgb = { r: 46, g: 58, b: 77 };
 
 /** Motion timings and curves, taken from the DOM board so both feel the same. */
 export interface GpuMotion {
@@ -89,6 +91,8 @@ export interface GpuBoardOptions {
   readonly palette: readonly Rgb[];
   readonly paletteHex: readonly string[];
   readonly neutral: Rgb;
+  /** A dark lighthouse jar's sand (`--dark-sand`, §2.10); absent: a fixed navy-grey. */
+  readonly dark?: Rgb;
   readonly motion: GpuMotion;
   readonly reducedMotion: () => boolean;
   readonly dims: SandDims;
@@ -837,7 +841,9 @@ export class GpuBoard {
     const grain = this.grainFor(v.geom, capacity, art.innerRadius);
     // Wet units are painted in their damp tone, band by band as `gridFromJar` lays them (§2.7).
     const wet = wetRows(jar, bandRows(capacity, this.opts.dims), v.wetRows) ? { rows: v.wetRows, palette: this.wetPalette } : null;
-    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1, smooth: upright ? this.config.surfaceSmooth : 0, wet };
+    // A dark lighthouse jar (D209, §2.10) paints every grain as dark sand, in a pour too.
+    const dark = jar && !isLit(jar, capacity) ? (this.opts.dark ?? DARK_SAND) : null;
+    return { mask: grain.mask, texture: grain.texture, patterns: grain.patterns, saturation: jar?.lock !== undefined ? LOCKED_SATURATION : 1, smooth: upright ? this.config.surfaceSmooth : 0, wet, dark };
   }
 
   private paintSand(v: JarView, jar: Jar | null, capacity: number, upright = true): void {

@@ -190,6 +190,10 @@ const en = {
     wet: { name: 'Wet sand', rule: 'Wet sand is darker, with a drop and a number on it. It only goes onto sand of its own colour, never into an empty jar. Every pour on the board dries it a little: at 0 it is ordinary sand. A full jar seals once its sand is dry.', tap: 'Wet sand: only onto its own colour. It dries as you pour.' },
     /** The tide jar (sprint 24 T5, D194, D195; §2.8): its intro card, Jar guide entry and tap text. */
     tide: { name: 'Tide jar', rule: 'Every fourth pour on the board, the tide turns: the sand in the tide jar rises by one layer, and its bottom layer comes up to the top. The number on its wave counts the pours left. A sealed tide jar stays still.', tap: 'Tide jar: every fourth pour, its bottom layer rises to the top.' },
+    /** The crab (sprint 27 K5, D207; §2.9): its intro card, Jar guide entry and tap text (the refusal when its jar is lifted). */
+    crab: { name: 'Crab jar', rule: 'A crab sits on one jar\u2019s lid. You can pour into that jar, but not out of it. Every third pour on the board the crab walks to the next jar along; the number on it counts the pours left. It never sits on a sealed jar.', tap: 'The crab is on that jar.' },
+    /** The lighthouse jar (sprint 27 K5, D208, D209; §2.10): its intro card, Jar guide entry and tap text. */
+    lighthouse: { name: 'Lighthouse jar', rule: 'The lighthouse jar\u2019s sand is dark, so you can\u2019t see its colours. Every fourth pour on the board the beam lights it, and its colours show until your next pour. The number on its lighthouse counts the pours left. It pours like any jar, and stays lit once sealed.', tap: 'Lighthouse jar: the beam lights it every fourth pour.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -209,6 +213,16 @@ const en = {
     /** The mark beside the newest posting. */
     latest: 'Latest',
     releases: [
+      {
+        version: '0.24.0',
+        name: 'A crab and a lighthouse',
+        lines: [
+          'From level 281, the crab jar: a crab sits on a jar so you cannot pour out of it, and every third pour it walks to the next jar.',
+          'From level 321, the lighthouse jar: its sand is dark until the beam sweeps over it every fourth pour.',
+          'Each turns up on about one level in eight from its first level.',
+          'The wooden shelves under the jars are gone from the board: thank you for the feedback.',
+        ],
+      },
       {
         version: '0.23.1',
         name: 'Night touches',
@@ -476,7 +490,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar', crab: 'crab jar', lighthouse: 'lighthouse jar' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',
@@ -508,6 +522,14 @@ const en = {
     tide: (left: number) => (left === 1 ? 'tide jar, turns after the next pour' : `tide jar, turns in ${left} pours`),
     /** A sealed tide jar's state (D195, §2.8): it never turns again, so it has no count. */
     tideStill: 'tide jar, still',
+    /** The crab's jar (D207, §2.9): `left` is the pours until it moves (1..every). */
+    crab: (left: number) => (left === 1 ? 'crab on this jar, moves after the next pour' : `crab on this jar, moves in ${left} pours`),
+    /** A dark lighthouse jar (D208, D209, §2.10): `left` is the pours until the beam lights it. No colour is named. */
+    lighthouse: (left: number) => (left === 1 ? 'dark, lit after the next pour' : `dark, lit in ${left} pours`),
+    /** A lighthouse jar the beam lights this pour (§2.10): its colours show until the next pour. */
+    lighthouseLit: 'lighthouse jar, lit until the next pour',
+    /** A sealed lighthouse jar (§2.10 rule 4): lit for good. */
+    lighthouseSealed: 'lighthouse jar, lit for good',
   },
   /** One wet unit in a jar's screen-reader contents (D189, §2.7): `left` is the pours until it dries (1..dryAfter). */
   wetUnit: (colour: string, left: number) => (left === 1 ? `wet ${colour}, dries after the next pour` : `wet ${colour}, dries in ${left} pours`),
@@ -585,6 +607,12 @@ const en = {
   wetRefused: 'Wet sand only goes onto its own colour.',
   /** Said after the pour that turned a tide jar (D194, §2.8). `jar` is 1-based. */
   tideAnnounce: (jar: number) => `The tide turned (jar ${jar}).`,
+  /** Said after the pour that moved the crab (D207, §2.9). `jar` is 1-based. */
+  crabAnnounce: (jar: number) => `The crab moved to jar ${jar}.`,
+  /** Said after the pour on which the beam lit a lighthouse jar holding sand (D208, §2.10). `jar` is 1-based. */
+  beamAnnounce: (jar: number) => `The beam lit jar ${jar}.`,
+  /** A dark lighthouse jar's contents for the screen reader (D209): its layers, no colour. */
+  darkLayers: (n: number) => (n === 1 ? '1 layer' : `${n} layers`),
   /** Said after a pour that dried wet sand (D189, §2.7). `jar` is 1-based. */
   dryAnnounce: (jar: number) => `Sand dried (jar ${jar}).`,
   jarEmpty: 'empty',

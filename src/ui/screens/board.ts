@@ -20,11 +20,12 @@ import { $, announce, boardEl, btnNext, challengeTag, closeLayer, coachEl, coach
 import { showHome } from './home';
 import { screenOut } from '../fx';
 import { coach, scheduleHud, updateHud } from './hud';
-import { buildJars, cancelFlips, clamOpenFx, dryFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, tideFx, updateJar } from './jars';
+import { beamFx, buildJars, cancelFlips, clamOpenFx, crabFx, dryFx, flipFx, nope, onJarTapDo, renderAllJars, sealFx, setSelected, tideFx, updateJar } from './jars';
 import { flipDelay, grownFrom } from '../logic/flip';
 import { clamOpenDelay } from '../logic/clam';
 import { driedUnits, dryDelay } from '../logic/wet';
 import { risesVisibly } from '../logic/tide';
+import { sweepsVisibly } from '../logic/lighthouse';
 import { refusalNote, tapMechanic } from '../logic/refusal';
 import { animatePour, recoverPour } from './pour';
 import { gpuInvalidate } from '../board-gpu/hooks';
@@ -280,6 +281,12 @@ export function onSessionEvent(e: SessionEvent): void {
       for (const i of opened) clamOpenFx(i, clamOpenDelay(reducedMotion(), ANIM));
       // The tide rises once the pour around it is done, last, as the rules run (§2.8 rule 8).
       for (const i of rises) tideFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
+      // The crab steps once the pour is done (D207, §2.9); onto the jar just poured from, once it is home.
+      const crab = e.crabMoved ?? null;
+      if (crab) crabFx(crab.from, crab.to, flipDelay(crab.to, e.move.from, reducedMotion(), ANIM));
+      // The beam lights a lighthouse jar last of all (D208, §2.10), once the sand has landed.
+      const lit = (e.swept ?? []).filter((i) => sweepsVisibly(state.session.board.jars[i]));
+      for (const i of lit) beamFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
       announce(
         t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
           (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
@@ -287,7 +294,9 @@ export function onSessionEvent(e: SessionEvent): void {
           opened.map((i) => ` ${t.clamAnnounce(i + 1)}`).join('') +
           dried.map((d) => ` ${t.dryAnnounce(d.jar + 1)}`).join('') +
           sealedDry.map((i) => ` ${t.sealAnnounce(i + 1)}`).join('') +
-          turned.map((i) => ` ${t.tideAnnounce(i + 1)}`).join(''),
+          turned.map((i) => ` ${t.tideAnnounce(i + 1)}`).join('') +
+          (crab ? ` ${t.crabAnnounce(crab.to + 1)}` : '') +
+          lit.map((i) => ` ${t.beamAnnounce(i + 1)}`).join(''),
       );
       break;
     }
@@ -388,7 +397,7 @@ export function relayoutWhenIdle(): void {
 export function isLiftable(i: number): boolean {
   const jar = state.session.board.jars[i];
   // A closed clam (D96, §2.6) can't be lifted: `isClosed` covers frozen and locked jars only.
-  return !!jar && jar.units.length > 0 && !isSealed(jar, state.session.board.capacity) && !isClosed(jar) && jar.clam === undefined && !jar.funnel;
+  return !!jar && jar.units.length > 0 && !isSealed(jar, state.session.board.capacity) && !isClosed(jar) && jar.clam === undefined && !jar.funnel && !jar.crab; // the crab blocks pouring out (D207, §2.9)
 }
 
 /** Explains why a mechanic jar refused a tap. A sieve names its band colour, a closed clam its pours left (D96). */

@@ -267,9 +267,11 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D203 | Release | The refresh ships as one release, **0.23.0** (owner, 2026-11-12) | — | built |
 | D204 | Night polish | Fix 0.23.0's leftovers as 0.23.1: night sea and wood, the toast over the bottom shelf at 320/150%, the Today band at night (owner, 2026-11-13) | feel-audio-ui | built |
 | D205 | Phone check | Update the phone checklist for 0.23's look (owner, 2026-11-13) | — | built (`production/qa/phone-checklist-0.23.md`) |
-| D206 | Next jars | The **crab jar** (debut 281) and the **lighthouse jar** (debut 321), keeping one every 40 levels (owner, 2026-11-13) | jar-mechanics | planned |
-| D207 | Crab rule | The crab blocks pouring out of its jar (pouring in is allowed) and every 3 pours moves to the next unsealed, non-empty jar in the row, wrapping round (owner, 2026-11-13) | jar-mechanics, pour-rules | planned |
-| D208 | Lighthouse rule | The lighthouse jar's sand is dark except for the pour after every 4th pour, when the beam lights it; always pourable; lit for good once sealed (owner, 2026-11-13) | jar-mechanics | planned |
-| D209 | Lighthouse access | Dark sand shows no colour to the colour-blind patterns or the screen reader either, like buried sand (owner, 2026-11-13) | jar-mechanics, accessibility | planned |
-| D210 | Shares | Each about 1 level in 8 from its debut, from its own roll only (owner, 2026-11-13) | level-generation | planned |
-| D211 | Releases | 0.23.1 polish first, then both jars as 0.24.0 (owner, 2026-11-13) | — | planned |
+| D206 | Next jars | The **crab jar** (debut 281) and the **lighthouse jar** (debut 321), keeping one every 40 levels (owner, 2026-11-13) | jar-mechanics | built |
+| D207 | Crab rule | The crab blocks pouring out of its jar (pouring in is allowed) and every 3 pours moves to the next unsealed, non-empty jar in the row, wrapping round (owner, 2026-11-13) | jar-mechanics, pour-rules | built |
+| D208 | Lighthouse rule | The lighthouse jar's sand is dark except for the pour after every 4th pour, when the beam lights it; always pourable; lit for good once sealed (owner, 2026-11-13) | jar-mechanics | built |
+| D209 | Lighthouse access | Dark sand shows no colour to the colour-blind patterns or the screen reader either, like buried sand (owner, 2026-11-13) | jar-mechanics, accessibility | built |
+| D210 | Shares | Each about 1 level in 8 from its debut, from its own roll only (owner, 2026-11-13) | level-generation | built |
+| D211 | Releases | 0.23.1 polish first, then both jars as 0.24.0 (owner, 2026-11-13) | — | built |
+| D212 | Crab and lighthouse details | Keep sand poured from a dark lighthouse jar showing its colour as it falls; leave the three one-spare levels in 500-610 that drop the crab (529, 532, 562) as they are; the look approved from screenshots (owner, 2026-11-13) | jar-mechanics | built |
+| D213 | Board shelves | **Removed** from the board after player feedback that they were distracting (`boardLook.shelves: false`, both boards); Home's hero shelf stays (owner, 2026-11-13) | feel-audio-ui | built |

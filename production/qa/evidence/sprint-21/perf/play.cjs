@@ -9,7 +9,7 @@ const path = require('path');
 const BASE = `http://localhost:${process.env.PORT || 5182}`;
 const LEVEL = Number(process.env.LEVEL || 12);
 const KEY = 'strata.save.v2';
-const MECHANICS = ['narrow', 'frozen', 'locked', 'funnel', 'hourglass', 'sieve', 'clam', 'wet', 'tide'];
+const MECHANICS = ['narrow', 'frozen', 'locked', 'funnel', 'hourglass', 'sieve', 'clam', 'wet', 'tide', 'crab', 'lighthouse'];
 // Where screenshots and play-results.json go (default: beside this script).
 const OUT = process.env.OUT ? path.resolve(process.env.OUT) : __dirname;
 
@@ -17,7 +17,7 @@ const OUT = process.env.OUT ? path.resolve(process.env.OUT) : __dirname;
 const domVsBoard = (page) =>
   page.evaluate(async () => {
     const { state, config } = await import('/src/ui/state.ts');
-    const { isSealed } = await import('/src/core/board.ts');
+    const { isSealed, isLit } = await import('/src/core/board.ts');
     const { wetHex } = await import('/src/ui/logic/wet.ts');
     const b = state.session.board;
     const bad = [];
@@ -28,7 +28,8 @@ const domVsBoard = (page) =>
       units.forEach((u, k) => {
         // Wet sand (D189) draws its damp tone while its count is above 0.
         const hex = config.palette[jar.units[k]].hex;
-        const want = k < jar.hidden ? '' : (jar.wet?.[k] ?? 0) > 0 ? wetHex(hex) : hex;
+        // A dark lighthouse jar (sprint 27, §2.10) draws dark sand with no colour.
+        const want = k < jar.hidden || !isLit(jar, b.capacity) ? '' : (jar.wet?.[k] ?? 0) > 0 ? wetHex(hex) : hex;
         if (u.style.getPropertyValue('--c') !== want) bad.push(`jar ${i} unit ${k}: colour ${u.style.getPropertyValue('--c')} not ${want}`);
       });
       if (el.classList.contains('sealed') !== isSealed(jar, b.capacity)) bad.push(`jar ${i}: sealed class wrong`);

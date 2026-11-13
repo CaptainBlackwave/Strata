@@ -5,7 +5,8 @@ import type { Jar } from '../../core/board';
 
 /**
  * A jar's drawn state as a string: its units, bottom first, how many are hidden, and its mechanics
- * (narrow, funnel, frozen, lock, sieve, clam; the hourglass count is DOM text) and which units are
+ * (narrow, funnel, frozen, lock, sieve, clam, the crab and its count, the lighthouse's count and beam;
+ * the hourglass count is DOM text) and which units are
  * wet (D189, §2.7: wet sand is drawn darker; its counts are DOM text). Example: `'0,2,2|1'`
  */
 export function jarKey(jar: Jar): string {
@@ -17,6 +18,10 @@ export function jarKey(jar: Jar): string {
     jar.sieve !== undefined ? `s${jar.sieve}` : '',
     jar.clam !== undefined ? 'c' : '',
     jar.hourglass ? 'h' : '',
+    // The crab's count and the lighthouse's beam (§2.9, §2.10): the core `jarKey` keeps the crab but
+    // not the beam, so both are here, the beam's count and whether it lights the jar (dark sand).
+    jar.crab ? `k${jar.crab.left}/${jar.crab.every}` : '',
+    jar.lighthouse ? `b${jar.lighthouse.left}/${jar.lighthouse.every}${jar.lighthouse.lit ? '+' : '-'}` : '',
     jar.wet ? `w${jar.wet.map((w) => (w > 0 ? 1 : 0)).join('')}` : '',
   ].join('');
   return `${jar.units.join(',')}|${jar.hidden}${m ? `|${m}` : ''}`;
@@ -77,7 +82,8 @@ export function domDrawKeys(jar: Jar, d: DomDrawInput): DomDrawKeys {
   const p = d.patterns ? 'p1' : 'p0';
   const counts = `${jar.hourglass ? `h${jar.hourglass.left}/${jar.hourglass.every}` : ''}${jar.clam !== undefined ? `c${jar.clam}` : ''}${jar.tide ? `t${jar.tide.left}/${jar.tide.every}` : ''}`;
   return {
-    sand: `${jar.units.join(',')}|${jar.hidden}|${p}${jar.wet ? `|w${jar.wet.join('.')}` : ''}`,
+    // A dark lighthouse jar draws its units as dark sand (§2.10), so the beam is part of the sand key.
+    sand: `${jar.units.join(',')}|${jar.hidden}|${p}${jar.wet ? `|w${jar.wet.join('.')}` : ''}${jar.lighthouse && !jar.lighthouse.lit && !d.sealed ? '|d' : ''}`,
     rest: `${jarKey(jar)}|${counts}|${d.sealed ? 's' : ''}|${p}|u${d.unitHeight}`,
   };
 }

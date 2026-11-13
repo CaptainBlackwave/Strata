@@ -46,9 +46,9 @@ describe('the clam is a card mechanic (D96)', () => {
     expect(specialsOf(181, cfg).debut).toBe('clam');
     expect(specialsOf(141, cfg).debut).toBe('sieve');
   });
-  it('the Jar guide order is the config order, nine jars: the clam, wet sand (sprint 23 W5), then the tide jar (sprint 24)', () => {
-    expect(ids).toHaveLength(9);
-    expect(ids.slice(-5)).toEqual(['hourglass', 'sieve', 'clam', 'wet', 'tide']);
+  it('the Jar guide order is the config order, eleven jars: the clam, wet sand (sprint 23 W5), the tide jar (sprint 24), then the crab and lighthouse jars (sprint 27)', () => {
+    expect(ids).toHaveLength(11);
+    expect(ids.slice(-7)).toEqual(['hourglass', 'sieve', 'clam', 'wet', 'tide', 'crab', 'lighthouse']);
   });
   it('stays out of the daily rotation and the "all four special jars" count until W1', () => {
     expect(ids.filter(isClassicMechanic)).toEqual(['narrow', 'frozen', 'locked', 'funnel']);

@@ -57,7 +57,7 @@ const TOKEN_BLOCK = /^:root(\[[^\]]+\])?$/;
 const ART = [
   /jar|glass|cork|\.unit\b|sand|\bmj\b|\.mj\./, // jars, sand, the mini jars in mechanic tiles
   /coin|badge-medal|\.i-(shell|rib|sand|star|lock)|\.m-(grass|red|lamp)/, // coins, medals, map icons
-  /clam|funnel|wet-mark|sieve|ice\b|mini-ico\.ice/, // special-jar art
+  /clam|funnel|wet-mark|sieve|ice\b|mini-ico\.ice|crab-mark|lh-mark/, // special-jar art (the crab and lighthouse marks, sprint 27)
   /plate\[|scene-swatch|hero-|\[data-theme=|\[data-glass=|style-/, // plates, scene art, jar styles
   /\.home::before|\.stone-mark/, // the scene's sun or moon on Home; the map's stone marks
   // TODO sprint 25 U5/U6 (audit S4): the completed shell set's fixed mint, pinned by themes.test FIXED.

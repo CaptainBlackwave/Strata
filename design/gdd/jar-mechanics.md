@@ -224,6 +224,66 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 
 **Player-facing** (sprint 24 T4, T5): a wave mark with the pours left on the jar's base (the accent colour at 1; faded, with no number, once sealed). When the tide turns, the bottom unit slides up to the top, narrowing as it passes the others, while they drop one place (instant under reduced motion; Undo, Restart and Shuffle cancel it). Wet counts, drop marks and colour-blind patterns move with their units. The label reads "tide jar, turns in N pours" ("tide jar, still" once sealed) and each turn announces "The tide turned (jar N)." The intro card shows on level 241; the Jar guide, the map badge and the tap text cover it. The turn reuses the hourglass's sand-slide sound. There is no refusal reason of its own: a tide jar refuses pours exactly like an ordinary jar.
 
+### 2.9 Crab jar (sprint 27 K1–K3, D206, D207, D210)
+
+*Designed for Strata; no rule, name or art is taken from another game.*
+
+The third mechanic of the 40-level pace (D190): the crab debuts on level 281 (D206). It is not a kind of jar but a **visitor**: a crab sits on one jar's lid and walks along the row.
+
+**Rules**
+1. **One crab.** `Jar.crab` is `{ every, left }`, on the one jar the crab sits on (the field travels from jar to jar; a board never has two). It moves every `every` successful pours on the board, `left` pours from now (1 to `every`). A board without a crab is exactly as before. *Decided here:* a per-jar field rather than `Board.crab`, because every board-copying path (`settle`, the extra jar, Shuffle, `proveDeal`) already keeps jar fields; `crabAt(board)` gives its index.
+2. **Blocking (D207).** Nothing may be poured **out of** the crab's jar: `pourRefusal` gives the new reason **`'crab'`**. Pouring **into** it is allowed. Refusal order: `'closed'`, `'clam'`, `'funnel'` and `'sealed'` come first (they are the jar's own reasons), then `'crab'`, then empty, sieve, room, wet and colour.
+3. **Counting.** Every successful pour anywhere counts `left` down by one, a pour into the crab's jar included. A refused pour changes nothing.
+4. **The step.** The pour that brings `left` to zero moves the crab to **the next jar after its own in index order, wrapping round, that is neither empty nor sealed** (`crabStep`), and `left` restarts at `every`. Any other jar qualifies: frozen, locked, a funnel, a closed clam, the hourglass, the tide jar, the lighthouse jar (a crab on a frozen jar or a funnel blocks nothing new). If no other jar qualifies it **stays**, and its count still restarts. `pour()` reports `crabMoved: { from, to }` when it changed jars (else `null`); the session's pour event carries `crabMoved` when present.
+5. **A sealed jar never holds the crab.** A pour into the crab's jar that seals it makes the crab step off **at once**, whatever its count (by rule 4), and the count restarts. Only on the winning pour (every other jar empty or sealed) can it stay on a sealed jar, and then the level is over.
+6. **Order (decided here).** After a pour the rules run as hourglasses, clams, drying, tide, the seal-triggered rules (`settle`, the winning pour's drying), then **the crab**, then the lighthouse beam. So "empty" and "sealed" are judged on the board the pour leaves: a complete jar whose last wet unit dried on this pour is sealed and skipped; a jar the pour just filled can take the crab. The crab never moves sand, so the order with the hourglass and the tide only decides that they flip and turn under it while it stays.
+7. **Board state.** The crab and its count live on the board, so Undo, Restart, the solver, hint plans and saved boards keep them. Its jar key carries `K{left}/{every}`, and with a crab `boardKey` **keeps jar order** (no sorting), since the crab steps in index order.
+8. **Waiting is useful.** With a crab every legal pour brings its step closer, so `usefulMoves` keeps every legal pour, swaps included (like the clam): a pour elsewhere can be the wait that frees a jar. `isStuck` is then true only when no pour at all is left. No dead-end reason is added (D21).
+9. **Shuffle (decided here).** The crab's jar keeps its sand, the crab and its count, like a closed clam: it is shut for pouring out, and keeping its sand means a re-deal can never seal it under the crab. The other free jars are re-dealt and proven.
+10. **Solver and hints.** The solver plays every step through `pour()`. On a crab board it searches with a memo key that ignores the crab's count (jar order and the crab's jar kept) and does not try pure swaps (a whole one-colour jar into an empty jar of the same kind). Without that it found proofs hundreds of pours long, pouring sand back and forth to run the count down, and no deal of level 281 fitted its 70-pour cap; with it, level 281's first deal is proven in 43 pours. The search is then not exhaustive, so on a crab board a failed search answers "out of budget" (`null`), never "unwinnable". Every path it returns is legal (replayed through `pour`). The hint follows it.
+
+**Placement** (`applyMechanics`): after the tide jar and before the lighthouse jar and wet sand, from the same seeded placement stream. One filled jar that could otherwise be poured from: not sealed, frozen, locked, a funnel or a closed clam (narrow jars are dealt empty). It may sit on the hourglass, the sieve or the tide jar. Burial is kept: the crab hides nothing. Its count starts at `every`. A deal with no candidate is re-dealt. Levels that do not roll the crab draw nothing extra.
+
+**Schedule**: `{ "id": "crab", "unlockAt": 281, "every": 3, "ownChance": 0.16, "ownSalt": 7841, "shared": false }`. Level 281 is its debut: the crab alone, two spares, no spare swap (D28). From 282 it comes only from its own roll (D210) and can combine with rolled mechanics and the spare swap. Tall-jar levels never get own rolls, so they never have a crab.
+- **Share (D210).** 92 of levels 281–1000 (**12.8%**, about 1 in 8). Measured over `ownChance` 0.12, 0.13, 0.135, 0.14, 0.145, 0.15, 0.16: 11.0%, 11.1%, 11.3%, 11.5%, 11.7%, 11.9%, 12.8%. It is below the nominal chance because tall-jar levels (1 in 10) get no own rolls and a breather keeps only one special jar.
+- **Levels that changed.** Levels 1–280 are byte-identical: fixture `tests/fixtures/boards-1-320.json` hashes every level 1–320 at commit `4b5b4b3`, before either jar (it matches `boards-1-240.json` on 1–240). Of 281–320 exactly the six crab levels changed: **281, 291, 293, 296, 312, 316**; the other 34 are byte-identical (`tests/unit/core/pins-1-320.test.ts`). Level 281 also loses the wet-sand and tide own rolls it had (D28: a debut rolls no other own roll).
+- **Generation.** Every crab level of 281–440 (281, 291, 293, 296, 312, 316, 322, 347, 356, 365, 381, 409) is built with its crab within 5 attempts, within its pour cap, and its proof replays to a win. One-spare crab levels are harder to prove: of 500–610, 502, 522 and 531 fall back to two spares with the crab kept, and 529, 532 and 562 lose the crab in the fallback chain (open question below). "Most ordinary levels from 500 play with one ordinary spare" is 49 of 77 (64%, limit 60%; 69% without the two jars).
+- **Balance.** The stuck-rate gates are unchanged: 201–300 at 17.6% and 301–400 (every 3rd level) at 32.4%, exactly the rates measured with both own rolls set to 0 (the sampled crab and lighthouse levels, such as 316, 322 and 325, end the same way with or without them). Of the 20 crab levels in 282–500 the simulated player is stuck on 12.
+- **Fallback.** The crab with a classic mechanic falls back first to the classic one alone (two spares), then to none; alone it falls back straight to none.
+
+**Daily, weekly, events (D210)**: not in their rotation (`isClassicMechanic('crab')` is false, no weekly theme names it, event boards have no special jars, D144).
+
+**Player-facing** (sprint 27 K4, K5): a crab on the lid with its count, a step animation when it moves (`crabMoved`, instant under reduced motion), the refusal "The crab is on that jar." when its jar is lifted (the UI must map `'crab'`: it is a source-side reason, so `refusalNote` does not cover it), the label "crab on the lid, moves in N pours", an intro card on 281, the Jar guide and the map badge. Placeholder strings for the card, the map name and the jar state exist from K2.
+
+### 2.10 Lighthouse jar (sprint 27 K1–K3, D206, D208–D210)
+
+*Designed for Strata; no rule, name or art is taken from another game.*
+
+The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321 (D206). It changes **what you see, not what you can do**: its sand is dark, and a beam lights it now and then.
+
+**Rules**
+1. **One lighthouse jar.** `Jar.lighthouse` is `{ every, left, lit }`: the beam sweeps every `every` successful pours on the board, `left` pours from now (1 to `every`); `lit` is true from a sweeping pour until the next successful pour. It is dealt dark: `{ every, left: every, lit: false }`.
+2. **Counting and the sweep (D208).** On every successful pour anywhere, if the jar is not sealed: a lit jar goes dark, `left` counts down by one, and at zero the beam lights it (`lit: true`) and `left` restarts at `every`. With `every` 4 it is lit after pours 4, 8, 12, … and dark again after pours 5, 9, 13, …. `pour()` reports the lit jars in `swept`; the session's pour event carries `swept` when non-empty. A refused pour changes nothing.
+3. **Always pourable.** The lighthouse adds no refusal: a dark jar pours in and out exactly like an ordinary jar, and every other rule (wet sand, the tide, the crab) applies to it unchanged.
+4. **Lit for good once sealed.** A sealed lighthouse jar stops counting (its field is kept as it was) and is always shown. A pour that seals it on what would have been a sweeping pour does not sweep. A complete jar that is still wet (§2.7) is not sealed, so it stays dark until it dries.
+5. **What the player sees (D209).** `isLit(jar, capacity)` is true for any jar without a lighthouse, and for a lighthouse jar while `lit` or sealed. While it is false the UI shows the jar's units as dark sand, **like buried sand**: no colour, no colour-blind pattern, and the screen reader names no colour ("dark, lit in 2 pours"). Buried units stay buried either way (placement never buries any in it). Marks that are not colour (the crab, the count) still show. An empty lighthouse jar keeps counting; there is nothing to hide.
+6. **Order.** The beam runs last of all, after the crab, on the settled board, so "sealed" is judged after drying.
+7. **Board state, not solver state (decided here).** The beam lives on the board, so Undo, Restart, hint plans and saved boards keep it. It is **not** part of `jarKey`/`boardKey`: no rule depends on it, so two boards that differ only in the beam play exactly alike. Keeping it split every state four ways, and a one-spare lighthouse level (566) lost its spare to the solver budget. The solver's path on a lighthouse board is the same as on the same board without it.
+8. **Waiting.** The beam adds no useful waits (it changes no rule), so `usefulMoves` is unchanged. A player may still pour elsewhere to wait for the light: that is a legal pour like any other.
+9. **Shuffle.** A lighthouse jar is a free jar: its sand is re-dealt and its beam is kept (a shuffle is not a pour).
+10. **Hints** still work: a hint is a move, not a colour.
+
+**Placement** (`applyMechanics`): after the crab and before wet sand. One filled plain jar: not sealed, frozen, locked, narrow, a funnel, the hourglass, the sieve, the clam, the tide jar or the crab's jar. Its sand is shown (`hidden: 0`): dark sand hides enough, so it never also buries any. **Wet sand is never placed on it** (wet placement skips it), so the dark jar starts as plain dark sand; wet sand poured in later keeps its rules. A deal with no candidate is re-dealt.
+
+**Schedule**: `{ "id": "lighthouse", "unlockAt": 321, "every": 4, "ownChance": 0.145, "ownSalt": 8329, "shared": false }`. Level 321 is its debut: the lighthouse jar alone, two spares (D28). From 322 it comes only from its own roll (D210).
+- **Share (D210).** 85 of levels 321–1000 (**12.5%**). Measured over `ownChance` 0.12, 0.13, 0.14, 0.145, 0.15, 0.16 (with the crab at 0.16): 10.3%, 11.5%, 12.1%, 12.5%, 12.6%, 14.6%.
+- **Levels that changed.** Levels 321 and up only. Every lighthouse level of 321–440 is built with it, within its cap, and its proof replays to a win.
+- **Balance.** The simulated player sees every colour, so the lighthouse does not change its results; of the 32 lighthouse levels in 322–500 it is stuck on 20 (these are late, mostly one-spare boards). A dark-aware simulated player is an open question below.
+
+**Daily, weekly, events (D210)**: not in their rotation, like the crab.
+
+**Player-facing** (sprint 27 K4, K5): dark sand with a lighthouse mark and the count; the beam sweep when `swept` lists it (instant under reduced motion); colours while `isLit`; the label "dark, lit in N pours"; an intro card on 321, the Jar guide and the map badge. Placeholder strings exist from K2.
+
 ### 2.2 State and Data
 
 - `Jar.cap?: number`, `Jar.frozen?: boolean`, `Jar.lock?: Color`, `Jar.funnel?: boolean`. A thawed or unlocked jar has the field removed, not set to false.
@@ -237,6 +297,9 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 - `LevelSpec.wet?: boolean`: the level rolled wet sand (kept apart from `mechanics`, like the hourglass, the sieve and the clam).
 - `Jar.tide?: { every: number; left: number }` (§2.8): turns every `every` pours, `left` pours from now (1 to `every`); frozen once the jar is sealed. Part of the jar's solver key (`T{left}/{every}`) and of the solver's empty-jar kind. `pour()` returns `turned` (indices of tide jars that turned, empty and one-colour turns included); the session's pour event carries it when non-empty. `riseByOne(list)` is one turn; `hasLiveTide(board)` is true while a turn would change some tide jar's sand.
 - `LevelSpec.tide?: boolean`: the level rolled the tide jar (kept apart from `mechanics`, like the others since the hourglass).
+- `Jar.crab?: { every: number; left: number }` (§2.9): the crab, on the one jar it sits on; it moves every `every` pours, `left` pours from now. Part of the jar's key (`K{left}/{every}`); with a crab `boardKey` keeps jar order. `pour()` returns `crabMoved` (`{ from, to }` or `null`); the session's pour event carries it when present. `crabAt(board)`, `crabStep(board, from)` and `hasCrab(board)` answer the crab questions. New refusal `'crab'`.
+- `Jar.lighthouse?: { every: number; left: number; lit: boolean }` (§2.10): the beam; not part of the jar's key. `pour()` returns `swept` (jars the beam lit); the session's pour event carries it when non-empty. `isLit(jar, capacity)` says whether to show colours.
+- `LevelSpec.crab?: boolean`, `LevelSpec.lighthouse?: boolean`: the level rolled them.
 - `BoardMechanicId` = `MechanicId | 'wet'` since sprint 23 (before that `MechanicId | 'clam'` (every id in `mechanics.list`; the sieve was folded into `MechanicId` with its UI); `hasMechanicCard(id)` is false for the clam until its UI lands; `isClassicMechanic` is false for the hourglass, the sieve and the clam.
 - `pourRefusal(board, from, to)`: why a pour is refused (`PourRefusal`), or `null`; `canPour` is `pourRefusal(...) === null`.
 - `settle(board)`: collects the colours of all sealed jars; if any jar is sealed, drops `frozen` from all jars; drops `lock` from any jar whose lock colour is in that set. Returns the same object when nothing changes.
@@ -278,6 +341,11 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 | Tide turn | `units' = [u₁, u₂, …, u₍ₖ₋₁₎, u₀]` for `units = [u₀, …, u₍ₖ₋₁₎]` (bottom first), the same for `wet`; `k ≤ 1` unchanged | `k` = units in the jar | `[0, 1, 2]` turns to `[1, 2, 0]`; after `k` turns the stack is back as it was (if nothing was poured) |
 | Tide stop | a sealed tide jar keeps `left` for good | | Sealed with `left` 2: it shows 2 ever after (the UI draws it still) |
 | Tide share | its own roll only (`shared: false`): `rng(mixSeed(6173, level)) < 0.14` from 241, not on another mechanic's debut level | `ownChance` 0.14, `ownSalt` 6173 | Measured 90 of levels 241–1000 (11.8%, about 1 in 8, D196, D198) |
+| Crab count | after `n` successful pours from the deal it has stepped (or restarted in place) `floor(n / every)` times, `left = every − (n mod every)`, until its jar seals (then it steps at once and restarts) | `every` (default 3), `n` ≥ 0 | `every` 3: it moves on pours 3, 6, 9, … |
+| Crab step | `to` = the first `i = (at + k) mod J`, `k = 1 … J − 1`, with jar `i` non-empty and not sealed; none: it stays | `at` its jar, `J` jars on the board | Crab on jar 4 of 6, jars 5 and 0 empty or sealed: it goes to jar 1 |
+| Crab share | its own roll only: `rng(mixSeed(7841, level)) < 0.16` from 281, not on another mechanic's debut level, not on tall-jar levels | `ownChance` 0.16, `ownSalt` 7841 | Measured 92 of 281–1000 (12.8%) |
+| Beam | unsealed: lit after pour `n` exactly when `n ≥ every` and `n mod every = 0`; `left = every − (n mod every)`; sealed: always lit, count frozen | `every` (default 4) | `every` 4: lit after pours 4 and 8, dark after 5 |
+| Lighthouse share | its own roll only: `rng(mixSeed(8329, level)) < 0.145` from 321, as the crab | `ownChance` 0.145, `ownSalt` 8329 | Measured 85 of 321–1000 (12.5%) |
 
 **Tuning knobs (hourglass)**
 
@@ -319,6 +387,24 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 | `mechanics.list[tide].ownChance` | 0.14 | 0–0.25 | Its only roll (`shared: false`); 0.14 gives about 1 level in 8 from 241 (D196, D198). Changing it changes which levels 241+ have a tide jar; levels below 241 never change |
 | `mechanics.list[*].shared` | true (false for the tide jar) | true / false | False keeps a mechanic out of the shared draw, so adding it does not thin the others' shares (D198) |
 | `mechanics.list[tide].ownSalt` | 6173 | any, distinct from other salts | Seeds the own roll. Never change it once released |
+
+**Tuning knobs (crab jar)**
+
+| Knob | Default | Safe range | Effect |
+|---|---|---|---|
+| `mechanics.list[crab].unlockAt` | 281 | ≥ 281 (lower would change levels ≤ 280) | Debut level (D206) |
+| `mechanics.list[crab].every` | 3 | 2–5 (at least 1 is enforced) | Pours between steps (D207). 1 moves it every pour (it blocks nothing for long and is noise); above 5 a blocked jar stays blocked for most of a short plan, and proofs get longer |
+| `mechanics.list[crab].ownChance` | 0.16 | 0–0.25 | Its only roll; 0.16 gives 12.8% of 281–1000 (D210). Changing it changes which levels 282+ have a crab |
+| `mechanics.list[crab].ownSalt` | 7841 | any, distinct from other salts | Seeds the own roll. Never change it once released |
+
+**Tuning knobs (lighthouse jar)**
+
+| Knob | Default | Safe range | Effect |
+|---|---|---|---|
+| `mechanics.list[lighthouse].unlockAt` | 321 | ≥ 321 (lower would change levels ≤ 320) | Debut level (D206) |
+| `mechanics.list[lighthouse].every` | 4 | 2–6 (at least 1 is enforced) | Pours between sweeps (D208). 1 lights it after every pour (no mechanic left); above 6 the player plays most of the level blind on that jar |
+| `mechanics.list[lighthouse].ownChance` | 0.145 | 0–0.25 | Its only roll; 0.145 gives 12.5% of 321–1000 (D210) |
+| `mechanics.list[lighthouse].ownSalt` | 8329 | any, distinct from other salts | Seeds the own roll. Never change it once released |
 
 ---
 
@@ -395,6 +481,31 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 - ✅ No jar qualifies for placement: the deal is re-dealt; a level that never gets one falls back (§2.8).
 - ✅ A debut level never gets another mechanic's own roll (wet sand on 241).
 
+**Crab jar (sprint 27 K2/K3)**:
+- ✅ Pouring out of the crab's jar is refused (`'crab'`), pouring in is allowed; a frozen, clam, funnel or sealed source gives its own reason first.
+- ✅ A refused pour does not count; a pour into the crab's jar counts.
+- ✅ The step skips empty and sealed jars and wraps round the row; it may land on a closed clam, a frozen or locked jar, a funnel, the hourglass, the tide jar or the lighthouse jar.
+- ✅ No other jar can take it: it stays and its count restarts. A jar this pour just filled can take it.
+- ✅ The pour that seals the crab's jar makes it step off at once; on the winning pour it may stay (the level is over).
+- ✅ Wet sand: a complete jar whose last wet unit dried on this pour is sealed and skipped (drying runs first); a still-wet complete jar can take it.
+- ✅ Hourglass and tide jar under the crab: they flip and turn as usual; the crab stays on its jar.
+- ✅ Undo restores the crab's jar and count, also across a step; Restart restores the dealt crab.
+- ✅ Jar order is state on a crab board: the same jars in another order are another state.
+- ✅ Every legal pour is useful with a crab; the board is stuck only when no pour is left (e.g. the only pour that would help is out of the crab's jar and nothing else can move).
+- ✅ Shuffle keeps the crab's jar (sand, crab, count) and re-deals the rest.
+- ✅ The solver's crab search is not exhaustive, so a crab board is never reported "unwinnable", only "out of budget".
+- ✅ A debut level never gets another mechanic's own roll (wet sand and the tide jar on 281).
+
+**Lighthouse jar (sprint 27 K2/K3)**:
+- ✅ Dealt dark; lit for exactly the one pour after every 4th successful pour; refused pours do not count; pours into or out of it count.
+- ✅ Dark or lit it pours exactly like an ordinary jar (the same legal moves, refusals and results).
+- ✅ Sealed: lit for good and the count stops, also when it seals on a sweeping pour; a complete but wet jar stays dark until it dries.
+- ✅ An empty lighthouse jar keeps counting.
+- ✅ With the crab, an hourglass and a tide jar on the board, one pour can flip, turn, step and sweep; the crab may stand on the lighthouse jar.
+- ✅ Undo and Restart restore the beam; Shuffle keeps it.
+- ✅ The beam is not solver state, so the solver's answer is the same with or without it.
+- ✅ Placement never buries sand in it and never wets it.
+
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
 - ⚠️ A debut level from 60 up can also get the spare-swap narrow jar, so its new mechanic is not always alone (GA-LG-7; no rule yet).
@@ -413,6 +524,8 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 **Wet sand (§2.7)** also depends on `session-boosters.md` (Undo, Shuffle carry the counts; hint waits) and on the sprint 23 UI tasks W4 (look) and W5 (intro card, help), without which it must not ship.
 
 **Tide jar (§2.8)** also depends on `session-boosters.md` (Undo, Shuffle keep the count; hint waits) and on sprint 24 T4 (look, rise animation) and T5 (intro card, help), without which it must not ship.
+
+**Crab jar (§2.9) and lighthouse jar (§2.10)** also depend on `session-boosters.md` (Undo, Shuffle, hints) and on sprint 27 K4 (look, the crab's step and the beam's sweep) and K5 (intro cards, Jar guide, map badges, the `'crab'` refusal text), without which they must not ship. `feel-audio-ui.md` must treat dark sand like buried sand (D209).
 
 **Design Dependencies**: `pour-rules.md`, `level-generation.md`, `daily-puzzle.md`, `session-boosters.md`, `feel-audio-ui.md`, `save-data.md` (remembers which intro cards were shown).
 
@@ -506,6 +619,27 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 - [ ] T4: wave mark and count on Classic and Realistic boards, a still look when sealed, the rise animation (`turned`, instant under reduced motion), colour-blind patterns moving with their units, the screen-reader label and turn announcement, screenshots at 320 px / 150%.
 - [ ] T5: intro card on level 241, Jar guide entry, map "new jar" badge, tap text (replacing the T2 placeholders).
 
+**Crab jar (sprint 27 K2/K3, core)**, covered in `tests/unit/core/crab.test.ts`:
+- ✅ Config lists the crab at 281 with `every: 3`, `shared: false`, its own `ownChance` and a salt no other mechanic uses.
+- ✅ Pouring out of its jar is refused with `'crab'` (after the jar's own reasons), pouring in is allowed.
+- ✅ Each successful pour counts down; the third moves it to the next non-empty, unsealed jar in index order, wrapping, and restarts the count; `crabMoved` names the step; it stays when no jar can take it.
+- ✅ Sealing its jar makes it step off at once; drying runs first; it may land on a closed clam; an hourglass and a tide jar act under it.
+- ✅ Undo and Restart restore it; board keys differ by its jar, its count and jar order; every legal pour is useful; stuck only with no pour left.
+- ✅ Shuffle keeps its jar; the solver's path replays legally to a win through steps; a failed crab search is `null`, never `false`; following hints on level 281 wins.
+- ✅ Level 281 debuts it alone with two spares; no level ≤ 280 rolls it; placement on a pourable filled jar, drawn after the tide jar; `every` tunable; fallback order.
+- ✅ Every crab level of 281–440 is built with its crab, within its cap, and its proof replays to a win; its share of 281–1000 is 12–13%; ownChance 0 leaves only the debut.
+- ✅ Levels 1–280 byte-identical and of 281–320 only 281, 291, 293, 296, 312, 316 changed (`boards-1-320.json`, hashed at `4b5b4b3`, `tests/unit/core/pins-1-320.test.ts`); two years of dailies, 52 weeks of weekly boards and every event board have no crab.
+- [ ] K4: the crab on the lid with its count, its step animation, both boards. K5: intro card on 281, Jar guide, map badge, the `'crab'` refusal text (replacing the K2 placeholders).
+
+**Lighthouse jar (sprint 27 K2/K3, core)**, covered in `tests/unit/core/lighthouse.test.ts`:
+- ✅ Config lists it at 321 with `every: 4`, `shared: false`, its own `ownChance` and salt.
+- ✅ Dealt dark; lit after pours 4 and 8 and dark after 5 and 9 (`swept` names the sweeps); always pourable exactly like a plain jar; refused pours do not count.
+- ✅ Sealed: lit for good, count frozen (also on a sweeping pour); wet and complete stays dark; an empty one counts on; with the crab, an hourglass and a tide jar every rule acts in one pour.
+- ✅ Undo, Restart and Shuffle keep the beam; the beam is not in the board key; the solver's path is the same with and without it; following hints on 321 wins.
+- ✅ Level 321 debuts it alone with two spares; no level ≤ 320 rolls it; placement on a plain filled jar (not the crab's), nothing buried, never wet, drawn after the crab; `every` tunable; fallback order.
+- ✅ Every lighthouse level of 321–440 is built with it, within its cap, and its proof replays to a win; its share of 321–1000 is 12–13%; dailies, weekly boards and events never have it.
+- [ ] K4: dark sand, the lighthouse mark and count, the beam sweep, both boards; patterns and the screen reader hide dark colours (D209). K5: intro card on 321, Jar guide, map badge.
+
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.
 - [x] Open questions answered (2026-11-08).
@@ -520,6 +654,8 @@ The second mechanic of the 40-level pace (D190): the tide jar debuts on level 24
 Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reported (D21), up to 3 mechanics (D22).
 
 - **Answered (D198):** the tide jar comes only from its own roll (`shared: false`), so wet sand keeps about 1 in 8 and levels 201–240 are unchanged.
+- **Open (sprint 27):** one-spare crab levels often fall back: of 500–610, three keep the crab with two spares and three lose it. A larger step budget for crab levels, or keeping the crab in the fallback before the classic mechanics, would keep it; both change boards from 500, so they wait for the owner.
+- **Open (sprint 27):** the simulated player (`tools/balance/sim-player.ts`) sees a dark lighthouse jar's colours. A dark-aware player would measure the lighthouse's real cost; until then its stuck rates do not show it.
 
 ### Flagged Follow-Up Work
 - [x] Mechanics on tall-jar levels from level 100, with tests (a lock is only placed in a jar missing its key colour; otherwise the deal is re-dealt).
@@ -540,3 +676,4 @@ Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reporte
 | 2026-11-10 | Claude (sprint 13 M3) | Clam jar (D96, D97), §2.6: rules (closed: nothing in or out, sand hidden; every pour counts down; opens for good at zero), the `'clam'` refusal reason, `opened` on the pour result and event, the stuck decision (with a closed clam every legal pour is useful, so stuck only when no pour is left; no new dead end), Shuffle keeps a closed clam, placement after every other mechanic, `opensAfter` knob, the levels 181+ that changed (fixture `boards-141-180.json`), daily and weekly held back until W1, formulas, tuning knobs, edge cases, acceptance criteria; hourglass and sieve shares updated |
 | 2026-11-12 | Claude (sprint 23 W1–W3) | Wet sand (D189, D190), §2.7: per-unit counts (`Jar.wet`), the whole-top-run rule and the `'wet'` refusal (never into an empty jar), drying on every pour (`dried`), sealing only when dry (`isComplete` vs `isSealed`, `sealedDry`), the won-when-complete decision (the winning pour dries the board), waits are useful, Shuffle keeps counts, placement on visible units after every other mechanic, `units`/`debutUnits`/`dryAfter` knobs, the 40-level pace, levels 201+ that changed (fixture `boards-1-200.json`), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |
 | 2026-11-12 | Claude (sprint 24 T1–T3) | Tide jar (D193–D197), §2.8: `Jar.tide` count like the hourglass's, the turn (bottom unit to the top, the rest down one, wet counts with their units), empty and one-colour turns still restart the count (`turned`), a sealed tide jar never turns again (count kept, frozen), the order (tide last, after drying), waits useful while mixed, Shuffle keeps the count, placement after the clam and before wet sand on a plain filled jar shown whole, debut levels roll no other own roll (D28), `every`/`ownChance`/`ownSalt` knobs, levels 241–400 that changed (fixture `boards-1-240.json`), the share (12.4% of 241–1000) and its effect on wet sand (open question), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |
+| 2026-11-13 | Claude (sprint 27 K1–K3) | Crab jar (D206, D207, D210), §2.9: `Jar.crab` count on the jar it sits on, the `'crab'` refusal (out only), the step to the next non-empty, unsealed jar in index order (wrapping; stays when none; steps off a jar that seals), the order (last but the beam, on the settled board), jar order as state, waits useful, Shuffle keeps its jar, the solver's crab search (count-free key, no pure swaps, never "unwinnable"). Lighthouse jar (D206, D208–D210), §2.10: `Jar.lighthouse` beam lit for the one pour after every 4th, lit for good once sealed, always pourable, `isLit`, dark sand shown like buried sand (D209), not solver state. Placement, `every`/`ownChance`/`ownSalt` knobs (0.16 and 0.145: 12.8% and 12.5%), levels 1–280 unchanged and of 281–320 only the six crab levels (fixture `boards-1-320.json`), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |

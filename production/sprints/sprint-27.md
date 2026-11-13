@@ -1,6 +1,6 @@
 # Sprint 27: Crab jar and lighthouse jar (0.24.0)
 
-> **Status: planned (2026-11-13), awaiting the owner's approval.** From the owner interview after 0.23.0 (D206–D211). Target: **0.24.0**, after 0.23.1.
+> **Status: built (2026-11-13), approved by the owner (look approved from screenshots); released as 0.24.0.** Evidence: `production/qa/evidence/sprint-27/`. From the owner interview after 0.23.0 (D206–D211). Target: **0.24.0**, after 0.23.1.
 
 ## Why
 One new jar mechanic every 40 levels from 201 (D190): wet sand at 201, the tide jar at 241. The owner chose two more: the **crab jar** at **281** and the **lighthouse jar** at **321** (D206).
