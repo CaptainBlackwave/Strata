@@ -30,6 +30,19 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.24.0 (2026-11-13): sprint 27, a crab and a lighthouse
+**For players**
+- **The crab jar**, from level 281: a crab sits on one jar's rim. You can pour into that jar but not out of it. Every third pour on the board it scuttles to the next jar that is not empty or sealed; a count shows when.
+- **The lighthouse jar**, from level 321: its sand is dark, with no colour, until the beam sweeps over it on every fourth pour; the colours show until the next pour. It is always pourable and stays lit once sealed.
+- Each appears on about one level in eight from its first level, with an intro card, a Jar guide entry and a map badge. Levels 1-280 are unchanged; daily, weekly and Winter Tide boards have neither.
+- The wooden shelves under the jar rows are removed from the board (players found them distracting; D213). The Home hero keeps its shelf.
+
+**Under the hood**
+- Owner decisions D206-D211 (`production/sprints/sprint-27.md`, `design/gdd/jar-mechanics.md` sections 2.9 and 2.10). New refusal `'crab'`; `crabMoved` and `swept` on the pour event; `isLit` for the UI. Dark sand shows no colour to the patterns or the screen reader either (D209).
+- On crab boards the solver skips pure swaps and ignores the crab's count when remembering positions, so it can return "out of budget" there; every returned path is replayed. Levels 1-320 pinned by `tests/fixtures/boards-1-320.json` (only the six crab levels of 281-320 changed).
+- `boardLook.shelves` in `game-config.json` (false) brings the board shelves back if wanted.
+- Owner kept two choices: sand poured from a dark jar shows its colour as it falls, and three one-spare levels in 500-610 have no crab.
+
 ## 0.23.1 (2026-11-13): night touches
 **For players**
 - Night scenes: the sea band at the foot of the screen has a soft horizon and depth instead of a flat slab; night wood is warmer and lighter. All shelves (Home, Classic and Realistic boards) now show a fine wood grain.

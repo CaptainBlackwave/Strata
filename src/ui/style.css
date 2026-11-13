@@ -638,6 +638,9 @@ body {
     0 calc(var(--shelf-lip) + 4px) 8px -4px color-mix(in srgb, var(--shadow-c) 30%, transparent);
   pointer-events: none;
 }
+.rows.no-shelves {
+  padding-bottom: 0; /* D213: no shelf to make room for */
+}
 #board[data-render='gpu'] .jar-shelf {
   visibility: hidden; /* the canvas draws it, under its jars */
 }

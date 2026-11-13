@@ -37,3 +37,10 @@ describe('wood grain (sprint 26 N1)', () => {
     expect(hero).toContain('var(--wood-grain-lines)');
   });
 });
+
+describe('board shelves are off (D213)', () => {
+  it('boardLook.shelves is false, so the board builds no .jar-shelf and the canvas draws no plank', async () => {
+    const cfg = (await import('../../../../src/config/game-config.json')).default as { boardLook: { shelves: boolean } };
+    expect(cfg.boardLook.shelves).toBe(false);
+  });
+});

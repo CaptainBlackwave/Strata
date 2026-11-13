@@ -214,6 +214,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.24.0',
+        name: 'A crab and a lighthouse',
+        lines: [
+          'From level 281, the crab jar: a crab sits on a jar so you cannot pour out of it, and every third pour it walks to the next jar.',
+          'From level 321, the lighthouse jar: its sand is dark until the beam sweeps over it every fourth pour.',
+          'Each turns up on about one level in eight from its first level.',
+          'The wooden shelves under the jars are gone from the board: thank you for the feedback.',
+        ],
+      },
+      {
         version: '0.23.1',
         name: 'Night touches',
         lines: [

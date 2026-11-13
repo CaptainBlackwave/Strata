@@ -13,8 +13,13 @@ import { TIDE_MS, riseFrom, tideCount } from '../logic/tide';
 import { CRAB_MS, crabCount, scuttleFrames, scuttleFrom } from '../logic/crab';
 import { BEAM_MS, beamCount, beamFrames, isDark } from '../logic/lighthouse';
 import { audio, config, state } from '../state';
+import rawConfig from '../../config/game-config.json';
+
 import { type DomDrawKeys, domDrawKeys, domRedraw } from '../board-gpu/dirty';
 import { gpuCancelFlips, gpuClamOpen, gpuFlip, gpuHop, gpuInvalidate, gpuLayout, gpuNope, gpuSeal, gpuTide } from '../board-gpu/hooks';
+
+/** Whether the board draws a wooden shelf under each row of jars (D213: off after player feedback). */
+const boardShelves: boolean = rawConfig.boardLook.shelves;
 
 /** How long a refused jar keeps its static red outline (ms): presentation only. */
 const NOPE_MS = 700;
@@ -110,7 +115,7 @@ export function buildJars(): void {
 
   boardEl.replaceChildren();
   const rows = document.createElement('div');
-  rows.className = 'rows';
+  rows.className = boardShelves ? 'rows' : 'rows no-shelves';
   // Sprint 25 U4: one row element per layout row, each with its wooden shelf (style.css .jar-shelf).
   // The Realistic board reads the shelves' boxes and draws the planks on its canvas (board-gpu/shelf.ts).
   let row: HTMLElement | null = null;
@@ -118,10 +123,13 @@ export function buildJars(): void {
     if (i % layout.cols === 0) {
       row = document.createElement('div');
       row.className = 'jar-row';
-      const shelf = document.createElement('span');
-      shelf.className = 'jar-shelf';
-      shelf.setAttribute('aria-hidden', 'true');
-      row.appendChild(shelf);
+      // D213: shelves are off by default (player feedback: distracting); boardLook.shelves turns them back on.
+      if (boardShelves) {
+        const shelf = document.createElement('span');
+        shelf.className = 'jar-shelf';
+        shelf.setAttribute('aria-hidden', 'true');
+        row.appendChild(shelf);
+      }
       rows.appendChild(row);
     }
     const jar = document.createElement('button');

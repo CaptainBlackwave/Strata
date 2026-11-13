@@ -959,6 +959,10 @@
     "maxSteps": 4000,
     "surfaceSmooth": 3
   },
+  "boardLook": {
+    "$comment": "Board decoration (owner, D213, after player feedback that the board shelves were distracting): shelves false draws no wooden shelf under the jar rows on either board (Classic .jar-shelf, Realistic canvas planks read from those elements). Home's hero shelf is separate and stays.",
+    "shelves": false
+  },
   "homeHero": {
     "$comment": "The Home hero (sprint 21 H1, D175, D176; design/ux/home.md): the three pre-0.19 logo jars, larger, drawn still with the Realistic renderer (the CSS logo jars on Classic, without WebGL and before the renderer loads). jars: each jar's colour ids, bottom first (terracotta 0, saffron 1, lagoon 3: the logo's red, amber and teal, permuted); the middle jar is the taller one. The only motion is a rare soft sparkle on the sand, never under reduced motion: the first firstSparkleMs after Home shows, then one about every sparkleEveryMs, give or take sparkleJitterMs (seeded by seed); each lasts sparkleMs. Nothing runs between sparkles but one timer.",
     "jars": [[0, 1, 3], [3, 0, 1], [1, 3, 0]],
