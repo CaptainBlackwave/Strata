@@ -452,8 +452,8 @@ export function drawGlow(w: number, h: number, core: string, halo: string, res: 
 
 /** The look of the DOM's hourglass or tide count pill, read from it so it matches the text size. */
 export interface PillLook {
-  /** Which glyph the pill carries: the hourglass's bulbs, or the tide jar's wave (§2.8). Default hourglass. */
-  readonly glyph?: 'hourglass' | 'wave';
+  /** Which glyph the pill carries: the hourglass's bulbs, the tide jar's wave (§2.8) or the lighthouse (§2.10). Default hourglass. */
+  readonly glyph?: 'hourglass' | 'wave' | 'lighthouse';
   readonly width: number;
   readonly height: number;
   readonly bg: string;
@@ -489,6 +489,12 @@ export function drawPill(p: PillLook, res: number): HTMLCanvasElement {
       g.bezierCurveTo(gx + gw * 0.15, y - gh * 0.3, gx + gw * 0.35, y - gh * 0.3, gx + gw * 0.5, y);
       g.bezierCurveTo(gx + gw * 0.65, y + gh * 0.3, gx + gw * 0.85, y + gh * 0.3, gx + gw, y);
     }
+  } else if (p.glyph === 'lighthouse') {
+    // LIGHTHOUSE_MARK: a tapered tower, its lamp room and a pointed cap (filled).
+    g.moveTo(gx + gw * 0.32, gy + gh * 0.94); g.lineTo(gx + gw * 0.4, gy + gh * 0.4); g.lineTo(gx + gw * 0.6, gy + gh * 0.4); g.lineTo(gx + gw * 0.68, gy + gh * 0.94); g.closePath();
+    g.rect(gx + gw * 0.36, gy + gh * 0.21, gw * 0.28, gh * 0.17);
+    g.moveTo(gx + gw * 0.31, gy + gh * 0.21); g.lineTo(gx + gw * 0.5, gy + gh * 0.08); g.lineTo(gx + gw * 0.69, gy + gh * 0.21); g.closePath();
+    g.fill();
   } else {
     g.moveTo(gx, gy); g.lineTo(gx + gw, gy);
     g.moveTo(gx, gy + gh); g.lineTo(gx + gw, gy + gh);

@@ -26,6 +26,8 @@ import type { PillLook } from './mech-art';
 const SELECT_MS = 160;
 /** The `--buried` colour in style.css, used if the custom property can't be read. */
 const BURIED_FALLBACK = '#b9a88d';
+/** The `--dark-sand` colour in style.css (a dark lighthouse jar, §2.10), if it can't be read. */
+const DARK_FALLBACK = '#2e3a4d';
 /** style.css `thaw` and `unlock` keyframes (ms). */
 const THAW_MS = 760;
 const UNLOCK_MS = 800;
@@ -141,10 +143,12 @@ export function lookFor(host: HTMLElement): BoardLook {
 function load(): Promise<void> {
   loading ??= import('./renderer').then(async ({ GpuBoard }) => {
     const neutral = getComputedStyle(document.body).getPropertyValue('--buried').trim() || BURIED_FALLBACK;
+    const dark = getComputedStyle(document.body).getPropertyValue('--dark-sand').trim() || DARK_FALLBACK;
     gpu = await GpuBoard.create({
       host: document.getElementById('app') ?? document.body,
       palette: config.palette.map((c) => hexToRgb(c.hex)),
       neutral: hexToRgb(neutral),
+      dark: hexToRgb(dark),
       paletteHex: config.palette.map((c) => c.hex),
       motion: gpuMotion(),
       reducedMotion,
@@ -310,11 +314,12 @@ export function gpuWinGlow(steps: readonly { readonly jar: number; readonly at: 
   return active && gpu ? gpu.winGlow(steps) : null;
 }
 
-/** The DOM's hourglass or tide count pill on jar `i`, measured so the canvas can carry it in a pour. */
+/** The DOM's hourglass, tide or lighthouse count pill on jar `i`, measured so the canvas can carry it in a pour. */
 function pillOf(i: number): (PillLook & { left: number; top: number }) | null {
   const jar = state.session.board.jars[i];
-  const glyph = jar.hourglass ? 'hourglass' : jar.tide ? 'wave' : null;
-  const el = glyph ? (state.jarEls[i]?.querySelector(glyph === 'hourglass' ? '.hourglass-mark' : '.tide-mark') as HTMLElement | null) : null;
+  const glyph = jar.hourglass ? 'hourglass' : jar.tide ? 'wave' : jar.lighthouse ? 'lighthouse' : null;
+  const sel = { hourglass: '.hourglass-mark', wave: '.tide-mark', lighthouse: '.lh-mark' } as const;
+  const el = glyph ? (state.jarEls[i]?.querySelector(sel[glyph]) as HTMLElement | null) : null;
   if (!el || !glyph) return null;
   const r = el.getBoundingClientRect();
   if (!r.width) return null;
