@@ -77,6 +77,6 @@ describe('the curve (D128-D131)', () => {
     expect(mechanicChance(250, cfg)).toBeCloseTo(0.34);
     expect(mechanicChance(500, cfg)).toBeCloseTo(0.5);
     expect(cfg.mechanics.comboFrom).toBe(250);
-    expect(cfg.mechanics.list.map((m) => m.unlockAt)).toEqual([21, 41, 61, 81, 101, 141, 181, 201, 241]); // the tide jar on 241 (sprint 24, D193)
+    expect(cfg.mechanics.list.map((m) => m.unlockAt)).toEqual([21, 41, 61, 81, 101, 141, 181, 201, 241, 281, 321]); // the tide jar on 241 (sprint 24, D193), the crab jar on 281 and the lighthouse jar on 321 (sprint 27, D206)
   });
 });

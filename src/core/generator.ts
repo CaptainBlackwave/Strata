@@ -118,7 +118,7 @@ export function levelSteps(spec: LevelSpec, config: GameConfig): FallbackStep[] 
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : g.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, g.maxAttempts]);
   // An hourglass, sieve or clam with classic mechanics: try the classic ones alone before dropping them all (D96).
-  if ((spec.hourglass || spec.sieve || spec.clam || spec.wet || spec.tide) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
+  if ((spec.hourglass || spec.sieve || spec.clam || spec.wet || spec.tide || spec.crab || spec.lighthouse) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
   if (hasAnyMechanic(spec)) tries.push([{ ...withoutMechanics(spec), spare: 2 }, g.maxAttempts]);
   const { cap, perAttempt } = stepBudgets(config);
   return tries.map(([s, maxAttempts], i) => {
@@ -301,12 +301,12 @@ function endsSealed(board: Board, result: SolveResult, at: number): boolean {
 
 /** True when a spec asks for any jar mechanic, the hourglass, the sieve and the clam included (D96). */
 export function hasAnyMechanic(spec: LevelSpec): boolean {
-  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true || spec.wet === true || spec.tide === true;
+  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true || spec.wet === true || spec.tide === true || spec.crab === true || spec.lighthouse === true;
 }
 
 /** The spec with every mechanic dropped, the hourglass, the sieve and the clam included: a fallback step's recipe. */
 export function withoutMechanics<S extends LevelSpec>(spec: S): S {
-  const { hourglass: _dropped, sieve: _sieve, clam: _clam, wet: _wet, tide: _tide, ...rest } = spec;
+  const { hourglass: _dropped, sieve: _sieve, clam: _clam, wet: _wet, tide: _tide, crab: _crab, lighthouse: _light, ...rest } = spec;
   return { ...rest, mechanics: [] } as unknown as S;
 }
 
@@ -325,7 +325,9 @@ export function withoutMechanics<S extends LevelSpec>(spec: S): S {
  * counting down from `every`; its sand is shown (`hidden: 0`), since a turn brings the bottom unit
  * to the top. Wet sand (D189, §2.7) is placed last of all (it may land on the tide jar): `units`
  * (`debutUnits` on its unlock level) distinct visible units of filled jars that are not sealed,
- * frozen, locked, a closed clam or a funnel, each wet for `dryAfter` pours, one draw per unit. The stream `rng` is only drawn from for mechanics the
+ * frozen, locked, a closed clam, a funnel or the lighthouse jar, each wet for `dryAfter` pours, one draw per unit.
+ * The crab (D207, §2.9) and then the lighthouse jar (D208, §2.10) are placed after the tide jar and
+ * before wet sand. The stream `rng` is only drawn from for mechanics the
  * spec has, so a spec without the hourglass, the sieve or the clam deals exactly the board it did
  * before they existed.
  */
@@ -378,6 +380,25 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
     const i = pick(filled().filter((k) => plainJar(jars[k])));
     if (i !== undefined) jars[i] = { ...jars[i], hidden: 0, tide: { every, left: every } };
   }
+  if (spec.crab) {
+    // The crab (D207, §2.9) starts on a filled jar that could otherwise be poured from: not sealed,
+    // frozen, locked, a funnel or a closed clam. Any other mechanic's jar may carry it; burial is kept.
+    const tune = config.mechanics.list.find((m) => m.id === 'crab');
+    const every = Math.max(1, Math.floor(tune?.every ?? 3));
+    const pourable = (j: Jar) => !j.funnel && j.clam === undefined && !isSealed(j, board.capacity);
+    const i = pick(filled().filter((k) => pourable(jars[k])));
+    if (i !== undefined) jars[i] = { ...jars[i], crab: { every, left: every } };
+  }
+  if (spec.lighthouse) {
+    // The lighthouse jar (D208, §2.10) is one filled plain jar: not sealed, frozen, locked, narrow, a
+    // funnel or any other mechanic's jar, the crab's included. Its sand is shown (`hidden: 0`): dark
+    // sand is hidden enough, so it never also buries any. Wet sand is never placed on it.
+    const tune = config.mechanics.list.find((m) => m.id === 'lighthouse');
+    const every = Math.max(1, Math.floor(tune?.every ?? 4));
+    const plainJar = (j: Jar) => j.cap === undefined && !j.funnel && !j.hourglass && j.sieve === undefined && j.clam === undefined && !j.tide && !j.crab && !isSealed(j, board.capacity);
+    const i = pick(filled().filter((k) => plainJar(jars[k])));
+    if (i !== undefined) jars[i] = { ...jars[i], hidden: 0, lighthouse: { every, left: every, lit: false } };
+  }
   if (spec.wet) {
     const tune = config.mechanics.list.find((m) => m.id === 'wet');
     const dryAfter = Math.max(1, Math.floor(tune?.dryAfter ?? 5));
@@ -388,7 +409,7 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
     const spots: [number, number][] = [];
     for (const i of filled()) {
       const j = jars[i];
-      if (j.clam !== undefined || j.funnel || isSealed(j, board.capacity)) continue;
+      if (j.clam !== undefined || j.funnel || j.lighthouse || isSealed(j, board.capacity)) continue;
       for (let k = j.hidden; k < j.units.length; k++) spots.push([i, k]);
     }
     for (let n = 0; n < count && spots.length; n++) {
@@ -408,6 +429,8 @@ export function hasMechanics(board: Board, spec: LevelSpec): boolean {
   if (spec.clam && !board.jars.some((j) => j.clam !== undefined)) return false;
   if (spec.wet && !board.jars.some((j) => j.wet !== undefined)) return false;
   if (spec.tide && !board.jars.some((j) => j.tide !== undefined)) return false;
+  if (spec.crab && !board.jars.some((j) => j.crab !== undefined)) return false;
+  if (spec.lighthouse && !board.jars.some((j) => j.lighthouse !== undefined)) return false;
   return spec.mechanics.every((id) =>
     id === 'narrow' ? board.jars.some((j) => j.cap !== undefined)
     : id === 'frozen' ? board.jars.some((j) => j.frozen)

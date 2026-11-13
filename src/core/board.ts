@@ -60,6 +60,42 @@ export interface Jar {
    * of the board, so undo, restart, the solver and hints see it.
    */
   readonly tide?: Tide;
+  /**
+   * Crab jar (D207, design/gdd/jar-mechanics.md §2.9): the crab sits on this jar's lid. Nothing may be
+   * poured out of it (`pourRefusal` gives `'crab'`); sand may still be poured in. At most one jar on
+   * a board holds the crab (the field travels from jar to jar). Every successful pour on the board
+   * counts `left` down; the pour that reaches zero moves the crab to the next jar in the row (index
+   * order, wrapping) that is neither empty nor sealed, and its count restarts at `every`. Part of the
+   * board, so undo, restart, the solver and hints see it.
+   */
+  readonly crab?: Crab;
+  /**
+   * Lighthouse jar (D208, D209, design/gdd/jar-mechanics.md §2.10): its sand is dark (the UI shows
+   * no colours) except for the one pour after every `every`th successful pour on the board, when the
+   * beam lights it (`lit`), and for good once it is sealed. It pours like an ordinary jar: the rules
+   * never depend on seeing. Use `isLit` to know whether to show its colours.
+   */
+  readonly lighthouse?: Lighthouse;
+}
+
+/**
+ * The crab's count (§2.9): it moves every `every` pours, `left` pours from now (1..every). Same shape
+ * as the hourglass's count.
+ */
+export interface Crab {
+  readonly every: number;
+  readonly left: number;
+}
+
+/**
+ * A lighthouse jar's beam (§2.10): it sweeps every `every` pours, `left` pours from now (1..every).
+ * `lit` is true from the pour that sweeps until the next successful pour. Once the jar is sealed the
+ * count stops and `isLit` is true for good.
+ */
+export interface Lighthouse {
+  readonly every: number;
+  readonly left: number;
+  readonly lit: boolean;
 }
 
 /**
@@ -187,11 +223,12 @@ export function isMonochrome(jar: Jar): boolean {
  * `'same'` source is the target; `'missing'` no such jar; `'closed'` either jar is frozen or
  * locked; `'funnel'` the source is a funnel; `'sealed'` the source is sealed; `'empty'` the
  * source is empty; `'sieve'` the target is a sieve and the poured colour is not its band (D96);
- * `'clam'` either jar is a closed clam (D96, §2.6); `'full'` the target has no room; `'wet'` the
+ * `'clam'` either jar is a closed clam (D96, §2.6); `'crab'` the crab sits on the source (D207, §2.9: pouring
+ * into its jar is allowed); `'full'` the target has no room; `'wet'` the
  * moving run holds wet sand and the target is empty (D189, §2.7); `'colour'` the target's top is
  * another colour.
  */
-export type PourRefusal = 'same' | 'missing' | 'closed' | 'clam' | 'funnel' | 'sealed' | 'empty' | 'sieve' | 'full' | 'wet' | 'colour';
+export type PourRefusal = 'same' | 'missing' | 'closed' | 'clam' | 'funnel' | 'sealed' | 'crab' | 'empty' | 'sieve' | 'full' | 'wet' | 'colour';
 
 /**
  * Teardown rule R5: a pour is legal when the source is non-empty, the target has
@@ -210,6 +247,8 @@ export function pourRefusal(board: Board, from: number, to: number): PourRefusal
   if (src.clam !== undefined || dst.clam !== undefined) return 'clam';
   if (src.funnel) return 'funnel';
   if (isSealed(src, board.capacity)) return 'sealed';
+  // The crab (D207, §2.9) blocks pouring out of its jar only.
+  if (src.crab) return 'crab';
   const run = topRun(src);
   if (!run) return 'empty';
   // The sieve's band is checked before room and top colour: it is the jar's own rule.
@@ -253,6 +292,13 @@ export interface PourResult {
    * included, even when the turn changes nothing visible (an empty or one-colour jar); usually empty.
    */
   readonly turned: readonly number[];
+  /**
+   * Where the crab went right after this pour (D207, §2.9), when it changed jars; `null` when it
+   * stayed (its count may still have restarted) or there is no crab.
+   */
+  readonly crabMoved: { readonly from: number; readonly to: number } | null;
+  /** Indices of lighthouse jars the beam lit right after this pour (D208, §2.10); usually empty. */
+  readonly swept: readonly number[];
 }
 
 /**
@@ -288,7 +334,11 @@ export function pour(board: Board, from: number, to: number): PourResult {
     dried.sort((a, b) => a - b);
     next = settle({ capacity: next.capacity, jars: next.jars.map((j) => (j.wet ? withWet(j, undefined) : j)) });
   }
-  return { board: next, moved, color, flipped, opened, dried, turned };
+  // The crab and the beam run last, on the settled board, so "sealed" is judged after drying (§2.9, §2.10).
+  const { jars: crabJars, crabMoved } = tickCrab(next.jars, next.capacity);
+  const { jars: litJars, swept } = tickLighthouses(crabJars, next.capacity);
+  if (litJars !== next.jars) next = { capacity: next.capacity, jars: litJars };
+  return { board: next, moved, color, flipped, opened, dried, turned, crabMoved, swept };
 }
 
 /**
@@ -312,6 +362,88 @@ function tickTides(jars: readonly Jar[], capacity: number): { jars: readonly Jar
     return { ...j, units: riseByOne(j.units), hidden: 0, tide: { every: j.tide.every, left: j.tide.every }, ...(j.wet ? { wet: riseByOne(j.wet) } : {}) };
   });
   return { jars: next, turned };
+}
+
+/** The index of the jar the crab sits on, or -1 when the board has no crab (§2.9). */
+export function crabAt(board: Board): number {
+  return board.jars.findIndex((j) => j.crab !== undefined);
+}
+
+/**
+ * Where the crab would step from jar `from` (§2.9): the next jar after it in the row, wrapping round,
+ * that is neither empty nor sealed. `from` itself is never a step; -1 when no other jar can take it.
+ * Example: `crabStep(board, 3) // 5 when jars 4 is empty`
+ */
+export function crabStep(board: Board, from: number): number {
+  const n = board.jars.length;
+  for (let k = 1; k < n; k++) {
+    const i = (from + k) % n;
+    const j = board.jars[i];
+    if (j.units.length > 0 && !isSealed(j, board.capacity)) return i;
+  }
+  return -1;
+}
+
+/**
+ * The crab rule (D207, §2.9), applied after every successful pour, after every other per-pour rule
+ * and the seal-triggered ones (on the settled board). The crab counts down one; at zero it steps to
+ * `crabStep` and its count restarts at `every`, or, when no other jar can take it, it stays and the
+ * count restarts. A crab whose jar is sealed (by this pour: pours into its jar are allowed) steps off
+ * at once, whatever its count, and its count restarts, so a sealed jar never holds the crab while
+ * another jar can. Returns the same array when there is no crab.
+ */
+function tickCrab(jars: readonly Jar[], capacity: number): { jars: readonly Jar[]; crabMoved: { from: number; to: number } | null } {
+  const at = jars.findIndex((j) => j.crab !== undefined);
+  if (at < 0) return { jars, crabMoved: null };
+  const crab = jars[at].crab!;
+  const sealed = isSealed(jars[at], capacity);
+  const left = crab.left - 1;
+  if (!sealed && left > 0) return { jars: jars.map((j, i) => (i === at ? { ...j, crab: { every: crab.every, left } } : j)), crabMoved: null };
+  const reset: Crab = { every: crab.every, left: crab.every };
+  const to = crabStep({ capacity, jars }, at);
+  if (to < 0) return { jars: jars.map((j, i) => (i === at ? { ...j, crab: reset } : j)), crabMoved: null };
+  const next = jars.map((j, i) => {
+    if (i === to) return { ...j, crab: reset };
+    if (i !== at) return j;
+    const { crab: _gone, ...rest } = j;
+    return rest;
+  });
+  return { jars: next, crabMoved: { from: at, to } };
+}
+
+/** True while the board has a crab (§2.9): every pour moves its count, so a swap can be the wait a plan needs. */
+export function hasCrab(board: Board): boolean {
+  return board.jars.some((j) => j.crab !== undefined);
+}
+
+/**
+ * The beam rule (D208, §2.10), applied after every successful pour, last of all. Each lighthouse jar
+ * that is not sealed goes dark if it was lit, counts down one, and at zero is lit for this one pour
+ * and restarts at `every`. A sealed lighthouse jar's beam stops where it was (`isLit` is true for good).
+ * Returns the same array when there is none.
+ */
+function tickLighthouses(jars: readonly Jar[], capacity: number): { jars: readonly Jar[]; swept: number[] } {
+  const swept: number[] = [];
+  if (!jars.some((j) => j.lighthouse)) return { jars, swept };
+  const next = jars.map((j, i) => {
+    if (!j.lighthouse || isSealed(j, capacity)) return j;
+    const { every } = j.lighthouse;
+    const left = j.lighthouse.left - 1;
+    if (left > 0) return { ...j, lighthouse: { every, left, lit: false } };
+    swept.push(i);
+    return { ...j, lighthouse: { every, left: every, lit: true } };
+  });
+  return { jars: next, swept };
+}
+
+/**
+ * True when the player may see `jar`'s colours (D208, D209, §2.10): any jar that is not a lighthouse
+ * jar, and a lighthouse jar while the beam lights it or once it is sealed. A dark jar's units are
+ * shown like buried sand: no colour, no colour-blind pattern, no colour in the screen reader. Buried
+ * units (`hidden`) stay buried either way. Example: `isLit(jar, board.capacity) // false while dark`.
+ */
+export function isLit(jar: Jar, capacity: number): boolean {
+  return !jar.lighthouse || jar.lighthouse.lit || isSealed(jar, capacity);
 }
 
 /**
@@ -475,6 +607,8 @@ export function usefulMoves(board: Board): Move[] {
   if (hasWet(board)) return legalMoves(board);
   // With a live tide jar any pour brings its turn closer, so a swap is a wait too (D194, §2.8).
   if (hasLiveTide(board)) return legalMoves(board);
+  // With a crab any pour brings its step closer, and where it steps depends on jar order, so a swap is a wait too (D207, §2.9).
+  if (hasCrab(board)) return legalMoves(board);
   return legalMoves(board).filter(({ from, to }) => {
     const src = board.jars[from];
     const dst = board.jars[to];
@@ -563,10 +697,16 @@ export function lostReason(board: Board): LostReason | null {
 
 /**
  * A canonical string for a board, ignoring jar order and burial. An hourglass's count, a
- * sieve's band, a clam's count, wet sand's counts (§2.7) and a tide jar's count (§2.8) are part of their jar's key, so states that differ only in them are not merged (D96). Two boards
+ * sieve's band, a clam's count, wet sand's counts (§2.7), a tide jar's count (§2.8), the crab's count
+ * (§2.9) are part of their jar's key, so states that differ only in them are not merged (D96). With a crab,
+ * jar order is kept (the crab steps in index order). A lighthouse's beam (§2.10) is left out on purpose:
+ * no rule depends on it, so boards that differ only in the beam play exactly alike, and keeping it would
+ * split every state four ways and slow the solver for nothing. Two boards
  * with the same key are equivalent for solving purposes.
  */
 export function boardKey(board: Board): string {
+  // The crab steps in jar order (§2.9), so with a crab the order is part of the state: no sorting.
+  if (hasCrab(board)) return board.jars.map(jarKey).join('|');
   return board.jars
     .map(jarKey)
     .sort()
@@ -580,7 +720,8 @@ export function jarKey(j: Jar): string {
   const clam = j.clam !== undefined ? `C${j.clam}` : '';
   const wet = j.wet ? `W${j.wet.join('.')}` : '';
   const tide = j.tide ? `T${j.tide.left}/${j.tide.every}` : '';
-  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}${wet}${tide}`;
+  const crab = j.crab ? `K${j.crab.left}/${j.crab.every}` : '';
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}${wet}${tide}${crab}`;
   return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 

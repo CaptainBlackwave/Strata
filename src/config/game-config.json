@@ -36,7 +36,9 @@
       { "id": "sieve", "unlockAt": 141, "colorTries": 3 },
       { "id": "clam", "unlockAt": 181, "opensAfter": 6 },
       { "id": "wet", "unlockAt": 201, "units": 3, "debutUnits": 2, "dryAfter": 5, "ownChance": 0.065, "ownSalt": 4421 },
-      { "id": "tide", "unlockAt": 241, "every": 4, "ownChance": 0.14, "ownSalt": 6173, "shared": false }
+      { "id": "tide", "unlockAt": 241, "every": 4, "ownChance": 0.14, "ownSalt": 6173, "shared": false },
+      { "id": "crab", "unlockAt": 281, "every": 3, "ownChance": 0.16, "ownSalt": 7841, "shared": false },
+      { "id": "lighthouse", "unlockAt": 321, "every": 4, "ownChance": 0.145, "ownSalt": 8329, "shared": false }
     ]
   },
   "daily": {

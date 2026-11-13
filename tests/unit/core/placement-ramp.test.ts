@@ -77,7 +77,8 @@ describe('spare-jar swap and generation fallback (D1 revised, sweep regressions)
       if (ordinarySpares === 1) one++;
     }
     expect(one / n).toBeGreaterThan(0.6);
-  }, 60_000);
+    // 120 s since sprint 27: one-spare crab levels spend their whole step budgets before falling back (§2.9).
+  }, 120_000);
   it('tall-jar levels 460 and 470 generate (they threw "No solvable board" before the fallback)', () => {
     expect(() => generateLevel(460, cfg)).not.toThrow();
     expect(() => generateLevel(470, cfg)).not.toThrow();

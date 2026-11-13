@@ -109,9 +109,10 @@ export interface PourBand {
  * so the UI's lookup tables are keyed by this type. The hourglass (D96) joined in sprint 13 M1,
  * the sieve (D96) in sprint 13 M2, the clam (D96) in sprint 13 M3 and wet sand (D189, §2.7) in
  * sprint 23 W5, with its intro card on level 201. The tide jar (D193, §2.8) joined in sprint 24 T2,
- * with its intro card on level 241 (strings from T5).
+ * with its intro card on level 241 (strings from T5). The crab jar (D207, §2.9) and the lighthouse jar
+ * (D208, §2.10) joined in sprint 27 K2, with intro cards on 281 and 321 (strings from K5).
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse';
 
 /**
  * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass,
@@ -119,7 +120,7 @@ export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass'
  * the generator's placement stream and every board from before them stay byte-identical. They are
  * also the daily's Saturday rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide'>;
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse'>;
 
 
 /**
@@ -133,7 +134,7 @@ export type BoardMechanicId = MechanicId;
  * and the clam. Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
  */
 export function isClassicMechanic(id: BoardMechanicId): id is ClassicMechanicId {
-  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet' && id !== 'tide';
+  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet' && id !== 'tide' && id !== 'crab' && id !== 'lighthouse';
 }
 
 /** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
@@ -144,7 +145,7 @@ export const isCardMechanic = isClassicMechanic;
  * the hourglass, the sieve, the clam, wet sand and the tide jar, each when it has one. Example: level
  * 181 gives `['clam']`, level 201 `['wet']`, level 241 `['tide']`.
  */
-export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide'>): MechanicId[] {
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse'>): MechanicId[] {
   return [
     ...spec.mechanics,
     ...(spec.hourglass ? ['hourglass' as const] : []),
@@ -152,6 +153,8 @@ export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 
     ...(spec.clam ? ['clam' as const] : []),
     ...(spec.wet ? ['wet' as const] : []),
     ...(spec.tide ? ['tide' as const] : []),
+    ...(spec.crab ? ['crab' as const] : []),
+    ...(spec.lighthouse ? ['lighthouse' as const] : []),
   ];
 }
 
@@ -166,6 +169,8 @@ export interface MechanicConfig {
   /**
    * Hourglass: it flips every this many successful pours on the board (D96). Default 3.
    * Tide jar: the tide turns every this many successful pours on the board (D194, §2.8). Default 4.
+   * Crab jar: the crab steps every this many successful pours on the board (D207, §2.9). Default 3.
+   * Lighthouse jar: the beam lights it after every this many successful pours on the board (D208, §2.10). Default 4.
    */
   readonly every?: number;
   /**
@@ -220,6 +225,10 @@ export interface LevelSpec {
   readonly wet?: boolean;
   /** One filled jar is a tide jar (D193, sprint 24 T3, §2.8). Absent or false: none. See `ClassicMechanicId`. */
   readonly tide?: boolean;
+  /** The crab sits on one filled jar (D207, sprint 27 K3, §2.9). Absent or false: none. */
+  readonly crab?: boolean;
+  /** One filled jar is a lighthouse jar with dark sand (D208, sprint 27 K3, §2.10). Absent or false: none. */
+  readonly lighthouse?: boolean;
 }
 
 /**
@@ -227,7 +236,7 @@ export interface LevelSpec {
  * the one path every board recipe (levels, the daily, the weekly; sprint 13 W1) uses.
  * Example: `splitMechanics(['sieve']) // { mechanics: [], sieve: true }`.
  */
-export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true; tide?: true } {
+export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true; tide?: true; crab?: true; lighthouse?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
@@ -235,6 +244,8 @@ export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: Cl
     ...(ids.includes('clam') ? { clam: true as const } : {}),
     ...(ids.includes('wet') ? { wet: true as const } : {}),
     ...(ids.includes('tide') ? { tide: true as const } : {}),
+    ...(ids.includes('crab') ? { crab: true as const } : {}),
+    ...(ids.includes('lighthouse') ? { lighthouse: true as const } : {}),
   };
 }
 
@@ -300,7 +311,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
   const br = breather ? config.breather : undefined;
   if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
   const rolled = withOwnRolls(level, pickMechanics(level, config), config);
-  const { mechanics, hourglass, sieve, clam, wet, tide } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
+  const { mechanics, hourglass, sieve, clam, wet, tide, crab, lighthouse } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
@@ -316,7 +327,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}) };
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}), ...(crab ? { crab } : {}), ...(lighthouse ? { lighthouse } : {}) };
 }
 
 /**

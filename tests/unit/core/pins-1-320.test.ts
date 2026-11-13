@@ -34,7 +34,7 @@ describe('levels 1-320 against boards-1-320.json (sprint 27 K3)', () => {
         expect(now, `crab level ${l} is built differently`).not.toBe(h);
       } else expect(now, `level ${l}`).toBe(h);
     }
-    // Before K3 no level has a crab, so this is empty; after K3 it lists the crab levels of 281-320.
-    expect(changed.every((l) => l >= 281 && l <= 320)).toBe(true);
+    // The crab levels of 281-320 (sprint 27 K3): the debut and five from its own roll. No other level changed.
+    expect(changed).toEqual([281, 291, 293, 296, 312, 316]);
   }, 120_000);
 });
