@@ -66,11 +66,14 @@ describe('spare-jar swap and generation fallback (D1 revised, sweep regressions)
       if (l < 81) expect(s.mechanics, `level ${l}`).not.toContain('funnel');
     }
   });
-  it('most ordinary levels from 500 really play with one ordinary spare jar', () => {
+  it('most ordinary levels from 500 really play with one ordinary spare jar', async () => {
     let n = 0;
     let one = 0;
     for (let l = 500; l <= 610; l++) {
       if (levelSpec(l, cfg).challenge || isBreather(l, cfg)) continue;
+      // Yield between levels: one synchronous minute starved Vitest's worker RPC ("Timeout calling
+      // onTaskUpdate") and failed the 0.24.0 deploy although every test passed.
+      await new Promise((r) => setTimeout(r, 0));
       n++;
       const g = generateLevel(l, cfg);
       const ordinarySpares = g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel).length;
