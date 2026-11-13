@@ -206,7 +206,7 @@ function readTokens(host: HTMLElement = boardEl): { glass: GlassLook; ink: strin
   };
   const ink = read('var(--ink)', '#4a3b2c');
   // Sprint 25 U4: the shelf wood, shared with Home's shelf and the Classic board's .jar-shelf.
-  const wood: ShelfWood = { top: read('var(--wood-top)', SHELF_WOOD.top), bottom: read('var(--wood-bottom)', SHELF_WOOD.bottom), lip: read('var(--wood-lip)', SHELF_WOOD.lip) };
+  const wood: ShelfWood = { top: read('var(--wood-top)', SHELF_WOOD.top), bottom: read('var(--wood-bottom)', SHELF_WOOD.bottom), lip: read('var(--wood-lip)', SHELF_WOOD.lip), grain: read('var(--wood-grain)', SHELF_WOOD.grain!) };
   probe.remove();
   return { glass: { ...glass, shadow: glass.night ? 'rgb(0,0,0)' : 'rgb(60,44,24)' }, ink, wood };
 }

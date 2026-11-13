@@ -3,7 +3,7 @@
 // with board screens on both Classic (?board=dom) and Realistic. Then builds contact sheets.
 //
 // Usage: npm run build && node production/qa/evidence/sprint-25/audit/capture.cjs
-// Env: OUT (output folder, default this one), PORT (default 5191), ONLY (comma-separated screen names), SHEETS=0 to skip contact sheets,
+// Env: OUT (output folder, default this one), SCENES (comma-separated scene ids, default midday,moonlit), PORT (default 5191), ONLY (comma-separated screen names), SHEETS=0 to skip contact sheets,
 //      JOBS (parallel pages, default 4).
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const http = require('http');
@@ -24,7 +24,10 @@ const VIEWPORTS = [
   { tag: '390', width: 390, height: 844, text: 100 },
   { tag: '320t150', width: 320, height: 700, text: 150 },
 ];
-const SCENES = [{ tag: 'light', id: 'midday' }, { tag: 'dark', id: 'moonlit' }];
+// Sprint 26: SCENES=midday,moonlit,harvestmoon picks the scenes (night ones are tagged dark-<id> after the first).
+const SCENES = process.env.SCENES
+  ? process.env.SCENES.split(',').map((id, i, all) => ({ tag: ['midday', 'dawn', 'sunset', 'seafog', 'wintersnow', 'highsummer', 'springblossom', 'autumnshore', 'rainbowafterrain', 'softrain'].includes(id.trim()) ? (all.indexOf(id) === 0 ? 'light' : `light-${id.trim()}`) : (id.trim() === 'moonlit' ? 'dark' : `dark-${id.trim()}`), id: id.trim() }))
+  : [{ tag: 'light', id: 'midday' }, { tag: 'dark', id: 'moonlit' }];
 const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
 
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/config/game-config.json'), 'utf8'));
@@ -36,7 +39,7 @@ const ONB = { visits: 40, installAsks: 2, installShown: true, offlineNoticed: tr
 
 function richSave(date, scene) {
   const yesterday = new Date(Date.parse(`${date}T12:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
-  const owned = [...new Set([...allScenes.slice(0, 6), 'midday', 'moonlit'])];
+  const owned = [...new Set([...allScenes.slice(0, 6), 'midday', 'moonlit', scene])];
   return {
     level: 250, tutorialDone: true, seenWhatsNew: '9.9.9', seenMechanics: MECH,
     best: Object.fromEntries(Array.from({ length: 249 }, (_, i) => [String(i + 1), 20 + (i % 17)])),
