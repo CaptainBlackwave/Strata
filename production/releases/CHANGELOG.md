@@ -30,6 +30,16 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.24.1 (2026-11-13): sprint 28, the sieve is a goal
+**For players**
+- **The sieve jar is now a goal**: a level with a sieve ends only when the sieve is full and sealed in its colour. Before, a level could be won with the sieve left empty (player feedback on level 145).
+- Sealing the sieve's colour in another jar now shows "<colour> was sealed outside its sieve: Undo or Restart."
+- The sieve wears a goal ring in its own colour on its base, which fills in with a tick once it is sealed. The intro card, the Jar guide and the screen reader say "fill it with <colour> to finish".
+- 31 of the 74 levels with a sieve have a new board so they can be won the new way; 5 more now have no sieve. No level without a sieve changed.
+
+**Under the hood**
+- Owner decisions D214-D217 (`production/sprints/sprint-28.md`, `design/gdd/jar-mechanics.md` section 2.5). `isWon` requires every sieve complete in its band (`isSieveDone`); new `LostReason` `'sieve'` (`sieveLostColor`). The changed levels and fallbacks are listed in the GDD; only sieve boards changed in the level, daily and weekly fixtures.
+
 ## 0.24.0 (2026-11-13): sprint 27, a crab and a lighthouse
 **For players**
 - **The crab jar**, from level 281: a crab sits on one jar's rim. You can pour into that jar but not out of it. Every third pour on the board it scuttles to the next jar that is not empty or sealed; a count shows when.

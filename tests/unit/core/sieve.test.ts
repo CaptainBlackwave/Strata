@@ -177,7 +177,7 @@ describe('solver and hint with the sieve', () => {
 });
 
 describe('sieve colour choice (proveDeal)', () => {
-  // Jar 0 holds [0, 1]. Banded 1 the proof ends with the sieve empty; banded 0 it ends sealed.
+  // Jar 0 holds [0, 1]. Banded 1 it can only end with the sieve empty (not a win, D214); banded 0 it ends sealed.
   const dealt = (color: number) => withSieve(2, [[0, 1], [1, 0], []], 0, color);
 
   it('prefers a colour whose proof ends with the sieve sealed as that colour', () => {
@@ -189,10 +189,10 @@ describe('sieve colour choice (proveDeal)', () => {
     expect(isSealed(s.jars[0], 2)).toBe(true);
   });
 
-  it('with one try the dealt colour is kept', () => {
+  it('with one try the dealt colour is kept, and a band that can only end with the sieve empty is not a proof (D214)', () => {
     const p = proveDeal(dealt(1), 50_000, Infinity, 2, 1);
     expect(p.board.jars[0].sieve).toBe(1);
-    expect(p.result.solvable).toBe(true);
+    expect(p.result.solvable).toBe(false);
   });
 
   it('a board without a sieve is proved exactly as before (one solve)', () => {

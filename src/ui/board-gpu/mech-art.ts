@@ -452,8 +452,12 @@ export function drawGlow(w: number, h: number, core: string, halo: string, res: 
 
 /** The look of the DOM's hourglass or tide count pill, read from it so it matches the text size. */
 export interface PillLook {
-  /** Which glyph the pill carries: the hourglass's bulbs, the tide jar's wave (§2.8) or the lighthouse (§2.10). Default hourglass. */
-  readonly glyph?: 'hourglass' | 'wave' | 'lighthouse';
+  /**
+   * Which glyph the pill carries: the hourglass's bulbs, the tide jar's wave (§2.8), the lighthouse
+   * (§2.10) or the sieve's goal ring (D216, §2.5; a round badge with no text, always open in a pour,
+   * since a sealed sieve is never poured from). Default hourglass.
+   */
+  readonly glyph?: 'hourglass' | 'wave' | 'lighthouse' | 'goal';
   readonly width: number;
   readonly height: number;
   readonly bg: string;
@@ -473,6 +477,15 @@ export function drawPill(p: PillLook, res: number): HTMLCanvasElement {
   g.strokeStyle = p.border;
   g.lineWidth = 1.5;
   g.stroke();
+  if (p.glyph === 'goal') {
+    // SIEVE_GOAL, open: a ring outline in the band colour, in the badge's middle (its r 4.2 of a 12 box, at 1.7em in a 2em badge).
+    g.strokeStyle = p.fg;
+    g.lineWidth = 2 * (p.height * 0.85) / 12;
+    g.beginPath();
+    g.arc(p.width / 2, p.height / 2, p.height * 0.85 * (4.2 / 12), 0, Math.PI * 2);
+    g.stroke();
+    return c;
+  }
   const wave = p.glyph === 'wave';
   // The glyph: two bulbs and a waist, as HOURGLASS_MARK, or two wave lines, as TIDE_MARK.
   const gh = p.height * (wave ? 0.5 : 0.62);

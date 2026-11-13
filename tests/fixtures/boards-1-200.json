@@ -1,5 +1,5 @@
 {
- "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-200 as built before wet sand (sprint 23 W3, from commit 58efb98). Wet sand unlocks at 201, so levels 1-200 must never change.",
+ "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-200 as built before wet sand (sprint 23 W3, from commit 58efb98). Wet sand unlocks at 201, so levels 1-200 must never change. Re-hashed on purpose for the sieve goal (sprint 28 S1, D214): only the sieve levels whose board changed, 141, 158; every other level is unchanged.",
  "hashes": {
   "1": "2ed94f4c",
   "2": "3750eaba",
@@ -141,7 +141,7 @@
   "138": "b5149657",
   "139": "8c45bfb3",
   "140": "c6001860",
-  "141": "4e2ff511",
+  "141": "60f0c9d8",
   "142": "1489c3a5",
   "143": "c43e397d",
   "144": "aff16329",
@@ -158,7 +158,7 @@
   "155": "db737338",
   "156": "4b743f33",
   "157": "1b4b56c5",
-  "158": "9b3b5004",
+  "158": "a9800a63",
   "159": "985e9447",
   "160": "623ed077",
   "161": "a5daea8b",

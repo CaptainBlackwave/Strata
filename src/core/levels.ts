@@ -175,8 +175,8 @@ export interface MechanicConfig {
   readonly every?: number;
   /**
    * Sieve: how many band colours the generator may prove on one deal, starting from the one the
-   * placement stream drew (D96, §2.5). It keeps the first whose proof ends with the sieve sealed
-   * in its colour, else the first proven one. Default 3; 1 keeps the drawn colour.
+   * placement stream drew (D96, §2.5). It keeps the first proven within the pour cap; a proof is a
+   * win, which ends with the sieve sealed in its colour (D214). Default 3; 1 keeps the drawn colour.
    */
   readonly colorTries?: number;
   /**

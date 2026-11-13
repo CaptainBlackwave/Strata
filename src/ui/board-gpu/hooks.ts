@@ -314,11 +314,11 @@ export function gpuWinGlow(steps: readonly { readonly jar: number; readonly at: 
   return active && gpu ? gpu.winGlow(steps) : null;
 }
 
-/** The DOM's hourglass, tide or lighthouse count pill on jar `i`, measured so the canvas can carry it in a pour. */
+/** The DOM's hourglass, tide or lighthouse count pill, or the sieve's goal mark (D216), on jar `i`, measured so the canvas can carry it in a pour. */
 function pillOf(i: number): (PillLook & { left: number; top: number }) | null {
   const jar = state.session.board.jars[i];
-  const glyph = jar.hourglass ? 'hourglass' : jar.tide ? 'wave' : jar.lighthouse ? 'lighthouse' : null;
-  const sel = { hourglass: '.hourglass-mark', wave: '.tide-mark', lighthouse: '.lh-mark' } as const;
+  const glyph = jar.hourglass ? 'hourglass' : jar.tide ? 'wave' : jar.lighthouse ? 'lighthouse' : jar.sieve !== undefined ? 'goal' : null;
+  const sel = { hourglass: '.hourglass-mark', wave: '.tide-mark', lighthouse: '.lh-mark', goal: '.sieve-goal' } as const;
   const el = glyph ? (state.jarEls[i]?.querySelector(sel[glyph]) as HTMLElement | null) : null;
   if (!el || !glyph) return null;
   const r = el.getBoundingClientRect();

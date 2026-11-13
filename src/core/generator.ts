@@ -2,7 +2,7 @@
  * Seeded level generator that only returns solver-proven boards.
  * Implements design/game-brief.md MVP 2.
  */
-import { type Board, type Color, type Jar, isSealed, makeBoard, pour } from './board';
+import { type Board, type Color, type Jar, isSealed, makeBoard } from './board';
 import { type GameConfig, type LevelSpec, levelSpec } from './levels';
 import { type Rng, createRng, mixSeed, shuffle } from './rng';
 import { type SolveResult, solve } from './solver';
@@ -259,9 +259,10 @@ export interface DealProof {
  * Proves a dealt board with the solver (`budget` states in all). A board without a sieve is
  * solved once, exactly as before the sieve. A board with one chooses its band colour (D96,
  * §2.5): it tries `tries` colours of the `colors` on the board, from the dealt band onward
- * (band, band + 1, … wrapping), and returns the first whose proof fits `maxPours` and ends
- * with the sieve sealed in its colour; failing that the first proof that fits; failing that
- * the shortest proof; failing that the dealt band's result. Every try spends from `budget`.
+ * (band, band + 1, … wrapping), and returns the first whose proof fits `maxPours`; failing that
+ * the shortest proof; failing that the dealt band's result. A proof is a win, and a win has the
+ * sieve sealed in its band (D214), so every proven band ends with the sieve sealed. Every try
+ * spends from `budget`.
  * Example: `proveDeal(board, 40_000, 70, spec.colors, 3).board.jars[i].sieve`
  */
 export function proveDeal(board: Board, budget: number, maxPours: number, colors: number, tries: number): DealProof {
@@ -273,7 +274,6 @@ export function proveDeal(board: Board, budget: number, maxPours: number, colors
   const dealt = board.jars[at].sieve!;
   let nodes = 0;
   let first: DealProof | undefined; // the dealt band's own result, whatever it is
-  let fits: DealProof | undefined; // the first proof within maxPours
   let shortest: DealProof | undefined; // the shortest proof over maxPours
   for (let k = 0; k < Math.min(tries, colors) && nodes < budget; k++) {
     const banded: Board = k === 0 ? board : { capacity: board.capacity, jars: board.jars.map((j, i) => (i === at ? { ...j, sieve: (dealt + k) % colors } : j)) };
@@ -282,21 +282,10 @@ export function proveDeal(board: Board, budget: number, maxPours: number, colors
     const proof: DealProof = { board: banded, result, nodes };
     first ??= proof;
     if (result.solvable !== true) continue;
-    if (result.path.length > maxPours) {
-      if (!shortest || result.path.length < shortest.result.path.length) shortest = proof;
-      continue;
-    }
-    if (endsSealed(banded, result, at)) return { ...proof, nodes };
-    fits ??= proof;
+    if (result.path.length <= maxPours) return proof;
+    if (!shortest || result.path.length < shortest.result.path.length) shortest = proof;
   }
-  return { ...(fits ?? shortest ?? first!), nodes };
-}
-
-/** True when replaying a winning `result` on `board` leaves jar `at` sealed. */
-function endsSealed(board: Board, result: SolveResult, at: number): boolean {
-  let b = board;
-  for (const m of result.path) b = pour(b, m.from, m.to).board;
-  return isSealed(b.jars[at], b.capacity);
+  return { ...(shortest ?? first!), nodes };
 }
 
 /** True when a spec asks for any jar mechanic, the hourglass, the sieve and the clam included (D96). */

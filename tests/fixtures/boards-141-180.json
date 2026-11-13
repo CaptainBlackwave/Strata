@@ -1,7 +1,7 @@
 {
- "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 141-180 as built before the clam jar (sprint 13 M3, from commit a30a5a0, the hourglass and sieve already in). The clam unlocks at 181, so levels 141-180 must never change. Re-baselined on purpose by the gentler curve (D105-D112, 0.13.1, production/qa/gentle-curve/): boards from level 12 changed; levels 1-11 kept their hashes. Re-baselined on purpose by the gentler curve (sprint 15, D128-D131, 0.14.1, production/qa/sprint-15/): boards from level 30 changed; levels 1-29 kept their hashes.",
+ "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 141-180 as built before the clam jar (sprint 13 M3, from commit a30a5a0, the hourglass and sieve already in). The clam unlocks at 181, so levels 141-180 must never change. Re-baselined on purpose by the gentler curve (D105-D112, 0.13.1, production/qa/gentle-curve/): boards from level 12 changed; levels 1-11 kept their hashes. Re-baselined on purpose by the gentler curve (sprint 15, D128-D131, 0.14.1, production/qa/sprint-15/): boards from level 30 changed; levels 1-29 kept their hashes. Re-hashed on purpose for the sieve goal (sprint 28 S1, D214): only the sieve levels whose board changed, 141, 158; every other level is unchanged.",
  "hashes": {
-  "141": "4e2ff511",
+  "141": "60f0c9d8",
   "142": "1489c3a5",
   "143": "c43e397d",
   "144": "aff16329",
@@ -18,7 +18,7 @@
   "155": "db737338",
   "156": "4b743f33",
   "157": "1b4b56c5",
-  "158": "9b3b5004",
+  "158": "a9800a63",
   "159": "985e9447",
   "160": "623ed077",
   "161": "a5daea8b",

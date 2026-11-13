@@ -43,6 +43,16 @@ export const HOURGLASS_MARK =
 export const SIEVE_BAND = '<span class="sieve-band" aria-hidden="true"><span class="sieve-mesh"></span></span>';
 
 /**
+ * The sieve's goal mark (D216, §2.5): a small round badge on the jar's base, where the hourglass pill
+ * sits (a sieve is never the hourglass, a tide jar or a lighthouse jar). While the sieve is open it
+ * is a ring, an outline; once the sieve is sealed in its band the ring fills in and carries a tick
+ * (`.jar.sieve.sealed`). Drawn for Strata: one circle and one tick path.
+ */
+export const SIEVE_GOAL =
+  '<span class="sieve-goal" aria-hidden="true"><svg viewBox="0 0 12 12" focusable="false">' +
+  '<circle class="sg-ring" cx="6" cy="6" r="4.2"/><path class="sg-tick" d="M3.9 6.2l1.5 1.5 2.8-3.1"/></svg></span>';
+
+/**
  * The clam jar's shell (D96, §2.6): while the clam is closed a ribbed shell covers the glass, so
  * its sand cannot be seen, and the pours left until it opens sit on the shell in the empty `<b>`.
  * Drawn for Strata: a fan of ribs and growth rings from a hinge at the jar's foot, its crown domed.
@@ -145,6 +155,7 @@ export function buildJars(): void {
       LIGHTHOUSE_MARK +
       CRAB_MARK +
       SIEVE_BAND +
+      SIEVE_GOAL +
       CLAM_SHELL;
     jar.addEventListener('click', () => tapHandler(i));
     row!.appendChild(jar);
@@ -290,6 +301,7 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
   if (jar.sieve !== undefined) {
     const band = el.querySelector('.sieve-band') as HTMLElement;
     band.style.setProperty('--band', config.palette[jar.sieve].hex);
+    (el.querySelector('.sieve-goal') as HTMLElement).style.setProperty('--band', config.palette[jar.sieve].hex);
     band.className = `sieve-band${state.save.settings.patterns ? ` pat-${jar.sieve % PATTERNS}` : ''}`;
   }
   // A closed clam's shell and count (D96, §2.6). Undo of the opening pour closes it again here.

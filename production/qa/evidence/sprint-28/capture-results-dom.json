@@ -1,0 +1,48 @@
+[
+  {
+    "board": "dom",
+    "vp": "412",
+    "shot": "open+sealed",
+    "status": "playing",
+    "sealedClass": true,
+    "errors": []
+  },
+  {
+    "board": "dom",
+    "vp": "412",
+    "shot": "dead-end",
+    "pours": 16,
+    "lost": "sieve",
+    "text": "Coral was sealed outside its sieve: Undo or Restart.",
+    "errors": []
+  },
+  {
+    "board": "dom",
+    "vp": "412",
+    "shot": "intro+guide",
+    "errors": []
+  },
+  {
+    "board": "dom",
+    "vp": "320t150",
+    "shot": "open+sealed",
+    "status": "playing",
+    "sealedClass": true,
+    "errors": []
+  },
+  {
+    "board": "dom",
+    "vp": "320t150",
+    "shot": "dead-end",
+    "pours": 16,
+    "lost": "sieve",
+    "text": "Coral was sealed outside its sieve: Undo or Restart.",
+    "errors": []
+  },
+  {
+    "board": "dom",
+    "vp": "320t150",
+    "shot": "intro+guide",
+    "errors": []
+  }
+]

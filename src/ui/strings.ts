@@ -185,7 +185,7 @@ const en = {
     locked: { name: 'Locked lid', rule: 'Closed until a jar of the lock\u2019s colour is sealed.', tap: 'Locked: seal a jar of the lock\u2019s colour to open it.' },
     funnel: { name: 'One-way funnel', rule: 'You can pour in, but never out. Fill it with a single colour!', tap: 'Funnel: pour in only. Nothing comes out.' },
     hourglass: { name: 'Hourglass jar', rule: 'Every third pour on the board, the hourglass flips: its sand turns upside down. The number on it counts the pours left.', tap: 'Hourglass: it flips after every third pour.' },
-    sieve: { name: 'Sieve jar', rule: 'A sieve jar only lets its own colour in: the colour of its band. Anything can be poured out.', tap: 'Sieve: only the colour of its band goes in.' },
+    sieve: { name: 'Sieve jar', rule: 'A sieve jar only lets its own colour in: the colour of its band. Fill it with that colour to finish: the level ends only when the sieve is sealed. Anything can be poured out.', tap: 'Sieve: only the colour of its band goes in. Fill it with that colour to finish.' },
     clam: { name: 'Clam jar', rule: 'A clam jar stays shut under its shell until the count runs out: every pour on the board counts down. Then it opens and plays like any jar.', tap: 'Clam: shut until the count on its shell runs out.' },
     wet: { name: 'Wet sand', rule: 'Wet sand is darker, with a drop and a number on it. It only goes onto sand of its own colour, never into an empty jar. Every pour on the board dries it a little: at 0 it is ordinary sand. A full jar seals once its sand is dry.', tap: 'Wet sand: only onto its own colour. It dries as you pour.' },
     /** The tide jar (sprint 24 T5, D194, D195; §2.8): its intro card, Jar guide entry and tap text. */
@@ -213,6 +213,16 @@ const en = {
     /** The mark beside the newest posting. */
     latest: 'Latest',
     releases: [
+      {
+        version: '0.24.1',
+        name: 'The sieve is a goal',
+        lines: [
+          'A level with a sieve jar now ends only when the sieve is full and sealed in its colour.',
+          'The sieve wears a ring in its colour that fills in with a tick once it is sealed.',
+          'If its colour gets sealed in another jar, the board tells you, so you can Undo or Restart.',
+          'Some levels with a sieve have a new board so they can be won this way.',
+        ],
+      },
       {
         version: '0.24.0',
         name: 'A crab and a lighthouse',
@@ -512,8 +522,8 @@ const en = {
     funnel: 'one-way funnel',
     /** An hourglass jar's state (D96): `left` is the pours until its next flip (1..every). */
     hourglass: (left: number) => (left === 1 ? 'hourglass, flips after the next pour' : `hourglass, flips in ${left} pours`),
-    /** A sieve jar's state (D96): `c` is its band colour's name. */
-    sieve: (c: string) => `sieve, ${c} only`,
+    /** A sieve jar's state (D96, D216): `c` is its band colour's name. A sealed sieve says only its band (the label adds "sealed"). */
+    sieve: (c: string, sealed = false) => (sealed ? `sieve, ${c} only` : `sieve, ${c} only, fill it with ${c} to finish`),
     /** A closed clam's state (D96, §2.6): `left` is the pours until it opens (1..opensAfter). An open clam has no state. */
     clam: (left: number) => (left === 1 ? 'clam, closed, opens after the next pour' : `clam, closed, opens in ${left} pours`),
     /** A full jar of one colour that waits for its wet sand to dry before it seals (D189, §2.7). */
@@ -578,6 +588,8 @@ const en = {
   jarSealedFull: 'That jar is sealed',
   hintBudget: 'Couldn\u2019t find a hint this time. Try again, or shuffle.',
   cantWin: 'This board can\u2019t be won now: Undo or Restart.',
+  /** The sieve dead end (D215): its band colour was sealed in another jar. `colour` is the band colour's name. */
+  sieveLost: (colour: string) => `${colour.charAt(0).toUpperCase()}${colour.slice(1)} was sealed outside its sieve: Undo or Restart.`,
   hintToast: (from: number, to: number) => `Hint: pour jar ${from} into jar ${to}`,
   hintFrom: 'From',
   hintTo: 'To',
