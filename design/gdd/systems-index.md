@@ -265,7 +265,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D201 | Visual refresh | Direction **B, Beach-hut tactile**: paper cards with a pressable lip, bold headings, a tide-colour band per area, duotone icons, wooden shelves under the jars, on one shared token set (owner, from the mock-ups in `prototypes/ui-refresh/`, 2026-11-12) | feel-audio-ui | built |
 | D202 | UI audit | Fix every high and medium issue in `production/qa/evidence/sprint-25/audit/audit.md` (owner, 2026-11-12) | feel-audio-ui | built |
 | D203 | Release | The refresh ships as one release, **0.23.0** (owner, 2026-11-12) | — | built |
-| D204 | Night polish | Fix 0.23.0's leftovers as 0.23.1: night sea and wood, the toast over the bottom shelf at 320/150%, the Today band at night (owner, 2026-11-13) | feel-audio-ui | planned |
+| D204 | Night polish | Fix 0.23.0's leftovers as 0.23.1: night sea and wood, the toast over the bottom shelf at 320/150%, the Today band at night (owner, 2026-11-13) | feel-audio-ui | built |
 | D205 | Phone check | Update the phone checklist for 0.23's look (owner, 2026-11-13) | — | built (`production/qa/phone-checklist-0.23.md`) |
 | D206 | Next jars | The **crab jar** (debut 281) and the **lighthouse jar** (debut 321), keeping one every 40 levels (owner, 2026-11-13) | jar-mechanics | planned |
 | D207 | Crab rule | The crab blocks pouring out of its jar (pouring in is allowed) and every 3 pours moves to the next unsealed, non-empty jar in the row, wrapping round (owner, 2026-11-13) | jar-mechanics, pour-rules | planned |
