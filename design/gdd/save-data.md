@@ -16,6 +16,14 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 > **Sprint 6 (2026-11-08):** the restore reset (F6) is *decided 2026-11-08, built in sprint 6*.
 > Mark it "built in sprint 6" once it lands.
 
+> **Accounts and cloud save (2026-11-19, D232–D238, D246; ADR-0002, proposed).** In the monetized game
+> **the server is the truth** (D233). Every install has an anonymous server account, and the local save
+> becomes a cache that syncs automatically and merges field by field (D234, D235). The **save code is
+> removed** from the new game (D237, superseding D16 there). The frozen github.io site keeps it, and the new
+> game imports an old `STRATA1` code once per account for 14 days after launch, accepted as-is (D246).
+> Daily, streak and daily-goal progress count only online (D236). This document still describes today's
+> local-only save until ADR-0002 is accepted and built.
+
 ---
 
 ## 1. Overview
@@ -96,7 +104,7 @@ verified-by: pending review (export/import D16 decided 2026-11-08; restore reset
 ### 2.3 Integration Points
 
 - **Depends on**: `economy.md` (the starting wallet), `player-profile.md` (the profile repair after load and restore needs its catalog and progress rules).
-- **Depended on by**: `level-generation.md` (`level`), `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md` (settings, tutorial flag, Save code sheet), `player-profile.md` (adds the `profile` and `stats` fields), `badges.md` (adds `badges`, `scenesPlayed` and `stats.jarsSealed`, repaired field by field; sprint 11), `weekly-set.md` (adds `weekly { week, cleared, pours }`, repaired field by field, reset by a new week; sprint 11 W2), `jar-styles.md` (adds `styles { owned, worn }`, repaired field by field against the catalog; sprint 12 S2).
+- **Depended on by**: `monetization.md` (old-code import, founder gift; D246), ADR-0002 (server copy and merge), `level-generation.md` (`level`), `economy.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `jar-mechanics.md`, `session-boosters.md`, `feel-audio-ui.md` (settings, tutorial flag, Save code sheet), `player-profile.md` (adds the `profile` and `stats` fields), `badges.md` (adds `badges`, `scenesPlayed` and `stats.jarsSealed`, repaired field by field; sprint 11), `weekly-set.md` (adds `weekly { week, cleared, pours }`, repaired field by field, reset by a new week; sprint 11 W2), `jar-styles.md` (adds `styles { owned, worn }`, repaired field by field against the catalog; sprint 12 S2).
 
 ---
 

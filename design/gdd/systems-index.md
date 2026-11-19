@@ -40,6 +40,7 @@ Strata is a phone-first sort puzzle: the player pours layers of sand between jar
 | 16 | Sharing | Meta | Full Vision | Designed and signed off (D116–D124), building in sprint 14 | [sharing.md](sharing.md) | 6, 7, 8, 9, 11, 12, 13, 14, 15 |
 | 17 | Daily goals | Progression | Full Vision | Implemented (sprint 16, D137) | [daily-goals.md](daily-goals.md) | 4, 5, 6, 10, 12, 14 |
 | 18 | Seasonal events | Progression | Full Vision | Implemented (sprint 17, D141–D147) | [events.md](events.md) | 5, 6, 10, 13, 14, 15 |
+| 19 | Monetization | Economy | Launch | Designed, draft for owner review (D218–D254) | [monetization.md](monetization.md) | 5, 8, 10, 11, 13, 15 |
 
 Systems 2 and 3 depend on each other at the edges: generation places mechanics, and mechanics need the solver in generation. Both sit above the pour rules. Economy reads the tall-jar flag from level generation (2). Feel, audio and UI presents the player profile's screens (11); the profile does not depend on 9.
 
@@ -68,7 +69,7 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D4 | Narrow jar sealing | Never seals; must end empty | jar-mechanics | no |
 | D5 | Extra Jar one per level? | No cap | session-boosters | built (sprint 5) |
 | D6 | What Shuffle guarantees | Any winnable shuffle | session-boosters | no |
-| D7 | A shop for booster charges? | No shop for now | economy | no |
+| D7 | A shop for booster charges? | ~~No shop for now~~ *Superseded 2026-11-19 by D224* | economy | no |
 | D8 | Mechanics on tall-jar levels | Yes, from level 100, at the normal chance | level-generation, jar-mechanics | built (sprint 5) |
 | D9 | Stuck message with swap-only pours | Keep as built | pour-rules | no |
 | D10 | Device date goes backwards | Don't punish: ignore that solve for the streak | daily-puzzle | built (sprint 5) |
@@ -279,3 +280,47 @@ Every `INTENT UNKNOWN` item was put to the owner. "Build" means the decision nee
 | D215 | Sieve dead end | Sealing the band colour outside the sieve is allowed, then reported lost ("<colour> was sealed outside its sieve") with Undo and Restart (owner, 2026-11-13) | jar-mechanics | built (sprint 28 S2) |
 | D216 | Sieve goal shown | Intro card, Jar guide and screen reader say "Fill it with <colour> to finish"; a goal mark on the sieve fills in when sealed (owner, 2026-11-13) | feel-audio-ui | built (sprint 28 S3) |
 | D217 | Release | Ships alone as 0.24.1 (owner, 2026-11-13) | — | built |
+
+## Decisions (owner interview, 2026-11-19): monetization, accounts and platforms
+
+Five rounds of questions with the owner on 2026-11-18 and 2026-11-19, about taking Strata to the app stores and monetizing it. These decisions **supersede roadmap R2** (no IAP or ads) and **D7** (no shop), and rewrite pillar 3 and the anti-pillars in `design/game-brief.md`. "Open" in the Build column means the decision has to be built or verified. Nothing here is built yet. Details: `design/gdd/monetization.md`, ADR-0002 (back end), ADR-0003 (native apps).
+
+| # | Question | Decision | Document | Build |
+|---|----------|----------|----------|-------|
+| D218 | Monetize? | **Yes.** Remove the "no ads, purchases or anything sold for money" anti-pillar; supersedes roadmap R2 and D7 | game-brief, monetization | open |
+| D219 | What is sold at launch | A one-time **Supporter pack**, **coin packs** and **booster bundles**. **No ads at launch**, rewarded ads included | monetization | open |
+| D220 | Ads later | Forced interstitials only if revenue later calls for it, and only with a new owner decision | monetization | — |
+| D221 | Supporter pack | One-time. Gives an exclusive **new scene**, a **new jar style** and a **profile frame or badge**, plus a **coin and booster grant**, plus a promise of **no ads if ads are ever added** | monetization, scenes, jar-styles, player-profile | open |
+| D222 | Cosmetics and money | No cosmetic is sold directly for money (Supporter items excepted, D221). Cosmetics are earned or bought with coins, and **bought coins count** | monetization, economy | open |
+| D223 | Rules kept | **No level timers** (play is never timed), **no lives or energy**, **no random rewards**, and **Undo and Restart stay free** | game-brief | — |
+| D224 | Where offers appear | A **Shop on Home**, and a link to the Shop from the existing "Needs N coins" moment. Nowhere else | monetization | open |
+| D225 | Offer tactics | Allowed: a one-time **starter pack**, **occasional sales**, **"Best value" labels** and **countdown offers**. "No timers" (D223) covers play only, so shop offers may show a countdown | monetization | open |
+| D226 | Paid content | Every level and mode stays free at launch, with no subscription. A subscription is **not ruled out later** (needs a new decision) | monetization | — |
+| D227 | Spending safeguards | None beyond what the stores provide | monetization | — |
+| D228 | Refunds | A refunded coin pack removes its coins **down to zero**: the balance never goes negative and owned items are never taken. A refunded Supporter pack **revokes its cosmetics and the no-ads promise**; its granted coins are treated like a coin-pack refund | monetization | open |
+| D229 | Family sharing | The Supporter pack is **not** shared through Apple Family Sharing or Google Play Family Library | monetization | open |
+| D230 | Founder gift | Existing players get a one-time **founder badge**, **coins** and **boosters** (amounts in the price proposal). Founders are the players who import an old save (D246) | monetization, badges | open |
+| D231 | Free income | **No reductions** to what free players earn today. Pack sizes and prices come from an economy-designer proposal in **US dollars**, for owner approval | economy, monetization | open |
+| D232 | Back end | **Cloudflare Workers + D1**, in this repo under `server/`, within **Cloudflare's free tier**. It must degrade gracefully when a limit is reached | ADR-0002 | open |
+| D233 | Save editing | **The server is the truth.** It re-checks every change it receives (replays level solutions, recomputes rewards) and rejects anything impossible. The device copy is a cache | ADR-0002, save-data | open |
+| D234 | Accounts | Every install silently gets an **anonymous server account**, registered on first connection (play works offline). Sign-in is optional, with **Apple, Google, Microsoft and email link** all offered on every platform. **Signing in is required to buy** | ADR-0002 | open |
+| D235 | Sync and merging | Saves sync **automatically**, shortly after each change and on app close, queued while offline. Two devices, or a guest signing in to an account that has a save, are **merged field by field** so nothing earned is lost | ADR-0002, save-data | open |
+| D236 | Offline | Bought coins can be spent offline and are reconciled on sync. The **daily puzzle, streak and daily goals count only online**, by the server's clock | ADR-0002, daily-puzzle, daily-goals | open |
+| D237 | Save code | **Removed** from the new game (D16 superseded there); the frozen github.io site keeps it (D246) | save-data | open |
+| D238 | Account data | Kept **until the player deletes the account**, with in-app deletion | ADR-0002 | open |
+| D239 | Analytics | **First-party on Cloudflare**, **off until the player agrees** (everywhere). Guests are included under a random device ID. Raw events are kept **13 months** | ADR-0002, monetization | open |
+| D240 | Email | Email addresses are used for sign-in and account notices. Marketing email only through a separate, **unticked newsletter opt-in** | ADR-0002 | open |
+| D241 | Notifications | **At launch, opt-in**: daily-puzzle and streak reminders, asked for after a few sessions | ADR-0003 | open |
+| D242 | Achievements | **Game Center and Google Play Games at launch**, mirroring the existing badges | ADR-0003, badges | open |
+| D243 | Leaderboards and social | **Not in the first release.** The back end is designed so they can be added | ADR-0002 | — |
+| D244 | Audience | **13 and over**, declared to every store | monetization | open |
+| D245 | Platforms | Web on a new domain; **Android and iOS** with **full tablet support**; **Mac** through the iOS app; **itch.io** as free play with no sign-in; **Microsoft Store**, whose purchase route is verified in ADR-0003 before it is chosen | ADR-0003 | open |
+| D246 | The github.io site | **Frozen as today**, save code included. The new game accepts an old `STRATA1` save code **once per account** for **14 days after launch**, **accepted as-is** (the owner accepts the forgery risk). That save is the account's starting point and earns the founder gift | save-data, monetization | open |
+| D247 | Native wrapper | **Compared in ADR-0003** before choosing. Store-review updates only (no over-the-air updates); store releases **batched every 2–4 weeks**; **one version number on every platform** | ADR-0003 | open |
+| D248 | Company | A **Nova Scotia (Canada) numbered corporation** trading as **Blackwave Studios**, to be formed. Store accounts (a new Google Play organisation account and an Apple account) are opened under it. Where each store allows, listings show "Blackwave Studios" (to verify) | monetization | open |
+| D249 | Web checkout | A **merchant of record** (it sells for us and handles sales tax and VAT). Paddle or Lemon Squeezy, chosen in ADR-0002 | ADR-0002 | open |
+| D250 | Legal | We draft the privacy policy and terms of sale; **a lawyer reviews** them before launch | monetization | open |
+| D251 | Launch scope | **Worldwide**, **English only**, support email on the new domain | monetization | open |
+| D252 | Name and domains | Store name **"Strata: Sand Sort"**, subject to an availability and trademark check. **Two domains**: a studio domain (company and support email) and a game domain. Candidates are to be proposed, with availability unchecked so far | monetization | open |
+| D253 | Order and dates | **Back end first**, so the first store release is already monetized. No fixed date | — | — |
+| D254 | Store art and devices | Store screenshots and preview video are **captured from the game**. The owner has an Android phone and a tablet, and will get a Mac. A **device plan** is needed (including an iPhone) | ADR-0003 | open |

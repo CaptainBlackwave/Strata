@@ -2,13 +2,15 @@
 
 **One-sentence pitch:** Pour layers of coloured sand between glass jars at a sunny seaside stall until every jar holds a single, perfect colour.
 
-## Pillars (owner-approved 2026-11-08, D29)
+## Pillars (owner-approved 2026-11-08, D29; pillar 3 and the anti-pillars revised 2026-11-19, D218–D223, wording a draft for owner approval)
 1. **Calm tidy-up in short bites** (1–3 minutes early, 3–5 from level 40). Never timed, never punishing: free Undo, free Restart, no fail screens.
 2. **Always fair.** Every board is proven solvable, and the game tells you when you're stuck or lost.
-3. **Earned, never bought.** Coins, shells and cosmetics come only from play, on fixed milestones. Never random.
+3. **Fair to free players.** Everything in the game can be earned by playing, and nothing is random. Money buys coins, boosters and the Supporter pack (D219, D221). No cosmetic is sold directly for money; bought coins can buy coin-priced items (D222). Free income is never reduced (D231).
 4. **Warm, original and readable for everyone.** Original seaside art in every light; colour is never the only cue; any text size, touch, keyboard or screen reader.
 
-**Anti-pillars (never):** timers, lives or energy · ads, purchases or anything sold for money · random rewards (loot boxes, gacha) · mascots or story · online accounts or leaderboards (for now).
+**Anti-pillars (never):** timed play (D225 allows countdowns on shop offers only) · lives or energy · random rewards (loot boxes, gacha) · charging for Undo or Restart · mascots or story · requiring an account to play (sign-in is optional, but needed to buy: D234).
+
+**Not at launch (each needs a new owner decision):** ads of any kind (D219, D220) · subscriptions (D226) · leaderboards and social (D243).
 
 ## Core loop
 - Read the jars, then tap a jar to lift it and tap another to pour its top layer.
@@ -28,14 +30,14 @@
 6. **Progress save.** The current level persists in `localStorage`.
 
 ## Approved since the MVP
-- **Collection meta, milestone-only:** a 40-shell cabinet with set rewards (`design/gdd/shell-collection.md`) and a player profile with earned cosmetics (`design/gdd/player-profile.md`). Never random, never sold.
+- **Collection meta, milestone-only:** a 40-shell cabinet with set rewards (`design/gdd/shell-collection.md`) and a player profile with earned cosmetics (`design/gdd/player-profile.md`). Never random, never sold for money.
 - **Scenes:** four time-of-day looks, including a night scene, Moonlit tide, plus a **scene ladder** of about 12 more (seasons, weather, holidays, special skies) in three animation tiers, bought with coins and kept forever; seasonal ones can be bought any time (D32, D33; `design/gdd/scenes.md`). Animation always stops under reduced motion.
 - **Audio:** synthesised sound effects and music, each with its own switch (roadmap C1).
 
 ## Out of scope — not building this
-- No ads, IAP, lives or energy timers. Coins exist but are earned only by play (see `design/competitive-roadmap.md` roadmap R1–R3).
-- No mascot or story. Collections and cosmetics only as milestone rewards (above), never random and never for sale.
-- No hand-authored level packs and no online features or accounts.
+- No lives or energy timers (roadmap R1). No ads at launch (D219). Purchases are covered by `design/gdd/monetization.md`.
+- No mascot or story. Collections and cosmetics are never random and never sold directly for money; the Supporter pack's own items are the one exception (D221, D222).
+- No hand-authored level packs. Online features are limited to optional accounts, cloud save, purchases and opt-in analytics (D232–D240, ADR-0002).
 
 ## Build order
 1. Board rules and win/stuck checks, with unit tests (the core fun is all here).
@@ -50,6 +52,8 @@
 
 **Art & audio direction:** warm seaside light through the day, night included: a cream and sea-glass background, chunky rounded glass jars, and matte sand colours in terracotta, saffron, sage, lagoon, coral and plum. The Moonlit tide scene has a moon and stars, and Night Shore shells glow softly. No fantasy magic. Sound is soft and synthesised: no recorded or copied audio.
 
+**Distribution and monetization (2026-11-19):** web, Android, iOS, Mac, itch.io and the Microsoft Store (D245), published by Blackwave Studios (D248). See `design/gdd/monetization.md`, ADR-0002 and ADR-0003.
+
 **Roadmap:** `design/competitive-roadmap.md` (sprint 1 added game feel, the economy, shuffle, the tutorial and the home screen).
 
-**Reference game:** the liquid-sort genre as teardown-documented in `design/reverse-engineering/magic-sort-teardown.md`. The MVP keeps the top-run pour rule, spare vessels, undo and extra-vessel booster, and hidden units. It drops the monetisation and the mascot, and replaces the meta layer with milestone-only collections.
+**Reference game:** the liquid-sort genre as teardown-documented in `design/reverse-engineering/magic-sort-teardown.md`. The MVP keeps the top-run pour rule, spare vessels, undo and extra-vessel booster, and hidden units. It drops the genre's ads, lives and random rewards, and the mascot, and replaces the meta layer with milestone-only collections.

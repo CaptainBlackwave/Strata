@@ -11,7 +11,7 @@ These are the **roadmap decisions R1–R5** (renamed from D1–D5 on 2026-11-08,
 | ID | Decision | Why |
 |---|---|---|
 | R1 | **No lives or energy.** You can always play the next level | Lives exist to sell refills. Removing them is our clearest advantage |
-| R2 | **No IAP or ads.** Coins come only from play | Web distribution, no store fees, and a calm brand promise |
+| R2 | ~~**No IAP or ads.** Coins come only from play~~ *Superseded 2026-11-19 by D218–D219 (`design/gdd/systems-index.md`)* | Web distribution, no store fees, and a calm brand promise |
 | R3 | **Boosters are limited but earnable.** Charges, then coins. *Amended 2026-11-08 by D19: Undo is free and unlimited; Shuffle, Extra Jar and Hint stay limited* | Keeps the decisions and tension that make boosters feel valuable (V2-8) without paywalls |
 | R4 | ~~Perfect = no boosters used~~, worth +10 coins. *Superseded by M2 (2026-11-08): Perfect = no assists (`assists = 0`, `design/gdd/session-boosters.md`); Undo and a Hint that finds nothing don't count* | Rewards skill and gives a reason to replay |
 | R5 | Original theme only: seaside sand art, no mascots | Hard rule: see the project's CLAUDE.md |

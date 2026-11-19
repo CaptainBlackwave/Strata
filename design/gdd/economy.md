@@ -26,8 +26,10 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 
 **Current Implementation**: Pure functions over an immutable `Wallet` (`newWallet`, `spendBooster`, `buyBooster`, `levelReward`, `addCoins`, `addBoosters`). All numbers come from `game-config.json`.
 
-**Design Intent** (`design/competitive-roadmap.md` roadmap R1–R3; D19):
-- Coins are earned **only by playing**: no purchases, ads, lives or energy (roadmap R1, R2).
+> **Monetization (2026-11-19, D218–D231):** coins can now also be **bought** (coin packs, booster bundles, the Supporter grant; `monetization.md`). Free income is **not reduced** (D231): every faucet below keeps its rate. Pack prices are pending the economy-designer proposal. Roadmap R2 and D7 are superseded.
+
+**Design Intent** (`design/competitive-roadmap.md` roadmap R1–R3; D19; D218–D231):
+- Coins are earned by playing and can also be bought (D219). There are no lives or energy (roadmap R1) and no ads at launch (D219). *Was: coins only from play (roadmap R2, superseded).*
 - Shuffle, Extra Jar and Hint are limited but earnable: stored charges first, then coins (roadmap R3).
 - **Undo is free and unlimited** (D19): it has no charges, no price and is not in any reward. *Decided 2026-11-08, built in sprint 6.*
 - **A level pays coins on its first clear only; replays pay nothing** — `INTENDED — confirmed 2026-11-08`. **Implemented 2026-11-08** (`clearReward`, M1).
@@ -59,6 +61,9 @@ verified-by: pending review (the replay-coin rule confirmed by the owner 2026-11
 | Streak track (sprint 16, D136) | boosters on streak days 3 (Hint, Shuffle) and 7 (2 Hint, Shuffle, Jar); streak-only cosmetics on 14, 30, 60, 100 | each day once, lifetime (D140) | yes: 3 Hint, 2 Shuffle, 1 Jar charge lifetime |
 | Seasonal events (sprint 17, D146) | 50 coins after every 6th Winter Tide board (200 a year); the Frost glass for all 24 | first clears only, once a year per event (`events.md`) | no (yearly) |
 | Starting wallet | 100 coins, 3 / 3 / 3 charges | once | yes |
+| Coin packs, booster bundles (D219) | `[AMOUNT]` per pack, pending the price proposal (D231) | bought with money, repeatable | no |
+| Supporter grant (D221) | `[AMOUNT]` coins and boosters | once per account | yes |
+| Founder gift (D230) | `[AMOUNT]` coins and boosters | once per account, on an old-code import within 14 days of launch | yes |
 
 A daily pays **only** its streak coins (and its shell). It pays no level reward, Perfect bonus or tall-jar bonus, even on the tall-jar Sunday (`challenge: true`).
 
@@ -76,7 +81,7 @@ A daily pays **only** its streak coins (and its shell). It pays no level reward,
 ### 2.3 Integration Points
 
 - **Depends on**: `session-boosters.md` (Perfect, booster use), `level-generation.md` (the tall-jar flag, `LevelSpec.challenge`).
-- **Depended on by**: `daily-puzzle.md`, `shell-collection.md`, `scenes.md` (all add or spend coins), `feel-audio-ui.md` (HUD, win card), `save-data.md`, `player-profile.md` (counts coins credited by play as "Coins earned").
+- **Depended on by**: `monetization.md` (packs, refunds, founder gift), `daily-puzzle.md`, `shell-collection.md`, `scenes.md` (all add or spend coins), `feel-audio-ui.md` (HUD, win card), `save-data.md`, `player-profile.md` (counts coins credited by play as "Coins earned").
 
 ---
 
@@ -109,7 +114,7 @@ A daily pays **only** its streak coins (and its shell). It pays no level reward,
 - ✅ The scene ladder's top rungs took 3–5 weeks each for a regular player after D38 (`production/qa/sprint-12/balance.md`). Sprint 13 (D99, D100) added long-streak steps and lowered rungs 6–12 so each takes 12–14 days (`production/qa/sprint-13/late-ladder.md`).
 
 **Unclear**:
-- ✅ Decided 2026-11-08: no shop for now (D7). `buyBooster` stays unexposed.
+- ~~Decided 2026-11-08: no shop for now (D7).~~ Superseded by D224: a Shop on Home (`monetization.md` §2.3). Whether `buyBooster` (coins for a charge) appears in the Shop is `OPEN`.
 - ⚠️ The long-run balance is modelled (sprint 7, three simulated players), not measured from real play. The prices follow the model; the open questions are time-to-earn targets and the final sink.
 
 ---
@@ -118,7 +123,7 @@ A daily pays **only** its streak coins (and its shell). It pays no level reward,
 
 **Technical Dependencies**: none beyond types.
 
-**Design Dependencies**: `session-boosters.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `feel-audio-ui.md`, `save-data.md`, `level-generation.md`, `player-profile.md`.
+**Design Dependencies**: `monetization.md` (bought coins and charges, refunds), `session-boosters.md`, `daily-puzzle.md`, `shell-collection.md`, `scenes.md`, `feel-audio-ui.md`, `save-data.md`, `level-generation.md`, `player-profile.md`.
 
 **Content Dependencies**: `economy` (`startCoins` 100, `coinsPerLevel` 20, `perfectBonus` 10, `challengeBonus` 30), `boosters` (`start` and `price` for Shuffle, Jar and Hint; Undo's entry retired by D19), `collection.setReward`, `collection.coinsWhenComplete`.
 
@@ -142,6 +147,7 @@ A daily pays **only** its streak coins (and its shell). It pays no level reward,
 
 ## Open Questions and Follow-Up Work
 
+0. **Price proposal (D231)**: pack sizes and USD prices, Supporter, starter-pack and founder amounts, with price-in-levels for each pack. Constraint: no faucet rate goes down. Owner: economy-designer, for owner approval.
 1. What is the target time to earn each scene, and what is the coin sink once every scene is owned? The scene ladder (D32) answered the sink for levels 60 and later; the rest is still open (GA-ECON-1, GX-11; D23, D75).
 
 ### Flagged Follow-Up Work
@@ -159,4 +165,5 @@ A daily pays **only** its streak coins (and its shell). It pays no level reward,
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; replay-coin rule confirmed by the owner |
 | 2026-11-08 | Claude | M1 fixed: replays pay nothing (`clearReward`) |
 | 2026-11-08 | Claude (sprint 6, F9) | D19 free Undo and D23 deferred targets recorded; full faucet table incl. daily shells, recurring post-collection bonus and charge faucets (GA-ECON-2); roadmap cited as R1–R3 (GX-8, GA-ECON-6); scene cost labelled level income only (GA-ECON-3) and owned here (GX-16); `addCoins` wording (GA-ECON-4); tall-jar flag reference and daily payout stated (GA-ECON-5); `?level=N` item moved to Handled |
+| 2026-11-19 | Claude (owner interview) | Monetization recorded (D218–D231): bought coins, the new faucet rows, D7 superseded, the price proposal opened |
 | 2026-11-09 | Claude (0.10.1, D79) | Stale "targets deferred" lines updated: the sprint 7 economy model and the scene ladder (D32) are recorded; time-to-earn targets and the final sink stay open (D75); the D19 tests are ticked |
