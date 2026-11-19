@@ -22,7 +22,7 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 
 **Purpose**: Long-term variety. Every 20 levels a new kind of jar changes how the player plans.
 
-**Scope**: The special jars (four from sprint 3, the hourglass and the sieve from sprint 13), when they appear, how they are placed, which of their states make a board unwinnable, and how the player is told about them. Basic pouring is in `pour-rules.md`.
+**Scope**: The special jars (four from sprint 3, the hourglass and the sieve from sprint 13), the later jars of the 40-level pace (§2.7–§2.11, ending with the sunrise and sunset jars of sprint 29, D218–D224), when they appear, how they are placed, which of their states make a board unwinnable, and how the player is told about them. Basic pouring is in `pour-rules.md`.
 
 **Current Implementation**: Optional per-jar fields on `Jar` (`cap`, `frozen`, `lock`, `funnel`) that the shared pour and seal rules respect, a schedule (`pickMechanics`), a placement step (`applyMechanics`) and UI for each.
 
@@ -295,6 +295,115 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 
 **Player-facing** (sprint 27 K4, K5): dark sand with a lighthouse mark and the count; the beam sweep when `swept` lists it (instant under reduced motion); colours while `isLit`; the label "dark, lit in N pours"; an intro card on 321, the Jar guide and the map badge. Placeholder strings exist from K2.
 
+### 2.11 Sunrise and sunset jars (sprint 29, D218–D224)
+
+*Designed for Strata; no rule, name or art is taken from another game.*
+
+The fifth mechanic of the 40-level pace (D190): the sunrise and sunset jars debut on level 361 (D220). They are a **pair** of banded jars that set the order of the day. The sunrise jar is the first jar filled and the sunset jar is the last. The owner set every rule below in the design interviews of 2026-11-19.
+
+**Rules**
+1. **The pair (D218).** `Jar.sun` is `{ band, at }`: `band` is a colour on the board, and `at` is `'rise'` or `'set'`. A board with the mechanic has exactly one jar of each, and the two bands are **different colours** (a same-colour variant is out of v1). A board without it is exactly as before. One field with two values, rather than two fields, because almost every rule below (band, win, key, shuffle) is shared and only the order rule differs.
+2. **Filled.** A jar is *filled* when it is complete: full of one colour at the normal capacity. Pair levels never have wet sand (D222), so a filled jar is a sealed jar, and the order of fills is the order of seals.
+3. **In: only the band (D218).** Only units of its band may be poured into a sunrise or sunset jar. Any other colour is refused, even into an empty one, as for the sieve (§2.5 rule 2). The usual rules still apply on top: the top must match and there must be room. So each jar can only ever be filled in its own band.
+4. **Out: anything (D218).** Anything may be poured out of a sunrise or sunset jar by the usual rules, as for the sieve. Its dealt sand may hold any colours (see Placement), and band sand may be taken back out. Once filled it is sealed and is never poured from again.
+5. **Sunrise first (D219).** While the sunrise jar is not filled, a pour that would leave **any other jar** filled is refused. Only the target of a pour can become filled, so this is one check on the target after the pour.
+6. **Sunset last (D219).** A pour that would fill the sunset jar is refused unless the board after it is **won** (rule 8). The sunset jar's filling pour is therefore always the winning pour. Before that it may hold any amount of its band **up to one unit short of full**.
+7. **The refusals are named.** `pourRefusal` gains three reasons:
+   - **`'sun'`**: the poured colour is not the band of a sunrise or sunset target. It is checked where `'sieve'` is (after the source checks, before room and top colour), since the band is the jar's own rule.
+   - **`'sunrise'`**: rule 5.
+   - **`'sunset'`**: rule 6.
+
+   `'sunrise'` and `'sunset'` are checked **last of all**, after `'colour'`. They are judged only on a pour that is otherwise legal, because they look at the board the pour would leave. A pour that breaks both (filling the sunset jar before the sunrise jar) gives `'sunrise'`, since that is the next step the player needs (D219). Every answer for a board without the pair is unchanged.
+8. **Winning.** `isWon` treats the pair like a sieve: a board is won only when every other jar is empty or complete **and** both the sunrise and sunset jars are complete in their bands. An empty sunrise or sunset jar is not a finished board. With rules 5 and 6, every win fills the sunrise jar first and the sunset jar last.
+9. **The sunrise wakes the board (D222).** Filling the sunrise jar seals it like any jar: frozen jars thaw and locks of its colour open. Until then nothing on the board can be filled, so **frozen jars stay frozen and every other lock stays shut until the sunrise jar is filled**. This is intended. Placement keeps it winnable (below).
+10. **A band filled elsewhere (D221).** After the sunrise, filling an ordinary jar in the sunset band is a legal pour, as for the sieve band (D215). The sunset jar can then never be filled, and the board says so (Dead ends).
+11. **Board state.** The band and role live on the jar, so Undo, Restart, the solver, hint plans and saved boards keep them. They are part of the jar's solver key (`R{band}` for sunrise and `D{band}` for sunset; neither letter is used today) and of the solver's empty-jar kind. So an empty sunrise jar, an empty sunset jar and an empty plain jar are never pruned as duplicates.
+12. **Not a pure swap.** Moving a whole one-colour run into an empty sunrise or sunset jar of that band is a useful pour: it frees an ordinary jar. Moving it out into an empty plain jar is useful for the same reason. This matches the sieve (§2.5 rule 7).
+13. **Shuffle (D222).** The sunrise and sunset jars keep their sand, band and role, like a closed clam or the crab's jar. Only the other free jars are re-dealt. While the sunrise jar is not filled, **a re-deal that leaves any jar filled is rejected** and re-drawn, otherwise Shuffle would break rule 5 without a pour. Each re-deal is solver-proven as before.
+14. **Hints** follow the solver, which plays every step through `pour()` and so never makes a refused pour.
+
+**Dead ends (D221)**: `lostReason` gains two reasons, both sound (reported only when the board is certainly lost). Both are checked before the funnel and lock reasons.
+- **`'sunrise'`**: the sunrise jar is not filled, and the band units that can still reach it are fewer than it needs: `need = capacity − (band units already in it)`. Units are **out of reach** when they are:
+  - in a funnel, which is never poured from;
+  - in a frozen jar, which thaws only on a seal, and no seal can come before the sunrise jar;
+  - in a jar locked by a key other than the sunrise band, since that key can't be filled before the sunrise jar, so the lock never opens in time.
+
+  A closed clam's sand counts as reachable (it opens on a count), as in the existing checks.
+- **`'sunset'`**: the sunset jar is not filled, and too much of its band is out of reach. Band units that are sealed in a jar other than the sunset jar, or held in a funnel, never move again. The sunset jar needs `capacity` units, minus what it already holds, from the rest. This is the same count as the sieve's (D215).
+
+Every other lost board is left to the stuck rule and hints (D21). An example is a sunrise band buried under sand that has nowhere to go: whether space can be made needs the solver.
+
+**Placement** (`applyMechanics`): after the lighthouse, from the same seeded placement stream. Both jars are **dealt on filled jars**, like the sieve (D218). The jar count does not change, and the player's first job is to dig the sunrise jar out. The draws, in order:
+- **The sunrise jar, then the sunset jar.** Each is a filled plain jar that is not sealed, frozen, locked, narrow, a funnel, the hourglass, a clam, the tide jar or the lighthouse jar (D222: never another jar type).
+- **The sunrise band**, uniform over the board's `colors`.
+- **The sunset band**, uniform over the remaining colours.
+
+Burial is kept.
+
+Combinations (D222):
+- **Never on a pair level:**
+  - wet sand: its own roll is dropped when the pair is on the level;
+  - the sieve: dropped from a pair level's mechanics, and its slot is re-picked as for a breather cut;
+  - a lock keyed to the sunset band, which could only open on the winning pour.
+- **Allowed:**
+  - frozen jars, locks keyed to any other colour, the narrow jar, the funnel, the hourglass, the clam, the tide jar and the lighthouse jar elsewhere on the board;
+  - the crab, which may start on or walk onto either jar.
+
+A deal with no candidate jar or band is re-dealt. Levels that do not roll the pair draw nothing extra and keep exactly their boards.
+
+**Band choice** (`proveDeal`, D222): the drawn pair of bands is a starting point. As for the sieve, the generator proves up to `colorTries` (3) pairs on the same deal:
+- the drawn pair first;
+- then the sunrise band moved to the next colour in palette order (wrapping, and skipping the sunset band).
+
+It keeps the first pair whose proof is within the level's pour cap. Failing that, it keeps the shortest over-cap proof for the fallback chain. Failing that, it rejects the deal. Every proof is a win, so every kept pair is winnable in order.
+
+**Schedule (D220)**: `{ "id": "sun", "unlockAt": 361, "colorTries": 3, "ownChance": 0.15, "ownSalt": 9173, "shared": false }`.
+- **Debut.** Level 361 has the pair alone, two spares and no spare swap (D28).
+- **After the debut.** From 362 the pair comes only from its own roll, like the crab and lighthouse (D210). It can combine with rolled mechanics and the spare swap, still at most 3 (D22). Tall-jar levels never get own rolls, so they never have the pair.
+- **Share (target about 1 in 8).** `ownChance` 0.15 is a starting value. It will be measured over 361–1000 at several values, as for the crab and lighthouse, and set for about 12.5%.
+- **Levels that change.** Levels 1–360 must be byte-identical. A new fixture, `tests/fixtures/boards-1-360.json`, will hash every level 1–360 at the commit before the mechanic. Of levels 361 and up, only those that roll the pair may change. The measured list goes here.
+- **Generation and balance.** To be measured and recorded here:
+  - every pair level of 361–480 is built with the pair within its attempts and pour cap, and its proof replays to a win in order;
+  - how many one-spare pair levels from 500 fall back;
+  - the stuck-rate gates for 301–400 and 401–500.
+
+  The main risk is that rule 5 forbids filling any jar early, which removes a usual way to make room. One-spare levels may then fail more proofs, as with the crab.
+- **Fallback.** As for the crab. With a classic mechanic, the level falls back first to the classic mechanic alone (two spares), then to no mechanic. With the pair alone, it falls back straight to no mechanic.
+
+**Daily, weekly, events (D220)**: not in their rotation. `isClassicMechanic('sun')` is false, no weekly theme names it, and event boards have no special jars (D144). Whether the pair later joins the Saturday daily or a weekly theme is an open question.
+
+**Player-facing (D223, sprint 29 UI stories)**
+
+- **Look.**
+  - Each jar carries a band in its own colour. The sunrise jar has a **rising half-sun** mark on its base and the sunset jar a **setting half-sun** mark.
+  - Each mark is an open ring until its jar is filled, then filled in.
+  - Both must read as different from the sieve's band and goal mark (the sieve is never on the same board, but players know it), with colour-blind patterns as for all sand.
+  - On the Realistic board the marks show over the canvas, as the sieve's goal mark does.
+- **Moments.**
+  - When the sunrise jar is filled, the scene **brightens** for a moment ("the day begins").
+  - When the sunset jar is filled, the win plays with a **dusk tint**.
+  - Both are instant under reduced motion.
+  - `pour()` reports `sunrise: true` on the pour that fills the sunrise jar, and the session's pour event carries it. The sunset moment is the win itself.
+- **Refusal strings (D223).**
+  - `'sun'`: "Only <colour> greets the sunrise." / "Only <colour> waits for sunset."
+  - `'sunrise'`: "The sun hasn't risen yet: fill the sunrise jar first."
+  - `'sunset'`: "Sunset comes last: finish every other jar first."
+  - All three are source-or-target reasons, so the UI must map them; `refusalNote` covers only the target-side ones today.
+- **Dead-end strings.**
+  - `'sunrise'`: "<Colour> can no longer reach the sunrise jar: Undo or Restart."
+  - `'sunset'`: "<Colour> was sealed outside the sunset jar: Undo or Restart."
+- **Screen reader.**
+  - "sunrise jar, <colour> only, fill it first"
+  - "sunset jar, <colour> only, fill it last"
+  - Once filled: "…, filled". Other jars add nothing.
+- **Teaching.**
+  - The intro card on 361 is one rule card: "The sunrise jar is filled first and the sunset jar last. Each takes only its own colour."
+  - The Jar guide gets an entry and the map gets a badge.
+  - Placeholder strings exist from the core story.
+- **The core must not ship to players without this UI.** A board that refuses to let you fill a jar for no visible reason would read as a bug.
+
+**Release (D224)**: one sprint (29) with the core rules, the generator and solver with their measurements, the UI and art, the moments and the intro card. It ships as **0.25.0**, with screenshots sent before release.
+
 ### 2.2 State and Data
 
 - `Jar.cap?: number`, `Jar.frozen?: boolean`, `Jar.lock?: Color`, `Jar.funnel?: boolean`. A thawed or unlocked jar has the field removed, not set to false.
@@ -311,6 +420,8 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 - `Jar.crab?: { every: number; left: number }` (§2.9): the crab, on the one jar it sits on; it moves every `every` pours, `left` pours from now. Part of the jar's key (`K{left}/{every}`); with a crab `boardKey` keeps jar order. `pour()` returns `crabMoved` (`{ from, to }` or `null`); the session's pour event carries it when present. `crabAt(board)`, `crabStep(board, from)` and `hasCrab(board)` answer the crab questions. New refusal `'crab'`.
 - `Jar.lighthouse?: { every: number; left: number; lit: boolean }` (§2.10): the beam; not part of the jar's key. `pour()` returns `swept` (jars the beam lit); the session's pour event carries it when non-empty. `isLit(jar, capacity)` says whether to show colours.
 - `LevelSpec.crab?: boolean`, `LevelSpec.lighthouse?: boolean`: the level rolled them.
+- `Jar.sun?: { band: Color; at: 'rise' | 'set' }` (§2.11): a sunrise (`'rise'`) or sunset (`'set'`) jar banded in `band`; one of each on a board that has them. Part of the jar's solver key (`R{band}` / `D{band}`) and of the solver's empty-jar kind. New refusals `'sun'` (wrong colour in), `'sunrise'` (would fill a jar before the sunrise jar) and `'sunset'` (would fill the sunset jar before the win); new lost reasons `'sunrise'` and `'sunset'`. `pour()` returns `sunrise: true` on the pour that fills the sunrise jar; the session's pour event carries it.
+- `LevelSpec.sun?: boolean`: the level rolled the pair. A pair level drops a rolled sieve and wet sand (D222).
 - `BoardMechanicId` = `MechanicId | 'wet'` since sprint 23 (before that `MechanicId | 'clam'` (every id in `mechanics.list`; the sieve was folded into `MechanicId` with its UI); `hasMechanicCard(id)` is false for the clam until its UI lands; `isClassicMechanic` is false for the hourglass, the sieve and the clam.
 - `pourRefusal(board, from, to)`: why a pour is refused (`PourRefusal`), or `null`; `canPour` is `pourRefusal(...) === null`.
 - `settle(board)`: collects the colours of all sealed jars; if any jar is sealed, drops `frozen` from all jars; drops `lock` from any jar whose lock colour is in that set. Returns the same object when nothing changes.
@@ -357,6 +468,14 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 | Crab share | its own roll only: `rng(mixSeed(7841, level)) < 0.16` from 281, not on another mechanic's debut level, not on tall-jar levels | `ownChance` 0.16, `ownSalt` 7841 | Measured 92 of 281–1000 (12.8%) |
 | Beam | unsealed: lit after pour `n` exactly when `n ≥ every` and `n mod every = 0`; `left = every − (n mod every)`; sealed: always lit, count frozen | `every` (default 4) | `every` 4: lit after pours 4 and 8, dark after 5 |
 | Lighthouse share | its own roll only: `rng(mixSeed(8329, level)) < 0.145` from 321, as the crab | `ownChance` 0.145, `ownSalt` 8329 | Measured 85 of 321–1000 (12.5%) |
+| Filled (§2.11) | `filled(j) = isComplete(j, capacity)`; pair levels have no wet sand, so filled = sealed | | |
+| Sunrise refusal | `'sunrise'` when the sunrise jar `r` is not filled, `m.to ≠ r`, and `filled(after(b, m).jars[m.to])`; checked after every other reason | `b` board, `m` pour | Sunrise jar holds 2 of 4 red; pouring the last blue into a jar of 3 blue is refused |
+| Sunset refusal | `'sunset'` when `m.to` is the sunset jar, `filled(after(b, m).jars[m.to])` and `¬isWon(after(b, m))` | | The sunset jar holds 3 of 4 green and one jar is still mixed: pouring the last green in is refused |
+| Pair win | `isWon(b)` = every jar with `sun` or `sieve` complete in its band, every other jar empty or complete | | An empty sunset jar with everything else sorted is not won |
+| Sunrise lost | `reach(r.band) < capacity − count(r, r.band)`, where `reach` counts the band outside funnels, frozen jars and jars locked by another key | | Two of four red in a funnel: lost at once |
+| Sunset lost | `free(s.band) < capacity − count(s, s.band)`, where `free` counts the band outside sealed jars and funnels | | Green sealed in an ordinary jar: lost |
+| Pair share | its own roll only: `rng(mixSeed(9173, level)) < ownChance` from 361, as the crab; not on tall-jar levels | `ownChance` (start 0.15), `ownSalt` 9173 | Target about 1 in 8 of 361–1000 (D220); to be measured |
+| Pair band tries | pairs tried on one deal: `min(colorTries, colors − 1)`, sunset band `s` fixed, sunrise band `r, r+1, … (mod colors)`, skipping `s` | `colorTries` 3 | |
 
 **Tuning knobs (hourglass)**
 
@@ -416,6 +535,15 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 | `mechanics.list[lighthouse].every` | 4 | 2–6 (at least 1 is enforced) | Pours between sweeps (D208). 1 lights it after every pour (no mechanic left); above 6 the player plays most of the level blind on that jar |
 | `mechanics.list[lighthouse].ownChance` | 0.145 | 0–0.25 | Its only roll; 0.145 gives 12.5% of 321–1000 (D210) |
 | `mechanics.list[lighthouse].ownSalt` | 8329 | any, distinct from other salts | Seeds the own roll. Never change it once released |
+
+**Tuning knobs (sunrise and sunset jars)**
+
+| Knob | Default | Safe range | Effect |
+|---|---|---|---|
+| `mechanics.list[sun].unlockAt` | 361 | ≥ 361 (lower would change levels ≤ 360) | Debut level (D220) |
+| `mechanics.list[sun].ownChance` | 0.15 (to be measured) | 0–0.25 | Its only roll; set for about 12.5% of 361–1000 (D220). Changing it changes which levels 362+ have the pair |
+| `mechanics.list[sun].ownSalt` | 9173 | any, distinct from other salts | Seeds the own roll. Never change it once released |
+| `mechanics.list[sun].colorTries` | 3 | 1–5 | Band pairs proven per deal before the deal is rejected (D222) |
 
 ---
 
@@ -516,6 +644,16 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 - ✅ Undo and Restart restore the beam; Shuffle keeps it.
 - ✅ The beam is not solver state, so the solver's answer is the same with or without it.
 - ✅ Placement never buries sand in it and never wets it.
+
+**Sunrise and sunset jars (sprint 29, designed, not built)**:
+- [ ] A pour that would fill the sunset jar but leave its source holding band sand is refused: the board after it is not won.
+- [ ] A pour that fills the sunset jar before the sunrise jar gives `'sunrise'`, not `'sunset'`.
+- [ ] Until the sunrise jar is filled no jar can be filled, so frozen jars stay frozen and locks of other colours stay shut; filling it thaws and unlocks in the usual seal order.
+- [ ] A narrow jar is never filled, so the sunrise refusal never applies to it.
+- [ ] The crab on the last source with every other jar done: a pour out of the sunset jar back onto it is still legal and counts the crab down.
+- [ ] Shuffle with the sunrise jar open: a re-deal that leaves any jar filled is re-drawn; the pair keeps its sand.
+- [ ] The extra-jar booster adds an ordinary empty jar; the rules are unchanged.
+- [ ] A level that rolls the pair and also the sieve or wet sand drops them (D222); no lock on a pair level is keyed to the sunset band.
 
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
@@ -651,6 +789,16 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 - ✅ Every lighthouse level of 321–440 is built with it, within its cap, and its proof replays to a win; its share of 321–1000 is 12–13%; dailies, weekly boards and events never have it.
 - [ ] K4: dark sand, the lighthouse mark and count, the beam sweep, both boards; patterns and the screen reader hide dark colours (D209). K5: intro card on 321, Jar guide, map badge.
 
+**Sunrise and sunset jars (sprint 29)**, to be covered in `tests/unit/core/sun.test.ts`:
+- [ ] Config lists the pair at 361 with `shared: false`, `colorTries: 3`, its own `ownChance` and a salt no other mechanic uses.
+- [ ] `'sun'`, `'sunrise'` and `'sunset'` fire exactly as §2.11 rules 3, 5, 6 and 7 say, in that order, and never on a board without the pair.
+- [ ] `isWon` needs both jars complete in their bands; a win always fills the sunrise jar first and the sunset jar last.
+- [ ] Both dead ends report only certain losses (a property test against the solver on small boards) and name the colour.
+- [ ] Undo, Restart, saved boards, hints and the solver keep band and role; board keys tell the pair apart from plain jars; the solver never returns a path through a refused pour; following hints on 361 wins.
+- [ ] No pair level has wet sand or a sieve, or a lock keyed to the sunset band; the crab may start on either jar.
+- [ ] Levels 1–360 match `boards-1-360.json` (hashed before the mechanic); level 361 debuts the pair alone with two spares; every pair level of 361–480 is built with it, within its cap, and its proof replays in order; its share of 361–1000 is 12–13%; dailies, weekly boards and events never have it.
+- [ ] UI (screenshots in `production/qa/evidence/sprint-29/`): both jars open and filled on both boards, each refusal and dead-end note, the sunrise brightening and the dusk win (and their reduced-motion versions), colour-blind patterns, the intro card on 361, the Jar guide entry and the map badge.
+
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.
 - [x] Open questions answered (2026-11-08).
@@ -667,6 +815,7 @@ Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reporte
 - **Answered (D198):** the tide jar comes only from its own roll (`shared: false`), so wet sand keeps about 1 in 8 and levels 201–240 are unchanged.
 - **Open (sprint 27):** one-spare crab levels often fall back: of 500–610, three keep the crab with two spares and three lose it. A larger step budget for crab levels, or keeping the crab in the fallback before the classic mechanics, would keep it; both change boards from 500, so they wait for the owner.
 - **Open (sprint 27):** the simulated player (`tools/balance/sim-player.ts`) sees a dark lighthouse jar's colours. A dark-aware player would measure the lighthouse's real cost; until then its stuck rates do not show it.
+- **Open (sprint 29):** should the sunrise and sunset jars join the Saturday daily or a weekly theme once players know them? D220 holds them to levels for v1.
 
 ### Flagged Follow-Up Work
 - [x] Mechanics on tall-jar levels from level 100, with tests (a lock is only placed in a jar missing its key colour; otherwise the deal is re-dealt).
@@ -688,3 +837,4 @@ Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reporte
 | 2026-11-12 | Claude (sprint 23 W1–W3) | Wet sand (D189, D190), §2.7: per-unit counts (`Jar.wet`), the whole-top-run rule and the `'wet'` refusal (never into an empty jar), drying on every pour (`dried`), sealing only when dry (`isComplete` vs `isSealed`, `sealedDry`), the won-when-complete decision (the winning pour dries the board), waits are useful, Shuffle keeps counts, placement on visible units after every other mechanic, `units`/`debutUnits`/`dryAfter` knobs, the 40-level pace, levels 201+ that changed (fixture `boards-1-200.json`), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |
 | 2026-11-12 | Claude (sprint 24 T1–T3) | Tide jar (D193–D197), §2.8: `Jar.tide` count like the hourglass's, the turn (bottom unit to the top, the rest down one, wet counts with their units), empty and one-colour turns still restart the count (`turned`), a sealed tide jar never turns again (count kept, frozen), the order (tide last, after drying), waits useful while mixed, Shuffle keeps the count, placement after the clam and before wet sand on a plain filled jar shown whole, debut levels roll no other own roll (D28), `every`/`ownChance`/`ownSalt` knobs, levels 241–400 that changed (fixture `boards-1-240.json`), the share (12.4% of 241–1000) and its effect on wet sand (open question), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |
 | 2026-11-13 | Claude (sprint 27 K1–K3) | Crab jar (D206, D207, D210), §2.9: `Jar.crab` count on the jar it sits on, the `'crab'` refusal (out only), the step to the next non-empty, unsealed jar in index order (wrapping; stays when none; steps off a jar that seals), the order (last but the beam, on the settled board), jar order as state, waits useful, Shuffle keeps its jar, the solver's crab search (count-free key, no pure swaps, never "unwinnable"). Lighthouse jar (D206, D208–D210), §2.10: `Jar.lighthouse` beam lit for the one pour after every 4th, lit for good once sealed, always pourable, `isLit`, dark sand shown like buried sand (D209), not solver state. Placement, `every`/`ownChance`/`ownSalt` knobs (0.16 and 0.145: 12.8% and 12.5%), levels 1–280 unchanged and of 281–320 only the six crab levels (fixture `boards-1-320.json`), daily, weekly and events held back, formulas, tuning knobs, edge cases, acceptance criteria |
+| 2026-11-19 | Claude (sprint 29 design) | Sunrise and sunset jars (D218–D224), §2.11, from two owner interviews: a banded pair (different colours, only the band in, anything out, dealt on filled jars); sunrise first and sunset last by refusal (`'sun'`, `'sunrise'`, `'sunset'`); the win needs both complete in band; two sound dead ends; no wet sand or sieve on pair levels, frozen jars and locks shut until sunrise, the crab allowed; Shuffle keeps the pair; up to 3 band pairs tried; debut 361, own roll about 1 in 8; marks, moments, strings and the 0.25.0 release. Formulas, tuning knobs, edge cases, acceptance criteria and one open question added; measurements pending |
