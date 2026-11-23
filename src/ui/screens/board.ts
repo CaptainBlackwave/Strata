@@ -1,6 +1,6 @@
 /** The board screen: starting levels, session events, input, Restart, the stuck banner, boosters and hints. */
 import { type Versus, versusOnStart } from '../logic/challenge';
-import { type Board, canPour, isClosed, isSealed, pourRefusal, sieveLostColor } from '../../core/board';
+import { type Board, canPour, isClosed, isSealed, pourRefusal, sieveLostColor, sunriseLostColor, sunsetLostColor } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { generateWeekly, parseWeek } from '../../core/weekly';
 import { type EventsConfig, eventById, generateEventBoard } from '../../core/events';
@@ -26,7 +26,8 @@ import { clamOpenDelay } from '../logic/clam';
 import { driedUnits, dryDelay } from '../logic/wet';
 import { risesVisibly } from '../logic/tide';
 import { sweepsVisibly } from '../logic/lighthouse';
-import { refusalNote, tapMechanic } from '../logic/refusal';
+import { lostMessage as lostWords, refusalNote, tapMechanic } from '../logic/refusal';
+import { sunriseMoment } from './sun-moments';
 import { animatePour, recoverPour } from './pour';
 import { gpuInvalidate } from '../board-gpu/hooks';
 import { introduce } from './sheets/guide';
@@ -287,6 +288,8 @@ export function onSessionEvent(e: SessionEvent): void {
       // The beam lights a lighthouse jar last of all (D208, §2.10), once the sand has landed.
       const lit = (e.swept ?? []).filter((i) => sweepsVisibly(state.session.board.jars[i]));
       for (const i of lit) beamFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
+      // The pour that fills the sunrise jar brightens the board: the day begins (D223, §2.11).
+      if (e.sunrise) sunriseMoment();
       announce(
         t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
           (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +
@@ -296,7 +299,8 @@ export function onSessionEvent(e: SessionEvent): void {
           sealedDry.map((i) => ` ${t.sealAnnounce(i + 1)}`).join('') +
           turned.map((i) => ` ${t.tideAnnounce(i + 1)}`).join('') +
           (crab ? ` ${t.crabAnnounce(crab.to + 1)}` : '') +
-          lit.map((i) => ` ${t.beamAnnounce(i + 1)}`).join(''),
+          lit.map((i) => ` ${t.beamAnnounce(i + 1)}`).join('') +
+          (e.sunrise ? ` ${t.sunriseAnnounce}` : ''),
       );
       break;
     }
@@ -365,11 +369,14 @@ export function disarmRestart(): void {
  * board changes. Any variant ("no pours left", "this board can't be won now") calls this
  * with its own text from strings.ts. The board re-fits around the banner once idle.
  */
-/** The dead-end message for the current board (D21): the sieve names its colour (D215), the rest say it can't be won. */
+/**
+ * The dead-end message for the current board (D21): the sieve (D215) and the sunrise and sunset
+ * jars (D221, §2.11) name their colour, the rest say it can't be won.
+ */
 function lostMessage(): string {
-  if (state.session.lostReason !== 'sieve') return t.cantWin;
-  const band = sieveLostColor(state.session.board);
-  return band === null ? t.cantWin : t.sieveLost(config.palette[band].id);
+  const board = state.session.board;
+  const bandOf = (r: 'sieve' | 'sunrise' | 'sunset') => (r === 'sieve' ? sieveLostColor : r === 'sunrise' ? sunriseLostColor : sunsetLostColor)(board);
+  return lostWords(state.session.lostReason, bandOf, (c) => config.palette[c].id);
 }
 
 export function showStuckBanner(message: string): void {
@@ -407,7 +414,10 @@ export function isLiftable(i: number): boolean {
   return !!jar && jar.units.length > 0 && !isSealed(jar, state.session.board.capacity) && !isClosed(jar) && jar.clam === undefined && !jar.funnel && !jar.crab; // the crab blocks pouring out (D207, §2.9)
 }
 
-/** Explains why a mechanic jar refused a tap. A sieve names its band colour, a closed clam its pours left (D96). */
+/**
+ * Explains why a mechanic jar refused a tap. A sieve names its band colour, a closed clam its pours
+ * left (D96); an empty sunrise or sunset jar gives its tap text (D223), like every other mechanic.
+ */
 export function explain(i: number): void {
   const jar = state.session.board.jars[i];
   if (!jar) return;
@@ -451,7 +461,8 @@ export function onJarTap(i: number): void {
 
 /**
  * Says why the pour from jar `from` into jar `i` was refused, so it isn't shown by motion and
- * sound only (AX-5). A sieve refusing a wrong colour names its band colour (D96).
+ * sound only (AX-5). A sieve refusing a wrong colour names its band colour (D96), and so does a
+ * sunrise or sunset jar (D223, §2.11); a pour out of turn for the pair says which jar comes first.
  */
 export function explainRefusal(from: number, i: number): void {
   const board = state.session.board;
@@ -461,6 +472,9 @@ export function explainRefusal(from: number, i: number): void {
   if (note === 'mechanic' || note === 'clam') explain(i);
   else if (note === 'wet') showToast(t.wetRefused);
   else if (note === 'sieve') showToast(t.sieveRefused(config.palette[jar.sieve!].id));
+  else if (note === 'sun') showToast(t.sunRefused(config.palette[jar.sun!.band].id, jar.sun!.at));
+  else if (note === 'sunrise') showToast(t.sunriseRefused);
+  else if (note === 'sunset') showToast(t.sunsetRefused);
   else if (note === 'sealed') showToast(t.jarSealedFull);
   else if (note === 'full') showToast(t.jarFull);
   else if (note === 'colour') showToast(t.coloursDontMatch);

@@ -118,7 +118,7 @@ export function levelSteps(spec: LevelSpec, config: GameConfig): FallbackStep[] 
   const tries: [LevelSpec, number][] = [[spec, spec.spare === 1 ? config.ramp.spareOne.maxAttempts : g.maxAttempts]];
   if (spec.spare === 1) tries.push([{ ...spec, spare: 2 }, g.maxAttempts]);
   // An hourglass, sieve or clam with classic mechanics: try the classic ones alone before dropping them all (D96).
-  if ((spec.hourglass || spec.sieve || spec.clam || spec.wet || spec.tide || spec.crab || spec.lighthouse) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
+  if ((spec.hourglass || spec.sieve || spec.clam || spec.wet || spec.tide || spec.crab || spec.lighthouse || spec.sun) && spec.mechanics.length) tries.push([{ ...withoutMechanics(spec), mechanics: spec.mechanics, spare: 2 }, g.maxAttempts]);
   if (hasAnyMechanic(spec)) tries.push([{ ...withoutMechanics(spec), spare: 2 }, g.maxAttempts]);
   const { cap, perAttempt } = stepBudgets(config);
   return tries.map(([s, maxAttempts], i) => {
@@ -230,7 +230,7 @@ export function generateFromSpec(
     const sealed = board.jars.filter((j) => isSealed(j, board.capacity)).length;
     if (sealed > maxSealedAtStart) continue;
     if (!hasMechanics(board, spec)) continue; // a mechanic couldn't be placed on this deal
-    const proof = proveDeal(board, Math.min(attemptNodeBudget, totalNodeBudget - spent), maxPours, spec.colors, sieveColorTries(config));
+    const proof = proveDeal(board, Math.min(attemptNodeBudget, totalNodeBudget - spent), maxPours, spec.colors, sieveColorTries(config), sunColorTries(config));
     spent += proof.nodes;
     const result = proof.result;
     if (result.solvable === true) {
@@ -248,6 +248,11 @@ function sieveColorTries(config: GameConfig): number {
   return Math.max(1, Math.floor(config.mechanics.list.find((m) => m.id === 'sieve')?.colorTries ?? 3));
 }
 
+/** The sunrise and sunset pair's `colorTries` from config (D222, §2.11): band pairs per deal, at least 1, default 3. */
+function sunColorTries(config: GameConfig): number {
+  return Math.max(1, Math.floor(config.mechanics.list.find((m) => m.id === 'sun')?.colorTries ?? 3));
+}
+
 /** A proven (or refuted) deal: the board as finally banded, its solve result, and the solver states spent. */
 export interface DealProof {
   readonly board: Board;
@@ -263,9 +268,14 @@ export interface DealProof {
  * the shortest proof; failing that the dealt band's result. A proof is a win, and a win has the
  * sieve sealed in its band (D214), so every proven band ends with the sieve sealed. Every try
  * spends from `budget`.
+ * A board with the sunrise and sunset pair chooses its band pair the same way (D222, §2.11): it tries
+ * `min(sunTries, colors - 1)` pairs with the sunset band fixed, the sunrise band first as dealt, then
+ * stepping to the next colour (wrapping, skipping the sunset band). A pair level never has a sieve.
  * Example: `proveDeal(board, 40_000, 70, spec.colors, 3).board.jars[i].sieve`
  */
-export function proveDeal(board: Board, budget: number, maxPours: number, colors: number, tries: number): DealProof {
+export function proveDeal(board: Board, budget: number, maxPours: number, colors: number, tries: number, sunTries = tries): DealProof {
+  const rise = board.jars.findIndex((j) => j.sun?.at === 'rise');
+  if (rise >= 0) return provePair(board, rise, budget, maxPours, colors, sunTries);
   const at = board.jars.findIndex((j) => j.sieve !== undefined);
   if (at < 0) {
     const result = solve(board, budget);
@@ -288,14 +298,44 @@ export function proveDeal(board: Board, budget: number, maxPours: number, colors
   return { ...(shortest ?? first!), nodes };
 }
 
+/**
+ * `proveDeal` for a board with the sunrise and sunset pair (D222, §2.11): the sunset band stays as
+ * dealt and the sunrise jar at `rise` takes up to `tries` bands from its dealt one on, skipping the
+ * sunset band. Returns the first proof within `maxPours`, else the shortest proof, else the dealt
+ * pair's result. Every proof is a win, so every kept pair is winnable in order.
+ */
+function provePair(board: Board, rise: number, budget: number, maxPours: number, colors: number, tries: number): DealProof {
+  const sun = board.jars[rise].sun!;
+  const sunset = board.jars.find((j) => j.sun?.at === 'set')?.sun?.band;
+  const bands: number[] = [sun.band];
+  for (let c = sun.band; bands.length < Math.min(tries, colors - 1);) {
+    c = (c + 1) % colors;
+    if (c !== sunset && c !== sun.band) bands.push(c);
+  }
+  let nodes = 0;
+  let first: DealProof | undefined; // the dealt pair's own result, whatever it is
+  let shortest: DealProof | undefined; // the shortest proof over maxPours
+  for (let k = 0; k < bands.length && nodes < budget; k++) {
+    const banded: Board = k === 0 ? board : { capacity: board.capacity, jars: board.jars.map((j, i) => (i === rise ? { ...j, sun: { band: bands[k], at: 'rise' as const } } : j)) };
+    const result = solve(banded, budget - nodes);
+    nodes += result.nodes;
+    const proof: DealProof = { board: banded, result, nodes };
+    first ??= proof;
+    if (result.solvable !== true) continue;
+    if (result.path.length <= maxPours) return proof;
+    if (!shortest || result.path.length < shortest.result.path.length) shortest = proof;
+  }
+  return { ...(shortest ?? first!), nodes };
+}
+
 /** True when a spec asks for any jar mechanic, the hourglass, the sieve and the clam included (D96). */
 export function hasAnyMechanic(spec: LevelSpec): boolean {
-  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true || spec.wet === true || spec.tide === true || spec.crab === true || spec.lighthouse === true;
+  return spec.mechanics.length > 0 || spec.hourglass === true || spec.sieve === true || spec.clam === true || spec.wet === true || spec.tide === true || spec.crab === true || spec.lighthouse === true || spec.sun === true;
 }
 
 /** The spec with every mechanic dropped, the hourglass, the sieve and the clam included: a fallback step's recipe. */
 export function withoutMechanics<S extends LevelSpec>(spec: S): S {
-  const { hourglass: _dropped, sieve: _sieve, clam: _clam, wet: _wet, tide: _tide, crab: _crab, lighthouse: _light, ...rest } = spec;
+  const { hourglass: _dropped, sieve: _sieve, clam: _clam, wet: _wet, tide: _tide, crab: _crab, lighthouse: _light, sun: _sun, ...rest } = spec;
   return { ...rest, mechanics: [] } as unknown as S;
 }
 
@@ -316,7 +356,8 @@ export function withoutMechanics<S extends LevelSpec>(spec: S): S {
  * (`debutUnits` on its unlock level) distinct visible units of filled jars that are not sealed,
  * frozen, locked, a closed clam, a funnel or the lighthouse jar, each wet for `dryAfter` pours, one draw per unit.
  * The crab (D207, §2.9) and then the lighthouse jar (D208, §2.10) are placed after the tide jar and
- * before wet sand. The stream `rng` is only drawn from for mechanics the
+ * before wet sand. The sunrise and sunset jars (D218, D222, §2.11) come after the lighthouse jar: see the
+ * comment at their placement. The stream `rng` is only drawn from for mechanics the
  * spec has, so a spec without the hourglass, the sieve or the clam deals exactly the board it did
  * before they existed.
  */
@@ -388,6 +429,27 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
     const i = pick(filled().filter((k) => plainJar(jars[k])));
     if (i !== undefined) jars[i] = { ...jars[i], hidden: 0, lighthouse: { every, left: every, lit: false } };
   }
+  if (spec.sun) {
+    // The sunrise and sunset jars (D218, D222, §2.11): the sunrise jar, then the sunset jar, each a
+    // filled plain jar that is not sealed, frozen, locked, narrow, a funnel or any other mechanic's jar
+    // (the crab may sit on either); then the sunrise band, uniform over the board's colours; then the
+    // sunset band, uniform over the rest. Burial is kept. A lock keyed to the sunset band could only
+    // open on the winning pour, so the sunset band is drawn from the colours that are neither the
+    // sunrise band nor a lock's key; with no such colour the pair is not placed and the deal is
+    // re-dealt (`hasMechanics`). Locks are placed before this, so their keys are known here, and the
+    // draw is exactly "uniform over the rest" on a board without a lock. `proveDeal` may then move the
+    // sunrise band, never the sunset one, and a lock keyed to the sunrise band is allowed.
+    const plainJar = (j: Jar) => j.cap === undefined && !j.funnel && !j.hourglass && j.sieve === undefined && j.clam === undefined && !j.tide && !j.lighthouse && j.sun === undefined && !isSealed(j, board.capacity);
+    const rise = pick(filled().filter((k) => plainJar(jars[k])));
+    const set = pick(filled().filter((k) => k !== rise && plainJar(jars[k])));
+    const band = Math.floor(rng() * spec.colors);
+    const keys = new Set(jars.map((j) => j.lock));
+    const setBand = pick(Array.from({ length: spec.colors }, (_, c) => c).filter((c) => c !== band && !keys.has(c)));
+    if (rise !== undefined && set !== undefined && setBand !== undefined) {
+      jars[rise] = { ...jars[rise], sun: { band, at: 'rise' } };
+      jars[set] = { ...jars[set], sun: { band: setBand, at: 'set' } };
+    }
+  }
   if (spec.wet) {
     const tune = config.mechanics.list.find((m) => m.id === 'wet');
     const dryAfter = Math.max(1, Math.floor(tune?.dryAfter ?? 5));
@@ -420,6 +482,7 @@ export function hasMechanics(board: Board, spec: LevelSpec): boolean {
   if (spec.tide && !board.jars.some((j) => j.tide !== undefined)) return false;
   if (spec.crab && !board.jars.some((j) => j.crab !== undefined)) return false;
   if (spec.lighthouse && !board.jars.some((j) => j.lighthouse !== undefined)) return false;
+  if (spec.sun && !(board.jars.some((j) => j.sun?.at === 'rise') && board.jars.some((j) => j.sun?.at === 'set'))) return false;
   return spec.mechanics.every((id) =>
     id === 'narrow' ? board.jars.some((j) => j.cap !== undefined)
     : id === 'frozen' ? board.jars.some((j) => j.frozen)

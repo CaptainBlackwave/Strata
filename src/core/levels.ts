@@ -142,10 +142,11 @@ export const isCardMechanic = isClassicMechanic;
 
 /**
  * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
- * the hourglass, the sieve, the clam, wet sand and the tide jar, each when it has one. Example: level
- * 181 gives `['clam']`, level 201 `['wet']`, level 241 `['tide']`.
+ * the hourglass, the sieve, the clam, wet sand, the tide jar, the crab, the lighthouse jar and the
+ * sunrise and sunset pair, each when it has one. Example: level 181 gives `['clam']`, level 201
+ * `['wet']`, level 241 `['tide']`, level 361 `['sun']`.
  */
-export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse'>): MechanicId[] {
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse' | 'sun'>): MechanicId[] {
   return [
     ...spec.mechanics,
     ...(spec.hourglass ? ['hourglass' as const] : []),
@@ -155,6 +156,7 @@ export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 
     ...(spec.tide ? ['tide' as const] : []),
     ...(spec.crab ? ['crab' as const] : []),
     ...(spec.lighthouse ? ['lighthouse' as const] : []),
+    ...(spec.sun ? ['sun' as const] : []),
   ];
 }
 
@@ -177,6 +179,8 @@ export interface MechanicConfig {
    * Sieve: how many band colours the generator may prove on one deal, starting from the one the
    * placement stream drew (D96, §2.5). It keeps the first proven within the pour cap; a proof is a
    * win, which ends with the sieve sealed in its colour (D214). Default 3; 1 keeps the drawn colour.
+   * Sunrise and sunset jars: how many band pairs it may prove on one deal (D222, §2.11), the sunset
+   * band fixed and the sunrise band stepping on. Default 3; 1 keeps the drawn pair.
    */
   readonly colorTries?: number;
   /**
@@ -229,6 +233,11 @@ export interface LevelSpec {
   readonly crab?: boolean;
   /** One filled jar is a lighthouse jar with dark sand (D208, sprint 27 K3, §2.10). Absent or false: none. */
   readonly lighthouse?: boolean;
+  /**
+   * One filled jar is a sunrise jar and another a sunset jar, in different bands (D218, sprint 29 N3,
+   * §2.11). A pair level never has wet sand or the sieve (D222). Absent or false: neither.
+   */
+  readonly sun?: boolean;
 }
 
 /**
@@ -236,7 +245,7 @@ export interface LevelSpec {
  * the one path every board recipe (levels, the daily, the weekly; sprint 13 W1) uses.
  * Example: `splitMechanics(['sieve']) // { mechanics: [], sieve: true }`.
  */
-export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true; tide?: true; crab?: true; lighthouse?: true } {
+export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true; tide?: true; crab?: true; lighthouse?: true; sun?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
@@ -246,7 +255,18 @@ export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: Cl
     ...(ids.includes('tide') ? { tide: true as const } : {}),
     ...(ids.includes('crab') ? { crab: true as const } : {}),
     ...(ids.includes('lighthouse') ? { lighthouse: true as const } : {}),
+    ...(ids.includes('sun') ? { sun: true as const } : {}),
   };
+}
+
+/**
+ * The mechanics a level keeps when it has the sunrise and sunset pair (D222, §2.11): wet sand and the
+ * sieve are dropped, and the rest close up in order, so a breather's `maxMechanics` cut that follows
+ * keeps the next mechanic in the dropped one's slot. Without the pair the list is returned unchanged.
+ * Example: `withoutPairConflicts(['sieve', 'frozen', 'sun']) // ['frozen', 'sun']`.
+ */
+export function withoutPairConflicts(ids: readonly BoardMechanicId[]): BoardMechanicId[] {
+  return ids.includes('sun') ? ids.filter((id) => id !== 'sieve' && id !== 'wet') : [...ids];
 }
 
 /**
@@ -310,8 +330,9 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
   const breather = isBreather(level, config);
   const br = breather ? config.breather : undefined;
   if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
-  const rolled = withOwnRolls(level, pickMechanics(level, config), config);
-  const { mechanics, hourglass, sieve, clam, wet, tide, crab, lighthouse } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
+  // Decision D222: a pair level drops wet sand and the sieve before the breather cut.
+  const rolled = withoutPairConflicts(withOwnRolls(level, pickMechanics(level, config), config));
+  const { mechanics, hourglass, sieve, clam, wet, tide, crab, lighthouse, sun } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
@@ -327,7 +348,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}), ...(crab ? { crab } : {}), ...(lighthouse ? { lighthouse } : {}) };
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}), ...(crab ? { crab } : {}), ...(lighthouse ? { lighthouse } : {}), ...(sun ? { sun } : {}) };
 }
 
 /**
