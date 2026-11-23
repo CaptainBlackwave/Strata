@@ -131,8 +131,10 @@ describe('lostMessage: the dead ends (D221)', () => {
 describe('teaching: the intro card, the Jar guide and the map badge (D223)', () => {
   it('the card is one rule card with the approved words', () => {
     expect(t.mechanics.sun.name).toBe('Sunrise and sunset jars');
-    expect(t.mechanics.sun.rule).toMatch(/^The sunrise jar is filled first and the sunset jar last\. Each takes only its own colour/);
-    expect(t.map.jars.sun).toBe('sunrise jar');
+    // The GDD's one rule card line (§2.11 "Teaching"), word for word.
+    expect(t.mechanics.sun.rule).toBe('The sunrise jar is filled first and the sunset jar last. Each takes only its own colour.');
+    // The map badge names the pair, not one jar of it.
+    expect(t.map.jars.sun).toBe('sunrise & sunset');
   });
   it('the Jar guide lists it, from 361 (it lists every configured mechanic)', () => {
     expect(cfg.mechanics.list.find((m) => m.id === 'sun')?.unlockAt).toBe(361);

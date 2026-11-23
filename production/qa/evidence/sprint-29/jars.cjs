@@ -23,7 +23,7 @@ const out = (f) => path.join(__dirname, f);
 const ONLY = process.env.ONLY || 'all';
 const does = (part) => ONLY === 'all' || ONLY === part;
 
-async function open(browser, { board = 'dom', width = 412, height = 900, text = 100, patterns = false, seen = [...SEEN, 'sun'], scene = 'midday', reduced = false }) {
+async function open(browser, { board = 'dom', width = 412, height = 900, text = 100, patterns = false, seen = [...SEEN, 'sun'], scene = 'midday', reduced = false, intro = false }) {
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, serviceWorkers: 'block', reducedMotion: reduced ? 'reduce' : 'no-preference' });
   await context.addInitScript(([key, seen, board, patterns, text, level, scene]) => {
     const s = JSON.parse(localStorage.getItem(key) || '{}');
@@ -39,6 +39,7 @@ async function open(browser, { board = 'dom', width = 412, height = 900, text = 
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(`${BASE}/?level=${LEVEL}&board=${board}`);
+  if (intro) { await page.waitForSelector('#intro:not([hidden])', { timeout: 30000 }); await page.waitForTimeout(1200); return { context, page, errors }; }
   await page.waitForSelector('#board .jar .unit', { timeout: 30000 });
   await page.evaluate(async () => { window.__S = (await import('/src/ui/state.ts')).state; });
   await page.waitForFunction((n) => window.__S && window.__S.mode === 'level' && window.__S.level === n && !!window.__S.session, LEVEL, { polling: 100, timeout: 30000 });
@@ -112,9 +113,9 @@ const craftedSunriseLost = (page) =>
 async function run() {
   const browser = await chromium.launch();
   const log = {};
-  // 1. The intro card on 361 ('sun' not seen yet), and the board under it.
-  if (does('teach')) {
-    const { context, page, errors } = await open(browser, { seen: SEEN });
+  // 1. The intro card on 361 ('sun' not seen yet), and the board under it (needs 361 to build).
+  if (ONLY === 'all' || process.env.INTRO === '1') {
+    const { context, page, errors } = await open(browser, { seen: SEEN, intro: true });
     log.intro = { shown: await page.locator('#intro:not([hidden])').count(), text: await page.locator('#intro-list').innerText().catch(() => ''), errors };
     await page.screenshot({ path: out('intro-361.png') });
     await context.close();
@@ -229,20 +230,7 @@ async function run() {
       await context.close();
     }
   }
-  // 6. The Jar guide's sun entry, and the map from Home with the new-jar badge at 361 (the next level).
-  if (does('teach')) {
-    const { context, page } = await open(browser, {});
-    await dismiss(page);
-    await page.evaluate(async () => {
-      const { showMechanicCards, MECHANICS } = await import('/src/ui/screens/sheets/guide.ts');
-      showMechanicCards(MECHANICS, 'Jar guide');
-    });
-    await page.waitForTimeout(500);
-    log.guide = await page.evaluate(() => { const j = document.querySelector('#intro .mini-jar.sun'); const card = j?.closest('li') ?? j?.parentElement; card?.scrollIntoView({ block: 'center' }); return card?.textContent ?? null; });
-    await page.waitForTimeout(300);
-    await page.screenshot({ path: out('jar-guide-sun.png') });
-    await context.close();
-  }
+  // 6. The Jar guide's sun entry (opened over Home), and the map from Home with the new-jar badge at 361.
   if (does('teach')) {
     const context = await browser.newContext({ viewport: { width: 412, height: 900 }, deviceScaleFactor: 2, serviceWorkers: 'block' });
     await context.addInitScript(([key, seen, level]) => {
@@ -254,17 +242,31 @@ async function run() {
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e)));
     await page.goto(`${BASE}/`);
-    await page.waitForSelector('#btn-map-tile', { state: 'visible', timeout: 30000 });
+    await page.waitForSelector('#home-tab-play', { state: 'visible', timeout: 30000 });
     await page.waitForTimeout(800);
+    await dismiss(page);
+    await page.waitForTimeout(400);
+    await page.evaluate(async () => {
+      const { showMechanicCards, MECHANICS } = await import('/src/ui/screens/sheets/guide.ts');
+      showMechanicCards(MECHANICS, 'Jar guide');
+    });
+    await page.waitForTimeout(500);
+    log.guide = await page.evaluate(() => { const j = document.querySelector('#intro .mini-jar.sun'); const card = j?.closest('li') ?? j?.parentElement; card?.scrollIntoView({ block: 'center' }); return card?.textContent ?? null; });
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out('jar-guide-sun.png') });
+    await page.evaluate(() => document.querySelector('#intro:not([hidden]) #btn-intro-ok')?.click());
+    await page.waitForTimeout(500);
+    await dismiss(page);
+    await page.waitForTimeout(400);
+    await page.click('#home-tab-collection');
+    await page.waitForSelector('#btn-map-tile', { state: 'visible', timeout: 10000 });
+    await page.waitForTimeout(400);
     await page.click('#btn-map-tile');
     await page.waitForSelector('.stone[data-level="361"]', { timeout: 10000 });
     await page.waitForTimeout(1500);
     await page.screenshot({ path: out('map-361.png') });
     log.mapStone = await page.locator('.stone[data-level="361"]').getAttribute('aria-label');
-    await page.locator('.stone[data-level="361"]').click();
-    await page.waitForTimeout(800);
-    log.mapCard = await page.locator('#stone-specials').innerText().catch(() => '');
-    await page.screenshot({ path: out('map-361-card.png') });
+    // 361 is the next level, so tapping its stone plays it (no stone card); the label carries the badge.
     log.mapErrors = errors;
     await context.close();
   }

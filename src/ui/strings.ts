@@ -195,7 +195,7 @@ const en = {
     /** The lighthouse jar (sprint 27 K5, D208, D209; §2.10): its intro card, Jar guide entry and tap text. */
     lighthouse: { name: 'Lighthouse jar', rule: 'The lighthouse jar\u2019s sand is dark, so you can\u2019t see its colours. Every fourth pour on the board the beam lights it, and its colours show until your next pour. The number on its lighthouse counts the pours left. It pours like any jar, and stays lit once sealed.', tap: 'Lighthouse jar: the beam lights it every fourth pour.' },
     /** The sunrise and sunset jars (sprint 29 N5, D218–D223; §2.11): their intro card, Jar guide entry and tap text. */
-    sun: { name: 'Sunrise and sunset jars', rule: 'The sunrise jar is filled first and the sunset jar last. Each takes only its own colour: the colour of its band. No other jar can be filled before the sunrise jar, and the sunset jar is filled by your winning pour.', tap: 'Sunrise first, sunset last. Each takes only its own colour.' },
+    sun: { name: 'Sunrise and sunset jars', rule: 'The sunrise jar is filled first and the sunset jar last. Each takes only its own colour.', tap: 'Sunrise first, sunset last. Each takes only its own colour.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -502,7 +502,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar', crab: 'crab jar', lighthouse: 'lighthouse jar', sun: 'sunrise jar' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar', crab: 'crab jar', lighthouse: 'lighthouse jar', sun: 'sunrise & sunset' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',

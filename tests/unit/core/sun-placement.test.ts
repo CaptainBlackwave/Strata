@@ -2,7 +2,7 @@
 // Design: design/gdd/jar-mechanics.md §2.11 ("Placement", "Band choice", "Schedule") and the §3 tuning knobs.
 import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
-import { type Board, type Jar, canPour, isSealed, isWon, makeBoard, pour } from '../../../src/core/board';
+import { type Board, type Jar, canPour, isWon, makeBoard, pour } from '../../../src/core/board';
 import { type DailyConfig, dailySpec } from '../../../src/core/daily';
 import { type EventsConfig, eventSpec } from '../../../src/core/events';
 import { applyMechanics, generateLevel, hasMechanics, levelSteps, maxPoursFor, proveDeal, sunriseBands } from '../../../src/core/generator';
@@ -78,6 +78,9 @@ describe('sunrise and sunset schedule (D220)', () => {
     const g = generateLevel(UNLOCK, cfg);
     expect(g.spec.sun).toBe(true);
     expect(g.spec.spare).toBe(2);
+    // D225: the colour jars, the two spares and the two empty pair jars.
+    expect(g.board.jars).toHaveLength(spec.colors + 2 + 2);
+    expect(g.board.jars.filter((j) => j.units.length === 0)).toHaveLength(4);
     expect(g.attempts).toBeGreaterThan(0);
     const { rise, set } = pairOf(g.board);
     expect(rise).toHaveLength(1);
@@ -95,6 +98,16 @@ describe('sunrise and sunset schedule (D220)', () => {
       expect(levelSpec(l, cfg).sun, `tall level ${l}`).toBeFalsy();
     }
     expect(tall).toBeGreaterThan(50);
+  });
+
+  it('its own roll (D220) puts it on about 1 level in 8 from 361: between 12% and 13% of 361-1000', () => {
+    // Sprint 29 N3 measurement (D225 empty jars): ownChance 0.12 gives 10.63%, 0.13 12.03%, 0.14 12.97%,
+    // 0.15 13.44%, 0.16 15.47%. Set to 0.14 because about 3 pair rolls in 10 fall back without the pair.
+    let n = 0;
+    for (let l = UNLOCK; l <= LAST_CHECKED; l++) if (levelSpec(l, cfg).sun) n++;
+    const share = n / (LAST_CHECKED - UNLOCK + 1);
+    expect(share).toBeGreaterThanOrEqual(0.12);
+    expect(share).toBeLessThanOrEqual(0.13);
   });
 
   it('comes from its own roll only (shared: false): ownChance 0 leaves only the debut', () => {
@@ -237,6 +250,7 @@ describe('sunrise and sunset placement (applyMechanics)', () => {
       const spec = full();
       const withIt = applyMechanics(board, spec, createRng(seed), cfg);
       const without = applyMechanics(board, { ...spec, sun: false }, createRng(seed), cfg);
+      if (!withIt.jars.some((j) => j.sun)) continue; // every band was a lock key: re-dealt
       expect(withIt.jars.slice(0, -2), `seed ${seed}`).toEqual(without.jars);
     }
   });
@@ -304,9 +318,8 @@ describe('sunrise and sunset fallback and generation', () => {
     expect(row({ ...base, mechanics: [], sun: true })).toEqual([['', true], ['', false]]);
   });
 
-  // NEEDS LANE A (sprint 29 N2): until board.ts enforces the sunrise/sunset order rules, the solver's
-  // proofs ignore the order, so this only shows the generator places the pair and proves the deal. It
-  // becomes the real gate once the pour/win rules land; the pass counts are not final measurements.
+  // The gate with lane A's finished order rules (sprint 29 N2): the proof replays through pour(), which
+  // refuses every out-of-order fill, so a replayed win is a win in order.
   it('every pair level of 361-480 is built with the pair, within its pour cap, and its proof replays to a win', () => {
     let count = 0;
     for (let l = UNLOCK; l <= 480; l++) {

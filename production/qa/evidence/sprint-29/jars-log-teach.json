@@ -1,0 +1,10 @@
+{
+  "intro": {
+    "shown": 1,
+    "text": "Sunrise and sunset jars\n\nThe sunrise jar is filled first and the sunset jar last. Each takes only its own colour: the colour of its band. No other jar can be filled before the sunrise jar, and the sunset jar is filled by your winning pour.",
+    "errors": []
+  },
+  "guide": "Sunrise and sunset jarsThe sunrise jar is filled first and the sunset jar last. Each takes only its own colour: the colour of its band. No other jar can be filled before the sunrise jar, and the sunset jar is filled by your winning pour.",
+  "mapStone": "Level 361, next level, new jar: sunrise jar",
+  "mapErrors": []
+}
