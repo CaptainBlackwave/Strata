@@ -272,11 +272,47 @@ export function pourRefusal(board: Board, from: number, to: number): PourRefusal
   if (!run) return 'empty';
   // The sieve's band is checked before room and top colour: it is the jar's own rule.
   if (dst.sieve !== undefined && run.color !== dst.sieve) return 'sieve';
+  // So is a sunrise or sunset jar's band (§2.11 rule 3).
+  if (dst.sun !== undefined && run.color !== dst.sun.band) return 'sun';
   if (dst.units.length >= (dst.cap ?? board.capacity)) return 'full';
   const dstTop = topRun(dst);
   // Wet sand (D189, §2.7) goes only onto its own colour, so never into an empty jar.
-  if (dstTop === null) return isRunWet(src) ? 'wet' : null;
-  return dstTop.color === run.color ? null : 'colour';
+  if (dstTop === null) {
+    if (isRunWet(src)) return 'wet';
+  } else if (dstTop.color !== run.color) return 'colour';
+  return sunOrderRefusal(board, from, to, run);
+}
+
+/**
+ * The order rules of the sunrise and sunset jars (D219, §2.11 rules 5 and 6), judged last of all on a
+ * pour that is otherwise legal. Only the target of a pour can become filled (`isComplete`: no per-pour
+ * rule makes or breaks a one-colour full jar), so both look at the target first, and a pour that fills
+ * nothing returns `null` at once: a board without the pair never gets past that test with a reason.
+ */
+function sunOrderRefusal(board: Board, from: number, to: number, run: Run): 'sunrise' | 'sunset' | null {
+  const cap = board.capacity;
+  const dst = board.jars[to];
+  if ((dst.cap ?? cap) !== cap) return null; // a narrow jar is never filled
+  const moved = Math.min(run.count, cap - dst.units.length);
+  if (dst.units.length + moved !== cap || (dst.units.length > 0 && !isMonochrome(dst))) return null;
+  if (dst.sun?.at !== 'rise') {
+    const rise = board.jars.find((j) => j.sun?.at === 'rise');
+    if (rise && !isComplete(rise, cap)) return 'sunrise';
+  }
+  if (dst.sun?.at === 'set') {
+    const src = board.jars[from];
+    const after = board.jars.map((j, i) => (i === from ? { ...src, units: src.units.slice(0, src.units.length - moved) } : i === to ? { ...dst, units: [...dst.units, ...new Array<Color>(moved).fill(run.color)] } : j));
+    if (!isWon({ capacity: cap, jars: after })) return 'sunset';
+  }
+  return null;
+}
+
+/**
+ * The index of the sunrise (`'rise'`) or sunset (`'set'`) jar (§2.11), or -1 when the board has none.
+ * Example: `sunAt(board, 'rise') // 3`
+ */
+export function sunAt(board: Board, at: Sun['at']): number {
+  return board.jars.findIndex((j) => j.sun?.at === at);
 }
 
 /** True when `pourRefusal` finds no reason to refuse the pour (teardown rule R5, D96). */
@@ -359,7 +395,9 @@ export function pour(board: Board, from: number, to: number): PourResult {
   const { jars: crabJars, crabMoved } = tickCrab(next.jars, next.capacity);
   const { jars: litJars, swept } = tickLighthouses(crabJars, next.capacity);
   if (litJars !== next.jars) next = { capacity: next.capacity, jars: litJars };
-  return { board: next, moved, color, flipped, opened, dried, turned, crabMoved, swept };
+  // The sunrise moment (D223, §2.11): only on the pour that fills the sunrise jar, so other results keep their exact shape.
+  const sunrise = dst.sun?.at === 'rise' && isComplete(next.jars[to], next.capacity);
+  return { board: next, moved, color, flipped, opened, dried, turned, crabMoved, swept, ...(sunrise ? { sunrise: true as const } : {}) };
 }
 
 /**
@@ -596,14 +634,31 @@ export function settle(board: Board): Board {
 }
 
 /**
- * Teardown rule R8: won when every jar is empty or sealed, and every sieve is sealed in its band
- * (D214, §2.5): an empty sieve is not a finished board. A complete jar that is still wet counts
+ * Teardown rule R8: won when every jar is empty or sealed, and every banded jar is complete in its
+ * band: every sieve (D214, §2.5) and the sunrise and sunset jars (D218, §2.11 rule 8). An empty sieve,
+ * sunrise or sunset jar is not a finished board. A complete jar that is still wet counts
  * (§2.7): its colour is all in it, so it can never move again, and the winning pour dries the
- * board (`pour`), so a won board is all sealed (a sieve included).
+ * board (`pour`), so a won board is all sealed (a banded jar included).
  * Example: `isWon(boardWithEmptySieve) // false`
  */
 export function isWon(board: Board): boolean {
-  return board.jars.every((j) => (j.sieve !== undefined ? isSieveDone(j, board.capacity) : j.units.length === 0 || isComplete(j, board.capacity)));
+  return board.jars.every((j) => (j.sieve !== undefined || j.sun !== undefined ? isBandDone(j, board.capacity) : j.units.length === 0 || isComplete(j, board.capacity)));
+}
+
+/** True when a banded jar (a sieve, a sunrise or a sunset jar) is complete in its band; false for an unbanded jar. */
+function isBandDone(jar: Jar, capacity: number): boolean {
+  const band = jar.sieve ?? jar.sun?.band;
+  return band !== undefined && isComplete(jar, capacity) && jar.units[0] === band;
+}
+
+/**
+ * True when a sunrise or sunset jar holds its goal (D218, §2.11 rule 8): complete in its band. Still-wet
+ * sand counts, as in `isWon`. False for a jar that is neither. "Filled" in the order rules is plain
+ * `isComplete`; this is the win's stricter test.
+ * Example: `isSunDone({ units: [1, 1], hidden: 0, sun: { band: 1, at: 'set' } }, 2) // true`
+ */
+export function isSunDone(jar: Jar, capacity: number): boolean {
+  return jar.sun !== undefined && isBandDone(jar, capacity);
 }
 
 /**
@@ -647,7 +702,8 @@ export function usefulMoves(board: Board): Move[] {
     // Moving a whole one-colour jar into an empty jar of the same kind only swaps them.
     // A sieve is its own kind (D96): filling an empty sieve frees an ordinary jar, which is progress.
     // So is a tide jar (§2.8): moving sand into or out of it changes which sand the tide turns.
-    const sameKind = jarCapacity(board, from) === jarCapacity(board, to) && !dst.funnel && src.sieve === dst.sieve && !src.tide === !dst.tide;
+    // So are the sunrise and sunset jars (§2.11 rule 12): filling an empty one, or emptying one into a plain jar, frees an ordinary jar.
+    const sameKind = jarCapacity(board, from) === jarCapacity(board, to) && !dst.funnel && src.sieve === dst.sieve && !src.tide === !dst.tide && src.sun?.at === dst.sun?.at && src.sun?.band === dst.sun?.band;
     return !(dst.units.length === 0 && isMonochrome(src) && sameKind);
   });
 }
@@ -661,7 +717,10 @@ export function isStuck(board: Board): boolean {
   return !isWon(board) && usefulMoves(board).length === 0;
 }
 
-/** Why a board can certainly no longer be won (decision D-c; `'sieve'` from D215). */
+/**
+ * Why a board can certainly no longer be won (decision D-c; `'sieve'` from D215; `'sunrise'` and
+ * `'sunset'` from D221, §2.11: the sunrise or sunset jar can never be filled in its band).
+ */
 export type LostReason = 'funnel' | 'lock' | 'sieve' | 'sunrise' | 'sunset';
 
 function countColor(jar: Jar, color: Color): number {
@@ -690,12 +749,19 @@ function countColor(jar: Jar, color: Color): number {
  *   needs `capacity` units outside sealed jars for each of its unfinished sieves. A complete jar
  *   that is still wet is not sealed yet (§2.7) and counts as free sand.
  *
+ * - `'sunrise'` (D221, §2.11): the sunrise jar is not filled and too little of its band can still reach
+ *   it (`sunriseLostColor`). Checked after `'sieve'`, before everything else.
+ * - `'sunset'` (D221, §2.11): the sunset jar is not filled and too much of its band is sealed elsewhere
+ *   or held in a funnel (`sunsetLostColor`). Checked after `'sunrise'`, before `'funnel'` and `'lock'`.
+ *
  * Example: `lostReason(boardWithMixedFunnel) // 'funnel'`
  */
 export function lostReason(board: Board): LostReason | null {
   const b = settle(board);
   const cap = b.capacity;
   if (sieveLost(b)) return 'sieve';
+  if (sunriseLostColor(b) !== null) return 'sunrise';
+  if (sunsetLostColor(b) !== null) return 'sunset';
   const sealableFunnel = (j: Jar) => j.funnel === true && (j.cap ?? cap) === cap && (j.units.length === 0 || isMonochrome(j));
   for (const f of b.jars) {
     if (!f.funnel || f.units.length === 0) continue;
@@ -765,9 +831,66 @@ function sieveLost(board: Board): boolean {
 }
 
 /**
+ * The sunrise band when the sunrise jar can never be filled (D221, §2.11), or `null`. The jar is not
+ * filled, and its band units that can still reach it are fewer than `capacity` minus the band units
+ * already in it. Out of reach, because no jar can be filled (so none sealed) before the sunrise jar:
+ * units in a funnel (never poured from), in a sealed jar (never moves), in a frozen jar (thaws only on
+ * a seal) and in a jar locked by a key other than the sunrise band. A jar that is already complete
+ * (dealt, or still wet and about to seal) can seal first, so with one the frozen jars, and the locks
+ * keyed to its colour, count as reachable. A closed clam's sand counts as reachable. Reported only when
+ * some band sand is out of reach. Works on the settled board, like `lostReason`.
+ * Example: `sunriseLostColor(boardWithBandInAFrozenJar) // the band index`
+ */
+export function sunriseLostColor(board: Board): Color | null {
+  const cap = board.capacity;
+  const r = sunAt(board, 'rise');
+  if (r < 0 || isComplete(board.jars[r], cap)) return null;
+  const rise = board.jars[r];
+  const band = rise.sun!.band;
+  // Colours that can seal before the sunrise jar: only jars that are already complete.
+  const early = new Set<Color>();
+  board.jars.forEach((j, i) => {
+    if (i !== r && isComplete(j, cap)) early.add(j.units[0]);
+  });
+  let reach = countColor(rise, band);
+  let out = 0;
+  board.jars.forEach((j, i) => {
+    if (i === r) return;
+    const n = countColor(j, band);
+    if (n === 0) return;
+    const shut = j.funnel === true || isSealed(j, cap) || (j.frozen === true && early.size === 0) || (j.lock !== undefined && j.lock !== band && !early.has(j.lock));
+    if (shut) out += n;
+    else reach += n;
+  });
+  return out > 0 && reach < cap ? band : null;
+}
+
+/**
+ * The sunset band when the sunset jar can never be filled (D221, §2.11), or `null`: the jar is not
+ * filled, and its band units outside sealed jars (other than itself) and outside funnels are fewer than
+ * `capacity`, with some of the band sealed or in a funnel. The same count as the sieve's (D215). Filling
+ * an ordinary jar in the sunset band after the sunrise is legal (rule 10), and then this says so.
+ * Example: `sunsetLostColor(boardWithTheSunsetBandSealedInAPlainJar) // the band index`
+ */
+export function sunsetLostColor(board: Board): Color | null {
+  const cap = board.capacity;
+  const s = sunAt(board, 'set');
+  if (s < 0 || isComplete(board.jars[s], cap)) return null;
+  const band = board.jars[s].sun!.band;
+  let free = 0;
+  let out = 0;
+  board.jars.forEach((j, i) => {
+    const n = countColor(j, band);
+    if (i !== s && (j.funnel === true || isSealed(j, cap))) out += n;
+    else free += n;
+  });
+  return out > 0 && free < cap ? band : null;
+}
+
+/**
  * A canonical string for a board, ignoring jar order and burial. An hourglass's count, a
  * sieve's band, a clam's count, wet sand's counts (§2.7), a tide jar's count (§2.8), the crab's count
- * (§2.9) are part of their jar's key, so states that differ only in them are not merged (D96). With a crab,
+ * (§2.9), the sunrise and sunset jars' role and band (§2.11) are part of their jar's key, so states that differ only in them are not merged (D96). With a crab,
  * jar order is kept (the crab steps in index order). A lighthouse's beam (§2.10) is left out on purpose:
  * no rule depends on it, so boards that differ only in the beam play exactly alike, and keeping it would
  * split every state four ways and slow the solver for nothing. Two boards
@@ -790,7 +913,9 @@ export function jarKey(j: Jar): string {
   const wet = j.wet ? `W${j.wet.join('.')}` : '';
   const tide = j.tide ? `T${j.tide.left}/${j.tide.every}` : '';
   const crab = j.crab ? `K${j.crab.left}/${j.crab.every}` : '';
-  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}${wet}${tide}${crab}`;
+  // The sunrise (R) and sunset (D) jars with their band (§2.11 rule 11).
+  const sun = j.sun ? `${j.sun.at === 'rise' ? 'R' : 'D'}${j.sun.band}` : '';
+  const tag = `${j.cap ?? ''}${j.frozen ? 'F' : ''}${j.lock !== undefined ? `L${j.lock}` : ''}${j.funnel ? 'U' : ''}${glass}${sieve}${clam}${wet}${tide}${crab}${sun}`;
   return tag ? `${tag}:${j.units.join(',')}` : j.units.join(',');
 }
 

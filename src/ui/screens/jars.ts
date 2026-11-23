@@ -125,6 +125,14 @@ export const SUN_MARK =
   `<path class="sm-horizon" d="${SUN_PATHS.horizon}"/>` +
   `<path class="sm-arrow sm-rise" d="${SUN_PATHS.rise}"/><path class="sm-arrow sm-set" d="${SUN_PATHS.set}"/></svg></span>`;
 
+/**
+ * The Jar guide's sun art (D223): the band and the half-sun mark, open, in colour `hex`, for a
+ * `.mini-jar.sun` (which shows the sunrise jar's up arrow, `.mini-jar.sun` with no `sun-set`).
+ */
+export function sunMiniArt(hex: string): string {
+  return SUN_BAND.replace('class="sun-band"', `class="sun-band" style="--band:${hex}"`) + SUN_MARK.replace('class="sun-mark"', `class="sun-mark" style="--band:${hex}"`);
+}
+
 let tapHandler: (i: number) => void = () => {};
 
 /** Registers what a tap on jar `i` does. The board sets it at boot, so this file need not import the board. */

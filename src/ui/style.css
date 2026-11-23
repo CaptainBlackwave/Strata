@@ -2543,6 +2543,7 @@ button {
   display: none;
 }
 :is(.jar, .mini-jar).sun-rise .sun-mark .sm-rise,
+.mini-jar.sun:not(.sun-set) .sun-mark .sm-rise,
 :is(.jar, .mini-jar).sun-set .sun-mark .sm-set {
   display: inline;
 }

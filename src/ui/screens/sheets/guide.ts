@@ -5,7 +5,7 @@ import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
-import { CLAM_SHELL, CRAB_MARK, HOURGLASS_MARK, LIGHTHOUSE_MARK, SIEVE_BAND, SIEVE_GOAL, TIDE_MARK, WET_MARK } from '../jars';
+import { CLAM_SHELL, CRAB_MARK, HOURGLASS_MARK, LIGHTHOUSE_MARK, SIEVE_BAND, SIEVE_GOAL, TIDE_MARK, WET_MARK, sunMiniArt } from '../jars';
 import { wetHex } from '../../logic/wet';
 
 /** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
@@ -37,10 +37,12 @@ export function miniJar(id: MechanicId): string {
     : '';
   // The sieve shows its band and its goal mark, open (D216): the guide's sieve is not yet filled.
   const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) + SIEVE_GOAL.replace('class="sieve-goal"', `class="sieve-goal" style="--band:${config.palette[0].hex}"`) : '';
+  // The sunrise jar (D223, §2.11) shows its band and its half-sun, open: the guide's jar is not yet filled.
+  const sunArt = id === 'sun' ? sunMiniArt(config.palette[1].hex) : '';
   // The clam is shut and shows its full count, like a freshly dealt one.
   const opensAfter = config.mechanics.list.find((m) => m.id === 'clam')?.opensAfter ?? 6;
   const shell = id === 'clam' ? CLAM_SHELL.replace('<b></b>', `<b>${opensAfter}</b>`) : '';
-  return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span>${mark}${band}${shell}</span>`;
+  return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span>${mark}${band}${sunArt}${shell}</span>`;
 }
 
 /** Shows the intro card for any mechanic on this board the player hasn't met yet. */
