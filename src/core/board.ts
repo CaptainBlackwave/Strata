@@ -76,6 +76,22 @@ export interface Jar {
    * never depend on seeing. Use `isLit` to know whether to show its colours.
    */
   readonly lighthouse?: Lighthouse;
+  /**
+   * Sunrise or sunset jar (D218, D219, design/gdd/jar-mechanics.md §2.11): banded in `band`. Only units
+   * of the band may be poured in (`pourRefusal` gives `'sun'` otherwise); anything may be poured out.
+   * A board has one of each or neither, in different bands. While the sunrise jar is not filled
+   * (`isComplete`), no pour may fill any other jar (`'sunrise'`); the pour that fills the sunset jar
+   * must win the board (`'sunset'`). The board is won only with both complete in their bands. Part of
+   * the board, so undo, restart, the solver and hints see it.
+   */
+  readonly sun?: Sun;
+}
+
+/** The sunrise or sunset role of a banded jar (§2.11). */
+export interface Sun {
+  readonly band: Color;
+  /** `'rise'`: filled first. `'set'`: filled last, by the winning pour. */
+  readonly at: 'rise' | 'set';
 }
 
 /**
@@ -226,9 +242,12 @@ export function isMonochrome(jar: Jar): boolean {
  * `'clam'` either jar is a closed clam (D96, §2.6); `'crab'` the crab sits on the source (D207, §2.9: pouring
  * into its jar is allowed); `'full'` the target has no room; `'wet'` the
  * moving run holds wet sand and the target is empty (D189, §2.7); `'colour'` the target's top is
- * another colour.
+ * another colour; `'sun'` the target is a sunrise or sunset jar and the poured colour is not its band
+ * (D218, §2.11; checked where `'sieve'` is); `'sunrise'` the pour would fill a jar other than the
+ * sunrise jar while it is not filled; `'sunset'` the pour would fill the sunset jar without winning
+ * the board (D219). `'sunrise'` and `'sunset'` are checked last of all, `'sunrise'` first.
  */
-export type PourRefusal = 'same' | 'missing' | 'closed' | 'clam' | 'funnel' | 'sealed' | 'crab' | 'empty' | 'sieve' | 'full' | 'wet' | 'colour';
+export type PourRefusal = 'same' | 'missing' | 'closed' | 'clam' | 'funnel' | 'sealed' | 'crab' | 'empty' | 'sieve' | 'sun' | 'full' | 'wet' | 'colour' | 'sunrise' | 'sunset';
 
 /**
  * Teardown rule R5: a pour is legal when the source is non-empty, the target has
@@ -299,6 +318,8 @@ export interface PourResult {
   readonly crabMoved: { readonly from: number; readonly to: number } | null;
   /** Indices of lighthouse jars the beam lit right after this pour (D208, §2.10); usually empty. */
   readonly swept: readonly number[];
+  /** True on the pour that filled the sunrise jar (D223, §2.11), so the UI can brighten the board. */
+  readonly sunrise?: true;
 }
 
 /**
@@ -641,7 +662,7 @@ export function isStuck(board: Board): boolean {
 }
 
 /** Why a board can certainly no longer be won (decision D-c; `'sieve'` from D215). */
-export type LostReason = 'funnel' | 'lock' | 'sieve';
+export type LostReason = 'funnel' | 'lock' | 'sieve' | 'sunrise' | 'sunset';
 
 function countColor(jar: Jar, color: Color): number {
   let n = 0;

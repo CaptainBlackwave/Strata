@@ -112,7 +112,7 @@ export interface PourBand {
  * with its intro card on level 241 (strings from T5). The crab jar (D207, §2.9) and the lighthouse jar
  * (D208, §2.10) joined in sprint 27 K2, with intro cards on 281 and 321 (strings from K5).
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse' | 'sun';
 
 /**
  * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass,
@@ -120,7 +120,7 @@ export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass'
  * the generator's placement stream and every board from before them stay byte-identical. They are
  * also the daily's Saturday rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse'>;
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse' | 'sun'>;
 
 
 /**
@@ -134,7 +134,7 @@ export type BoardMechanicId = MechanicId;
  * and the clam. Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
  */
 export function isClassicMechanic(id: BoardMechanicId): id is ClassicMechanicId {
-  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet' && id !== 'tide' && id !== 'crab' && id !== 'lighthouse';
+  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet' && id !== 'tide' && id !== 'crab' && id !== 'lighthouse' && id !== 'sun';
 }
 
 /** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
