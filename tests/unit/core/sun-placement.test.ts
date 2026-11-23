@@ -154,7 +154,9 @@ describe('a pair level drops wet sand and the sieve (D222)', () => {
   it('no level of 361-1000 has the pair with the tide jar, the crab or a rolled narrow jar (D226)', () => {
     for (let l = UNLOCK; l <= LAST_CHECKED; l++) {
       const s = levelSpec(l, cfg);
-      if (s.sun) expect(Boolean(s.tide) || Boolean(s.crab) || s.mechanics.includes('narrow'), `level ${l}`).toBe(false);
+      // A narrow jar added by the spare swap comes after this check, so only a rolled narrow jar counts.
+      const rolledNarrow = withOwnRolls(l, pickMechanics(l, cfg), cfg).includes('narrow');
+      if (s.sun) expect(Boolean(s.tide) || Boolean(s.crab) || rolledNarrow, `level ${l}`).toBe(false);
     }
   });
 

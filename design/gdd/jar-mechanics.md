@@ -360,13 +360,15 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 - **Debut.** Level 361 has the pair alone, two spares and no spare swap (D28).
 - **After the debut.** From 362 the pair comes only from its own roll, like the crab and lighthouse (D210). It can combine with rolled mechanics and the spare swap, still at most 3 (D22). Tall-jar levels never get own rolls, so they never have the pair.
 - **Share (D220, D226).** 79 of levels 361–1000 have the pair (**12.34%**, about 1 in 8). Measured with the pair giving way to the tide jar, the crab and the narrow jar: `ownChance` 0.22 gives 12.34%, 0.24 13.28%, 0.26 13.91%, 0.28 14.53%. (Before D226 it was 0.14 for 12.97%.)
-- **Levels that change.** Levels 1–360 must be byte-identical. A new fixture, `tests/fixtures/boards-1-360.json`, will hash every level 1–360 at the commit before the mechanic. Of levels 361 and up, only those that roll the pair may change. The measured list goes here.
-- **Generation and balance.** To be measured and recorded here:
-  - every pair level of 361–480 is built with the pair within its attempts and pour cap, and its proof replays to a win in order;
-  - how many one-spare pair levels from 500 fall back;
-  - the stuck-rate gates for 301–400 and 401–500.
+- **Levels that changed.** Levels 1–360 are byte-identical: fixture `tests/fixtures/boards-1-360.json` hashes every level 1–360 at commit `dde8dbc`, before the mechanic (`tests/unit/core/pins-1-360.test.ts`; it matches `boards-1-320.json` on 1–320). Of 361–1000 only the 79 levels that roll the pair and keep it after D226 changed (72 now have the pair; 7 are built as their fallback step). A level whose pair gave way to the tide jar, the crab or a narrow jar is exactly its old board.
+- **Generation and balance (measured 2026-11-23, D225 and D226).**
+  - **72 of the 79 pair levels are built with the pair (91%)**; every pair level of 361–480 is built with it, within its pour cap, and its proof replays to a win in order (`sun-placement.test.ts`).
+  - The 7 that fall back to a level without the pair: 515, 581, 679, 714, 735, 846, 932 (most are one-spare levels whose spare swap added a narrow jar after the give-way check).
+  - Of the 51 one-spare pair rolls, 42 keep the pair with one spare; 434, 692 and 897 keep it with two.
+  - "Most ordinary levels from 500 play with one ordinary spare" passes (`placement-ramp`; the empty pair jars are not counted as spares). The stuck-rate and difficulty gates pass unchanged (`tests/unit/balance`, `difficulty-bands`).
+  - Build time per pair level: 0.76 s on average; the worst, 4.7 s, is a level that falls back (it spends its step budgets first). Kept levels mostly build in under 1.5 s.
+  - Rejected levers, measured on 361–480 when the pair was dealt on filled jars and again on the empty pair's losses: 6 band pairs, a 3× solver budget (builds up to 13 s) and a pour cap of 80 or 90 each rescued too few to matter.
 
-  The main risk is that rule 5 forbids filling any jar early, which removes a usual way to make room. One-spare levels may then fail more proofs, as with the crab.
 - **Fallback.** As for the crab. With a classic mechanic, the level falls back first to the classic mechanic alone (two spares), then to no mechanic. With the pair alone, it falls back straight to no mechanic.
 
 **Why the pair is dealt empty (D225, 2026-11-23).** The first build dealt both jars on filled jars, like the sieve. Against the finished rules, of levels 361–600, 38 rolled the pair and only 19 kept it; of the one-spare rolls, one kept its single spare. On 361–480 (18 pair levels) neither 6 band pairs, a 3× solver budget nor a pour cap of 90 helped (11 or 12 kept, none with one spare), and the 3× budget took up to 7.7 s per level. The cause is the rule, not the search: no jar may be filled before the sunrise jar, so with the sunrise jar to dig out first the deals had no room. The owner chose to deal both jars empty as two extra jars.
@@ -646,15 +648,15 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 - ✅ The beam is not solver state, so the solver's answer is the same with or without it.
 - ✅ Placement never buries sand in it and never wets it.
 
-**Sunrise and sunset jars (sprint 29, designed, not built)**:
-- [ ] A pour that would fill the sunset jar but leave its source holding band sand is refused: the board after it is not won.
-- [ ] A pour that fills the sunset jar before the sunrise jar gives `'sunrise'`, not `'sunset'`.
-- [ ] Until the sunrise jar is filled no jar can be filled, so frozen jars stay frozen and locks of other colours stay shut; filling it thaws and unlocks in the usual seal order.
-- [ ] A narrow jar is never filled, so the sunrise refusal never applies to it.
-- [ ] The crab on the last source with every other jar done: a pour out of the sunset jar back onto it is still legal and counts the crab down.
-- [ ] Shuffle with the sunrise jar open: a re-deal that leaves any jar filled is re-drawn; the pair keeps its sand.
-- [ ] The extra-jar booster adds an ordinary empty jar; the rules are unchanged.
-- [ ] A level that rolls the pair and also the sieve or wet sand drops them (D222); no lock on a pair level is keyed to the sunset band.
+**Sunrise and sunset jars (sprint 29, built and tested)**:
+- [x] A pour that would fill the sunset jar but leave its source holding band sand is refused: the board after it is not won.
+- [x] A pour that fills the sunset jar before the sunrise jar gives `'sunrise'`, not `'sunset'`.
+- [x] Until the sunrise jar is filled no jar can be filled, so frozen jars stay frozen and locks of other colours stay shut; filling it thaws and unlocks in the usual seal order.
+- [x] A narrow jar is never filled, so the sunrise refusal never applies to it.
+- [x] The crab on the last source with every other jar done: a pour out of the sunset jar back onto it is still legal and counts the crab down.
+- [x] Shuffle with the sunrise jar open: a re-deal that leaves any jar filled is re-drawn; the pair keeps its sand.
+- [x] The extra-jar booster adds an ordinary empty jar; the rules are unchanged.
+- [x] A level that rolls the pair and also the sieve or wet sand drops them (D222); no lock on a pair level is keyed to the sunset band.
 
 **Not Yet Handled**:
 - ⚠️ Nothing prevents two cheap-to-reach mechanics from combining on a very small board; this is covered only by the solver proof, not by a design rule.
@@ -790,15 +792,15 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 - ✅ Every lighthouse level of 321–440 is built with it, within its cap, and its proof replays to a win; its share of 321–1000 is 12–13%; dailies, weekly boards and events never have it.
 - [ ] K4: dark sand, the lighthouse mark and count, the beam sweep, both boards; patterns and the screen reader hide dark colours (D209). K5: intro card on 321, Jar guide, map badge.
 
-**Sunrise and sunset jars (sprint 29)**, to be covered in `tests/unit/core/sun.test.ts`:
-- [ ] Config lists the pair at 361 with `shared: false`, `colorTries: 3`, its own `ownChance` and a salt no other mechanic uses.
-- [ ] `'sun'`, `'sunrise'` and `'sunset'` fire exactly as §2.11 rules 3, 5, 6 and 7 say, in that order, and never on a board without the pair.
-- [ ] `isWon` needs both jars complete in their bands; a win always fills the sunrise jar first and the sunset jar last.
-- [ ] Both dead ends report only certain losses (a property test against the solver on small boards) and name the colour.
-- [ ] Undo, Restart, saved boards, hints and the solver keep band and role; board keys tell the pair apart from plain jars; the solver never returns a path through a refused pour; following hints on 361 wins.
-- [ ] Both pair jars are dealt empty as two extra jars and the rolled spares are kept (D225); no pair level has wet sand or a sieve, or a lock keyed to the sunset band.
-- [ ] Levels 1–360 match `boards-1-360.json` (hashed before the mechanic); level 361 debuts the pair alone with two spares; every pair level of 361–480 is built with it, within its cap, and its proof replays in order; its share of 361–1000 is 12–13%; dailies, weekly boards and events never have it.
-- [ ] UI (screenshots in `production/qa/evidence/sprint-29/`): both jars open and filled on both boards, each refusal and dead-end note, the sunrise brightening and the dusk win (and their reduced-motion versions), colour-blind patterns, the intro card on 361, the Jar guide entry and the map badge.
+**Sunrise and sunset jars (sprint 29)**, covered in `tests/unit/core/sun.test.ts`, `sun-placement.test.ts`, `pins-1-360.test.ts`, `tests/unit/ui/sun-ui.test.ts` and `sun-words.test.ts`; screenshots in `production/qa/evidence/sprint-29/`:
+- [x] Config lists the pair at 361 with `shared: false`, `colorTries: 3`, its own `ownChance` and a salt no other mechanic uses.
+- [x] `'sun'`, `'sunrise'` and `'sunset'` fire exactly as §2.11 rules 3, 5, 6 and 7 say, in that order, and never on a board without the pair.
+- [x] `isWon` needs both jars complete in their bands; a win always fills the sunrise jar first and the sunset jar last.
+- [x] Both dead ends report only certain losses (a property test against the solver on small boards) and name the colour.
+- [x] Undo, Restart, saved boards, hints and the solver keep band and role; board keys tell the pair apart from plain jars; the solver never returns a path through a refused pour; following hints on 361 wins.
+- [x] Both pair jars are dealt empty as two extra jars and the rolled spares are kept (D225); no pair level has wet sand or a sieve, or a lock keyed to the sunset band.
+- [x] Levels 1–360 match `boards-1-360.json` (hashed before the mechanic); level 361 debuts the pair alone with two spares; every pair level of 361–480 is built with it, within its cap, and its proof replays in order; its share of 361–1000 is 12–13%; dailies, weekly boards and events never have it.
+- [x] UI (screenshots in `production/qa/evidence/sprint-29/`): both jars open and filled on both boards, each refusal and dead-end note, the sunrise brightening and the dusk win (and their reduced-motion versions), colour-blind patterns, the intro card on 361, the Jar guide entry and the map badge.
 
 **Definition of Done**:
 - [x] All four mechanics implemented, tested and documented.

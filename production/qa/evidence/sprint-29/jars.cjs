@@ -40,7 +40,8 @@ async function open(browser, { board = 'dom', width = 412, height = 900, text = 
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(`${BASE}/?level=${LEVEL}&board=${board}`);
   if (intro) { await page.waitForSelector('#intro:not([hidden])', { timeout: 30000 }); await page.waitForTimeout(1200); return { context, page, errors }; }
-  await page.waitForSelector('#board .jar .unit', { timeout: 30000 });
+  // The Realistic board draws the sand on a canvas, so its DOM units may be hidden: wait for them to exist.
+  await page.waitForSelector('#board .jar .unit', { state: 'attached', timeout: 30000 });
   await page.evaluate(async () => { window.__S = (await import('/src/ui/state.ts')).state; });
   await page.waitForFunction((n) => window.__S && window.__S.mode === 'level' && window.__S.level === n && !!window.__S.session, LEVEL, { polling: 100, timeout: 30000 });
   await page.waitForTimeout(1200);
@@ -120,8 +121,9 @@ async function run() {
     await page.screenshot({ path: out('intro-361.png') });
     await context.close();
   }
-  for (const board of does('board') ? ['dom', 'gpu'] : []) {
-    for (const scene of ['midday', 'moonlit']) {
+  // BOARDS=gpu SCENES=moonlit re-runs one part of the set.
+  for (const board of does('board') ? (process.env.BOARDS || 'dom,gpu').split(',') : []) {
+    for (const scene of (process.env.SCENES || 'midday,moonlit').split(',')) {
       const tag = `${board}-${scene === 'midday' ? 'light' : 'dark'}`;
       const L = (log[tag] = {});
       const { context, page, errors } = await open(browser, { board, scene });
