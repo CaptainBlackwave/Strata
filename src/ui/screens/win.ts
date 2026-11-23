@@ -19,7 +19,7 @@ import { type SlotItem } from '../../core/profile';
 import { celebrate, flyCoins, mapFx, winBloom, winGlowRun } from '../fx';
 import { noteFirstClear, winGlowPlan } from '../fx-plan';
 import { sceneWinDisplay } from '../scene-fx';
-import { duskFade, hasSunset } from '../logic/sun';
+import { DUSK_HANDOVER_MS, duskFade, hasSunset } from '../logic/sun';
 import { duskMoment } from './sun-moments';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
@@ -376,7 +376,7 @@ export function showWin(): void {
     window.removeEventListener('keydown', skip, true);
     stopGlow();
     openLayer(winEl, btnNext, null);
-    clearDusk?.(reducedMotion() ? 0 : 260); // after the win overlay's own 220 ms fade-in
+    clearDusk?.(reducedMotion() ? 0 : DUSK_HANDOVER_MS); // after the win overlay's own fade-in
     winBloom(colorsOf()); // sprint 10 F5: a soft glow and drifting motes behind the card
   };
   const skip = (e: Event) => {

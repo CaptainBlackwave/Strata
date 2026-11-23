@@ -117,3 +117,6 @@ export const DUSK_FADE_MS = 600;
 export function duskFade(reduced: boolean): number {
   return reduced ? 0 : DUSK_FADE_MS;
 }
+
+/** How long the board's dusk stays once the win card opens, in ms: the win overlay's own fade-in (220 ms) and a little, so the tint never dips. */
+export const DUSK_HANDOVER_MS = 260;

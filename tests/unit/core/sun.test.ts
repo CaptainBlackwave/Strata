@@ -112,9 +112,9 @@ describe('pour refusals (§2.11 rules 3, 5, 6, 7)', () => {
   });
 
   it("'sunrise' and 'sunset' are judged only on otherwise legal pours ('full' and 'colour' come first)", () => {
-    const b = pairBoard(2, [[0], [], [1, 1], [2, 1], [2], [0, 2]], [0, 0], [1, 1]);
+    const b = pairBoard(2, [[0], [], [1, 1], [2, 1], [2], [0, 2], [1]], [0, 0], [1, 1]);
     expect(pourRefusal(b, 3, 2)).toBe('full');
-    expect(pourRefusal(b, 5, 3)).toBe('colour');
+    expect(pourRefusal(b, 5, 6)).toBe('colour');
     expect(pourRefusal(b, 5, 4)).toBe('sunrise');
   });
 
@@ -404,7 +404,7 @@ function randomBoard(rng: Rng, pair: boolean): Board {
   jars.push([], []);
   const b = makeBoard(capacity, jars);
   const order = shuffle([0, 1, 2], rng);
-  const extra: Partial<Jar> = {};
+  const extra: { frozen?: boolean; lock?: number; funnel?: boolean } = {};
   const roll = rng();
   if (roll < 0.25) extra.frozen = true;
   else if (roll < 0.5) extra.lock = Math.floor(rng() * colors);

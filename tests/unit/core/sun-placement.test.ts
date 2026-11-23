@@ -28,6 +28,9 @@ function salts(node: unknown, out: number[] = []): number[] {
   return out;
 }
 
+/** A spec with no mechanic at all, to build placement specs on (a real level's spec may carry other flags). */
+const BASE: LevelSpec = { level: UNLOCK + 1, colors: 6, capacity: 4, spare: 2, buriedDepth: 2, challenge: false, mechanics: [] };
+
 /** The jars of a board that carry the pair. */
 const pairOf = (b: Board) => ({ rise: b.jars.filter((j) => j.sun?.at === 'rise'), set: b.jars.filter((j) => j.sun?.at === 'set') });
 
@@ -147,7 +150,7 @@ describe('a pair level drops wet sand and the sieve (D222)', () => {
 });
 
 describe('sunrise and sunset placement (applyMechanics)', () => {
-  const full = (): LevelSpec => ({ ...levelSpec(UNLOCK + 1, cfg), colors: 8, capacity: 4, spare: 2, buriedDepth: 2, mechanics: ['frozen', 'locked', 'narrow', 'funnel'], hourglass: true, clam: true, tide: true, crab: true, lighthouse: true, sun: true });
+  const full = (): LevelSpec => ({ ...BASE, colors: 8, capacity: 4, spare: 2, buriedDepth: 2, mechanics: ['frozen', 'locked', 'narrow', 'funnel'], hourglass: true, clam: true, tide: true, crab: true, lighthouse: true, sun: true });
 
   it('places exactly one sunrise and one sunset jar on two different filled plain jars, in different bands of the board, burial kept', () => {
     const board = dealt(8);
@@ -187,7 +190,7 @@ describe('sunrise and sunset placement (applyMechanics)', () => {
     let placed = 0;
     let rejected = 0;
     for (let seed = 1; seed <= 200; seed++) {
-      const spec: LevelSpec = { ...levelSpec(UNLOCK + 1, cfg), colors: 2, capacity: 4, spare: 1, buriedDepth: 0, mechanics: ['locked'], sun: true };
+      const spec: LevelSpec = { ...BASE, colors: 2, capacity: 4, spare: 1, buriedDepth: 0, mechanics: ['locked'], sun: true };
       const b = applyMechanics(two, spec, createRng(mixSeed(seed, 361)), cfg); // mixed: small raw seeds start alike
       const keys = b.jars.filter((j) => j.lock !== undefined).map((j) => j.lock);
       const { rise, set } = pairOf(b);
@@ -256,16 +259,23 @@ describe('sunrise band choice (proveDeal, D222)', () => {
     }
   });
 
-  it('keeps the dealt pair when its proof fits the cap, and never moves the sunset band', () => {
-    const b = applyMechanics(dealt6(), { ...full6(), sun: true }, createRng(3), cfg);
-    const p = proveDeal(b, 200_000, Infinity, 6, 3, 3);
-    expect(p.board).toBe(b);
-    const set = pairOf(p.board).set[0].sun!.band;
-    const capped = proveDeal(b, 200_000, 0, 6, 3, 3); // every proof over the cap: the shortest is kept
-    expect(pairOf(capped.board).set[0].sun!.band).toBe(set);
-    if (p.result.solvable === true) {
-      expect(capped.result.solvable).toBe(true);
-      expect(capped.nodes).toBeGreaterThan(p.nodes); // it went on to the other pairs
+  it('keeps the first band in sunriseBands order whose proof fits the cap, and never moves the sunset band', () => {
+    for (let seed = 1; seed <= 6; seed++) {
+      const b = applyMechanics(dealt6(), { ...full6(), sun: true }, createRng(mixSeed(seed, 29)), cfg);
+      const rise = b.jars.findIndex((j) => j.sun?.at === 'rise');
+      const setBand = pairOf(b).set[0].sun!.band;
+      const tries = sunriseBands(b.jars[rise].sun!.band, setBand, 6, 3);
+      const p = proveDeal(b, 600_000, Infinity, 6, 3, 3);
+      expect(pairOf(p.board).set[0].sun!.band, `seed ${seed}`).toBe(setBand);
+      // Arrange the expectation by proving each band on its own, in order.
+      const solvable = tries.map((band) => solve({ ...b, jars: b.jars.map((j, i) => (i === rise ? { ...j, sun: { band, at: 'rise' as const } } : j)) }, 600_000).solvable === true);
+      const want = solvable.indexOf(true);
+      if (want < 0) expect(p.result.solvable, `seed ${seed}`).not.toBe(true);
+      else {
+        expect(p.result.solvable, `seed ${seed}`).toBe(true);
+        expect(pairOf(p.board).rise[0].sun!.band, `seed ${seed}`).toBe(tries[want]);
+        if (want === 0) expect(p.board, `seed ${seed}`).toBe(b);
+      }
     }
   });
 
@@ -279,7 +289,7 @@ describe('sunrise band choice (proveDeal, D222)', () => {
 
 /** A plain spec for the 6-colour board, no mechanics. */
 function full6(): LevelSpec {
-  return { ...levelSpec(UNLOCK + 1, cfg), colors: 6, capacity: 4, spare: 2, buriedDepth: 2, mechanics: [] };
+  return { ...BASE, colors: 6, capacity: 4, spare: 2, buriedDepth: 2, mechanics: [] };
 }
 
 describe('sunrise and sunset fallback and generation', () => {
