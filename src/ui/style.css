@@ -2458,6 +2458,163 @@ button {
   visibility: visible;
 }
 
+/* Sunrise and sunset jars (sprint 29 N4, D223, jar-mechanics.md 2.11). The band: a painted stripe
+   round the jar's shoulder in its band colour, flush with the glass (the sieve's collar overhangs it),
+   with round ends and a cream pinstripe through it, like a beach hut's trim (the sieve's carries a
+   mesh). It sits where the sieve's collar would, above the sand and under the cork; a sun jar is never
+   a sieve, frozen, locked, narrow, a funnel or the hourglass (placement). With colour patterns on, the
+   band carries its colour's pattern (.pat-*) and the pinstripe stays over it. */
+.sun-band {
+  display: none;
+}
+/* Screenshot review: the colour dominates, so pale bands (saffron, lemon, mint) read as a coloured band
+   and not as trim. A 1.5px edge in the band colour darkened (--band-edge, logic/sun.ts sunBandEdge), a
+   1px pinstripe, faint 1px light and shade, and a little more height (the sieve's collar is 0.25). */
+:is(.jar, .mini-jar).sun .sun-band {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  left: 1px;
+  right: 1px;
+  top: var(--neck, calc(var(--jar-w) * 0.18));
+  height: max(12px, calc(var(--jar-w) * 0.24));
+  border: 1.5px solid var(--band-edge, var(--ink));
+  border-radius: 999px;
+  background-color: var(--band);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  pointer-events: none;
+}
+/* The pinstripe: one thin cream line with a faint dark hairline under it, so it shows on pale and dark bands alike. */
+.sun-pin {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 0.5px);
+  height: 1px;
+  background: #fff6e2;
+  box-shadow: 0 1px 0 rgba(40, 30, 20, 0.22);
+}
+/* The half-sun mark: an arched badge on the jar's base (the sieve's is a round badge with a ring), in
+   the card colours and sized in rem so it grows with text. The horizon is ink; the half-sun, its rays
+   and the arrow are in the band colour, each over a thin halo in the scene's ink (dark on a light card,
+   cream on a dark one), so any band colour reads on both. Open, the half-sun is a heavy ring round a
+   clear centre in the card colour (.sm-core): the jar is still to be filled. Filled in its band
+   (.sun-filled), the centre goes and it is solid (no tick: the sieve's goal has one). The arrow is up
+   on the sunrise jar and down on the sunset jar. Strokes in viewBox units: logic/sun.ts SUN_STROKE
+   (line 1.6, halo 2.6, horizon 1.6); the disc's halo, ring and centre are SUN_PATHS half-discs. */
+.sun-mark {
+  display: none;
+}
+:is(.jar, .mini-jar).sun .sun-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 55%);
+  width: 2.5em;
+  height: 2.1em;
+  border-radius: 1.25em 1.25em 0.5em 0.5em;
+  border: 2px solid var(--card);
+  background: var(--card);
+  box-shadow: var(--sh-1);
+  color: var(--band, var(--toast-bg));
+  font-size: var(--fs-1);
+  pointer-events: none;
+}
+.sun-mark svg {
+  width: 2.1em;
+  height: 1.84em;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sun-mark .sm-rays,
+.sun-mark .sm-arrow {
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+.sun-mark .sm-halo {
+  stroke: var(--ink);
+  stroke-width: 2.6;
+}
+.sun-mark .sm-halo-disc {
+  stroke: none;
+  fill: var(--ink);
+}
+.sun-mark .sm-disc {
+  fill: currentColor;
+}
+.sun-mark .sm-core {
+  fill: var(--card);
+}
+.sun-mark .sm-horizon {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+.sun-mark .sm-arrow {
+  display: none;
+}
+:is(.jar, .mini-jar).sun-rise .sun-mark .sm-rise,
+:is(.jar, .mini-jar).sun-set .sun-mark .sm-set {
+  display: inline;
+}
+:is(.jar, .mini-jar).sun-filled .sun-mark .sm-core {
+  display: none;
+}
+/* The sunrise brightening (screens/sun-moments.ts, D223 "the day begins"): a warm light up from the
+   horizon over the whole board, opacity only; never under reduced motion. Above the board and its
+   canvas, under the win card and the effects layer. */
+.sun-dawn {
+  /* Light scenes (the default): a warmer gold, normal blend, so it reads on the cream midday board. */
+  --dawn-blend: normal;
+  --dawn-core: rgba(255, 178, 64, 0.7);
+  --dawn-mid: rgba(255, 204, 112, 0.38);
+  --dawn-wash: rgba(255, 214, 140, 0.22);
+  --dawn-top: rgba(255, 240, 205, 0.06);
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: var(--dawn-blend);
+  background:
+    radial-gradient(120% 70% at 50% 108%, var(--dawn-core), var(--dawn-mid) 45%, rgba(255, 244, 214, 0) 78%),
+    linear-gradient(0deg, var(--dawn-wash), var(--dawn-top));
+}
+/* Dark scenes: the first build's gentle cream light, screened, so the night only lifts a little. */
+:root[data-scheme='dark'] .sun-dawn {
+  --dawn-blend: screen;
+  --dawn-core: rgba(255, 206, 128, 0.9);
+  --dawn-mid: rgba(255, 228, 170, 0.55);
+  --dawn-wash: rgba(255, 236, 190, 0.35);
+  --dawn-top: rgba(255, 250, 235, 0.15);
+}
+/* The dusk win (screens/win.ts, D223): on a board with a sunset jar the win plays at dusk, a violet
+   to ember tint over the dim backdrop and under the card. It fades in (instant under reduced motion,
+   from --dusk-ms and the global reduced-motion rule) and stays while the card is open. */
+/* .sun-dusk is the same tint over the board while the glow run plays (sun-moments.ts duskMoment). */
+.sun-dusk,
+.win.dusk::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(70, 48, 112, 0.42) 0%, rgba(150, 72, 108, 0.3) 48%, rgba(236, 128, 76, 0.34) 100%);
+  animation: fade var(--dusk-ms, 600ms) ease-out both;
+}
+.sun-dusk {
+  z-index: 15;
+  animation: none;
+}
+
 /* Clam jar (sprint 13 M3, D96): while it is closed a ribbed shell covers the whole glass, so its
    sand cannot be seen (jar-mechanics.md 2.6). The shell is a fan of ribs and growth rings from a
    hinge at the jar's foot, its crown domed into the cork room. The pours left until it opens sit
@@ -6368,6 +6525,10 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 .intro-row > .mini-jar {
   flex: none;
 }
+/* The sunrise and sunset pair (guide.ts miniJar('sun')) stand close together, as one picture. */
+.intro-row > .mini-jar.sun-rise {
+  margin-right: calc(var(--sp-2) - var(--sp-4));
+}
 /* Audit B5: Got it is pinned to the card's foot with a fade over the list above it. */
 .intro-card #btn-intro-ok {
   box-shadow:
@@ -7325,6 +7486,7 @@ canvas.gpu-board {
 #board[data-render='gpu'] .jar .padlock,
 #board[data-render='gpu'] .jar .funnel-mark,
 #board[data-render='gpu'] .jar .sieve-band,
+#board[data-render='gpu'] .jar .sun-band,
 #board[data-render='gpu'] .jar .clam-shell,
 #board[data-render='gpu'] .jar .cork,
 #board[data-render='gpu'] .jar .win-glow {
@@ -7338,6 +7500,7 @@ canvas.gpu-board {
 #board[data-render='gpu'] .jar.gpu-away .hourglass-mark,
 #board[data-render='gpu'] .jar.gpu-away .tide-mark,
 #board[data-render='gpu'] .jar.gpu-away .sieve-goal,
+#board[data-render='gpu'] .jar.gpu-away .sun-mark,
 #board[data-render='gpu'] .jar.gpu-away .lh-mark,
 #board[data-render='gpu'] .jar.gpu-away .clam-shell b {
   visibility: hidden;

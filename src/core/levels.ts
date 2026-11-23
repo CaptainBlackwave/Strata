@@ -112,7 +112,7 @@ export interface PourBand {
  * with its intro card on level 241 (strings from T5). The crab jar (D207, §2.9) and the lighthouse jar
  * (D208, §2.10) joined in sprint 27 K2, with intro cards on 281 and 321 (strings from K5).
  */
-export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse';
+export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse' | 'sun';
 
 /**
  * The four original mechanics (sprint 3). They ride in `LevelSpec.mechanics`; the hourglass,
@@ -120,7 +120,7 @@ export type MechanicId = 'narrow' | 'frozen' | 'locked' | 'funnel' | 'hourglass'
  * the generator's placement stream and every board from before them stay byte-identical. They are
  * also the daily's Saturday rotation (until sprint 13 W1, D98) and the "all four special jars" badge.
  */
-export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse'>;
+export type ClassicMechanicId = Exclude<MechanicId, 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse' | 'sun'>;
 
 
 /**
@@ -134,7 +134,7 @@ export type BoardMechanicId = MechanicId;
  * and the clam. Example: `config.mechanics.list.map((m) => m.id).filter(isClassicMechanic) // narrow … funnel`.
  */
 export function isClassicMechanic(id: BoardMechanicId): id is ClassicMechanicId {
-  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet' && id !== 'tide' && id !== 'crab' && id !== 'lighthouse';
+  return id !== 'hourglass' && id !== 'sieve' && id !== 'clam' && id !== 'wet' && id !== 'tide' && id !== 'crab' && id !== 'lighthouse' && id !== 'sun';
 }
 
 /** @deprecated The sprint 13 core name of {@link isClassicMechanic}: the hourglass has a card now too. */
@@ -142,10 +142,11 @@ export const isCardMechanic = isClassicMechanic;
 
 /**
  * Every mechanic on a level's board, in intro-card order: the spec's classic mechanics, then
- * the hourglass, the sieve, the clam, wet sand and the tide jar, each when it has one. Example: level
- * 181 gives `['clam']`, level 201 `['wet']`, level 241 `['tide']`.
+ * the hourglass, the sieve, the clam, wet sand, the tide jar, the crab, the lighthouse jar and the
+ * sunrise and sunset pair, each when it has one. Example: level 181 gives `['clam']`, level 201
+ * `['wet']`, level 241 `['tide']`, level 361 `['sun']`.
  */
-export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse'>): MechanicId[] {
+export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 'sieve' | 'clam' | 'wet' | 'tide' | 'crab' | 'lighthouse' | 'sun'>): MechanicId[] {
   return [
     ...spec.mechanics,
     ...(spec.hourglass ? ['hourglass' as const] : []),
@@ -155,6 +156,7 @@ export function specMechanics(spec: Pick<LevelSpec, 'mechanics' | 'hourglass' | 
     ...(spec.tide ? ['tide' as const] : []),
     ...(spec.crab ? ['crab' as const] : []),
     ...(spec.lighthouse ? ['lighthouse' as const] : []),
+    ...(spec.sun ? ['sun' as const] : []),
   ];
 }
 
@@ -177,6 +179,8 @@ export interface MechanicConfig {
    * Sieve: how many band colours the generator may prove on one deal, starting from the one the
    * placement stream drew (D96, §2.5). It keeps the first proven within the pour cap; a proof is a
    * win, which ends with the sieve sealed in its colour (D214). Default 3; 1 keeps the drawn colour.
+   * Sunrise and sunset jars: how many band pairs it may prove on one deal (D222, §2.11), the sunset
+   * band fixed and the sunrise band stepping on. Default 3; 1 keeps the drawn pair.
    */
   readonly colorTries?: number;
   /**
@@ -229,6 +233,12 @@ export interface LevelSpec {
   readonly crab?: boolean;
   /** One filled jar is a lighthouse jar with dark sand (D208, sprint 27 K3, §2.10). Absent or false: none. */
   readonly lighthouse?: boolean;
+  /**
+   * The board gets two extra empty jars, a sunrise jar and a sunset jar in different bands (D218, D225,
+   * sprint 29 N3, §2.11); the spares are kept. A pair level never has wet sand or the sieve (D222).
+   * Absent or false: neither.
+   */
+  readonly sun?: boolean;
 }
 
 /**
@@ -236,7 +246,7 @@ export interface LevelSpec {
  * the one path every board recipe (levels, the daily, the weekly; sprint 13 W1) uses.
  * Example: `splitMechanics(['sieve']) // { mechanics: [], sieve: true }`.
  */
-export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true; tide?: true; crab?: true; lighthouse?: true } {
+export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: ClassicMechanicId[]; hourglass?: true; sieve?: true; clam?: true; wet?: true; tide?: true; crab?: true; lighthouse?: true; sun?: true } {
   return {
     mechanics: ids.filter(isClassicMechanic),
     ...(ids.includes('hourglass') ? { hourglass: true as const } : {}),
@@ -246,7 +256,23 @@ export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: Cl
     ...(ids.includes('tide') ? { tide: true as const } : {}),
     ...(ids.includes('crab') ? { crab: true as const } : {}),
     ...(ids.includes('lighthouse') ? { lighthouse: true as const } : {}),
+    ...(ids.includes('sun') ? { sun: true as const } : {}),
   };
+}
+
+/**
+ * The mechanics a level keeps when it rolled the sunrise and sunset pair (§2.11). The pair gives way
+ * to the tide jar, the crab and the narrow jar (D226): with any of them rolled, the pair is dropped and
+ * the rest are unchanged, so their shares never move. Otherwise wet sand and the sieve are dropped (D222) and the
+ * rest keep their order. `levelSpec` applies it after a breather's `maxMechanics` cut, so a breather
+ * whose cut drops the pair is unchanged. Without the pair the list is returned unchanged.
+ * Example: `withoutPairConflicts(['sieve', 'frozen', 'sun']) // ['frozen', 'sun']`;
+ * `withoutPairConflicts(['crab', 'sun']) // ['crab']`.
+ */
+export function withoutPairConflicts(ids: readonly BoardMechanicId[]): BoardMechanicId[] {
+  if (!ids.includes('sun')) return [...ids];
+  if (ids.includes('tide') || ids.includes('crab') || ids.includes('narrow')) return ids.filter((id) => id !== 'sun');
+  return ids.filter((id) => id !== 'sieve' && id !== 'wet');
 }
 
 /**
@@ -310,8 +336,10 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
   const breather = isBreather(level, config);
   const br = breather ? config.breather : undefined;
   if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
+  // Decision D222: a level that still has the pair after the breather cut drops wet sand and the
+  // sieve. The cut comes first, so a breather that cuts the pair keeps exactly its old board.
   const rolled = withOwnRolls(level, pickMechanics(level, config), config);
-  const { mechanics, hourglass, sieve, clam, wet, tide, crab, lighthouse } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
+  const { mechanics, hourglass, sieve, clam, wet, tide, crab, lighthouse, sun } = splitMechanics(withoutPairConflicts(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled));
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {
@@ -327,7 +355,7 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}), ...(crab ? { crab } : {}), ...(lighthouse ? { lighthouse } : {}) };
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}), ...(crab ? { crab } : {}), ...(lighthouse ? { lighthouse } : {}), ...(sun ? { sun } : {}) };
 }
 
 /**

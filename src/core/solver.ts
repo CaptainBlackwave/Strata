@@ -84,7 +84,7 @@ function orderedMoves(board: Board): Move[] {
   // truly alike; the pruning is kept anyway for speed, and `solve` then never claims a board unwinnable.
   board.jars.forEach((j, i) => {
     if (j.units.length) return;
-    const kind = `${jarCapacity(board, i)}${j.funnel ? 'U' : ''}${j.frozen ? 'F' : ''}${j.lock ?? ''}${j.hourglass ? `H${j.hourglass.left}` : ''}${j.sieve !== undefined ? `S${j.sieve}` : ''}${j.clam !== undefined ? `C${j.clam}` : ''}${j.tide ? `T${j.tide.left}` : ''}`;
+    const kind = `${jarCapacity(board, i)}${j.funnel ? 'U' : ''}${j.frozen ? 'F' : ''}${j.lock ?? ''}${j.hourglass ? `H${j.hourglass.left}` : ''}${j.sieve !== undefined ? `S${j.sieve}` : ''}${j.clam !== undefined ? `C${j.clam}` : ''}${j.tide ? `T${j.tide.left}` : ''}${j.sun ? `${j.sun.at === 'rise' ? 'R' : 'D'}${j.sun.band}` : ''}`;
     if (!firstEmptyOfKind.has(kind)) firstEmptyOfKind.set(kind, i);
   });
   const firstEmpties = new Set(firstEmptyOfKind.values());

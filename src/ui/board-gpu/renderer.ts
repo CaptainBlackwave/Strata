@@ -13,7 +13,8 @@ import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from 
 import { DirtyTracker, jarKey } from './dirty';
 import { type ShelfWood, drawShelf, shelfBox } from './shelf';
 import { type JarGeometry, type Rect, cubicBezier, lipLocal, mouthRow, pourLip, pourSide } from './geometry';
-import { type PillLook, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawIce, drawPadlock, drawPill, drawSieveBand, padlockBox } from './mech-art';
+import { sunBandEdge } from '../logic/sun';
+import { type PillLook, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawIce, drawPadlock, drawPill, drawSieveBand, drawSunBand, padlockBox } from './mech-art';
 import { corkDrop, glowAt, liftTarget, mustSnapPour, nopeShake, shuffleHop } from './events';
 import { type PaintLook, type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
 import { type Overlay, PATTERNS, patternOverlay, sandOverlay } from './patterns';
@@ -124,7 +125,7 @@ interface JarView {
   readonly sand: Sprite;
   readonly marks: Container;
   readonly front: Sprite;
-  /** Mechanic marks over the glass: ice, padlock, funnel, sieve band, clam shell. */
+  /** Mechanic marks over the glass: ice, padlock, funnel, sieve band, sun band, clam shell. */
   readonly decor: Container;
   readonly shadow: Sprite;
   readonly canvas: HTMLCanvasElement;
@@ -904,6 +905,18 @@ export class GpuBoard {
       const color = this.opts.paletteHex[jar.sieve];
       const s = new Sprite(this.tex(`sieve|${width.toFixed(2)}|${color}|${pat(jar.sieve)}`, (r) => drawSieveBand(width, height, color, this.look.ink, pat(jar.sieve!), r)));
       s.position.set(b.left - out, b.top + b.w * 0.18 - 2);
+      v.decor.addChild(s);
+    }
+    if (jar.sun) {
+      // style.css `.sun-band`: 1 px in from each side, at the neck, max(12 px, --jar-w × 0.24) tall,
+      // edged in the band darkened (sunBandEdge), as the DOM's --band-edge.
+      const width = b.w - 2;
+      const height = Math.max(12, b.w * 0.24);
+      const band = jar.sun.band;
+      const color = this.opts.paletteHex[band];
+      const edge = sunBandEdge(color);
+      const s = new Sprite(this.tex(`sun|${width.toFixed(2)}|${height.toFixed(2)}|${color}|${pat(band)}`, (r) => drawSunBand(width, height, color, edge, pat(band), r)));
+      s.position.set(b.left + 1, b.top + b.w * 0.18);
       v.decor.addChild(s);
     }
     if (jar.clam !== undefined) v.decor.addChild(this.shellSprite(v));

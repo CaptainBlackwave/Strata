@@ -5,7 +5,7 @@ import type { Jar } from '../../core/board';
 
 /**
  * A jar's drawn state as a string: its units, bottom first, how many are hidden, and its mechanics
- * (narrow, funnel, frozen, lock, sieve, clam, the crab and its count, the lighthouse's count and beam;
+ * (narrow, funnel, frozen, lock, sieve, the sunrise or sunset band, clam, the crab and its count, the lighthouse's count and beam;
  * the hourglass count is DOM text) and which units are
  * wet (D189, §2.7: wet sand is drawn darker; its counts are DOM text). Example: `'0,2,2|1'`
  */
@@ -16,6 +16,7 @@ export function jarKey(jar: Jar): string {
     jar.frozen ? 'i' : '',
     jar.lock !== undefined ? `l${jar.lock}` : '',
     jar.sieve !== undefined ? `s${jar.sieve}` : '',
+    jar.sun ? `u${jar.sun.at === 'rise' ? 'r' : 'd'}${jar.sun.band}` : '',
     jar.clam !== undefined ? 'c' : '',
     jar.hourglass ? 'h' : '',
     // The crab's count and the lighthouse's beam (§2.9, §2.10): the core `jarKey` keeps the crab but

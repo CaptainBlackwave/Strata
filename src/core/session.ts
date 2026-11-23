@@ -3,7 +3,7 @@
  * hints and status. The UI listens through `onChange`, so nothing here knows about the DOM.
  * Implements design/game-brief.md MVP 1 and MVP 4.
  */
-import { type Board, type Jar, type LostReason, type Move, addEmptyJar, canPour, isClosed, isSealed, isStuck, isWon, jarKey, lostReason as boardLostReason, pour, settle } from './board';
+import { type Board, type Jar, type LostReason, type Move, addEmptyJar, canPour, isClosed, isComplete, isSealed, isStuck, isWon, jarKey, lostReason as boardLostReason, pour, settle } from './board';
 import type { GameConfig } from './levels';
 import { type Rng, shuffle as shuffleInPlace } from './rng';
 import { solve } from './solver';
@@ -40,6 +40,8 @@ export type SessionEvent =
       readonly crabMoved?: { readonly from: number; readonly to: number };
       /** Lighthouse jars the beam lit right after this pour (D208, §2.10). Absent when none. */
       readonly swept?: readonly number[];
+      /** True on the pour that filled the sunrise jar (D223, §2.11), for the brightening. Absent otherwise. */
+      readonly sunrise?: true;
     }
   | { readonly type: 'undo' }
   | { readonly type: 'restart' }
@@ -193,10 +195,11 @@ export class GameSession {
     const turned = result.turned.length ? { turned: result.turned } : {};
     const crabMoved = result.crabMoved ? { crabMoved: result.crabMoved } : {};
     const swept = result.swept.length ? { swept: result.swept } : {};
+    const sunrise = result.sunrise ? { sunrise: true as const } : {};
     const before = this.history[this.history.length - 1];
     const dry = result.dried.filter((i) => i !== to && isSealed(result.board.jars[i], result.board.capacity) && !isSealed(before.jars[i], before.capacity));
     const sealedDry = dry.length ? { sealedDry: dry } : {};
-    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped, ...opened, ...dried, ...sealedDry, ...turned, ...crabMoved, ...swept });
+    this.emit({ type: 'pour', move: { from, to }, moved: result.moved, color: result.color, sealed, ...flipped, ...opened, ...dried, ...sealedDry, ...turned, ...crabMoved, ...swept, ...sunrise });
     this.emitStatus();
     return true;
   }
@@ -378,14 +381,19 @@ export function searchHint(board: Board, budget: number): HintSearch {
  * and a shuffle is not a pour; once open it is a free jar like any other. Wet sand (D189, §2.7)
  * keeps its count with its unit: each unit is re-dealt together with its count. An unsealed tide jar
  * (§2.8) is a free jar like the hourglass: its sand is re-dealt and its count is kept. The crab's jar (§2.9)
- * keeps its sand, the crab and its count; a lighthouse jar (§2.10) is a free jar and keeps its beam. Pure and
+ * keeps its sand, the crab and its count; a lighthouse jar (§2.10) is a free jar and keeps its beam. The
+ * sunrise and sunset jars (D222, §2.11 rule 13) keep their sand, band and role, and while the sunrise jar is
+ * not filled a re-deal that fills any re-dealt jar is drawn again, since rule 5 lets no jar fill first. Pure and
  * deterministic for a given `rng`, so a worker given the same seed finds the same board
  * (TD-13). All attempts together spend at most `shuffleTotalNodeBudget` states (F7, GA-SB-4).
  * Example: `findShuffle(board, sessionOptions(config), createRng(seed))`
  */
 export function findShuffle(board: Board, options: SessionOptions, rng: Rng): Board | null {
   // The crab's jar keeps its sand, the crab and its count (§2.9): it can't be poured from, like a closed clam.
-  const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.clam !== undefined || j.funnel || j.crab ? -1 : i)).filter((i) => i >= 0);
+  // The sunrise and sunset jars keep their sand too (§2.11 rule 13).
+  const open = board.jars.map((j, i) => (isSealed(j, board.capacity) || isClosed(j) || j.clam !== undefined || j.funnel || j.crab || j.sun ? -1 : i)).filter((i) => i >= 0);
+  const rise = board.jars.find((j) => j.sun?.at === 'rise');
+  const riseOpen = rise !== undefined && !isComplete(rise, board.capacity);
   // Each unit travels with its wet count (0 when dry), §2.7.
   const pool = open.flatMap((i) => board.jars[i].units.map((c, k) => [c, board.jars[i].wet?.[k] ?? 0] as const));
   const before = exactKey(board);
@@ -405,6 +413,8 @@ export function findShuffle(board: Board, options: SessionOptions, rng: Rng): Bo
       const { wet: _old, ...rest } = j;
       return { ...rest, units, hidden: Math.min(j.hidden, Math.max(0, units.length - 1)), ...(wet.some((w) => w > 0) ? { wet } : {}) };
     });
+    // Before the sunrise no jar may be filled (§2.11 rules 5 and 13): draw again.
+    if (riseOpen && open.some((i) => isComplete(jars[i], board.capacity))) continue;
     const next: Board = settle({ capacity: board.capacity, jars });
     if (exactKey(next) === before || isWon(next)) continue;
     const allowed = Math.min(budget, total - spent);

@@ -5,7 +5,7 @@ import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer } from '../../dom';
 import { config, state } from '../../state';
-import { CLAM_SHELL, CRAB_MARK, HOURGLASS_MARK, LIGHTHOUSE_MARK, SIEVE_BAND, SIEVE_GOAL, TIDE_MARK, WET_MARK } from '../jars';
+import { CLAM_SHELL, CRAB_MARK, HOURGLASS_MARK, LIGHTHOUSE_MARK, SIEVE_BAND, SIEVE_GOAL, TIDE_MARK, WET_MARK, sunMiniArt } from '../jars';
 import { wetHex } from '../../logic/wet';
 
 /** The Jar guide's entries: every configured mechanic, in config (unlock) order. */
@@ -37,10 +37,29 @@ export function miniJar(id: MechanicId): string {
     : '';
   // The sieve shows its band and its goal mark, open (D216): the guide's sieve is not yet filled.
   const band = id === 'sieve' ? SIEVE_BAND.replace('class="sieve-band"', `class="sieve-band" style="--band:${config.palette[0].hex}"`) + SIEVE_GOAL.replace('class="sieve-goal"', `class="sieve-goal" style="--band:${config.palette[0].hex}"`) : '';
+  // The sunrise and sunset jars (D223, §2.11) are one pair, so the card shows both, side by side (below).
   // The clam is shut and shows its full count, like a freshly dealt one.
   const opensAfter = config.mechanics.list.find((m) => m.id === 'clam')?.opensAfter ?? 6;
   const shell = id === 'clam' ? CLAM_SHELL.replace('<b></b>', `<b>${opensAfter}</b>`) : '';
+  if (id === 'sun') return sunPair();
   return `<span class="mini-jar ${id}" aria-hidden="true">${top}<span class="glass"><span class="sand">${sand}</span>${extra}<span class="shine"></span></span>${mark}${band}${shell}</span>`;
+}
+
+/** The palette colours of the guide's pair: a warm saffron sunrise and a rose sunset, two different bands (§2.11 rule 1). */
+const SUN_PAIR_BANDS = { rise: 1, set: 10 } as const;
+
+/**
+ * The sunrise and sunset pair for the intro card and the Jar guide (D223): two mini jars side by side,
+ * each with its band and its open half-sun (up for rise, down for set), holding only its own colour,
+ * part filled (they are dealt empty, D225), so the picture teaches "each takes only its own colour".
+ */
+function sunPair(): string {
+  const one = (at: 'rise' | 'set', units: number) => {
+    const hex = config.palette[SUN_PAIR_BANDS[at]].hex;
+    const sand = `<span class="unit" style="--c:${hex}"></span>`.repeat(units);
+    return `<span class="mini-jar sun sun-${at}" aria-hidden="true"><span class="glass"><span class="sand">${sand}</span><span class="shine"></span></span>${sunMiniArt(hex)}</span>`;
+  };
+  return one('rise', 2) + one('set', 1);
 }
 
 /** Shows the intro card for any mechanic on this board the player hasn't met yet. */

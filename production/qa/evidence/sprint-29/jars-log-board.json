@@ -1,0 +1,254 @@
+{
+  "gpu-dark": {
+    "render": "gpu",
+    "startLabels": [
+      "Jar 15: empty (sunrise jar, terracotta only, fill it first)",
+      "Jar 16: empty (sunset jar, rose only, fill it last)"
+    ],
+    "dawn": true,
+    "dawnAnims": 1,
+    "filledLabels": [
+      "Jar 15: terracotta, terracotta, terracotta, terracotta (sunrise jar, terracotta only, filled, sealed)",
+      "Jar 16: rose, rose (sunset jar, rose only, fill it last)"
+    ],
+    "announce": [
+      "5000 coins",
+      "Getting the jars ready…",
+      "Poured 1 terracotta into jar 15. Jar 15 sealed. The sun is up: the sunrise jar is filled."
+    ],
+    "dusk": true,
+    "winOpenAtDuskShot": true,
+    "winDusk": true,
+    "errors": []
+  },
+  "plan": {
+    "solvable": true,
+    "pours": 46,
+    "sunrise": 22,
+    "rise": 14,
+    "set": 15,
+    "bands": [
+      0,
+      10
+    ],
+    "refusals": {
+      "sunRise": {
+        "k": 0,
+        "f": 0,
+        "t": 14
+      },
+      "sunSet": {
+        "k": 0,
+        "f": 0,
+        "t": 15
+      },
+      "sunrise": {
+        "k": 11,
+        "f": 6,
+        "t": 0
+      },
+      "sunset": {
+        "k": 23,
+        "f": 6,
+        "t": 15
+      }
+    },
+    "lostSunset": {
+      "k": 23,
+      "f": 15,
+      "t": 6
+    }
+  },
+  "words-gpu": {
+    "sunRise": "Only terracotta greets the sunrise.",
+    "sunSet": "Only rose waits for sunset.",
+    "sunrise": "The sun hasn’t risen yet: fill the sunrise jar first.",
+    "sunset": "Sunset comes last: finish every other jar first.",
+    "lostSunset": {
+      "reason": "sunset",
+      "text": "Rose was sealed outside the sunset jar: Undo or Restart."
+    },
+    "lostSunrise": {
+      "reason": "sunrise",
+      "text": "Rose can no longer reach the sunrise jar: Undo or Restart.",
+      "crafted": true
+    },
+    "errors": []
+  },
+  "320-150-gpu": {
+    "scrollW": 320,
+    "innerW": 320,
+    "marks": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        161,
+        206,
+        664
+      ],
+      [
+        207,
+        252,
+        664
+      ]
+    ]
+  },
+  "patterns-gpu": {
+    "scrollW": 412,
+    "innerW": 412,
+    "marks": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        222,
+        252,
+        720
+      ],
+      [
+        283,
+        313,
+        720
+      ]
+    ]
+  },
+  "reduced-gpu": {
+    "dawnLayers": 0,
+    "winDusk": true
+  }
+}

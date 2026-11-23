@@ -194,6 +194,8 @@ const en = {
     crab: { name: 'Crab jar', rule: 'A crab sits on one jar\u2019s lid. You can pour into that jar, but not out of it. Every third pour on the board the crab walks to the next jar along; the number on it counts the pours left. It never sits on a sealed jar.', tap: 'The crab is on that jar.' },
     /** The lighthouse jar (sprint 27 K5, D208, D209; §2.10): its intro card, Jar guide entry and tap text. */
     lighthouse: { name: 'Lighthouse jar', rule: 'The lighthouse jar\u2019s sand is dark, so you can\u2019t see its colours. Every fourth pour on the board the beam lights it, and its colours show until your next pour. The number on its lighthouse counts the pours left. It pours like any jar, and stays lit once sealed.', tap: 'Lighthouse jar: the beam lights it every fourth pour.' },
+    /** The sunrise and sunset jars (sprint 29 N5, D218–D223; §2.11): their intro card, Jar guide entry and tap text. */
+    sun: { name: 'Sunrise and sunset jars', rule: 'The sunrise jar is filled first and the sunset jar last. Each takes only its own colour.', tap: 'Sunrise first, sunset last. Each takes only its own colour.' },
   },
   newJar: 'New jar!',
   gotIt: 'Got it',
@@ -213,6 +215,16 @@ const en = {
     /** The mark beside the newest posting. */
     latest: 'Latest',
     releases: [
+      {
+        version: '0.25.0',
+        name: 'Sunrise and sunset',
+        lines: [
+          'From level 361, the sunrise and sunset jars: two empty jars, each taking only its own colour.',
+          'Fill the sunrise jar first: no other jar can be filled before it.',
+          'The sunset jar is filled last, by your winning pour.',
+          'The board brightens when the sun rises, and you win at dusk.',
+        ],
+      },
       {
         version: '0.24.1',
         name: 'The sieve is a goal',
@@ -500,7 +512,7 @@ const en = {
       newJar: (jar: string) => `new jar: ${jar}`,
     },
     /** Short jar names for the debut badge. */
-    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar', crab: 'crab jar', lighthouse: 'lighthouse jar' },
+    jars: { narrow: 'narrow', frozen: 'frozen', locked: 'locked lid', funnel: 'funnel', hourglass: 'hourglass', sieve: 'sieve', clam: 'clam', wet: 'wet sand', tide: 'tide jar', crab: 'crab jar', lighthouse: 'lighthouse jar', sun: 'sunrise & sunset' },
     best: (n: number | undefined) => (n === undefined ? 'Best –' : `Best ${n} ${n === 1 ? 'pour' : 'pours'}`),
     perfectYes: 'Perfect ✓',
     perfectNo: 'Perfect –',
@@ -540,6 +552,8 @@ const en = {
     lighthouseLit: 'lighthouse jar, lit until the next pour',
     /** A sealed lighthouse jar (§2.10 rule 4): lit for good. */
     lighthouseSealed: 'lighthouse jar, lit for good',
+    /** A sunrise or sunset jar (D223, §2.11): `c` is its band colour's name. Once filled the label adds "filled". */
+    sun: (c: string, at: 'rise' | 'set', filled = false) => `${at === 'rise' ? 'sunrise' : 'sunset'} jar, ${c} only${filled ? ', filled' : at === 'rise' ? ', fill it first' : ', fill it last'}`,
   },
   /** One wet unit in a jar's screen-reader contents (D189, §2.7): `left` is the pours until it dries (1..dryAfter). */
   wetUnit: (colour: string, left: number) => (left === 1 ? `wet ${colour}, dries after the next pour` : `wet ${colour}, dries in ${left} pours`),
@@ -590,6 +604,10 @@ const en = {
   cantWin: 'This board can\u2019t be won now: Undo or Restart.',
   /** The sieve dead end (D215): its band colour was sealed in another jar. `colour` is the band colour's name. */
   sieveLost: (colour: string) => `${colour.charAt(0).toUpperCase()}${colour.slice(1)} was sealed outside its sieve: Undo or Restart.`,
+  /** The sunrise dead end (D221, §2.11): too little of its band can still reach it. `colour` is the band colour's name. */
+  sunriseLost: (colour: string) => `${colour.charAt(0).toUpperCase()}${colour.slice(1)} can no longer reach the sunrise jar: Undo or Restart.`,
+  /** The sunset dead end (D221, §2.11): its band was sealed in another jar or is held in a funnel. */
+  sunsetLost: (colour: string) => `${colour.charAt(0).toUpperCase()}${colour.slice(1)} was sealed outside the sunset jar: Undo or Restart.`,
   hintToast: (from: number, to: number) => `Hint: pour jar ${from} into jar ${to}`,
   hintFrom: 'From',
   hintTo: 'To',
@@ -617,6 +635,14 @@ const en = {
   clamAnnounce: (jar: number) => `The clam opened (jar ${jar}).`,
   /** Shown when wet sand is poured towards an empty jar (D189, §2.7). */
   wetRefused: 'Wet sand only goes onto its own colour.',
+  /** A wrong colour poured into a sunrise or sunset jar (`'sun'`, D223, §2.11). `colour` is the band colour's name. */
+  sunRefused: (colour: string, at: 'rise' | 'set') => (at === 'rise' ? `Only ${colour} greets the sunrise.` : `Only ${colour} waits for sunset.`),
+  /** A pour that would fill a jar before the sunrise jar (`'sunrise'`, D219, D223). */
+  sunriseRefused: 'The sun hasn\u2019t risen yet: fill the sunrise jar first.',
+  /** A pour that would fill the sunset jar before the winning pour (`'sunset'`, D219, D223). */
+  sunsetRefused: 'Sunset comes last: finish every other jar first.',
+  /** Said after the pour that filled the sunrise jar (D223). */
+  sunriseAnnounce: 'The sun is up: the sunrise jar is filled.',
   /** Said after the pour that turned a tide jar (D194, §2.8). `jar` is 1-based. */
   tideAnnounce: (jar: number) => `The tide turned (jar ${jar}).`,
   /** Said after the pour that moved the crab (D207, §2.9). `jar` is 1-based. */

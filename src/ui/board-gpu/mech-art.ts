@@ -6,6 +6,7 @@
  * the player's text size.
  */
 import { PATTERNS } from './patterns';
+import { SUN_BOX, SUN_PATHS, SUN_STROKE } from '../logic/sun';
 
 function canvas(w: number, h: number, res: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
   const c = document.createElement('canvas');
@@ -200,6 +201,38 @@ export function drawSieveBand(width: number, height: number, color: string, ink:
   rr(g, 1, 1, width - 2, height - 2, 4, 4);
   g.strokeStyle = ink;
   g.lineWidth = 2;
+  g.stroke();
+  return c;
+}
+
+/**
+ * The sunrise or sunset jar's band (`.sun-band`, D223 §2.11): a stripe in its band colour, flush with
+ * the jar and with round ends, edged in `edge` (the band darkened, logic/sun.ts `sunBandEdge`), with a
+ * thin cream pinstripe through it; with patterns on, the pattern under the pinstripe. No mesh, so it
+ * never reads as the sieve's collar. The colour dominates, so pale bands still read as a band.
+ */
+export function drawSunBand(width: number, height: number, color: string, edge: string, pattern: number | null, res: number): HTMLCanvasElement {
+  const [c, g] = canvas(width, height + 2, res);
+  const r = height / 2;
+  rr(g, 0, 0, width, height, r, r);
+  g.fillStyle = color;
+  g.fill();
+  g.save();
+  g.clip();
+  if (pattern !== null) fillPattern(g, pattern, 0, 0, width, height);
+  g.fillStyle = 'rgba(255,255,255,0.3)';
+  g.fillRect(0, 1.5, width, 1);
+  g.fillStyle = 'rgba(0,0,0,0.14)';
+  g.fillRect(0, height - 2.5, width, 1);
+  const pin = height / 2 - 0.5;
+  g.fillStyle = '#fff6e2';
+  g.fillRect(0, pin, width, 1);
+  g.fillStyle = 'rgba(40,30,20,0.22)';
+  g.fillRect(0, pin + 1, width, 1);
+  g.restore();
+  rr(g, 0.75, 0.75, width - 1.5, height - 1.5, r - 0.75, r - 0.75);
+  g.strokeStyle = edge;
+  g.lineWidth = 1.5;
   g.stroke();
   return c;
 }
@@ -455,9 +488,10 @@ export interface PillLook {
   /**
    * Which glyph the pill carries: the hourglass's bulbs, the tide jar's wave (§2.8), the lighthouse
    * (§2.10) or the sieve's goal ring (D216, §2.5; a round badge with no text, always open in a pour,
-   * since a sealed sieve is never poured from). Default hourglass.
+   * since a sealed sieve is never poured from), or the sunrise or sunset jar's half-sun (`'rise'`,
+   * `'set'`, D223 §2.11; open in a pour, since a filled one is sealed). Default hourglass.
    */
-  readonly glyph?: 'hourglass' | 'wave' | 'lighthouse' | 'goal';
+  readonly glyph?: 'hourglass' | 'wave' | 'lighthouse' | 'goal' | 'rise' | 'set';
   readonly width: number;
   readonly height: number;
   readonly bg: string;
@@ -465,18 +499,55 @@ export interface PillLook {
   readonly border: string;
   readonly font: string;
   readonly text: string;
+  /** The scene's ink (`--ink`), for the half-sun's horizon line and its halo; the glyph colour (and no halo) when absent. */
+  readonly ink?: string;
 }
 
 /** The hourglass or tide count pill (`.hourglass-mark`, `.tide-mark`), redrawn so it can travel with a pouring jar (strata-5lq). */
 export function drawPill(p: PillLook, res: number): HTMLCanvasElement {
   const [c, g] = canvas(p.width, p.height, res);
-  const r = p.height / 2;
-  rr(g, 0.75, 0.75, p.width - 1.5, p.height - 1.5, r, r);
+  const sun = p.glyph === 'rise' || p.glyph === 'set';
+  const r = sun ? p.width / 2 : p.height / 2;
+  // The half-sun's badge is an arch (`.sun-mark`: round top, small radius at the foot).
+  if (sun) rr(g, 0.75, 0.75, p.width - 1.5, p.height - 1.5, r - 0.75, p.height * 0.24);
+  else rr(g, 0.75, 0.75, p.width - 1.5, p.height - 1.5, r, r);
   g.fillStyle = p.bg;
   g.fill();
   g.strokeStyle = p.border;
   g.lineWidth = 1.5;
   g.stroke();
+  if (p.glyph === 'rise' || p.glyph === 'set') {
+    // SUN_MARK, open: the half-sun, rays and arrow in the band colour, each over a thin halo in the
+    // scene's ink, then the ink horizon, in the badge's middle (a 16 x 14 box at 2.1em in a 2.5em
+    // badge), from the same path data and strokes (SUN_STROKE).
+    const scale = (p.width * (2.1 / 2.5)) / SUN_BOX.width;
+    g.save();
+    g.translate((p.width - SUN_BOX.width * scale) / 2, (p.height - SUN_BOX.height * scale) / 2);
+    g.scale(scale, scale);
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    // Open (a pour never carries a filled one): the ring round a clear centre in the badge colour.
+    const lines = [SUN_PATHS.rays, SUN_PATHS[p.glyph]].map((d) => new Path2D(d));
+    if (p.ink) {
+      g.lineWidth = SUN_STROKE.halo;
+      g.strokeStyle = p.ink;
+      for (const d of lines) g.stroke(d);
+      g.fillStyle = p.ink;
+      g.fill(new Path2D(SUN_PATHS.halo));
+    }
+    g.lineWidth = SUN_STROKE.line;
+    g.strokeStyle = p.fg;
+    for (const d of lines) g.stroke(d);
+    g.fillStyle = p.fg;
+    g.fill(new Path2D(SUN_PATHS.disc));
+    g.fillStyle = p.bg;
+    g.fill(new Path2D(SUN_PATHS.core));
+    g.lineWidth = SUN_STROKE.horizon;
+    g.strokeStyle = p.ink ?? p.fg;
+    g.stroke(new Path2D(SUN_PATHS.horizon));
+    g.restore();
+    return c;
+  }
   if (p.glyph === 'goal') {
     // SIEVE_GOAL, open: a ring outline in the band colour, in the badge's middle (its r 4.2 of a 12 box, at 1.7em in a 2em badge).
     g.strokeStyle = p.fg;

@@ -30,6 +30,16 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.25.0 (2026-11-23): sprint 29, sunrise and sunset
+**For players**
+- **The sunrise and sunset jars**, from level 361: two extra empty jars, each banded in its own colour, that take only that colour. The sunrise jar is filled first: no other jar can be filled before it ("The sun hasn't risen yet: fill the sunrise jar first."). The sunset jar is filled last, by the winning pour ("Sunset comes last: finish every other jar first.").
+- Each jar wears a half-sun badge on its base (rising or setting), open until the jar is filled. The board brightens when the sunrise jar fills and the win plays at dusk; with reduced motion the light is skipped and the dusk tint appears at once.
+- Two new dead-end notes, "<Colour> can no longer reach the sunrise jar" and "<Colour> was sealed outside the sunset jar", each with Undo and Restart.
+- About 1 level in 8 from 362 has the pair (79 of 361-1000). It never shares a level with wet sand, the sieve, the tide jar, the crab or a rolled narrow jar. Levels 1-360 are unchanged, and best pours are kept.
+
+**Under the hood**
+- Owner decisions D218-D226 (`production/sprints/sprint-29.md`, `design/gdd/jar-mechanics.md` section 2.11). `Jar.sun`; refusals `'sun'`, `'sunrise'`, `'sunset'`; lost reasons `'sunrise'`, `'sunset'`; `PourResult.sunrise`. The pair is dealt empty (D225) and gives way to the tide jar, the crab and a rolled narrow jar (D226), own chance 0.22. 72 of the 79 pair levels build with the pair; the rest fall back. Fixture `boards-1-360.json` pins levels 1-360. Built by four parallel agents (core, generation, look, words) against a shared contract.
+
 ## 0.24.1 (2026-11-13): sprint 28, the sieve is a goal
 **For players**
 - **The sieve jar is now a goal**: a level with a sieve ends only when the sieve is full and sealed in its colour. Before, a level could be won with the sieve left empty (player feedback on level 145).

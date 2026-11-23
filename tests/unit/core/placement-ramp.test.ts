@@ -52,7 +52,7 @@ describe('difficulty ramp past level 45 (D1)', () => {
     for (let l = 300; l <= 400; l++) {
       const g = generateLevel(l, cfg);
       expect([1, 2], `level ${l}`).toContain(g.spec.spare);
-      expect(g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel).length, `level ${l}`).toBe(g.spec.spare);
+      expect(g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel && j.sun === undefined).length, `level ${l}`).toBe(g.spec.spare);
     }
   }, 60_000);
 });
@@ -76,7 +76,7 @@ describe('spare-jar swap and generation fallback (D1 revised, sweep regressions)
       await new Promise((r) => setTimeout(r, 0));
       n++;
       const g = generateLevel(l, cfg);
-      const ordinarySpares = g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel).length;
+      const ordinarySpares = g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel && j.sun === undefined).length;
       if (ordinarySpares === 1) one++;
     }
     expect(one / n).toBeGreaterThan(0.6);
@@ -112,7 +112,7 @@ describe('a debut level shows its new mechanic alone (D28, GA-LG-7)', () => {
       expect(g.spec.mechanics, `level ${level}`).toEqual([id]);
       expect(g.spec.spare, `level ${level}`).toBe(2);
       expect(has(g.board, id), `level ${level}`).toBe(true);
-      expect(g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel).length, `level ${level}`).toBe(2);
+      expect(g.board.jars.filter((j) => j.units.length === 0 && j.cap === undefined && !j.funnel && j.sun === undefined).length, `level ${level}`).toBe(2);
       expect(solve(g.board, cfg.generator.solverNodeBudget).solvable, `level ${level}`).toBe(true);
     }
   }, 60_000);

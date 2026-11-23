@@ -12,6 +12,7 @@ import { DRY_MS, wetHex, wetLeft } from '../logic/wet';
 import { TIDE_MS, riseFrom, tideCount } from '../logic/tide';
 import { CRAB_MS, crabCount, scuttleFrames, scuttleFrom } from '../logic/crab';
 import { BEAM_MS, beamCount, beamFrames, isDark } from '../logic/lighthouse';
+import { SUN_CLASSES, SUN_PATHS, sunBandEdge, sunClasses } from '../logic/sun';
 import { audio, config, state } from '../state';
 import rawConfig from '../../config/game-config.json';
 
@@ -103,6 +104,43 @@ export const LIGHTHOUSE_MARK =
   '<path class="lh-tower" d="M3.2 13.2 4 5.6h2l.8 7.6z"/><path class="lh-stripe" d="M3.55 10.1h2.9M3.85 7.6h2.3"/>' +
   '<rect class="lh-lamp" x="3.6" y="3" width="2.8" height="2.4" rx=".4"/><path class="lh-cap" d="M3.1 3 5 1.1 6.9 3z"/></svg><b></b></span>';
 
+/**
+ * The sunrise or sunset jar's band (D223, §2.11): a painted stripe round the jar's shoulder in its
+ * band colour (`--band`), flush with the glass and with round ends, and a cream pinstripe through it,
+ * like a beach hut's trim. It never reads as the sieve's collar, which overhangs the jar and carries a
+ * mesh. With colour patterns on it carries its colour's pattern under the pinstripe. Drawn for Strata.
+ */
+export const SUN_BAND = '<span class="sun-band" aria-hidden="true"><span class="sun-pin"></span></span>';
+
+/**
+ * The sunrise or sunset jar's mark (D223, §2.11): an arched badge on the jar's base, where the sieve's
+ * round goal badge would sit, with a half-sun on an ink horizon, four rays and an arrow above it: up
+ * on the sunrise jar, down on the sunset jar (`.jar.sun-rise` / `.jar.sun-set` show one arrow). While
+ * the jar is not filled the half-sun is a heavy ring in its band colour round a clear centre
+ * (`.sm-core`, in the card colour); once filled (`.jar.sun-filled`) the centre goes and it is solid.
+ * The half-sun, rays and arrow each have a thin halo in the scene's ink (`.sm-halo`), so any band reads
+ * on a light or a dark card. Drawn for Strata from `SUN_PATHS` and `SUN_STROKE` (logic/sun.ts).
+ */
+const sunLines = (cls: string) =>
+  `<path class="sm-rays${cls}" d="${SUN_PATHS.rays}"/>` +
+  `<path class="sm-arrow sm-rise${cls}" d="${SUN_PATHS.rise}"/><path class="sm-arrow sm-set${cls}" d="${SUN_PATHS.set}"/>`;
+export const SUN_MARK =
+  '<span class="sun-mark" aria-hidden="true"><svg viewBox="0 0 16 14" focusable="false">' +
+  sunLines(' sm-halo') +
+  `<path class="sm-halo sm-halo-disc" d="${SUN_PATHS.halo}"/>` +
+  sunLines('') +
+  `<path class="sm-disc" d="${SUN_PATHS.disc}"/><path class="sm-core" d="${SUN_PATHS.core}"/>` +
+  `<path class="sm-horizon" d="${SUN_PATHS.horizon}"/></svg></span>`;
+
+/**
+ * The intro card's and Jar guide's sun art (D223): the band and the half-sun mark, open, in colour
+ * `hex`, for a `.mini-jar.sun.sun-rise` or `.sun-set` (guide.ts shows the pair side by side).
+ */
+export function sunMiniArt(hex: string): string {
+  const look = `--band:${hex};--band-edge:${sunBandEdge(hex)}`;
+  return SUN_BAND.replace('class="sun-band"', `class="sun-band" style="${look}"`) + SUN_MARK.replace('class="sun-mark"', `class="sun-mark" style="--band:${hex}"`);
+}
+
 let tapHandler: (i: number) => void = () => {};
 
 /** Registers what a tap on jar `i` does. The board sets it at boot, so this file need not import the board. */
@@ -156,6 +194,8 @@ export function buildJars(): void {
       CRAB_MARK +
       SIEVE_BAND +
       SIEVE_GOAL +
+      SUN_BAND +
+      SUN_MARK +
       CLAM_SHELL;
     jar.addEventListener('click', () => tapHandler(i));
     row!.appendChild(jar);
@@ -303,6 +343,17 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
     band.style.setProperty('--band', config.palette[jar.sieve].hex);
     (el.querySelector('.sieve-goal') as HTMLElement).style.setProperty('--band', config.palette[jar.sieve].hex);
     band.className = `sieve-band${state.save.settings.patterns ? ` pat-${jar.sieve % PATTERNS}` : ''}`;
+  }
+  // The sunrise or sunset jar's band and half-sun (D223, §2.11): open until the jar is filled, then filled in.
+  const sun = sunClasses(jar, capacity);
+  for (const c of SUN_CLASSES) el.classList.toggle(c, sun.includes(c));
+  if (jar.sun) {
+    const hex = config.palette[jar.sun.band].hex;
+    const sunBand = el.querySelector('.sun-band') as HTMLElement;
+    sunBand.style.setProperty('--band', hex);
+    sunBand.style.setProperty('--band-edge', sunBandEdge(hex));
+    sunBand.className = `sun-band${state.save.settings.patterns ? ` pat-${jar.sun.band % PATTERNS}` : ''}`;
+    (el.querySelector('.sun-mark') as HTMLElement).style.setProperty('--band', hex);
   }
   // A closed clam's shell and count (D96, §2.6). Undo of the opening pour closes it again here.
   el.classList.toggle('clam', jar.clam !== undefined);
