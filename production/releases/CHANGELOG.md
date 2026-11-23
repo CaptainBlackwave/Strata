@@ -27,6 +27,24 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.13.0 | `ebf60b7` (sprint 13, PR #23) |
 | v0.13.1 | `252cc05` (gentler curve, PR #25) |
 | v0.14.0 | `53b6c12` (sprint 14, sharing, PR #31) |
+| v0.14.1 | `17aa073` (a gentle climb to level 500, PR #32) |
+| v0.15.0 | `9e82020` (sprint 16, come back tomorrow, PR #41) |
+| v0.15.1 | `adcdc90` (streak rewards sheet and readable locked buttons, PR #42) |
+| v0.16.0 | `06363aa` (sprint 17, Winter Tide, PR #43) |
+| v0.17.0 | `ab4003b` (sprint 18, a softer touch, PR #44) |
+| v0.18.0 | `15cb9c0` (sprint 19, real sand, PR #49) |
+| v0.19.0 | `0138d70` (sprint 20, a new Home, PR #50) |
+| v0.19.1 | `86399b1` (a tiny sorting game as the Home hero (D173), PR #51) |
+| v0.20.0 | `6cc5856` (sprint 21, feels like an app, PR #52) |
+| v0.20.1 | `e3b9bad` (weekly card fix and Today fits small screens, PR #53) |
+| v0.20.2 | `f90bfa4` (sprint 22, loose ends, PR #54) |
+| v0.21.0 | `1b54dbf` (sprint 23, wet sand, PR #55) |
+| v0.22.0 | `6ff5991` (sprint 24, the tide jar, PR #56) |
+| v0.23.0 | `7697e81` (sprint 25, a fresh coat of paint, PR #57) |
+| v0.23.1 | `4040942` (sprint 26, night touches, PR #58) |
+| v0.24.0 | `b9425e4` (sprint 27, a crab and a lighthouse, PR #59) |
+| v0.24.1 | `46005c7` (sprint 28, the sieve is a goal, PR #61) |
+| v0.25.0 | `8548dfd` (sprint 29, sunrise and sunset, PR #62) |
 
 ## Unreleased
 
