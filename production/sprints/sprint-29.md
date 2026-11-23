@@ -7,7 +7,7 @@ One new jar mechanic every 40 levels from 201 (D190): wet sand 201, the tide jar
 
 ## The rules
 ### The pair (D218, D219)
-- Two jars, each banded in its own colour (always two different colours). **Only that colour can be poured in; anything can be poured out.** Both are dealt as ordinary filled jars with mixed sand, so the first job is to dig the sunrise jar out.
+- Two jars, each banded in its own colour (always two different colours). **Only that colour can be poured in; anything can be poured out.** Both start **empty, as two extra jars** on top of the level's spares (D225).
 - **Sunrise first:** until the sunrise jar is full of its colour, no pour may fill any other jar. "The sun hasn't risen yet: fill the sunrise jar first."
 - **Sunset last:** the pour that fills the sunset jar must be the winning pour. Until then it may hold its colour up to one unit short of full. "Sunset comes last: finish every other jar first."
 - Wrong colour in: "Only <colour> greets the sunrise." / "Only <colour> waits for sunset."
@@ -49,6 +49,7 @@ One new jar mechanic every 40 levels from 201 (D190): wet sand 201, the tide jar
 - D222: the crab is allowed. No wet sand or sieve. Frozen jars and locks stay shut until sunrise, and no lock is keyed to the sunset colour. Shuffle keeps the pair. Up to 3 band pairs are tried.
 - D223: half-sun marks, the sunrise and dusk moments, the warmer strings, one rule card and the screen-reader lines.
 - D224: one sprint, released as 0.25.0 with screenshots before release.
+- D225: the pair is dealt empty as two extra jars (replaces "dealt on filled jars" in D218), because dealt on filled jars only half of the pair rolls could be built.
 
 ## Out of scope
 - A same-colour pair (both jars in one colour).

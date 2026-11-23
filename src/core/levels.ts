@@ -234,8 +234,9 @@ export interface LevelSpec {
   /** One filled jar is a lighthouse jar with dark sand (D208, sprint 27 K3, §2.10). Absent or false: none. */
   readonly lighthouse?: boolean;
   /**
-   * One filled jar is a sunrise jar and another a sunset jar, in different bands (D218, sprint 29 N3,
-   * §2.11). A pair level never has wet sand or the sieve (D222). Absent or false: neither.
+   * The board gets two extra empty jars, a sunrise jar and a sunset jar in different bands (D218, D225,
+   * sprint 29 N3, §2.11); the spares are kept. A pair level never has wet sand or the sieve (D222).
+   * Absent or false: neither.
    */
   readonly sun?: boolean;
 }

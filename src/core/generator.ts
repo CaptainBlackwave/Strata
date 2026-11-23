@@ -366,8 +366,8 @@ export function withoutMechanics<S extends LevelSpec>(spec: S): S {
  * (`debutUnits` on its unlock level) distinct visible units of filled jars that are not sealed,
  * frozen, locked, a closed clam, a funnel or the lighthouse jar, each wet for `dryAfter` pours, one draw per unit.
  * The crab (D207, §2.9) and then the lighthouse jar (D208, §2.10) are placed after the tide jar and
- * before wet sand. The sunrise and sunset jars (D218, D222, §2.11) come after the lighthouse jar: see the
- * comment at their placement. The stream `rng` is only drawn from for mechanics the
+ * before wet sand. The sunrise and sunset jars (D218, D222, D225, §2.11) come after the lighthouse jar,
+ * as two extra empty jars: see the comment at their placement. The stream `rng` is only drawn from for mechanics the
  * spec has, so a spec without the hourglass, the sieve or the clam deals exactly the board it did
  * before they existed.
  */
@@ -440,24 +440,22 @@ export function applyMechanics(board: Board, spec: LevelSpec, rng: Rng, config: 
     if (i !== undefined) jars[i] = { ...jars[i], hidden: 0, lighthouse: { every, left: every, lit: false } };
   }
   if (spec.sun) {
-    // The sunrise and sunset jars (D218, D222, §2.11): the sunrise jar, then the sunset jar, each a
-    // filled plain jar that is not sealed, frozen, locked, narrow, a funnel or any other mechanic's jar
-    // (the crab may sit on either); then the sunrise band, uniform over the board's colours; then the
-    // sunset band, uniform over the rest. Burial is kept. A lock keyed to the sunset band could only
-    // open on the winning pour, so the sunset band is drawn from the colours that are neither the
-    // sunrise band nor a lock's key; with no such colour the pair is not placed and the deal is
-    // re-dealt (`hasMechanics`). Locks are placed before this, so their keys are known here, and the
-    // draw is exactly "uniform over the rest" on a board without a lock. `proveDeal` may then move the
-    // sunrise band, never the sunset one, and a lock keyed to the sunrise band is allowed.
-    const plainJar = (j: Jar) => j.cap === undefined && !j.funnel && !j.hourglass && j.sieve === undefined && j.clam === undefined && !j.tide && !j.lighthouse && j.sun === undefined && !isSealed(j, board.capacity);
-    const rise = pick(filled().filter((k) => plainJar(jars[k])));
-    const set = pick(filled().filter((k) => k !== rise && plainJar(jars[k])));
+    // The sunrise and sunset jars (D218, D222, D225, §2.11) are two extra empty jars added to the
+    // board, like a narrow jar or a funnel, so the level's spares are kept: the sunrise jar, then the
+    // sunset jar, at the end of the row. The draws, in order: the sunrise band, uniform over the
+    // board's colours, then the sunset band, uniform over the rest. A lock keyed to the sunset band
+    // could only open on the winning pour, so the sunset band is drawn from the colours that are
+    // neither the sunrise band nor a lock's key; with no such colour the pair is not added and the
+    // deal is re-dealt (`hasMechanics`). Locks are placed before this, so their keys are known here,
+    // and the draw is exactly "uniform over the rest" on a board without a lock. The crab was placed
+    // before, on a filled jar, so it never starts on either jar (it may walk onto them later).
+    // `proveDeal` may then move the sunrise band, never the sunset one; a lock keyed to the sunrise
+    // band is allowed.
     const band = Math.floor(rng() * spec.colors);
     const keys = new Set(jars.map((j) => j.lock));
     const setBand = pick(Array.from({ length: spec.colors }, (_, c) => c).filter((c) => c !== band && !keys.has(c)));
-    if (rise !== undefined && set !== undefined && setBand !== undefined) {
-      jars[rise] = { ...jars[rise], sun: { band, at: 'rise' } };
-      jars[set] = { ...jars[set], sun: { band: setBand, at: 'set' } };
+    if (setBand !== undefined) {
+      jars.push({ units: [], hidden: 0, sun: { band, at: 'rise' } }, { units: [], hidden: 0, sun: { band: setBand, at: 'set' } });
     }
   }
   if (spec.wet) {

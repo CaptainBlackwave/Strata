@@ -34,9 +34,8 @@ const BASE: LevelSpec = { level: UNLOCK + 1, colors: 6, capacity: 4, spare: 2, b
 /** The jars of a board that carry the pair. */
 const pairOf = (b: Board) => ({ rise: b.jars.filter((j) => j.sun?.at === 'rise'), set: b.jars.filter((j) => j.sun?.at === 'set') });
 
-/** True when the jar is a plain jar for the pair: no other mechanic's jar but the crab's (D222). */
-const plainForPair = (j: Jar, capacity: number) =>
-  j.units.length > 0 && !j.frozen && j.lock === undefined && j.cap === undefined && !j.funnel && !j.hourglass && j.sieve === undefined && j.clam === undefined && !j.tide && !j.lighthouse && !j.wet && !isSealed(j, capacity);
+/** The exact shape of a freshly added pair jar (D225): empty, nothing hidden, no other mechanic, no crab. */
+const emptyPairJar = (band: number, at: 'rise' | 'set'): Jar => ({ units: [], hidden: 0, sun: { band, at } });
 
 /** A dealt board of `colors` colours (at least 4), capacity 4, two spares: full jar c holds c..c+3, two units buried. */
 const dealt = (colors: number) =>
@@ -151,34 +150,40 @@ describe('a pair level drops wet sand and the sieve (D222)', () => {
 describe('sunrise and sunset placement (applyMechanics)', () => {
   const full = (): LevelSpec => ({ ...BASE, colors: 8, capacity: 4, spare: 2, buriedDepth: 2, mechanics: ['frozen', 'locked', 'narrow', 'funnel'], hourglass: true, clam: true, tide: true, crab: true, lighthouse: true, sun: true });
 
-  it('places exactly one sunrise and one sunset jar on two different filled plain jars, in different bands of the board, burial kept', () => {
+  it('adds the sunrise jar then the sunset jar as two extra empty jars at the end, in different bands, keeping every other jar (D225)', () => {
     const board = dealt(8);
     let placed = 0;
-    let crabOnPair = 0;
     for (let seed = 1; seed <= 200; seed++) {
       const spec = full();
       const b = applyMechanics(board, spec, createRng(seed), cfg);
       if (!hasMechanics(b, spec)) continue;
       placed++;
-      const { rise, set } = pairOf(b);
-      expect(rise, `seed ${seed}`).toHaveLength(1);
-      expect(set, `seed ${seed}`).toHaveLength(1);
-      expect(rise[0]).not.toBe(set[0]);
-      const [r, s] = [rise[0].sun!.band, set[0].sun!.band];
+      const without = applyMechanics(board, { ...spec, sun: false }, createRng(seed), cfg);
+      expect(b.jars.length, `seed ${seed}: two jars more`).toBe(without.jars.length + 2);
+      expect(b.jars.slice(0, -2), `seed ${seed}: every other jar unchanged`).toEqual(without.jars);
+      const [rise, set] = b.jars.slice(-2);
+      const [r, s] = [rise.sun!.band, set.sun!.band];
+      expect(rise, `seed ${seed}`).toEqual(emptyPairJar(r, 'rise'));
+      expect(set, `seed ${seed}`).toEqual(emptyPairJar(s, 'set'));
       expect(r, `seed ${seed}`).not.toBe(s);
       for (const band of [r, s]) {
         expect(Number.isInteger(band)).toBe(true);
         expect(band).toBeGreaterThanOrEqual(0);
         expect(band).toBeLessThan(spec.colors);
       }
-      for (const j of [rise[0], set[0]]) {
-        expect(plainForPair(j, b.capacity), `seed ${seed}`).toBe(true);
-        expect(j.hidden, `seed ${seed}: burial kept`).toBe(2);
-        if (j.crab) crabOnPair++;
-      }
+      const { rise: rises, set: sets } = pairOf(b);
+      expect(rises.length + sets.length, `seed ${seed}`).toBe(2);
+      // The crab starts on a filled jar, never on either empty pair jar (it may walk onto them later).
+      expect(b.jars.filter((j) => j.crab), `seed ${seed}`).toHaveLength(1);
     }
-    expect(placed).toBeGreaterThan(20);
-    expect(crabOnPair, 'the crab may sit on either jar').toBeGreaterThan(0);
+    expect(placed).toBeGreaterThan(100);
+  });
+
+  it('the spares are kept: a spec\'s spare count is unchanged and the pair comes on top', () => {
+    const spec: LevelSpec = { ...full6(), sun: true };
+    const b = applyMechanics(dealt6(), spec, createRng(5), cfg);
+    expect(b.jars.filter((j) => j.units.length === 0 && j.sun === undefined)).toHaveLength(2);
+    expect(b.jars.filter((j) => j.sun)).toHaveLength(2);
   });
 
   it('never keys a lock to the sunset band; with no colour left for it the deal is re-dealt', () => {
@@ -232,7 +237,7 @@ describe('sunrise and sunset placement (applyMechanics)', () => {
       const spec = full();
       const withIt = applyMechanics(board, spec, createRng(seed), cfg);
       const without = applyMechanics(board, { ...spec, sun: false }, createRng(seed), cfg);
-      expect(withIt.jars.map(({ sun: _s, ...rest }) => rest), `seed ${seed}`).toEqual(without.jars);
+      expect(withIt.jars.slice(0, -2), `seed ${seed}`).toEqual(without.jars);
     }
   });
 
