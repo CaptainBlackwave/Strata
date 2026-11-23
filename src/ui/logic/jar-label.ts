@@ -19,7 +19,7 @@ import { t } from '../strings';
  * lists its colours "(lighthouse jar, lit until the next pour)". A sunrise or sunset jar (D223, §2.11)
  * names its band and its turn, "sunrise jar, lagoon only, fill it first" or "sunset jar, coral only,
  * fill it last", and once filled (sealed: pair levels have no wet sand, D222) "sunrise jar, lagoon
- * only, filled".
+ * only, filled", with no "sealed" after it (owner, 2026-11-23).
  * `capacity` is the board's (a complete jar is full at it). Example: `jarSummary({ units: [], hidden: 0 }, false, name) // 'empty'`
  */
 export function jarSummary(jar: Jar, sealed: boolean, colour: (c: number) => string, capacity = Infinity): string {
@@ -39,7 +39,8 @@ export function jarSummary(jar: Jar, sealed: boolean, colour: (c: number) => str
     jar.crab ? t.jarStates.crab(jar.crab.left) : '',
     // A complete wet jar is one colour: a dark jar must not say so.
     !dark && !sealed && jar.wet && isComplete(jar, capacity) ? t.jarStates.wet : '',
-    sealed ? t.sealed : '',
+    // A filled pair jar already says "filled" (owner, 2026-11-23), so it doesn't also say "sealed".
+    sealed && !jar.sun ? t.sealed : '',
   ].filter(Boolean);
   if (jar.clam !== undefined) return states.join(', ');
   const wet = jar.wet?.some((w) => w > 0) ?? false;

@@ -216,6 +216,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.25.0',
+        name: 'Sunrise and sunset',
+        lines: [
+          'From level 361, the sunrise and sunset jars: two empty jars, each taking only its own colour.',
+          'Fill the sunrise jar first: no other jar can be filled before it.',
+          'The sunset jar is filled last, by your winning pour.',
+          'The board brightens when the sun rises, and you win at dusk.',
+        ],
+      },
+      {
         version: '0.24.1',
         name: 'The sieve is a goal',
         lines: [

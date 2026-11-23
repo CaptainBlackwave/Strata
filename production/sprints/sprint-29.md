@@ -1,6 +1,6 @@
 # Sprint 29: Sunrise and sunset jars (0.25.0)
 
-> **Status: built (2026-11-23); awaiting the owner's look at the screenshots before release (R1).** From two owner interviews on 2026-11-19 (D218–D224). Design: `design/gdd/jar-mechanics.md` §2.11. Evidence: `production/qa/evidence/sprint-29/`. Target: **0.25.0**.
+> **Status: built (2026-11-23), approved by the owner from screenshots; releasing as 0.25.0.** Play-throughs of 361 on both boards: `production/qa/evidence/sprint-29/play-361/`. From two owner interviews on 2026-11-19 (D218–D224). Design: `design/gdd/jar-mechanics.md` §2.11. Evidence: `production/qa/evidence/sprint-29/`. Target: **0.25.0**.
 
 ## Why
 One new jar mechanic every 40 levels from 201 (D190): wet sand 201, the tide jar 241, the crab 281, the lighthouse 321. The owner chose the next one for **361**: a pair of banded jars that set the order of the day. **The sunrise jar is filled first and the sunset jar last** (D218, D220).

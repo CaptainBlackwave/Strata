@@ -92,7 +92,8 @@ describe('screen-reader labels and announcement (D223)', () => {
   });
   it('once filled it says so', () => {
     const c = colour(1);
-    expect(jarSummary(jar([1, 1, 1, 1], rise(1)), true, colour, 4)).toBe(`${c}, ${c}, ${c}, ${c} (sunrise jar, ${c} only, filled, ${t.sealed})`);
+    // Owner, 2026-11-23: a filled pair jar says "filled" only, not also "sealed".
+    expect(jarSummary(jar([1, 1, 1, 1], rise(1)), true, colour, 4)).toBe(`${c}, ${c}, ${c}, ${c} (sunrise jar, ${c} only, filled)`);
   });
   it('other jars add nothing', () => {
     expect(jarSummary(jar([0]), false, colour, 4)).toBe(colour(0));
