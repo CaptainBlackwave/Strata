@@ -261,8 +261,9 @@ export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: Cl
 
 /**
  * The mechanics a level keeps when it has the sunrise and sunset pair (D222, §2.11): wet sand and the
- * sieve are dropped, and the rest close up in order, so a breather's `maxMechanics` cut that follows
- * keeps the next mechanic in the dropped one's slot. Without the pair the list is returned unchanged.
+ * sieve are dropped and the rest keep their order. `levelSpec` applies it after a breather's
+ * `maxMechanics` cut, so a breather whose cut drops the pair is unchanged. Without the pair the list
+ * is returned unchanged.
  * Example: `withoutPairConflicts(['sieve', 'frozen', 'sun']) // ['frozen', 'sun']`.
  */
 export function withoutPairConflicts(ids: readonly BoardMechanicId[]): BoardMechanicId[] {
@@ -330,9 +331,10 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
   const breather = isBreather(level, config);
   const br = breather ? config.breather : undefined;
   if (br) colors = Math.max(MIN_COLORS, colors - (br.late && level >= br.late.from ? br.late.fewerColors : br.fewerColors));
-  // Decision D222: a pair level drops wet sand and the sieve before the breather cut.
-  const rolled = withoutPairConflicts(withOwnRolls(level, pickMechanics(level, config), config));
-  const { mechanics, hourglass, sieve, clam, wet, tide, crab, lighthouse, sun } = splitMechanics(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled);
+  // Decision D222: a level that still has the pair after the breather cut drops wet sand and the
+  // sieve. The cut comes first, so a breather that cuts the pair keeps exactly its old board.
+  const rolled = withOwnRolls(level, pickMechanics(level, config), config);
+  const { mechanics, hourglass, sieve, clam, wet, tide, crab, lighthouse, sun } = splitMechanics(withoutPairConflicts(br?.maxMechanics !== undefined ? rolled.slice(0, br.maxMechanics) : rolled));
   // Decision D28: a mechanic's debut level shows that mechanic alone, so no spare-jar swap.
   const debut = config.mechanics.list.some((m) => m.unlockAt === level);
   if (!debut && !breather && spare > 1 && spareOneChance(level, config) > 0) {

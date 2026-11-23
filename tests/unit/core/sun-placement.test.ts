@@ -111,13 +111,12 @@ describe('sunrise and sunset schedule (D220)', () => {
     for (let l = UNLOCK + 1; l <= LAST_CHECKED; l++) {
       const spec = levelSpec(l, cfg);
       // A level "rolls the pair" when its own roll draws it; a breather's maxMechanics cut may then
-      // drop the pair again, after the sieve and wet sand were dropped for it (D222).
+      // drop the pair again, and such a level is unchanged too (the cut comes before the D222 drop).
       const rolled = !spec.challenge && withOwnRolls(l, pickMechanics(l, cfg), cfg).includes('sun');
       if (spec.sun) continue;
       if (rolled) {
         cut.push(l);
         expect(isBreather(l, cfg), `level ${l} lost the pair only to a breather cut`).toBe(true);
-        continue;
       }
       expect(spec, `level ${l}`).toEqual(levelSpec(l, without));
     }
@@ -142,10 +141,10 @@ describe('a pair level drops wet sand and the sieve (D222)', () => {
     }
   });
 
-  it('the dropped mechanic\'s slot goes to the next in line, as for a breather cut (1 slot)', () => {
-    // A breather keeps rolled.slice(0, maxMechanics) after the drop: ['sieve', 'sun'] keeps the pair.
-    expect(withoutPairConflicts(['sieve', 'sun']).slice(0, 1)).toEqual(['sun']);
-    expect(withoutPairConflicts(['wet', 'crab', 'sun']).slice(0, 1)).toEqual(['crab']);
+  it('the breather cut comes first: a breather that cuts the pair keeps its sieve or wet sand', () => {
+    // levelSpec keeps withoutPairConflicts(rolled.slice(0, maxMechanics)).
+    expect(withoutPairConflicts((['sieve', 'sun'] as const).slice(0, 1))).toEqual(['sieve']);
+    expect(withoutPairConflicts((['sun', 'wet'] as const).slice(0, 1))).toEqual(['sun']);
   });
 });
 
