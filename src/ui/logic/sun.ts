@@ -9,6 +9,7 @@
  * the sunrise jar and down for the sunset jar. Nothing here is taken from another game.
  */
 import { type Board, type Jar, isComplete } from '../../core/board';
+import { type PourTail } from './flip';
 
 /** Which of the pair a jar is: `'rise'` (filled first) or `'set'` (filled last). */
 export type SunAt = 'rise' | 'set';
@@ -62,13 +63,18 @@ export function hasSunset(board: Board): boolean {
  * The half-sun glyph's path data, in a 16 × 14 box (`viewBox="0 0 16 14"`). The DOM's SVG mark and
  * the Realistic board's canvas copy (`Path2D`) draw from these same strings.
  * - `horizon`: the line the sun sits on, in ink so it reads on any band colour;
- * - `disc`: the half-sun, closed along the horizon; stroked while open, filled once filled;
+ * - `halo`, `disc`, `core`: three half-discs on the horizon, filled one over the other: the ink halo
+ *   (a thin contrasting edge), the half-sun in the band colour, and, while the jar is open, its centre
+ *   in the card colour, so open is a heavy ring and filled is solid (screenshot review: the disc is
+ *   about 8 CSS px at board size). The halo is outside the ring only, so the open centre stays clear;
  * - `rays`: four short rays round it;
  * - `rise` / `set`: the arrow above it, up for sunrise, down for sunset.
  */
 export const SUN_PATHS = {
   horizon: 'M1 12.6h14',
-  disc: 'M3.9 12.6a4.1 4.1 0 0 1 8.2 0z',
+  halo: 'M2.85 12.6a5.15 5.15 0 0 1 10.3 0z',
+  disc: 'M3.5 12.6a4.5 4.5 0 0 1 9 0z',
+  core: 'M5.3 12.6a2.7 2.7 0 0 1 5.4 0z',
   rays: 'M1.4 9.4l1.5.7M14.6 9.4l-1.5.7M3.5 6.1l1.1 1.1M12.5 6.1l-1.1 1.1',
   rise: 'M8 6.4V1.4M6 3.4l2-2 2 2',
   set: 'M8 1.4v5M6 4.4l2 2 2-2',
@@ -78,6 +84,32 @@ export const SUN_PATHS = {
 export const SUN_BOX = { width: 16, height: 14 } as const;
 
 /**
+ * The half-sun glyph's strokes, in `SUN_BOX` units (screenshot review, sprint 29): the rays and the
+ * arrow are `line` wide in the band colour over a `halo`-wide stroke in the scene's ink (dark on a
+ * light card, cream on a dark one), so any band colour reads on both cards; the horizon is `horizon`
+ * wide in ink. The DOM (style.css `.sun-mark`) and the canvas (mech-art.ts `drawPill`) use the same
+ * numbers. The disc's ring and halo are the `SUN_PATHS` half-discs, not strokes.
+ */
+export const SUN_STROKE = { line: 1.6, halo: 2.6, horizon: 1.6 } as const;
+
+/** The dark the band's edge is mixed towards (a warm ink), and how far: pale bands still read as a coloured band. */
+export const SUN_EDGE_INK = { r: 43, g: 29, b: 20 } as const;
+/** How much of {@link SUN_EDGE_INK} the band's edge takes (0 = the band colour, 1 = the ink). */
+export const SUN_EDGE_MIX = 0.5;
+
+/**
+ * The band's edge colour: the band colour darkened towards a warm ink, so a pale band (saffron,
+ * lemon, mint) keeps a coloured edge rather than a plain ink trim, on light and dark scenes alike.
+ * Both boards draw it from here (jars.ts sets `--band-edge`; mech-art.ts `drawSunBand`).
+ * Example: `sunBandEdge('#ffffff') // 'rgb(149,142,138)'`
+ */
+export function sunBandEdge(hex: string): string {
+  const n = Number.parseInt(hex.replace('#', '').slice(0, 6), 16);
+  const mix = (c: number, ink: number) => Math.round(c + (ink - c) * SUN_EDGE_MIX);
+  return `rgb(${mix((n >> 16) & 255, SUN_EDGE_INK.r)},${mix((n >> 8) & 255, SUN_EDGE_INK.g)},${mix(n & 255, SUN_EDGE_INK.b)})`;
+}
+
+/**
  * The sunrise brightening (D223, "the day begins"), in ms: the light comes up over the board and
  * fades back. Presentation only, so a named constant here (D31). Starting value for the owner's
  * screenshot review: about as long as the seal shimmer and the cork's landing together, so it reads
@@ -85,8 +117,29 @@ export const SUN_BOX = { width: 16, height: 14 } as const;
  */
 export const SUNRISE_MS = 1100;
 
-/** The sunrise light's peak opacity: soft, so the board never washes out. */
+/** The sunrise light's peak opacity: soft, so the board never washes out. The light's colours and blend per scene (warmer and a touch stronger on light scenes, gentle on dark ones) are style.css `.sun-dawn`'s `--dawn-*` properties. */
 export const SUNRISE_PEAK = 0.55;
+
+/**
+ * How long after the pour's board change the sunrise light starts, in ms: once the pour has finished
+ * (the sand has landed, the stream has run out and the jar is home), so it is one calm moment after
+ * the pour, not over it. The board's session event comes as the sand lands (`ANIM.flow`,
+ * `streamOut` and `back` are still to play); the hourglass under a pouring jar waits the same
+ * (logic/flip.ts). Reduced motion: 0 (no light plays anyway).
+ * Example: `sunriseDelay(false, { flow: 230, streamOut: 90, back: 220 }) // 540`
+ */
+export function sunriseDelay(reduced: boolean, anim: PourTail): number {
+  return reduced ? 0 : anim.flow + anim.streamOut + anim.back;
+}
+
+/**
+ * Whether the board's sunrise jar is filled, so a light still waiting can tell the day has begun (an
+ * Undo or Restart while it waits takes it back, and the light then never plays).
+ * Example: `sunriseRisen({ capacity: 4, jars: [{ units: [1, 1, 1, 1], hidden: 0, sun: { band: 1, at: 'rise' } }] }) // true`
+ */
+export function sunriseRisen(board: Board): boolean {
+  return board.jars.some((j) => j.sun?.at === 'rise' && sunMark(j, board.capacity)!.filled);
+}
 
 /**
  * The sunrise brightening's keyframes (opacity only, as every effect here): up quickly, held a

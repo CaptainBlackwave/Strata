@@ -261,14 +261,18 @@ export function splitMechanics(ids: readonly BoardMechanicId[]): { mechanics: Cl
 }
 
 /**
- * The mechanics a level keeps when it has the sunrise and sunset pair (D222, §2.11): wet sand and the
- * sieve are dropped and the rest keep their order. `levelSpec` applies it after a breather's
- * `maxMechanics` cut, so a breather whose cut drops the pair is unchanged. Without the pair the list
- * is returned unchanged.
- * Example: `withoutPairConflicts(['sieve', 'frozen', 'sun']) // ['frozen', 'sun']`.
+ * The mechanics a level keeps when it rolled the sunrise and sunset pair (§2.11). The pair gives way
+ * to the tide jar, the crab and the narrow jar (D226): with any of them rolled, the pair is dropped and
+ * the rest are unchanged, so their shares never move. Otherwise wet sand and the sieve are dropped (D222) and the
+ * rest keep their order. `levelSpec` applies it after a breather's `maxMechanics` cut, so a breather
+ * whose cut drops the pair is unchanged. Without the pair the list is returned unchanged.
+ * Example: `withoutPairConflicts(['sieve', 'frozen', 'sun']) // ['frozen', 'sun']`;
+ * `withoutPairConflicts(['crab', 'sun']) // ['crab']`.
  */
 export function withoutPairConflicts(ids: readonly BoardMechanicId[]): BoardMechanicId[] {
-  return ids.includes('sun') ? ids.filter((id) => id !== 'sieve' && id !== 'wet') : [...ids];
+  if (!ids.includes('sun')) return [...ids];
+  if (ids.includes('tide') || ids.includes('crab') || ids.includes('narrow')) return ids.filter((id) => id !== 'sun');
+  return ids.filter((id) => id !== 'sieve' && id !== 'wet');
 }
 
 /**

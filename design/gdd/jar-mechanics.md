@@ -295,7 +295,7 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 
 **Player-facing** (sprint 27 K4, K5): dark sand with a lighthouse mark and the count; the beam sweep when `swept` lists it (instant under reduced motion); colours while `isLit`; the label "dark, lit in N pours"; an intro card on 321, the Jar guide and the map badge. Placeholder strings exist from K2.
 
-### 2.11 Sunrise and sunset jars (sprint 29, D218–D225)
+### 2.11 Sunrise and sunset jars (sprint 29, D218–D226)
 
 *Designed for Strata; no rule, name or art is taken from another game.*
 
@@ -340,13 +340,13 @@ Every other lost board is left to the stuck rule and hints (D21). An example is 
 Neither jar is ever another jar type (D222).
 
 Combinations (D222):
+- **The pair gives way (D226)** to the tide jar, the crab and a rolled narrow jar: a level that rolls the pair and any of them drops the pair and keeps everything else exactly as rolled, so their shares never move. A narrow jar added later by the spare swap does not make it give way; such a level falls back cleanly if it can't be built with the pair.
 - **Never on a pair level:**
   - wet sand: its own roll is dropped when the pair is on the level;
   - the sieve: dropped from a pair level's mechanics, and its slot is re-picked as for a breather cut;
   - a lock keyed to the sunset band, which could only open on the winning pour.
 - **Allowed:**
-  - frozen jars, locks keyed to any other colour, the narrow jar, the funnel, the hourglass, the clam, the tide jar and the lighthouse jar elsewhere on the board;
-  - the crab, which may walk onto either jar once it holds sand (it never starts on an empty jar, §2.9).
+  - frozen jars, locks keyed to any other colour, the funnel, the hourglass, the clam and the lighthouse jar elsewhere on the board.
 
 A deal with no candidate band is re-dealt. Levels that do not roll the pair draw nothing extra and keep exactly their boards.
 
@@ -356,10 +356,10 @@ A deal with no candidate band is re-dealt. Levels that do not roll the pair draw
 
 It keeps the first pair whose proof is within the level's pour cap. Failing that, it keeps the shortest over-cap proof for the fallback chain. Failing that, it rejects the deal. Every proof is a win, so every kept pair is winnable in order.
 
-**Schedule (D220)**: `{ "id": "sun", "unlockAt": 361, "colorTries": 3, "ownChance": 0.15, "ownSalt": 9173, "shared": false }`.
+**Schedule (D220, D226)**: `{ "id": "sun", "unlockAt": 361, "colorTries": 3, "ownChance": 0.22, "ownSalt": 9173, "shared": false }`.
 - **Debut.** Level 361 has the pair alone, two spares and no spare swap (D28).
 - **After the debut.** From 362 the pair comes only from its own roll, like the crab and lighthouse (D210). It can combine with rolled mechanics and the spare swap, still at most 3 (D22). Tall-jar levels never get own rolls, so they never have the pair.
-- **Share (target about 1 in 8).** `ownChance` 0.15 is a starting value. It will be measured over 361–1000 at several values, as for the crab and lighthouse, and set for about 12.5%.
+- **Share (D220, D226).** 79 of levels 361–1000 have the pair (**12.34%**, about 1 in 8). Measured with the pair giving way to the tide jar, the crab and the narrow jar: `ownChance` 0.22 gives 12.34%, 0.24 13.28%, 0.26 13.91%, 0.28 14.53%. (Before D226 it was 0.14 for 12.97%.)
 - **Levels that change.** Levels 1–360 must be byte-identical. A new fixture, `tests/fixtures/boards-1-360.json`, will hash every level 1–360 at the commit before the mechanic. Of levels 361 and up, only those that roll the pair may change. The measured list goes here.
 - **Generation and balance.** To be measured and recorded here:
   - every pair level of 361–480 is built with the pair within its attempts and pour cap, and its proof replays to a win in order;
@@ -475,7 +475,7 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 | Pair win | `isWon(b)` = every jar with `sun` or `sieve` complete in its band, every other jar empty or complete | | An empty sunset jar with everything else sorted is not won |
 | Sunrise lost | `reach(r.band) < capacity − count(r, r.band)`, where `reach` counts the band outside funnels, frozen jars and jars locked by another key | | Two of four red in a funnel: lost at once |
 | Sunset lost | `free(s.band) < capacity − count(s, s.band)`, where `free` counts the band outside sealed jars and funnels | | Green sealed in an ordinary jar: lost |
-| Pair share | its own roll only: `rng(mixSeed(9173, level)) < ownChance` from 361, as the crab; not on tall-jar levels | `ownChance` (start 0.15), `ownSalt` 9173 | Target about 1 in 8 of 361–1000 (D220); to be measured |
+| Pair share | its own roll only: `rng(mixSeed(9173, level)) < ownChance` from 361, as the crab; not on tall-jar levels; dropped when the level also rolled the tide jar, the crab or a narrow jar (D226) | `ownChance` 0.22, `ownSalt` 9173 | Measured 79 of 361–1000 (12.34%) |
 | Pair band tries | pairs tried on one deal: `min(colorTries, colors − 1)`, sunset band `s` fixed, sunrise band `r, r+1, … (mod colors)`, skipping `s` | `colorTries` 3 | |
 
 **Tuning knobs (hourglass)**
@@ -542,7 +542,7 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 | Knob | Default | Safe range | Effect |
 |---|---|---|---|
 | `mechanics.list[sun].unlockAt` | 361 | ≥ 361 (lower would change levels ≤ 360) | Debut level (D220) |
-| `mechanics.list[sun].ownChance` | 0.15 (to be measured) | 0–0.25 | Its only roll; set for about 12.5% of 361–1000 (D220). Changing it changes which levels 362+ have the pair |
+| `mechanics.list[sun].ownChance` | 0.22 | 0–0.3 | Its only roll; 0.22 gives 12.34% of 361–1000 after the pair gives way to the tide jar, the crab and the narrow jar (D220, D226). Changing it changes which levels 362+ have the pair |
 | `mechanics.list[sun].ownSalt` | 9173 | any, distinct from other salts | Seeds the own roll. Never change it once released |
 | `mechanics.list[sun].colorTries` | 3 | 1–5 | Band pairs proven per deal before the deal is rejected (D222) |
 

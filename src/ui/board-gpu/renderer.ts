@@ -13,6 +13,7 @@ import { DEFAULT_LOOK, type GlassLook, type JarArt, drawJarArt, drawMark } from 
 import { DirtyTracker, jarKey } from './dirty';
 import { type ShelfWood, drawShelf, shelfBox } from './shelf';
 import { type JarGeometry, type Rect, cubicBezier, lipLocal, mouthRow, pourLip, pourSide } from './geometry';
+import { sunBandEdge } from '../logic/sun';
 import { type PillLook, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawIce, drawPadlock, drawPill, drawSieveBand, drawSunBand, padlockBox } from './mech-art';
 import { corkDrop, glowAt, liftTarget, mustSnapPour, nopeShake, shuffleHop } from './events';
 import { type PaintLook, type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
@@ -907,12 +908,14 @@ export class GpuBoard {
       v.decor.addChild(s);
     }
     if (jar.sun) {
-      // style.css `.sun-band`: 1 px in from each side, at the neck, max(10 px, --jar-w × 0.2) tall.
+      // style.css `.sun-band`: 1 px in from each side, at the neck, max(12 px, --jar-w × 0.24) tall,
+      // edged in the band darkened (sunBandEdge), as the DOM's --band-edge.
       const width = b.w - 2;
-      const height = Math.max(10, b.w * 0.2);
+      const height = Math.max(12, b.w * 0.24);
       const band = jar.sun.band;
       const color = this.opts.paletteHex[band];
-      const s = new Sprite(this.tex(`sun|${width.toFixed(2)}|${color}|${pat(band)}|${this.look.ink}`, (r) => drawSunBand(width, height, color, this.look.ink, pat(band), r)));
+      const edge = sunBandEdge(color);
+      const s = new Sprite(this.tex(`sun|${width.toFixed(2)}|${height.toFixed(2)}|${color}|${pat(band)}`, (r) => drawSunBand(width, height, color, edge, pat(band), r)));
       s.position.set(b.left + 1, b.top + b.w * 0.18);
       v.decor.addChild(s);
     }

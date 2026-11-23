@@ -28,6 +28,7 @@ import { risesVisibly } from '../logic/tide';
 import { sweepsVisibly } from '../logic/lighthouse';
 import { lostMessage as lostWords, refusalNote, tapMechanic } from '../logic/refusal';
 import { sunriseMoment } from './sun-moments';
+import { sunriseDelay } from '../logic/sun';
 import { animatePour, recoverPour } from './pour';
 import { gpuInvalidate } from '../board-gpu/hooks';
 import { introduce } from './sheets/guide';
@@ -288,8 +289,8 @@ export function onSessionEvent(e: SessionEvent): void {
       // The beam lights a lighthouse jar last of all (D208, §2.10), once the sand has landed.
       const lit = (e.swept ?? []).filter((i) => sweepsVisibly(state.session.board.jars[i]));
       for (const i of lit) beamFx(i, flipDelay(i, e.move.from, reducedMotion(), ANIM));
-      // The pour that fills the sunrise jar brightens the board: the day begins (D223, §2.11).
-      if (e.sunrise) sunriseMoment();
+      // The pour that fills the sunrise jar brightens the board once the pour has finished: the day begins (D223, §2.11).
+      if (e.sunrise) sunriseMoment(sunriseDelay(reducedMotion(), ANIM));
       announce(
         t.pourAnnounce(e.moved, config.palette[e.color].id, e.move.to + 1) +
           (e.sealed ? ` ${t.sealAnnounce(e.move.to + 1)}` : '') +

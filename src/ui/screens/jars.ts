@@ -12,7 +12,7 @@ import { DRY_MS, wetHex, wetLeft } from '../logic/wet';
 import { TIDE_MS, riseFrom, tideCount } from '../logic/tide';
 import { CRAB_MS, crabCount, scuttleFrames, scuttleFrom } from '../logic/crab';
 import { BEAM_MS, beamCount, beamFrames, isDark } from '../logic/lighthouse';
-import { SUN_CLASSES, SUN_PATHS, sunClasses } from '../logic/sun';
+import { SUN_CLASSES, SUN_PATHS, sunBandEdge, sunClasses } from '../logic/sun';
 import { audio, config, state } from '../state';
 import rawConfig from '../../config/game-config.json';
 
@@ -116,21 +116,29 @@ export const SUN_BAND = '<span class="sun-band" aria-hidden="true"><span class="
  * The sunrise or sunset jar's mark (D223, §2.11): an arched badge on the jar's base, where the sieve's
  * round goal badge would sit, with a half-sun on an ink horizon, four rays and an arrow above it: up
  * on the sunrise jar, down on the sunset jar (`.jar.sun-rise` / `.jar.sun-set` show one arrow). While
- * the jar is not filled the half-sun is an open outline in its band colour; once filled
- * (`.jar.sun-filled`) it is filled in. Drawn for Strata from `SUN_PATHS` (logic/sun.ts).
+ * the jar is not filled the half-sun is a heavy ring in its band colour round a clear centre
+ * (`.sm-core`, in the card colour); once filled (`.jar.sun-filled`) the centre goes and it is solid.
+ * The half-sun, rays and arrow each have a thin halo in the scene's ink (`.sm-halo`), so any band reads
+ * on a light or a dark card. Drawn for Strata from `SUN_PATHS` and `SUN_STROKE` (logic/sun.ts).
  */
+const sunLines = (cls: string) =>
+  `<path class="sm-rays${cls}" d="${SUN_PATHS.rays}"/>` +
+  `<path class="sm-arrow sm-rise${cls}" d="${SUN_PATHS.rise}"/><path class="sm-arrow sm-set${cls}" d="${SUN_PATHS.set}"/>`;
 export const SUN_MARK =
   '<span class="sun-mark" aria-hidden="true"><svg viewBox="0 0 16 14" focusable="false">' +
-  `<path class="sm-rays" d="${SUN_PATHS.rays}"/><path class="sm-disc" d="${SUN_PATHS.disc}"/>` +
-  `<path class="sm-horizon" d="${SUN_PATHS.horizon}"/>` +
-  `<path class="sm-arrow sm-rise" d="${SUN_PATHS.rise}"/><path class="sm-arrow sm-set" d="${SUN_PATHS.set}"/></svg></span>`;
+  sunLines(' sm-halo') +
+  `<path class="sm-halo sm-halo-disc" d="${SUN_PATHS.halo}"/>` +
+  sunLines('') +
+  `<path class="sm-disc" d="${SUN_PATHS.disc}"/><path class="sm-core" d="${SUN_PATHS.core}"/>` +
+  `<path class="sm-horizon" d="${SUN_PATHS.horizon}"/></svg></span>`;
 
 /**
- * The Jar guide's sun art (D223): the band and the half-sun mark, open, in colour `hex`, for a
- * `.mini-jar.sun` (which shows the sunrise jar's up arrow, `.mini-jar.sun` with no `sun-set`).
+ * The intro card's and Jar guide's sun art (D223): the band and the half-sun mark, open, in colour
+ * `hex`, for a `.mini-jar.sun.sun-rise` or `.sun-set` (guide.ts shows the pair side by side).
  */
 export function sunMiniArt(hex: string): string {
-  return SUN_BAND.replace('class="sun-band"', `class="sun-band" style="--band:${hex}"`) + SUN_MARK.replace('class="sun-mark"', `class="sun-mark" style="--band:${hex}"`);
+  const look = `--band:${hex};--band-edge:${sunBandEdge(hex)}`;
+  return SUN_BAND.replace('class="sun-band"', `class="sun-band" style="${look}"`) + SUN_MARK.replace('class="sun-mark"', `class="sun-mark" style="--band:${hex}"`);
 }
 
 let tapHandler: (i: number) => void = () => {};
@@ -343,6 +351,7 @@ export function renderMechanics(el: HTMLElement, jar: Jar): void {
     const hex = config.palette[jar.sun.band].hex;
     const sunBand = el.querySelector('.sun-band') as HTMLElement;
     sunBand.style.setProperty('--band', hex);
+    sunBand.style.setProperty('--band-edge', sunBandEdge(hex));
     sunBand.className = `sun-band${state.save.settings.patterns ? ` pat-${jar.sun.band % PATTERNS}` : ''}`;
     (el.querySelector('.sun-mark') as HTMLElement).style.setProperty('--band', hex);
   }

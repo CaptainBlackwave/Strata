@@ -101,8 +101,8 @@ describe('sunrise and sunset schedule (D220)', () => {
   });
 
   it('its own roll (D220) puts it on about 1 level in 8 from 361: between 12% and 13% of 361-1000', () => {
-    // Sprint 29 N3 measurement (D225 empty jars): ownChance 0.12 gives 10.63%, 0.13 12.03%, 0.14 12.97%,
-    // 0.15 13.44%, 0.16 15.47%. Set to 0.14 because about 3 pair rolls in 10 fall back without the pair.
+    // Sprint 29 N3 measurement, after the pair gives way to the tide jar, the crab and the narrow jar (D226):
+    // ownChance 0.22 gives 12.34%, 0.24 13.28%, 0.26 13.91%. Set to 0.22, the closest to 1 in 8.
     let n = 0;
     for (let l = UNLOCK; l <= LAST_CHECKED; l++) if (levelSpec(l, cfg).sun) n++;
     const share = n / (LAST_CHECKED - UNLOCK + 1);
@@ -123,12 +123,13 @@ describe('sunrise and sunset schedule (D220)', () => {
     for (let l = UNLOCK + 1; l <= LAST_CHECKED; l++) {
       const spec = levelSpec(l, cfg);
       // A level "rolls the pair" when its own roll draws it; a breather's maxMechanics cut may then
-      // drop the pair again, and such a level is unchanged too (the cut comes before the D222 drop).
+      // drop the pair again, and so does giving way to the tide jar, the crab or the narrow jar (D226). Such a level is
+      // unchanged too (the cut comes before the D222 drop).
       const rolled = !spec.challenge && withOwnRolls(l, pickMechanics(l, cfg), cfg).includes('sun');
       if (spec.sun) continue;
       if (rolled) {
         cut.push(l);
-        expect(isBreather(l, cfg), `level ${l} lost the pair only to a breather cut`).toBe(true);
+        expect(isBreather(l, cfg) || Boolean(spec.tide) || Boolean(spec.crab) || spec.mechanics.includes('narrow'), `level ${l} lost the pair only to a breather cut or to the tide jar, crab or narrow jar`).toBe(true);
       }
       expect(spec, `level ${l}`).toEqual(levelSpec(l, without));
     }
@@ -138,9 +139,23 @@ describe('sunrise and sunset schedule (D220)', () => {
 
 describe('a pair level drops wet sand and the sieve (D222)', () => {
   it('withoutPairConflicts drops only the sieve and wet sand, and only with the pair; the rest close up in order', () => {
-    expect(withoutPairConflicts(['sieve', 'frozen', 'wet', 'crab', 'sun'])).toEqual(['frozen', 'crab', 'sun']);
+    expect(withoutPairConflicts(['sieve', 'frozen', 'wet', 'hourglass', 'sun'])).toEqual(['frozen', 'hourglass', 'sun']);
     expect(withoutPairConflicts(['sieve', 'frozen', 'wet'])).toEqual(['sieve', 'frozen', 'wet']);
     expect(withoutPairConflicts(['sun'])).toEqual(['sun']);
+  });
+
+  it('the pair gives way to the tide jar, the crab and the narrow jar (D226): the pair is dropped and the rest kept as rolled', () => {
+    expect(withoutPairConflicts(['sieve', 'frozen', 'wet', 'crab', 'sun'])).toEqual(['sieve', 'frozen', 'wet', 'crab']);
+    expect(withoutPairConflicts(['tide', 'sun'])).toEqual(['tide']);
+    expect(withoutPairConflicts(['narrow', 'tide', 'crab', 'sun'])).toEqual(['narrow', 'tide', 'crab']);
+    expect(withoutPairConflicts(['narrow', 'funnel', 'sun'])).toEqual(['narrow', 'funnel']);
+  });
+
+  it('no level of 361-1000 has the pair with the tide jar, the crab or a rolled narrow jar (D226)', () => {
+    for (let l = UNLOCK; l <= LAST_CHECKED; l++) {
+      const s = levelSpec(l, cfg);
+      if (s.sun) expect(Boolean(s.tide) || Boolean(s.crab) || s.mechanics.includes('narrow'), `level ${l}`).toBe(false);
+    }
   });
 
   it('no level of 361-1000 has the pair with wet sand or a sieve, and a breather keeps at most maxMechanics', () => {

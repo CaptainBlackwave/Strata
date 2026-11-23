@@ -14,7 +14,7 @@ One new jar mechanic every 40 levels from 201 (D190): wet sand 201, the tide jar
 - A level is won only when both jars are full of their colours.
 ### What else changes on a pair level (D221, D222)
 - Nothing can seal before sunrise, so **frozen jars stay frozen and locks stay shut until the sunrise jar is filled**. No lock is keyed to the sunset colour.
-- **No wet sand and no sieve** on pair levels. The crab may start on, or walk onto, either jar.
+- **No wet sand and no sieve** on pair levels, and the pair gives way to the tide jar, the crab and the narrow jar (D226).
 - Shuffle leaves the pair's sand alone and re-draws any deal that would fill a jar before sunrise.
 - Two certain dead ends, with Undo and Restart: "<Colour> can no longer reach the sunrise jar" and "<Colour> was sealed outside the sunset jar".
 ### Where it appears (D220)
@@ -49,6 +49,7 @@ One new jar mechanic every 40 levels from 201 (D190): wet sand 201, the tide jar
 - D222: the crab is allowed. No wet sand or sieve. Frozen jars and locks stay shut until sunrise, and no lock is keyed to the sunset colour. Shuffle keeps the pair. Up to 3 band pairs are tried.
 - D223: half-sun marks, the sunrise and dusk moments, the warmer strings, one rule card and the screen-reader lines.
 - D224: one sprint, released as 0.25.0 with screenshots before release.
+- D226: the pair gives way to the tide jar, the crab and a rolled narrow jar (those levels drop the pair); its chance rises to 0.22 to stay at about 1 in 8.
 - D225: the pair is dealt empty as two extra jars (replaces "dealt on filled jars" in D218), because dealt on filled jars only half of the pair rolls could be built.
 
 ## Out of scope

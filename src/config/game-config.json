@@ -39,7 +39,7 @@
       { "id": "tide", "unlockAt": 241, "every": 4, "ownChance": 0.14, "ownSalt": 6173, "shared": false },
       { "id": "crab", "unlockAt": 281, "every": 3, "ownChance": 0.16, "ownSalt": 7841, "shared": false },
       { "id": "lighthouse", "unlockAt": 321, "every": 4, "ownChance": 0.145, "ownSalt": 8329, "shared": false },
-      { "id": "sun", "unlockAt": 361, "colorTries": 3, "ownChance": 0.14, "ownSalt": 9173, "shared": false }
+      { "id": "sun", "unlockAt": 361, "colorTries": 3, "ownChance": 0.22, "ownSalt": 9173, "shared": false }
     ]
   },
   "daily": {

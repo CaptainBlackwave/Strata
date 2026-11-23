@@ -9,13 +9,18 @@ import {
   DUSK_FADE_MS,
   SUN_BOX,
   SUN_CLASSES,
+  SUN_EDGE_MIX,
   SUN_PATHS,
+  SUN_STROKE,
   SUNRISE_MS,
   SUNRISE_PEAK,
   duskFade,
   hasSunset,
+  sunBandEdge,
   sunClasses,
   sunMark,
+  sunriseDelay,
+  sunriseRisen,
   sunrisePlays,
   sunriseFrames,
 } from '../../../src/ui/logic/sun';
@@ -136,7 +141,8 @@ describe('style.css draws the band and mark, distinct from the sieve', () => {
     expect(css).toMatch(/:is\(\.jar, \.mini-jar\)\.sun \.sun-mark \{/);
     expect(css).toMatch(/\.sun-rise \.sun-mark \.sm-rise/);
     expect(css).toMatch(/\.sun-set \.sun-mark \.sm-set/);
-    expect(css).toMatch(/\.sun-filled \.sun-mark \.sm-disc \{\s*fill: currentColor;/);
+    expect(css).toMatch(/\.sun-mark \.sm-disc \{\s*fill: currentColor;/);
+    expect(css).toMatch(/\.sun-filled \.sun-mark \.sm-core \{\s*display: none;/);
   });
   it('the sun band is flush with the jar and has no mesh (the sieve collar overhangs with one)', () => {
     const rule = /:is\(\.jar, \.mini-jar\)\.sun \.sun-band \{([^}]*)\}/.exec(css)![1];
@@ -152,5 +158,48 @@ describe('style.css draws the band and mark, distinct from the sieve', () => {
   it('has the sunrise light and the dusk tint', () => {
     expect(css).toMatch(/\.sun-dawn \{/);
     expect(css).toMatch(/\.win\.dusk::before \{/);
+  });
+});
+
+describe('screenshot review: the sunrise after the pour, and a glyph that reads at 8 px', () => {
+  const tail = { flow: 230, streamOut: 90, back: 220 };
+  it('the sunrise light waits until the pour has finished (sand landed, stream out, jar home)', () => {
+    expect(sunriseDelay(false, tail)).toBe(tail.flow + tail.streamOut + tail.back);
+    expect(sunriseDelay(true, tail)).toBe(0);
+  });
+  it('a waiting light plays only while the sunrise jar is still filled (Undo takes it back)', () => {
+    expect(sunriseRisen(board(jar([1, 1, 1, 1], rise(1)), jar([], set(2))))).toBe(true);
+    expect(sunriseRisen(board(jar([1, 1, 1], rise(1)), jar([], set(2))))).toBe(false);
+    expect(sunriseRisen(board(jar([1, 1, 1, 1]), jar([2, 2, 2, 2], set(2))))).toBe(false); // only the sunrise jar counts
+  });
+  it('the band edge is the band darkened, not plain ink: pale bands keep a coloured edge', () => {
+    expect(sunBandEdge('#ffffff')).toBe('rgb(149,142,138)');
+    expect(sunBandEdge('#f4e04d')).not.toBe(sunBandEdge('#9ee6cf')); // lemon and mint keep their own edges
+    expect(SUN_EDGE_MIX).toBeGreaterThan(0);
+    expect(SUN_EDGE_MIX).toBeLessThan(1);
+  });
+  it('the open half-sun is a heavy ring round a clear centre, with a halo outside it', () => {
+    const r = (d: string) => Number(/a([\d.]+) /.exec(d)![1]);
+    const x = (d: string) => Number(/^M([\d.]+) /.exec(d)![1]);
+    // halo > disc > core, all centred on the disc's middle and sitting on the horizon
+    expect(r(SUN_PATHS.halo)).toBeGreaterThan(r(SUN_PATHS.disc));
+    expect(r(SUN_PATHS.disc) - r(SUN_PATHS.core)).toBeGreaterThanOrEqual(1.6); // a heavy ring
+    expect(r(SUN_PATHS.core)).toBeGreaterThanOrEqual(2.5); // a centre that still shows at 8 px
+    for (const d of [SUN_PATHS.halo, SUN_PATHS.disc, SUN_PATHS.core]) {
+      expect(x(d) + r(d)).toBeCloseTo(8, 5);
+      expect(d).toMatch(/^M[\d.]+ 12\.6a/);
+    }
+  });
+  it('the rays and arrow have a halo wider than their line, and the DOM uses the same strokes', () => {
+    expect(SUN_STROKE.halo).toBeGreaterThan(SUN_STROKE.line);
+    const rule = (sel: string) => new RegExp(`${sel} \\{([^}]*)\\}`).exec(css)![1];
+    expect(rule('\\.sun-mark \\.sm-halo')).toMatch(new RegExp(`stroke-width: ${SUN_STROKE.halo};`));
+    expect(rule('\\.sun-mark \\.sm-horizon')).toMatch(new RegExp(`stroke-width: ${SUN_STROKE.horizon};`));
+    expect(css).toMatch(new RegExp(`\\.sun-mark \\.sm-arrow \\{\\s*stroke: currentColor;\\s*stroke-width: ${SUN_STROKE.line};`));
+    expect(rule('\\.sun-mark \\.sm-core')).toMatch(/fill: var\(--card\);/);
+  });
+  it('the sunrise light is warmer on light scenes and screened gently on dark ones', () => {
+    expect(css).toMatch(/\.sun-dawn \{[^}]*--dawn-blend: normal;/);
+    expect(css).toMatch(/:root\[data-scheme='dark'\] \.sun-dawn \{[^}]*--dawn-blend: screen;/);
   });
 });
