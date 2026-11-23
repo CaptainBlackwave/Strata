@@ -19,6 +19,8 @@ import { type SlotItem } from '../../core/profile';
 import { celebrate, flyCoins, mapFx, winBloom, winGlowRun } from '../fx';
 import { noteFirstClear, winGlowPlan } from '../fx-plan';
 import { sceneWinDisplay } from '../scene-fx';
+import { duskFade, hasSunset } from '../logic/sun';
+import { duskMoment } from './sun-moments';
 import { shellSvg } from '../shells';
 import { writeSave } from '../storage';
 import { currentTheme } from '../theme';
@@ -359,6 +361,12 @@ export function showWin(): void {
   ].filter(Boolean);
   winEl.querySelector('.win-card')!.setAttribute('aria-describedby', described.join(' '));
   const stopGlow = gpuWinGlow(plan.steps) ?? winGlowRun(state.jarEls, plan); // sprint 19 S5: on the canvas when it draws the board
+  // Sprint 29 N4 (D223): a board with a sunset jar wins at dusk. The tint comes over the board with the
+  // glow run (instant under reduced motion), and the win card's backdrop keeps it once the card opens.
+  const dusk = hasSunset(board);
+  winEl.classList.toggle('dusk', dusk);
+  winEl.style.setProperty('--dusk-ms', '0ms'); // the board's tint is already up when the card opens
+  const clearDusk = dusk ? duskMoment(reducedMotion() ? 0 : Math.min(cardDelay, duskFade(false))) : null;
   let opened = false;
   const open = () => {
     if (opened) return;
@@ -368,6 +376,7 @@ export function showWin(): void {
     window.removeEventListener('keydown', skip, true);
     stopGlow();
     openLayer(winEl, btnNext, null);
+    clearDusk?.(reducedMotion() ? 0 : 260); // after the win overlay's own 220 ms fade-in
     winBloom(colorsOf()); // sprint 10 F5: a soft glow and drifting motes behind the card
   };
   const skip = (e: Event) => {

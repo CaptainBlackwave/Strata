@@ -299,19 +299,29 @@ export function proveDeal(board: Board, budget: number, maxPours: number, colors
 }
 
 /**
+ * The sunrise bands `proveDeal` tries on one deal (D222, §2.11): the dealt band `rise` first, then the
+ * next colours in palette order, wrapping and skipping the sunset band `set`, `min(tries, colors - 1)`
+ * in all (at least the dealt one). Example: `sunriseBands(4, 5, 6, 3) // [4, 0, 1]`.
+ */
+export function sunriseBands(rise: Color, set: Color, colors: number, tries: number): Color[] {
+  const bands: Color[] = [rise];
+  const n = Math.max(1, Math.min(Math.floor(tries), colors - 1));
+  for (let c = rise, k = 0; bands.length < n && k < colors; k++) {
+    c = (c + 1) % colors;
+    if (c !== set && c !== rise) bands.push(c);
+  }
+  return bands;
+}
+
+/**
  * `proveDeal` for a board with the sunrise and sunset pair (D222, §2.11): the sunset band stays as
  * dealt and the sunrise jar at `rise` takes up to `tries` bands from its dealt one on, skipping the
  * sunset band. Returns the first proof within `maxPours`, else the shortest proof, else the dealt
  * pair's result. Every proof is a win, so every kept pair is winnable in order.
  */
 function provePair(board: Board, rise: number, budget: number, maxPours: number, colors: number, tries: number): DealProof {
-  const sun = board.jars[rise].sun!;
-  const sunset = board.jars.find((j) => j.sun?.at === 'set')?.sun?.band;
-  const bands: number[] = [sun.band];
-  for (let c = sun.band; bands.length < Math.min(tries, colors - 1);) {
-    c = (c + 1) % colors;
-    if (c !== sunset && c !== sun.band) bands.push(c);
-  }
+  const sunset = board.jars.find((j) => j.sun?.at === 'set')?.sun?.band ?? -1;
+  const bands = sunriseBands(board.jars[rise].sun!.band, sunset, colors, tries);
   let nodes = 0;
   let first: DealProof | undefined; // the dealt pair's own result, whatever it is
   let shortest: DealProof | undefined; // the shortest proof over maxPours

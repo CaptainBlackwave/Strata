@@ -35,6 +35,14 @@ function track(a: Animation): Animation {
   return a;
 }
 
+/**
+ * Tracks an effect started outside this file (the sunrise brightening, screens/sun-moments.ts), so a
+ * tap or key finishes it and a hidden tab pauses it, as every effect here. Returns `a`.
+ */
+export function trackEffect(a: Animation): Animation {
+  return track(a);
+}
+
 /** Finishes every running effect at once (a tap or key during one skips it). */
 export function finishEffects(): void {
   for (const a of [...running]) {

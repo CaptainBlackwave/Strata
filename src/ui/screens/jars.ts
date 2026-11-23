@@ -123,7 +123,7 @@ export const SUN_MARK =
   '<span class="sun-mark" aria-hidden="true"><svg viewBox="0 0 16 14" focusable="false">' +
   `<path class="sm-rays" d="${SUN_PATHS.rays}"/><path class="sm-disc" d="${SUN_PATHS.disc}"/>` +
   `<path class="sm-horizon" d="${SUN_PATHS.horizon}"/>` +
-  `<path class="sm-arrow sm-rise" d="${SUN_PATHS.rise}"/><path class="sm-arrow sm-set" d="${SUN_PATHS.set}"/></svg></span>';
+  `<path class="sm-arrow sm-rise" d="${SUN_PATHS.rise}"/><path class="sm-arrow sm-set" d="${SUN_PATHS.set}"/></svg></span>`;
 
 let tapHandler: (i: number) => void = () => {};
 

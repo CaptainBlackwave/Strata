@@ -2566,6 +2566,8 @@ button {
 /* The dusk win (screens/win.ts, D223): on a board with a sunset jar the win plays at dusk, a violet
    to ember tint over the dim backdrop and under the card. It fades in (instant under reduced motion,
    from --dusk-ms and the global reduced-motion rule) and stays while the card is open. */
+/* .sun-dusk is the same tint over the board while the glow run plays (sun-moments.ts duskMoment). */
+.sun-dusk,
 .win.dusk::before {
   content: '';
   position: fixed;
@@ -2574,6 +2576,10 @@ button {
   pointer-events: none;
   background: linear-gradient(180deg, rgba(70, 48, 112, 0.42) 0%, rgba(150, 72, 108, 0.3) 48%, rgba(236, 128, 76, 0.34) 100%);
   animation: fade var(--dusk-ms, 600ms) ease-out both;
+}
+.sun-dusk {
+  z-index: 15;
+  animation: none;
 }
 
 /* Clam jar (sprint 13 M3, D96): while it is closed a ribbed shell covers the whole glass, so its
