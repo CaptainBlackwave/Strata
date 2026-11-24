@@ -87,6 +87,12 @@ verified-by: owner interview 2026-11-08
 - **Never over stones or text**: the string sits behind the stones, the level numbers, the markers, the tap card and the "Play · Level N" button, and keeps a gap around every stone so a stone's outline and its marks read exactly as before. Each stone keeps its 44 px tap target, and the lights take no taps.
 - **Twinkle**: each bulb fades slowly between a dim and a bright state (a cycle of a few seconds, bulbs out of phase), never a flash. Under reduced motion the lights stay still at a steady glow.
 - It pauses while the page is hidden, and it costs no more than the scene layers' budget (CSS animation only; `scenes.md` §2.1a rules).
+- **Bolder after the owner's art review (D244)**: the string is a dark green wire with a slight sag between stones. The bulbs are teardrop-shaped Christmas lights in red, gold, green and blue, each with a small socket and a soft glow.
+- **Christmas decorations (D244, `festive.mapDecor`)**: in the same window, the land side of each scenery band gets one or two small still decorations:
+  - the decorations are a decorated tree with a star, a snowman with a hat and scarf, and a stack of wrapped presents (`festiveDecorFor`, which rotates them band by band);
+  - the lighthouse wears a wreath;
+  - each is placed where the path swings away (`decorSpots`), so it never covers a stone, a marker or a band name;
+  - they are `aria-hidden` and take no taps.
 - Cosmetic only: no rule, marker or save field changes. The lights are generated with the path, so the endless, virtualised map (§3) gets them on every visible stretch.
 - Cut order: third in the sprint 31 scope cuts, after Sparkle glass art and the Home garland.
 
@@ -121,4 +127,5 @@ See 2.3.
 | 2026-11-08 | Claude | Designed from the owner interview (D47–D51); drafts flagged for sign-off |
 | 2026-11-08 | Claude | Drafts signed off by the owner (D52) |
 | 2026-11-09 | Claude | Built in sprint 9 M3; §5 ticked with evidence in `production/qa/evidence/sprint-9/README-m3.md`. After a map replay, Continue returns to the map |
+| 2026-11-24 | Claude (sprint 31, art review) | §2.4: bolder lights and Christmas decorations on the map (D244) |
 | 2026-11-24 | Claude (sprint 31, C1) | §2.4 December lights (D241): soft lights along the path from 1 to 31 December, slow twinkle, still under reduced motion, never over stones or text; edge cases and a criterion added |

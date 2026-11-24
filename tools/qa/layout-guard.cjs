@@ -69,6 +69,10 @@ function richSave(date) {
     goals: { date, progress: [2, 9, 0], done: [1], bonus: false },
     track: [3, 7, 14, 21],
     events: { wintertide: { year: 2026, cleared: [1, 2, 3, 5, 8], pours: { 1: 18, 2: 22, 3: 25, 5: 31, 8: 27 } } },
+    // The one-time start cards and the Christmas gift are already seen (sprint 31, D238, D242), so neither card
+    // covers Home on the December dates; the dress rehearsal checks those cards (production/qa/evidence/sprint-31/).
+    startCards: { wintertide: 2026, newtide: 2026 },
+    gifts: { christmas: 2026 },
     onboarding: ONB,
   };
 }

@@ -1,54 +1,180 @@
 {
   "2026-12-12-412-light": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 15,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
   "2026-12-12-412-dark": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 15,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
   "2026-12-12-412-light-lv30": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 18,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
   "2026-12-12-412-dark-lv30": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 18,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
   "2026-12-12-412-light-lv52": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "tree"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 19,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
-  "2026-12-12-412-light-lv372": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+  "2026-12-12-412-light-lv368": {
+    "decorInView": 2,
+    "decorKinds": [
+      "tree"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 17,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
-  "2026-12-12-412-dark-lv372": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+  "2026-12-12-412-dark-lv368": {
+    "decorInView": 2,
+    "decorKinds": [
+      "tree"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 17,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
   "2026-12-12-412-light-lv88": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "snowman"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 17,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
     "errors": []
   },
   "2026-12-12-320-150-light": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 5,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 320,
     "errors": []
   },
   "2026-12-12-320-150-light-lv30": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 6,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 320,
     "errors": []
   },
   "2026-12-12-412-reduced": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 15,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": true,
+    "anim": "none",
+    "scrollW": 412,
     "errors": []
   },
   "2026-11-30-412-light": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 0,
+    "decorKinds": [],
+    "decorHits": 0,
+    "bulbsInView": 0,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": null,
+    "scrollW": 412,
     "errors": []
   },
   "2027-01-01-412-light": {
-    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "decorInView": 0,
+    "decorKinds": [],
+    "decorHits": 0,
+    "bulbsInView": 0,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": null,
+    "scrollW": 412,
     "errors": []
   }
 }

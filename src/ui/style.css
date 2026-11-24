@@ -7035,6 +7035,30 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
    it; under the stones and their numbers, kept clear of every stone and its marks (logic/festive.ts
    lightRun). Each bulb fades slowly between bright and dim (never below 0.55), out of phase; still under
    reduced motion. */
+:root {
+  /* The lights' wire and sockets: dark green and near-black by day, lifted at night so they still show. */
+  --light-wire: #1e4a30;
+  --bulb-cap: #2b3a2f;
+  /* The decorations' fixed festive art colours (same in every scene; the outline follows the scene's ink). */
+  --xmas-trunk: #7a4b2c;
+  --xmas-fir: #2c7a4b;
+  --xmas-tinsel: #f6d36a;
+  --xmas-star: #ffcf3a;
+  --xmas-star-edge: #b98a12;
+  --xmas-red: #d8323b;
+  --xmas-gold: #f5c33b;
+  --xmas-blue: #3f86d8;
+  --xmas-green: #2f8a55;
+  --xmas-snow: #fbfdff;
+  --xmas-coal: #2c2f3a;
+  --xmas-carrot: #f08a24;
+  --xmas-stick: #6b4426;
+  --xmas-ribbon-pale: #fff1d2;
+}
+:root[data-scheme='dark'] {
+  --light-wire: #5d9471;
+  --bulb-cap: #9fb3a5;
+}
 .map-lights {
   position: absolute;
   top: 0;
@@ -7044,13 +7068,10 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
 }
 .map-lights .light-wire {
   fill: none;
-  stroke: #1e4a30;
+  stroke: var(--light-wire);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-:root[data-scheme='dark'] .map-lights .light-wire {
-  stroke: #5d9471;
 }
 .map-lights .bulb-glass {
   stroke: rgba(70, 30, 10, 0.35);
@@ -7065,10 +7086,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   opacity: 0.75;
 }
 .map-lights .bulb-cap {
-  fill: #2b3a2f;
-}
-:root[data-scheme='dark'] .map-lights .bulb-cap {
-  fill: #9fb3a5;
+  fill: var(--bulb-cap);
 }
 @media (prefers-reduced-motion: no-preference) {
   .map-lights:not(.still) .bulb {
@@ -7109,25 +7127,25 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   opacity: 1;
 }
 .decor .d-shadow { fill: color-mix(in srgb, var(--ink-soft) 28%, transparent); stroke: none; }
-.decor .d-trunk { fill: #7a4b2c; }
-.decor .d-fir { fill: #2c7a4b; }
-.decor .d-tinsel { fill: none; stroke: #f6d36a; stroke-width: 1.4; stroke-linecap: round; }
-.decor .d-star { fill: #ffcf3a; stroke: #b98a12; }
+.decor .d-trunk { fill: var(--xmas-trunk); }
+.decor .d-fir { fill: var(--xmas-fir); }
+.decor .d-tinsel { fill: none; stroke: var(--xmas-tinsel); stroke-width: 1.4; stroke-linecap: round; }
+.decor .d-star { fill: var(--xmas-star); stroke: var(--xmas-star-edge); }
 .decor .d-red,
-.decor-wreath .d-red { fill: #d8323b; }
-.decor-wreath .d-tail { fill: none; stroke: #d8323b; stroke-width: 1.4; stroke-linecap: round; }
-.decor .d-gold { fill: #f5c33b; }
-.decor .d-blue { fill: #3f86d8; }
-.decor .d-green { fill: #2f8a55; }
-.decor .d-snow { fill: #fbfdff; }
+.decor-wreath .d-red { fill: var(--xmas-red); }
+.decor-wreath .d-tail { fill: none; stroke: var(--xmas-red); stroke-width: 1.4; stroke-linecap: round; }
+.decor .d-gold { fill: var(--xmas-gold); }
+.decor .d-blue { fill: var(--xmas-blue); }
+.decor .d-green { fill: var(--xmas-green); }
+.decor .d-snow { fill: var(--xmas-snow); }
 .decor .d-coal,
-.decor .d-hat { fill: #2c2f3a; }
+.decor .d-hat { fill: var(--xmas-coal); }
 .decor .d-coal { stroke: none; }
-.decor .d-carrot { fill: #f08a24; }
-.decor .d-stick { fill: none; stroke: #6b4426; stroke-width: 1.6; stroke-linecap: round; }
-.decor .d-ribbon { fill: #f5c33b; }
-.decor .d-ribbon-pale { fill: #fff1d2; }
-.decor-wreath .d-wreath { fill: none; stroke: #2c7a4b; stroke-width: 3.2; }
+.decor .d-carrot { fill: var(--xmas-carrot); }
+.decor .d-stick { fill: none; stroke: var(--xmas-stick); stroke-width: 1.6; stroke-linecap: round; }
+.decor .d-ribbon { fill: var(--xmas-gold); }
+.decor .d-ribbon-pale { fill: var(--xmas-ribbon-pale); }
+.decor-wreath .d-wreath { fill: none; stroke: var(--xmas-fir); stroke-width: 3.2; }
 
 /* ==== Sprint 12 S3: jar styles (design/gdd/jar-styles.md §3.1, §3.4, §4) ====
    One block, keyed by data-glass, data-cork and data-sand on a container (#board, #home or a
