@@ -98,7 +98,8 @@ export function eventView(saved: EventsState, badges: readonly string[], date: s
     total,
     sub: t.event.cardLine(open, event.boards, cleared, total),
     days: t.event.daysLeft(left),
-    prize: prizeCollected ? t.event.prizeCollected : t.event.prize(total, piece, badgeName),
+    // In a later year the prize is already yours before this year's set is done (sprint 31 C2 finding 5).
+    prize: prizeCollected ? (cleared >= total ? t.event.prizeCollected : t.event.prizeKept) : t.event.prize(total, piece, badgeName),
     prizeCollected,
     note: boards.some((b) => b.festive) ? t.event.festiveNote : '',
     boards,
@@ -113,6 +114,17 @@ export function eventView(saved: EventsState, badges: readonly string[], date: s
 export function eventBoardLabel(event: EventDef | undefined, id: string, n: number): string {
   const name = t.event.names[id] ?? id;
   return event && isFestiveBoard(event, n) ? t.event.festiveLabel(name) : t.event.label(name, n);
+}
+
+/**
+ * The board screen's header for an event board, split like the weekly's (sprint 31 C2 finding 2):
+ * the label is the board ("Board 6", or "Christmas Day" on the festive board) and the tag on the right
+ * is the event's name, so "Winter Tide · Board 6" is never cut off at 412px.
+ * Example: `eventBoardHeader(winter, 'wintertide', 25) // { label: 'Christmas Day', tag: 'Winter Tide' }`.
+ */
+export function eventBoardHeader(event: EventDef | undefined, id: string, n: number): { label: string; tag: string } {
+  const tag = t.event.names[id] ?? id;
+  return { label: event && isFestiveBoard(event, n) ? t.event.festiveTile : t.event.boardShort(n), tag };
 }
 
 /**

@@ -148,7 +148,7 @@ export interface EventCard {
   readonly coins: number;
   /** This clear finished every prize board: the prize was granted (never on a bonus board). */
   readonly completedNow: boolean;
-  /** The prize's jar piece `slot:id`, when `completedNow`. */
+  /** The prize's jar piece `slot:id`, when `completedNow` granted it (absent when it was already owned). */
   readonly prizeStyle?: string;
 }
 
@@ -303,9 +303,14 @@ function winEvent(s: WinState, result: WinResult, config: WinConfig): WinOutcome
   let state: WinState = { ...s, events: { ...(s.events ?? {}), [event.id]: r.state }, stats: bumpStats(s.stats, { pours: result.moves }) };
   if (r.coins > 0) state = earn(state, r.coins);
   const prizeBadges: string[] = [];
+  // The piece the win card names: only when this clear adds it (a later year's completion grants nothing new).
+  let newPiece: string | undefined;
   if (r.completedNow) {
     const { style, badge } = event.prize;
-    if (style && state.styles && !state.styles.owned.includes(style)) state = { ...state, styles: { ...state.styles, owned: [...state.styles.owned, style] } };
+    if (style && state.styles && !state.styles.owned.includes(style)) {
+      state = { ...state, styles: { ...state.styles, owned: [...state.styles.owned, style] } };
+      newPiece = style;
+    }
     if (badge && !state.badges.includes(badge)) {
       state = { ...state, badges: [...state.badges, badge] };
       prizeBadges.push(badge);
@@ -319,7 +324,7 @@ function winEvent(s: WinState, result: WinResult, config: WinConfig): WinOutcome
     reward: r.coins,
     badges: [...prizeBadges, ...f.badges],
     goals: f.goals,
-    event: { id: event.id, board: played.board, cleared: prizeBoardsCleared(r.state.cleared, event), total: prizeBoards(event), firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, coins: r.coins, completedNow: r.completedNow, ...(r.completedNow && event.prize.style ? { prizeStyle: event.prize.style } : {}) },
+    event: { id: event.id, board: played.board, cleared: prizeBoardsCleared(r.state.cleared, event), total: prizeBoards(event), firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, coins: r.coins, completedNow: r.completedNow, ...(newPiece ? { prizeStyle: newPiece } : {}) },
     unlocks: newlyUnlocked(config, before, progressOfState(state, config)),
   };
   return { state, card };

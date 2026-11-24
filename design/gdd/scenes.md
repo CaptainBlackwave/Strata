@@ -107,7 +107,7 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 **Build order:** rungs ship out of order (D39 picked one scene per tier first). The picker lists scenes by price, so the rungs that aren't built yet are simply absent until later sprints, and the prices of the built ones never change when the rest arrive.
 
 **Festive in December (D241, sprint 31):**
-- From 1 to 31 December (the device's local date, like the "In season" badge), the picker lists **Winter snow** (`wintersnow`) and **Winter lights** (`winterlights`) **first**, in that order (their price order), then every other scene by price as usual.
+- From 1 to 31 December (UTC, like the events; `festive` in the config), the picker lists **Winter snow** (`wintersnow`) and **Winter lights** (`winterlights`) **first**, in that order (their price order), then every other scene by price as usual.
 - Both carry a **"Festive"** tag in December. It takes the place of their "In season" badge for the month, so each tile still has one tag and fits the two-column picker at 320 px with 150% text (proposed; confirmed at the C5 screenshots).
 - **Nothing is bought or changed for the player**: prices, ownership, the selected scene and Match my clock are untouched. An unowned scene still shows its price and Buy; listing first is not a sale or a discount (paid and limited-time sales are out of scope).
 - The order and tag follow December on the calendar, not the hemisphere: with **Southern hemisphere seasons** on, Winter snow's season window moves to Jun–Aug, but it is still listed first and tagged Festive in December (it is a Christmas look, not a season claim).

@@ -83,7 +83,7 @@ verified-by: owner interview 2026-11-08
 - **Depended on by**: `feel-audio-ui.md` (Play now opens the map).
 
 ### 2.4 December lights (D241, sprint 31)
-- From **1 to 31 December** (the device's local date, like the scenes' calendar), a string of soft lights runs along the beach path: a thin wire following the path's curve with small round bulbs, drawn in CSS/SVG with no image files, in every scene and both themes.
+- From **1 to 31 December** (UTC dates, like the events and the daily puzzle; `festive.from`/`festive.to` in the config, `festiveActive`), a string of soft lights runs along the beach path: a thin wire following the path's curve with small round bulbs, drawn in CSS/SVG with no image files, in every scene and both themes.
 - **Never over stones or text**: the string sits behind the stones, the level numbers, the markers, the tap card and the "Play · Level N" button, and keeps a gap around every stone so a stone's outline and its marks read exactly as before. Each stone keeps its 44 px tap target, and the lights take no taps.
 - **Twinkle**: each bulb fades slowly between a dim and a bright state (a cycle of a few seconds, bulbs out of phase), never a flash. Under reduced motion the lights stay still at a steady glow.
 - It pauses while the page is hidden, and it costs no more than the scene layers' budget (CSS animation only; `scenes.md` §2.1a rules).
@@ -98,7 +98,7 @@ verified-by: owner interview 2026-11-08
 - 150% text at 320 px: the stones scale, and the tap card scrolls. Each stone is a 44 px or larger tap target (D45 rule).
 - Reduced motion: no pulse and no scroll animation. The map jumps straight to the next level. December lights stay still.
 - December lights at 320 px with 150% text: the stones scale and the string follows the path, keeping its gap around each stone; it never overlaps a level number or the tap card.
-- December lights near midnight on 31 December: the lights follow the local date, so they go when the local calendar turns to 1 January (New Tide continues on its own clock, `events.md`).
+- December lights near midnight on 31 December: the lights follow the UTC date, so they go when UTC turns to 1 January (New Tide continues on its own clock, `events.md`).
 
 ## 4. Dependencies
 See 2.3.

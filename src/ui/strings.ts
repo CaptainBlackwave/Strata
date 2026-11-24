@@ -998,6 +998,8 @@ const en = {
     daysLeft: (n: number) => (n <= 0 ? 'Last day' : n === 1 ? 'Ends tomorrow' : `Ends in ${n} days`),
     prize: (total: number, piece: string, badge: string) => `Clear all ${total} for the ${piece} and the ${badge} badge`,
     prizeCollected: 'Prize collected',
+    /** A later year, before this year's set is done: the prize is already the player's (sprint 31). */
+    prizeKept: 'You already have the prize from an earlier year',
     /** A jar piece as a prize, e.g. "Frost jar glass". */
     piece: (name: string, slot: string) => `${name} jar ${slot.toLowerCase()}`,
     /** A board in the chooser: its visible status and its spoken name. */
@@ -1009,6 +1011,8 @@ const en = {
     boardLockedLabel: (n: number, month: string, day: number) => `Board ${n}, opens ${month} ${day}`,
     /** The board screen's label, e.g. "Winter Tide · Board 6". */
     label: (name: string, n: number) => `${name} \u00b7 Board ${n}`,
+    /** The board screen's label beside the event's tag (sprint 31), e.g. "Board 6". */
+    boardShort: (n: number) => `Board ${n}`,
     winTitle: (name: string, n: number) => `${name} \u00b7 Board ${n}`,
     completeTitle: (name: string) => `${name} complete!`,
     winText: (pours: number, cleared: number, total: number) => `${pours} ${pours === 1 ? 'pour' : 'pours'} \u00b7 ${cleared} of ${total} cleared`,

@@ -4,7 +4,7 @@ import { type Board, canPour, isClosed, isSealed, pourRefusal, sieveLostColor, s
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { generateWeekly, parseWeek } from '../../core/weekly';
 import { type EventsConfig, eventById, generateEventBoard, isFestiveBoard } from '../../core/events';
-import { eventBoardLabel } from '../logic/event-card';
+import { eventBoardHeader } from '../logic/event-card';
 import { type GameConfig } from '../../core/levels';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
@@ -126,8 +126,11 @@ export function startEvent(id: string, year: number, n: number): void {
   state.eventBoard = n;
   const gen = generateEventBoard(event, year, n, config as unknown as GameConfig);
   beginSession(gen.board, gen.spec.challenge, isFestiveBoard(event, n)); // board 25's holly-capped look (D237)
-  levelLabel.textContent = eventBoardLabel(event, id, n); // "Winter Tide · Christmas Day" on board 25 (D237)
-  challengeTag.hidden = true;
+  // Like the weekly: the board in the label, the event's name in the tag, so it fits at 412px (sprint 31 C2).
+  const header = eventBoardHeader(event, id, n); // "Christmas Day" on board 25 (D237)
+  levelLabel.textContent = header.label;
+  challengeTag.textContent = header.tag;
+  challengeTag.hidden = false;
   coach(null);
   introduce(specMechanics(gen.spec)); // none: event boards have no special jars (D144)
 }

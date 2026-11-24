@@ -40,6 +40,16 @@ describe('event win', () => {
     expect(again.badges.filter((x) => x === 'event-wintertide')).toHaveLength(1);
   });
 
+  // Sprint 31 C2 rehearsal finding 1: completing again in a later year showed "Frost jar glass is yours"
+  // although nothing new was granted. The prize row shows only when the piece is new.
+  it('a later year that completes again shows no prize row for a piece already owned', () => {
+    const cleared = Array.from({ length: 23 }, (_, i) => i + 1);
+    const first = applyWin(state({ events: { wintertide: { year: 2026, cleared, pours: {} } } }), win(24), cfg);
+    expect(first.card.event?.prizeStyle).toBe('glass:frost');
+    const again = applyWin({ ...first.state, events: { wintertide: { year: 2027, cleared, pours: {} } } }, { ...win(24), event: { id: 'wintertide', year: 2027, board: 24 } }, cfg);
+    expect(again.card.event?.completedNow).toBe(true);
+    expect(again.card.event?.prizeStyle).toBeUndefined();
+  });
   it('board 25 (Christmas Day, D237) is a bonus: no coins, no prize, and the count stays "of 24"', () => {
     const all = Array.from({ length: 24 }, (_, i) => i + 1);
     const after = applyWin(state({ events: { wintertide: { year: 2026, cleared: all, pours: {} } } }), win(25), cfg);

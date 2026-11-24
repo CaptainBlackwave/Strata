@@ -5,8 +5,9 @@ import { describe, expect, it } from 'vitest';
 import config from '../../../src/config/game-config.json';
 import { type EventsConfig, eventById } from '../../../src/core/events';
 import { type StylesConfig, defaultStyles } from '../../../src/core/styles';
-import { eventBoardLabel, eventView, eventWinCount, homeNotice, sceneOrder } from '../../../src/ui/logic/event-card';
+import { eventBoardHeader, eventBoardLabel, eventView, eventWinCount, homeNotice, sceneOrder } from '../../../src/ui/logic/event-card';
 import { lockText, styleAction } from '../../../src/ui/logic/styles-sheet';
+import { t } from '../../../src/ui/strings';
 
 const cfg = config as unknown as EventsConfig;
 const styles = config as unknown as StylesConfig;
@@ -46,6 +47,10 @@ describe('board and win labels', () => {
     expect(eventBoardLabel(winter, 'wintertide', 25)).toBe('Winter Tide · Christmas Day');
     expect(eventBoardLabel(winter, 'wintertide', 6)).toBe('Winter Tide · Board 6');
     expect(eventBoardLabel(newtide, 'newtide', 12)).toBe('New Tide · Board 12');
+    // The board screen splits it like the weekly: the board in the label, the event in the tag (sprint 31 C2).
+    expect(eventBoardHeader(winter, 'wintertide', 6)).toEqual({ label: 'Board 6', tag: 'Winter Tide' });
+    expect(eventBoardHeader(winter, 'wintertide', 25)).toEqual({ label: 'Christmas Day', tag: 'Winter Tide' });
+    expect(eventBoardHeader(newtide, 'newtide', 3)).toEqual({ label: 'Board 3', tag: 'New Tide' });
   });
   it('the win count is of prize boards, so a bonus board never reads "25 of 24"', () => {
     const all = Array.from({ length: 25 }, (_, i) => i + 1);
@@ -89,5 +94,16 @@ describe('the December scene order (D241)', () => {
   it('the configured festive scenes exist in the scene list', () => {
     const ids = (config as unknown as { themes: { list: { id: string }[] } }).themes.list.map((th) => th.id);
     for (const id of (config as unknown as { festive: { scenesFirst: string[] } }).festive.scenesFirst) expect(ids).toContain(id);
+  });
+});
+
+// Sprint 31 C2 rehearsal finding 5: a later year read "Prize collected" at 0 of 24.
+describe('the prize line in a later year', () => {
+  it('says the prize is already yours until this year\'s set is done, then "Prize collected"', () => {
+    const v0 = eventView({ wintertide: { year: 2027, cleared: [], pours: {} } }, ['event-wintertide'], '2027-12-01', cfg)!;
+    expect(v0.prize).toBe(t.event.prizeKept);
+    const all = Array.from({ length: 24 }, (_, i) => i + 1);
+    const v24 = eventView({ wintertide: { year: 2027, cleared: all, pours: {} } }, ['event-wintertide'], '2027-12-24', cfg)!;
+    expect(v24.prize).toBe(t.event.prizeCollected);
   });
 });

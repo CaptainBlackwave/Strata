@@ -46,7 +46,7 @@ Christmas Day is the calendar's last window: a bonus board and a small present w
 
 ### 3.4 Progress and rewards
 - `recordEventClear` keeps, per event, `{ year, cleared[], pours{} }`. A clear in a new year starts that year fresh.
-- **Coins**: `coins` after every `coinsEvery`-th **first** clear of the year. The count is of first clears, not the board's number (`cleared.length mod coinsEvery = 0`, as built). For Winter Tide that is 50 on the 6th, 12th, 18th and 24th first clear, so 200 in a year; the 25th first clear pays nothing, because 25 is not a multiple of 6. For New Tide it is 50 on the 4th, 8th and 12th first clear, so 150 in a year.
+- **Coins**: `coins` after every `coinsEvery`-th **first clear of a prize board** (boards 1 to `prizeBoards`) in the year (as built in sprint 31, owner direction). A bonus board above `prizeBoards` is never counted and never pays, in any order. For Winter Tide that is 50 on the 6th, 12th, 18th and 24th prize-board clear, so 200 in a year whether board 25 is played first, last or not at all. For New Tide it is 50 on the 4th, 8th and 12th, so 150 in a year.
 - **Prize boards** (`prizeBoards`, new in sprint 31, D237): the prize needs boards **1 to `prizeBoards`** cleared. It defaults to `boards`, so an event without the field behaves as before. Winter Tide sets `prizeBoards: 24`, so board 25 is a bonus and is never needed for the prize. New Tide leaves it unset (all 12).
 - **Prize** on the first clear that makes boards 1 to `prizeBoards` all cleared: the jar piece (`prize.style`) and the badge (`prize.badge`). Each is granted **once and kept for good**. A player who completes again in a later year keeps one copy (D143). Clearing a bonus board (above `prizeBoards`) never grants the prize, before or after the set is complete.
 - A replay pays nothing and only lowers best pours.
@@ -58,8 +58,8 @@ Christmas Day is the calendar's last window: a bonus board and a small present w
 - The Christmas Day gift's Holly cap is never sold either; it is a gift piece (`"gift": "christmas"`), not an event prize (§3.9, `jar-styles.md` §3.6).
 
 ### 3.6 Where it shows
-- **Home card**: shown while an event runs and after the tutorial. It shows the event name, "Board 12 open · 9 of 24 cleared" and the days left. The count is of boards 1 to `prizeBoards` (so "of 24" for Winter Tide, "of 12" for New Tide); a cleared bonus board does not move it.
-- **Chooser**: one tile per board (25 for Winter Tide, 12 for New Tide), each open, cleared (with its best pours) or locked ("Opens Dec 14", "Opens Jan 3"); the prize line; Close. Winter Tide's 25th tile is labelled "Christmas Day" and set apart as a bonus, so the 24 prize boards read as the set.
+- **Home card**: shown while an event runs and after the tutorial. On the Play tab it shows the event name, "9 of 24 cleared" and the days left; the Today tab's card and the chooser show the full "Board 12 open · 9 of 24 cleared" (since sprint 20; confirmed in the sprint 31 rehearsal). The count is of boards 1 to `prizeBoards` (so "of 24" for Winter Tide, "of 12" for New Tide); a cleared bonus board does not move it.
+- **Chooser**: one tile per board (25 for Winter Tide, 12 for New Tide), each open, cleared (with its best pours) or locked (the tile shows its date, "Dec 14"; its spoken label says "opens Dec 14"); the prize line (in a later year, before that year's set is done, "You already have the prize from an earlier year"); Close. Winter Tide's 25th tile is labelled "Christmas Day" and set apart as a bonus, so the 24 prize boards read as the set.
 - **Win card**: "Winter Tide · Board 6", the pours and "6 of 24 cleared", a coin row on a paying clear, and the prize and badge rows on the clear that completes the prize boards. New Tide has its own Home card, chooser and win card in the same layout (D240).
 - **Atmosphere**: Winter Tide keeps its light snow behind Home and its music; while it runs, Home also has a small garland across the top (D241, `feel-audio-ui.md`). New Tide has no snow: a few gentle sparkles on Home while it runs, off under reduced motion (D240).
 
@@ -68,7 +68,7 @@ Christmas Day is the calendar's last window: a bonus board and a small present w
 - It is a gentle board like the rest (`recipes[0]`: 5 colours, no buried layer, no special jars) and its seed follows the usual rule (`wintertide-<year>#25`).
 - It is a **bonus**: not needed for the prize, and never granting it.
 - Its jars show the **Holly cap** on their stoppers whatever cork the player wears (a board look only: it changes no worn style and no rule). It is labelled "Winter Tide · Christmas Day" on the board, the chooser and the win card.
-- Its first clear normally pays nothing (the 25th first clear, §3.4); see Edge Cases for the order case.
+- Its first clear never pays coins and never counts toward the prize (§3.4).
 
 ### 3.8 New Tide (D240)
 - Config entry `newtide`: `from: "12-26"`, `to: "01-06"`, `boards: 12`, the same three gentle recipes as Winter Tide, `coinsEvery: 4`, `coins: 50`, `prize: { style: "glass:sparkle", badge: "event-newtide" }`, its own new `seedSalt` (chosen in C3, distinct from every other salt; never changed after its first run).
@@ -130,7 +130,7 @@ Variables: `date` is the UTC date; `year` is the event year (the year its `from`
 - **The clock moved back**: the chooser shows the boards for that date. A board cleared later stays cleared, because clears are not undone.
 - **Winning a board just after the event ends** (started on 25 Dec 23:58, won on 26 Dec, when New Tide is running): it records for Winter Tide and the board's own year, because the board carries its event and year. The same holds for a New Tide board started on 6 Jan and won on 7 Jan (New Tide of the previous year).
 - **New Tide across the year end**: a board played on 2 January 2027 is New Tide 2026 (seed `newtide-2026#n`), and its progress is the 2026 record. On 26 December 2027 a fresh 2027 record starts.
-- **Board 25 played out of order**: coins are counted by first clears (§3.4). A player who clears board 25 before finishing 1–24 makes it a counted clear, so if it is their 6th, 12th, 18th or 24th first clear it pays the 50 coins, and their 25th first clear (a prize board) pays nothing. The year total stays 200 either way. "Board 25 pays no coins" (D237) holds for every player who plays it after the set, which is everyone up to 24 December; flagged for the owner in C1's report rather than changed.
+- **Board 25 played out of order**: coins count only clears of prize boards 1–24 (§3.4), so board 25 never pays and never shifts the count, in any order; the year total is 200 either way.
 - **Board 25 cleared, prize boards not**: the count on Home stays at "n of 24"; the prize waits for boards 1–24. Clearing board 25 after the set is complete grants nothing more.
 - **`prizeBoards` out of range**: missing, non-integer, below 1 or above `boards` means `boards` (the config check in C3 rejects such values in tests).
 - **A board started before an update that changes the event**: `id` and `seedSalt` never change after an event has run (config comment), so boards stay the same.
@@ -186,7 +186,7 @@ The Christmas Day gift and the start cards are new config (proposed shape; final
 | Gift coins | `gifts.christmas.coins` | 100 | 0–300 | the present's size (economy: once a year) |
 | Gift boosters | `gifts.christmas.boosters` | `{ "hint": 1 }` | 0–3 of any booster | the present's size |
 | Gift piece | `gifts.christmas.style` | `cork:holly` | one gift piece (`"gift": "christmas"`) | the keepsake |
-| Start card | per event, `startCard: true` | both events on | on/off | the one-time card |
+| Start card | per event, `announce: true` | both events on | on/off | the one-time card |
 
 ## 8. Acceptance Criteria
 
@@ -227,3 +227,4 @@ Sprint 31 (supersedes the sprint 17 list, which said 1–31 December and 24 boar
 |------|--------|---------|
 | 2026-11-11 | Claude (sprint 17) | Designed from D141–D147: yearly UTC events, advent boards, gentle recipes, coins and a prize; Winter Tide 1–31 December, 24 boards |
 | 2026-11-24 | Claude (sprint 31, C1) | From D236–D243: Winter Tide 1–25 December with a bonus Christmas Day board 25 and `prizeBoards: 24`; New Tide (26 Dec – 6 Jan, 12 boards, 150 coins, the Sparkle glass and the New Tide badge); the Christmas Day gift (Holly cap, 100 coins, a hint, once a year, year stored); start cards; formulas, knobs, edge cases and acceptance criteria for each; boards 1–24 byte-identical and no player progress yet (first run) |
+| 2026-11-24 | Claude (sprint 31 integration) | As built: coins count prize-board clears only (board 25 never pays); the start-card key is `announce`; the Home and chooser wording as the rehearsal found it; the board screen shows "Board 6" or "Christmas Day" with the event's name in its tag (rehearsal finding 2); a later year's completion names no prize piece already owned (finding 1) |

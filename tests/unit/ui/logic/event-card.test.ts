@@ -53,12 +53,13 @@ describe('eventView: Winter Tide', () => {
     expect(v.sub).toBe('All 25 boards open · All cleared ✓');
     expect(v.focus).toBe(25);
   });
-  it('progress from last year does not count; the prize reads collected once its badge is owned', () => {
+  it('progress from last year does not count; with the badge owned the prize line says it is already yours', () => {
     const old = { wintertide: { ...nine.wintertide, year: 2025 } };
     const v = eventView(old, ['event-wintertide'], '2026-12-12', cfg)!;
     expect(v.cleared).toBe(0);
     expect(v.prizeCollected).toBe(true);
-    expect(v.prize).toBe('Prize collected');
+    // Sprint 31 C2 finding 5: not "Prize collected" at 0 of 24 in a later year.
+    expect(v.prize).toBe('You already have the prize from an earlier year');
   });
 });
 
