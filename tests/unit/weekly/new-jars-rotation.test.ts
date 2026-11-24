@@ -42,10 +42,14 @@ function provenAndReplayed(board: Board): boolean {
   return isWon(b);
 }
 
+/** The config with only the first Saturday era (2026-11-28), as before sprint 30's D228 era. */
+const firstEra = { ...cfg, daily: { ...cfg.daily, saturdayFrom: [(cfg.daily.saturdayFrom ?? [])[0]] } } as typeof cfg;
+
 describe('config: the start dates (D98)', () => {
   it('the daily rotation era starts on Saturday 2026-11-28 with all seven mechanics in cyclic unlock order', () => {
     const eras = cfg.daily.saturdayFrom ?? [];
-    expect(eras).toHaveLength(1);
+    // The 2026-12-19 era (sprint 30, D228) follows; tests/unit/daily/newer-jars-era.test.ts covers it.
+    expect(eras).toHaveLength(2);
     expect(eras[0].from).toBe(DAILY_FROM);
     expect(weekday(eras[0].from)).toBe(6);
     const list = eras[0].mechanics;
@@ -83,7 +87,9 @@ describe('the daily Saturday rotation from 2026-11-28 (D98)', () => {
     expect(dailySpec('2026-11-07', cfg).mechanics).toEqual(['locked']);
   });
   it('from the start every seven Saturdays feature all seven mechanics, one each, the hourglass first', () => {
-    const picks = Array.from({ length: 21 }, (_, w) => specMechanics(dailySpec(addDays(DAILY_FROM, 7 * w), cfg)));
+    // The first era alone: from 2026-12-19 the D228 era takes over (its own test covers it).
+    const picks = Array.from({ length: 21 }, (_, w) => specMechanics(dailySpec(addDays(DAILY_FROM, 7 * w), firstEra)));
+    for (let w = 0; w < 3; w++) expect(specMechanics(dailySpec(addDays(DAILY_FROM, 7 * w), cfg))).toEqual(picks[w]);
     for (const p of picks) expect(p).toHaveLength(1);
     expect(picks[0]).toEqual(['hourglass']);
     for (let w = 0; w + 7 <= picks.length; w++) expect(new Set(picks.slice(w, w + 7).flat()).size, `from week ${w}`).toBe(7);
@@ -96,7 +102,9 @@ describe('the daily Saturday rotation from 2026-11-28 (D98)', () => {
     expect(s.hourglass).toBe(true);
     expect(dailySpec(addDays(DAILY_FROM, 7), cfg).sieve).toBe(true);
     expect(dailySpec(addDays(DAILY_FROM, 14), cfg).clam).toBe(true);
-    expect(dailySpec(addDays(DAILY_FROM, 21), cfg).mechanics).toEqual(['narrow']);
+    expect(dailySpec(addDays(DAILY_FROM, 21), firstEra).mechanics).toEqual(['narrow']);
+    // In the live config that Saturday (2026-12-19) opens the D228 era with wet sand, again in its flag.
+    expect(dailySpec(addDays(DAILY_FROM, 21), cfg).wet).toBe(true);
   });
   it('the other weekdays after the start still have no mechanic', () => {
     for (let d = 1; d < 7; d++) expect(specMechanics(dailySpec(addDays(DAILY_FROM, d), cfg)), addDays(DAILY_FROM, d)).toEqual([]);

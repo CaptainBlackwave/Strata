@@ -97,8 +97,9 @@ describe('the sieve is a goal (S1, D214)', () => {
 });
 
 describe('dailies with a sieve follow the goal (S4)', () => {
-  // The first sieve daily (2026-12-05) and one whose board changed with the goal (2027-05-01).
-  for (const day of ['2026-12-05', '2027-05-01']) {
+  // The first sieve daily (2026-12-05) and a sieve Saturday of the D228 era (2027-04-24). The
+  // 2027-05-01 board this used to check features the clam since that era (sprint 30).
+  for (const day of ['2026-12-05', '2027-04-24']) {
     it(`the ${day} daily has a sieve and plays to a win with it sealed`, () => {
       const g = generateDaily(day, cfg as GameConfig & DailyConfig);
       const at = g.board.jars.findIndex((j) => j.sieve !== undefined);

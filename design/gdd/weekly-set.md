@@ -125,8 +125,11 @@ same five boards.
     The `weekly-boards.json` fixture changes only from W52 on; E3 hashes it before any change.
   - The week holds only if 0.26.0 ships first (D229, D233): if the release slips, R1 moves `from`
     to the first ISO week after the release, never to a week already played.
-  - Measurements (two years of weeks: every board with its theme's mechanic, counted fallbacks):
-    *to be measured in E3*.
+  - Measurements (sprint 30 E3, the 105 weeks 2026-W52 to 2028-W51, `tests/unit/weekly/newer-jars-era.test.ts`):
+    all 525 boards carry their theme's mechanic, none falls back, all are within the cap, and their proofs
+    replay to a win. Build time per board: wet 1.0 ms average (5 ms worst), tide 2.0 ms (24 ms), crab 1.1 ms
+    (10 ms), lighthouse 1.0 ms (7 ms), the pair 4.1 ms (64 ms). Weeks before W52 are unchanged; fixture
+    `weekly-boards.json` re-pinned for W52 to 2027-W01, and `weekly-era-pins.json` pins W49 to W51.
 - Thirteen themes against the daily Saturday's twelve (from 2026-12-19) use the same order, so at
   first a week's Saturday is one mechanic ahead of its theme (W52: Rain on the Dunes, Saturday
   12-26 the tide jar). Because 13 and 12 differ by one, the offset shifts by one each weekly cycle;
