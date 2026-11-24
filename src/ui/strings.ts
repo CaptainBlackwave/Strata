@@ -847,8 +847,8 @@ const en = {
     intro: 'Change how your jars look. A style never changes a sand colour.',
     slots: { glass: 'Glass', cork: 'Cork', sand: 'Sand' } as Readonly<Record<string, string>>,
     names: {
-      glass: { clear: 'Clear glass', seaglass: 'Sea glass', amber: 'Amber bottle', cobalt: 'Cobalt rim', pearl: 'Pearl', sealantern: 'Sea Lantern', frost: 'Frost' },
-      cork: { cork: 'Cork', driftwood: 'Driftwood', rope: 'Rope knot', scallop: 'Scallop cap', brass: 'Brass lid' },
+      glass: { clear: 'Clear glass', seaglass: 'Sea glass', amber: 'Amber bottle', cobalt: 'Cobalt rim', pearl: 'Pearl', sealantern: 'Sea Lantern', frost: 'Frost', sparkle: 'Sparkle' },
+      cork: { cork: 'Cork', driftwood: 'Driftwood', rope: 'Rope knot', scallop: 'Scallop cap', brass: 'Brass lid', holly: 'Holly cap' },
       sand: { plain: 'Plain sand', fine: 'Fine grain', glint: 'Glint', layered: 'Layered', ripple: 'Ripple' },
     } as Readonly<Record<string, Readonly<Record<string, string>>>>,
     wearing: 'Wearing',
@@ -988,9 +988,9 @@ const en = {
   },
   event: {
     /** Event names by `events[].id` in game-config.json. */
-    names: { wintertide: 'Winter Tide' } as Readonly<Record<string, string>>,
+    names: { wintertide: 'Winter Tide', newtide: 'New Tide' } as Readonly<Record<string, string>>,
     /** Badge names and shelf lines by the prize badge id. */
-    badges: { 'event-wintertide': { name: 'Winter Tide', desc: 'Cleared every Winter Tide board' } } as Readonly<Record<string, { name: string; desc: string }>>,
+    badges: { 'event-wintertide': { name: 'Winter Tide', desc: 'Cleared every Winter Tide board' }, 'event-newtide': { name: 'New Tide', desc: 'Cleared every New Tide board' } } as Readonly<Record<string, { name: string; desc: string }>>,
     months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as readonly string[],
     monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as readonly string[],
     /** The Home card's line, e.g. "Board 12 open · 9 of 24 cleared". */
@@ -1017,7 +1017,28 @@ const en = {
     prizeRow: (piece: string) => `${piece} is yours`,
     /** A jar piece that is an event's prize, in the Jar styles sheet, e.g. "Winter Tide prize · December". */
     lockedPiece: (name: string, month: string) => `${name} prize \u00b7 ${month}`,
+    /** Sprint 31 (D237): Winter Tide's bonus Christmas Day board, e.g. "Winter Tide · Christmas Day". */
+    festiveLabel: (name: string) => `${name} \u00b7 Christmas Day`,
+    /** The chooser tile and note for the bonus board: it opens on the 25th and isn't needed for the prize. */
+    festiveTile: 'Christmas Day',
+    festiveNote: 'A Christmas Day bonus board, not needed for the prize',
+    /** Sprint 31 (D242): the one-time start card on the first open of an event each year, by event id. */
+    start: {
+      wintertide: { title: 'Winter Tide has begun', text: 'A new board every day until Christmas.' },
+      newtide: { title: 'New Tide is here', text: '12 boards to start the year.' },
+    } as Readonly<Record<string, { title: string; text: string }>>,
+    startPlay: 'Play',
+    startLater: 'Later',
   },
+  /** Sprint 31 (D238): the one-time gifts (`gifts` in game-config.json), by gift id. */
+  gift: {
+    christmas: { title: 'A Christmas gift', text: 'The Holly cap for your jars, 100 coins and a hint. Merry Christmas!' },
+    claim: 'Open',
+    /** A jar piece that is a gift, in the Jar styles sheet, e.g. "Christmas Day gift · 25 December". */
+    lockedPiece: (day: number, month: string) => `Christmas Day gift \u00b7 ${day} ${month}`,
+  } as const,
+  /** Sprint 31 (D241): the scene picker's tag on the scenes listed first in December. */
+  festiveTag: 'Festive',
   // sprint 11 weekly
   /** The weekly set (design/gdd/weekly-set.md, D77): Home card, chooser, board label, win card and Share. */
   weekly: {

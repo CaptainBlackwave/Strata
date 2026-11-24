@@ -106,6 +106,14 @@ verified-by: pending review (the scenes, prices, clock mode and "sand never chan
 
 **Build order:** rungs ship out of order (D39 picked one scene per tier first). The picker lists scenes by price, so the rungs that aren't built yet are simply absent until later sprints, and the prices of the built ones never change when the rest arrive.
 
+**Festive in December (D241, sprint 31):**
+- From 1 to 31 December (the device's local date, like the "In season" badge), the picker lists **Winter snow** (`wintersnow`) and **Winter lights** (`winterlights`) **first**, in that order (their price order), then every other scene by price as usual.
+- Both carry a **"Festive"** tag in December. It takes the place of their "In season" badge for the month, so each tile still has one tag and fits the two-column picker at 320 px with 150% text (proposed; confirmed at the C5 screenshots).
+- **Nothing is bought or changed for the player**: prices, ownership, the selected scene and Match my clock are untouched. An unowned scene still shows its price and Buy; listing first is not a sale or a discount (paid and limited-time sales are out of scope).
+- The order and tag follow December on the calendar, not the hemisphere: with **Southern hemisphere seasons** on, Winter snow's season window moves to Jun–Aug, but it is still listed first and tagged Festive in December (it is a Christmas look, not a season claim).
+- From 1 January the normal order returns (Winter lights keeps its "In season" badge to 6 January, by its window).
+- The ordering is a pure function of the date and the scene list (for example `pickerOrder(themes, localDateKey)` in `themes.ts`), unit-tested on 30 November, 1 and 31 December and 1 January.
+
 ### 2.2 State and Data
 
 - `ThemeState`: `owned[]` (Midday always included), `selected`, `auto`.
@@ -184,6 +192,7 @@ None open on sound (D17).
 
 ### Flagged Follow-Up Work
 - [ ] If more scenes are added, add a contrast test row and a home/board screenshot for each.
+- [ ] Sprint 31 (D241): the December order and "Festive" tag unit-tested on 30 Nov, 1 Dec, 31 Dec and 1 Jan (northern and southern switch); picker screenshots in December at 412 px and at 320 px with 150% text, light and dark (`production/qa/evidence/sprint-31/`).
 
 ---
 
@@ -196,3 +205,4 @@ None open on sound (D17).
 | 2026-11-08 | Claude (sprint 7, B4) | Scene ladder: 12 rungs, price formula from the coin model, 3 animation tiers, season windows and holiday clock switching (D32, D33, D37, D39) |
 | 2026-11-08 | Claude (sprint 7, B5) | Sea Fog, Winter Snow, Harvest Moon Lanterns and New Year Fireworks built (`themes.ts` `inSeason`, `localDateKey`, holiday clock takeover; `scene-fx.ts` canvas layer at 1x, ≤ 30 fps, ≤ 60 particles). Main-thread cost about 30 ms/s in headless Chromium (`production/qa/evidence/sprint-7/README.md`) |
 | 2026-11-08 | Claude (sprint 8, P1 and P2) | The other 8 rungs built (High Summer, Spring Blossom, Autumn Shore, Rainbow After Rain as tier 1 CSS; Soft Rain and Winter Lights as tier 2 layers; Meteor Shower and Aurora Night as tier 3 layers with seal and win-card reactions, D40 pattern). Southern-hemisphere season switch (D42). Evidence: `production/qa/evidence/sprint-8/README-scenes.md` |
+| 2026-11-24 | Claude (sprint 31, C1) | Festive in December (D241): Winter snow and Winter lights listed first with a "Festive" tag from 1 to 31 December (local date, either hemisphere); no purchase, price or selection change; criteria under Flagged Follow-Up Work |

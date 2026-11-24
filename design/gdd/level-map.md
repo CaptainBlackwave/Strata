@@ -82,13 +82,23 @@ verified-by: owner interview 2026-11-08
   - `scenes.md` (colours)
 - **Depended on by**: `feel-audio-ui.md` (Play now opens the map).
 
+### 2.4 December lights (D241, sprint 31)
+- From **1 to 31 December** (the device's local date, like the scenes' calendar), a string of soft lights runs along the beach path: a thin wire following the path's curve with small round bulbs, drawn in CSS/SVG with no image files, in every scene and both themes.
+- **Never over stones or text**: the string sits behind the stones, the level numbers, the markers, the tap card and the "Play · Level N" button, and keeps a gap around every stone so a stone's outline and its marks read exactly as before. Each stone keeps its 44 px tap target, and the lights take no taps.
+- **Twinkle**: each bulb fades slowly between a dim and a bright state (a cycle of a few seconds, bulbs out of phase), never a flash. Under reduced motion the lights stay still at a steady glow.
+- It pauses while the page is hidden, and it costs no more than the scene layers' budget (CSS animation only; `scenes.md` §2.1a rules).
+- Cosmetic only: no rule, marker or save field changes. The lights are generated with the path, so the endless, virtualised map (§3) gets them on every visible stretch.
+- Cut order: third in the sprint 31 scope cuts, after Sparkle glass art and the Home garland.
+
 ## 3. Edge Cases
 - A new player who hasn't finished the tutorial: Play behaves as today (tutorial first). The map appears from level 2.
 - `?level=N` (QA replay, D3) keeps working, and also respects progress.
 - Levels past 500: the path is endless. Stones and scenery are generated, with no stored layout. Scrolling uses virtualisation, so only visible stones are in the DOM.
 - A save code restored with a different level: the map re-centres on the new next level.
 - 150% text at 320 px: the stones scale, and the tap card scrolls. Each stone is a 44 px or larger tap target (D45 rule).
-- Reduced motion: no pulse and no scroll animation. The map jumps straight to the next level.
+- Reduced motion: no pulse and no scroll animation. The map jumps straight to the next level. December lights stay still.
+- December lights at 320 px with 150% text: the stones scale and the string follows the path, keeping its gap around each stone; it never overlaps a level number or the tap card.
+- December lights near midnight on 31 December: the lights follow the local date, so they go when the local calendar turns to 1 January (New Tide continues on its own clock, `events.md`).
 
 ## 4. Dependencies
 See 2.3.
@@ -99,6 +109,7 @@ See 2.3.
 - [x] Replaying a cleared level pays no coins. A first Perfect sets the mark and counts once towards the Perfect stat. A better pour count updates the best. Unit tests cover the pure rules.
 - [x] Works with the keyboard (arrow keys move between stones, Enter plays) and with a screen reader (each stone has a name such as "Level 41, cleared, perfect, new jar: frozen").
 - [x] Screenshots: the map at levels 3, 60 and 201; a tap card; a locked stone; 150% text at 320 px; and reduced motion.
+- [ ] Sprint 31 (D241): the December lights show from 1 to 31 December and not on 30 November or 1 January (a pure date check, unit-tested); screenshots in December at 412 px and at 320 px with 150% text, light and dark, and under reduced motion (still lights), with no bulb over a stone, a number or the tap card (`production/qa/evidence/sprint-31/`).
 
 ## Open Questions and Follow-Up Work
 - Signed off 2026-11-08 (D52): about 6 stones per screen with new scenery every 20 levels, Perfect counted once per level from the update onwards, and the daily stays on its Home card, not on the map.
@@ -110,3 +121,4 @@ See 2.3.
 | 2026-11-08 | Claude | Designed from the owner interview (D47–D51); drafts flagged for sign-off |
 | 2026-11-08 | Claude | Drafts signed off by the owner (D52) |
 | 2026-11-09 | Claude | Built in sprint 9 M3; §5 ticked with evidence in `production/qa/evidence/sprint-9/README-m3.md`. After a map replay, Continue returns to the map |
+| 2026-11-24 | Claude (sprint 31, C1) | §2.4 December lights (D241): soft lights along the path from 1 to 31 December, slow twinkle, still under reduced motion, never over stones or text; edge cases and a criterion added |
