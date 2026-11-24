@@ -49,9 +49,28 @@ verified-by: pending review (the weekly rhythm and streak rules were chosen by t
 | Wed | medium | 7 | 4 | 1 | none |
 | Thu | medium | 8 | 4 | 1 | none |
 | Fri | tricky | 9 | 4 | 2 | none |
-| Sat | tricky | 10 | 4 | 2 | one, rotating weekly: narrow, frozen, locked, funnel; from 2026-11-28 all seven (below) |
+| Sat | tricky | 10 | 4 | 2 | one, rotating weekly: narrow, frozen, locked, funnel; from 2026-11-28 all seven; from 2026-12-19 twelve (below) |
 
 **The new jars join the Saturday from 2026-11-28** (D98, *built in sprint 13 W1*). From Saturday 2026-11-28 (UTC) the rotate day cycles through all seven mechanics in unlock order, counted from that date: hourglass (2026-11-28), sieve (12-05), clam (12-12), then narrow, frozen, locked, funnel, and round again. It continues the old cycle (2026-11-21 was narrow) and opens with the hourglass's debut. **Before 2026-11-28 nothing changes**: the four classic mechanics, exactly as before (pinned by `tests/fixtures/daily-weekly-pins.json` and the pre-start entries of `daily-saturdays.json`). A new jar is placed through its own `LevelSpec` flag (`hourglass`, `sieve`, `clam`), the same placement path, solver proof and fallback chain as the numbered levels (`jar-mechanics.md` §2.4 to 2.6); the fallback drops the flag like a classic mechanic. The intro card shows on a player's first encounter, as for any Saturday (D2). Later eras are added as more `daily.saturdayFrom` entries; never move a `from` to a date already played.
+
+**The five newer mechanics join the Saturday from 2026-12-19** (D228, D229, *designed in sprint 30; built in E2*). From Saturday 2026-12-19 (UTC) the rotate day cycles through twelve mechanics, counted from that date (`daily.saturdayFrom[1]`): first the five newer ones in debut order, then the 2026-11-28 rotation in its own order, and round again. That is **12 Saturdays per cycle**:
+
+| # | Mechanic | Level debut | First Saturday |
+|---|---|---|---|
+| 1 | wet sand | 201 | 2026-12-19 |
+| 2 | tide jar | 241 | 2026-12-26 |
+| 3 | crab | 281 | 2027-01-02 |
+| 4 | lighthouse jar | 321 | 2027-01-09 |
+| 5 | sunrise and sunset jars | 361 | 2027-01-16 |
+| 6–12 | hourglass, sieve, clam, narrow, frozen, locked, funnel | — | 2027-01-23 to 2027-03-06 |
+
+- **The recipe is unchanged**: the Saturday row above (10 colours, capacity 4, 2 spares, buried depth 2) plus the week's mechanic, alone. Each new mechanic is placed exactly as on the numbered levels (`jar-mechanics.md` §2.7 to §2.11), with the same solver proof.
+- **The pair adds 2 jars**: the sunrise and sunset jars are dealt empty as two extra jars on top of the spares (D225), so that Saturday has **14 jars** (10 filled, 2 spares, the pair). The give-way rule (D226: the pair drops for the tide jar, the crab or a rolled narrow jar) never applies, because a Saturday board has one mechanic only.
+- **Fallback**: a Saturday that cannot be built with its mechanic takes the daily fallback chain (F7, TD-5: drop the mechanic, then add a spare), as every Saturday does now, so the date always loads a board. How often each new mechanic falls back on the 10-colour recipe is *to be measured in E2* (the risk is the pair on a crowded board, D225, D226; if it falls back often, the options go to the owner).
+- **Players meeting a mechanic early** (D2): the Saturday is the same for everyone and is not gated by progress, so a player who has not reached level 201, 241, 281, 321 or 361 sees that mechanic's intro card before the board, as for every Saturday mechanic today (E4 checks the path).
+- **Before 2026-12-19 nothing changes**: 2026-11-28, 12-05 and 12-12 stay the hourglass, sieve and clam of the 2026-11-28 era, and the classic four before that. The fixtures (`daily-saturdays.json`, `daily-weekly-pins.json`) change only from 2026-12-19 on. The 2026-11-28 era's narrow, frozen, locked and funnel turns never play in that era; they come round in the new cycle instead.
+- **The date holds only if 0.26.0 ships first** (D229, D233): if the release slips past 2026-12-19, R1 moves `from` to the first Saturday after the release. A date already played is never moved.
+- Measurements (two years of Saturdays from the era: builds with the mechanic, counted fallbacks, the cap, proofs replaying to a win, the 14-jar pair Saturday): *to be measured in E2*.
 
 All have 2 spare jars. The board is seeded from the date key and a salt (Formulas), then goes through the same solver-proven generation as numbered levels (`generateFromSpec`, 60 attempts).
 
@@ -99,7 +118,7 @@ Fixed rewards on streak days, shown in advance, never random and never sold (`da
 - `DailyConfig`: `seedSalt` 7351, `week[]`, `saturdayFrom[]` (sprint 13 W1), `streak {baseCoins, coinsPerDay, maxCoins, longSteps, passEvery, maxPasses}`.
 
 **Tuning knobs** (`src/config/game-config.json`, `daily`):
-- `saturdayFrom`: rotation eras, ascending, each `{ "from": "YYYY-MM-DD" (a Saturday, UTC), "mechanics": [...] }`. The last era started applies; before the first, the classic four. Today one era: from `2026-11-28`, `["hourglass", "sieve", "clam", "narrow", "frozen", "locked", "funnel"]`. Reordering or moving a live era changes live boards: add a new era with a future date instead.
+- `saturdayFrom`: rotation eras, ascending, each `{ "from": "YYYY-MM-DD" (a Saturday, UTC), "mechanics": [...] }`. The last era started applies; before the first, the classic four. Today two eras: from `2026-11-28`, `["hourglass", "sieve", "clam", "narrow", "frozen", "locked", "funnel"]`; from `2026-12-19` (sprint 30, D229), `["wet", "tide", "crab", "lighthouse", "sun", "hourglass", "sieve", "clam", "narrow", "frozen", "locked", "funnel"]`. Reordering or moving a live era changes live boards: add a new era with a future date instead.
 - `seedSalt`: never change it (every player's daily would change).
 
 **Persistence**: the streak state is saved (`save-data.md`). The daily board itself is regenerated from the date.
@@ -118,7 +137,7 @@ Fixed rewards on streak days, shown in advance, never random and never sold (`da
 |---|---|---|---|
 | Streak reward | `min(100, 30 + 10·(streak − 1)) + step(streak)`; `step` = 25 from day 30, 50 from day 60 (`longSteps`, D99) | streak ≥ 1 | Day 1: 30; day 4: 60; day 8: 100 (cap); day 30: 125; day 60: 150. The win card says "Long streak bonus +25" (or +50) |
 | Weekday | `(dayNumber + 4) mod 7`, 0 = Sunday | `dayNumber` = whole days since 1970-01-01 | 2026-11-08 → Sunday |
-| Saturday mechanic | Before the first era: `classic[floor(dayNumber / 7) mod 4]`. From an era's `from`: `era.mechanics[floor((dayNumber − dayNumber(from)) / 7) mod length]` (`rotationMechanic`) | `classic` = narrow, frozen, locked, funnel | Advances one mechanic per week; 2026-11-21 narrow (classic), 2026-11-28 hourglass, 2026-12-19 narrow |
+| Saturday mechanic | Before the first era: `classic[floor(dayNumber / 7) mod 4]`. From an era's `from`: `era.mechanics[floor((dayNumber − dayNumber(from)) / 7) mod length]` (`rotationMechanic`) | `classic` = narrow, frozen, locked, funnel | Advances one mechanic per week; 2026-11-21 narrow (classic), 2026-11-28 hourglass, 2026-12-12 clam, 2026-12-19 wet sand (the 2026-12-19 era; the 2026-11-28 era alone would have given narrow), 2027-01-16 sunrise and sunset, 2027-01-23 hourglass, 2027-03-13 wet sand again |
 | Pass earned | `streak mod 7 == 0 and passes < 2` | | Streak 7 and 14 each bank one pass |
 | Daily seed | `FNV-1a(dateKey)` computed with the offset basis `2166136261 XOR seedSalt` (the salt goes into the basis *before* hashing), then attempt mixing | `seedSalt` 7351 | Boards must stay identical, so the code (`daily.ts`) is the requirement |
 
@@ -204,4 +223,5 @@ None open: GA-DP-5 and GA-DP-6 take the owner's defaults (2026-11-08).
 | 2026-11-08 | Claude (reverse-doc) | Initial reverse-documentation at `6ccece9`; UTC date confirmed by the owner |
 | 2026-11-08 | Claude | M4 fixed: the daily follows the UTC date |
 | 2026-11-11 | Claude (sprint 13 W1) | D98 built: the hourglass, sieve and clam join the Saturday rotation from 2026-11-28 (`daily.saturdayFrom`), all seven in unlock order; earlier dailies unchanged (pinned); tuning knobs and acceptance criteria added |
+| 2026-11-24 | Claude (sprint 30 E1) | D228, D229 designed: from Saturday 2026-12-19 a second `daily.saturdayFrom` era of twelve mechanics, the five newer ones first in debut order (wet sand, tide, crab, lighthouse, the pair), then the 2026-11-28 rotation; recipe unchanged, the pair Saturday 14 jars, fallback chain, intro card for early players (D2), nothing before the date changes; §2.1, §2.2 knob and the §3 example updated; measurements pending E2 |
 | 2026-11-08 | Claude (sprint 6, F9) | Never-failing daily (F7, GA-DP-1) and the GA-DP-5 / GA-DP-6 defaults recorded as building; seed formula corrected (GA-DP-2); backwards-clock rule moved into 2.1 and marked handled (GA-DP-3); what a daily pays stated (GA-DP-4); UTC switch and midnight crossing noted (GA-DP-7, GX-18); player-profile added to dependencies |

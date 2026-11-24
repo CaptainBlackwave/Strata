@@ -54,8 +54,9 @@ describe('config: the start dates (D98)', () => {
     expect(list).toEqual(list.map((_, i) => UNLOCK_ORDER[(start + i) % 7]));
   });
   it('the weekly theme era starts at 2026-W49 and adds the three new jar themes to the old five', () => {
+    // A later era (2026-W52, sprint 30 E3) follows it; see newer-jars-era.test.ts.
     const eras = cfg.weekly.themesFrom ?? [];
-    expect(eras).toHaveLength(1);
+    expect(eras.length).toBeGreaterThanOrEqual(1);
     expect(eras[0].from).toBe(WEEKLY_FROM);
     expect(weekMonday(eras[0].from)).toBe('2026-11-30');
     const ids = eras[0].themes.map((t) => t.id);
@@ -127,7 +128,11 @@ describe('the weekly themes from 2026-W49 (D98)', () => {
     expect(weeklyTheme('2026-W48', cfg).id).toBe('deep');
   });
   it('from the start the rotation has eight themes, the hourglass first, then the sieve and the clam', () => {
-    const ids = Array.from({ length: 16 }, (_, n) => weeklyTheme(weekAfter(WEEKLY_FROM, n), cfg).id);
+    // The era as it was before the 2026-W52 era (sprint 30 E3) cut its run to W49 to W51; the live config is checked there.
+    const era1: WeeklyConfig = { weekly: { ...cfg.weekly, themesFrom: (cfg.weekly.themesFrom ?? []).slice(0, 1) } };
+    const live = Array.from({ length: 3 }, (_, n) => weeklyTheme(weekAfter(WEEKLY_FROM, n), cfg).id);
+    expect(live).toEqual(['hourglass', 'sieve', 'clam']);
+    const ids = Array.from({ length: 16 }, (_, n) => weeklyTheme(weekAfter(WEEKLY_FROM, n), era1).id);
     expect(ids.slice(0, 3)).toEqual(['hourglass', 'sieve', 'clam']);
     expect(new Set(ids.slice(0, 8)).size).toBe(8);
     expect(ids.slice(8)).toEqual(ids.slice(0, 8));

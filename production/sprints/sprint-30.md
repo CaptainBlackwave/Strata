@@ -1,6 +1,6 @@
 # Sprint 30: The new jars come to the daily and weekly (0.26.0)
 
-> **Status: planned (2026-11-24).** From the owner's interview on the open Beads items on 2026-11-24 (Beads `strata-qym`, `strata-m4f`; decisions D228–D233). Design: `design/gdd/daily-puzzle.md` §3.3, `design/gdd/weekly-set.md` §3.3, `design/gdd/jar-mechanics.md` §2.7–§2.11. Evidence: `production/qa/evidence/sprint-30/`. Target: **0.26.0**.
+> **Status: planned (2026-11-24).** From the owner's interview on the open Beads items on 2026-11-24 (Beads `strata-qym`, `strata-m4f`; decisions D228–D233). Design: `design/gdd/daily-puzzle.md` §2.1, `design/gdd/weekly-set.md` §3.3, `design/gdd/jar-mechanics.md` §2.7–§2.11. Evidence: `production/qa/evidence/sprint-30/`. Target: **0.26.0**.
 
 ## Why
 Five mechanics only appear on numbered levels so far: wet sand (201), the tide jar (241), the crab (281), the lighthouse jar (321) and the sunrise and sunset jars (361). The Saturday daily and the weekly themes still use only the four classic jars, the hourglass, the sieve and the clam. The owner chose to bring all five newer mechanics into both (D228). The sprint also fixes a known gap in the balance numbers: the simulated player can see a dark lighthouse jar's colours (D232).
@@ -42,7 +42,7 @@ Five mechanics only appear on numbered levels so far: wet sand (201), the tide j
 ## Tasks
 | ID | Task | Acceptance criteria |
 |----|------|---------------------|
-| E1 | **Design docs**: the new Saturday era in `daily-puzzle.md` §3.3; the new weekly era and theme names in `weekly-set.md` §3.3; the "Daily, weekly, events" paragraphs in `jar-mechanics.md` §2.7–§2.11 updated; D228–D233 in `systems-index.md` | Written |
+| E1 | **Design docs**: the new Saturday era in `daily-puzzle.md` §2.1; the new weekly era and theme names in `weekly-set.md` §3.3; the "Daily, weekly, events" paragraphs in `jar-mechanics.md` §2.7–§2.11 updated; D228–D233 in `systems-index.md` | Written |
 | E2 | **Daily era** (`daily.saturdayFrom`, `src/core/daily.ts`). Before any change, hash two years of dailies from today (fixtures). Add the era. Prove each new mechanic on the Saturday recipe | Every daily before the era date is byte-identical. From the era: two years of Saturdays build, each with its mechanic (or a counted fallback, reported), within the cap, and each proof replays to a win. A 1-in-12 cycle test. The sunrise and sunset Saturday has 14 jars |
 | E3 | **Weekly era** (`weekly.themesFrom`, `src/core/weekly.ts`, `strings.ts` theme names). Before any change, hash the weekly boards (fixture). Add the era and the five themes | Weeks before the era are byte-identical. From the era: two years of weeks build, every board carries its theme's mechanic (fallbacks counted and reported), and the theme names show. A 13-week cycle test |
 | E4 | **Look and words**: the five theme names on the weekly card and sheet. Check the Saturday daily card and the intro-card path for a player meeting a mechanic early | Screenshots: a Saturday daily with each new mechanic (Classic and Realistic, light and dark) and the weekly card for each new theme, at 412px and at 320px with 150% text. The layout guard passes |

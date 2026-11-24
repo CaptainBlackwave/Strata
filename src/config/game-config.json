@@ -61,7 +61,7 @@
         "mechanics": ["hourglass", "sieve", "clam", "narrow", "frozen", "locked", "funnel"]
       },
       {
-        "$comment": "Sprint 30 E2 (D228, D229, design/gdd/daily-puzzle.md §3.3): from this Saturday (UTC) the rotate day cycles through twelve mechanics, counted from the date, so it plays mechanics[0] first: the five newer mechanics in debut order (wet sand, the tide jar, the crab, the lighthouse jar, the sunrise and sunset jars), then the 2026-11-28 rotation. Before the date the 2026-11-28 era is unchanged. Never move `from` to a date already played.",
+        "$comment": "Sprint 30 E2 (D228, D229, design/gdd/daily-puzzle.md §2.1): from this Saturday (UTC) the rotate day cycles through twelve mechanics, counted from the date, so it plays mechanics[0] first: the five newer mechanics in debut order (wet sand, the tide jar, the crab, the lighthouse jar, the sunrise and sunset jars), then the 2026-11-28 rotation. Before the date the 2026-11-28 era is unchanged. Never move `from` to a date already played.",
         "from": "2026-12-19",
         "mechanics": ["wet", "tide", "crab", "lighthouse", "sun", "hourglass", "sieve", "clam", "narrow", "frozen", "locked", "funnel"]
       }

@@ -135,11 +135,12 @@ describe('generateWeekly (§3.4)', () => {
     expect(weeks[6]).toBe('2026-W53');
     expect(weeks[7]).toBe('2027-W01');
   });
-  it('matches the fixture of board hashes before 2026-W49 (the same boards for everyone, on every run)', () => {
-    // From 2026-W49 the rotation has the new jar themes (sprint 13 W1, D98), so later weeks' boards changed on purpose;
-    // tests/fixtures/daily-weekly-pins.json pins W46 to W48 from the code before that change.
+  it('matches the fixture of board hashes before 2026-W49 and from 2026-W52 (the same boards for everyone, on every run)', () => {
+    // From 2026-W49 the rotation has the new jar themes (sprint 13 W1, D98), so W49 to W51 changed on purpose and are
+    // pinned in tests/fixtures/weekly-era-pins.json; tests/fixtures/daily-weekly-pins.json pins W46 to W48 from the code
+    // before that change. W52 on were re-pinned for the 2026-W52 era (sprint 30 E3, D228-D230).
     const hashes = fixture.hashes as Record<string, string>;
-    for (const week of weeks.filter((w) => w < '2026-W49')) for (let i = 0; i < BOARDS; i++) expect(hash(generateWeekly(week, i, cfg).board), `${week}#${i + 1}`).toBe(hashes[`${week}#${i + 1}`]);
+    for (const week of weeks.filter((w) => w < '2026-W49' || w >= '2026-W52')) for (let i = 0; i < BOARDS; i++) expect(hash(generateWeekly(week, i, cfg).board), `${week}#${i + 1}`).toBe(hashes[`${week}#${i + 1}`]);
     expect(Object.keys(hashes)).toHaveLength(weeks.length * BOARDS);
   });
   it('every board of 8 weeks is solvable, starts unsealed, keeps its theme and is within its pour cap', () => {

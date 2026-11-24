@@ -97,8 +97,41 @@ same five boards.
   **Before 2026-W49 nothing changes**: the old five-theme rotation, exactly as before (W46 to W48 are
   pinned in `tests/fixtures/daily-weekly-pins.json`). The weekly-boards fixture's W49 to 2027-W01
   entries are no longer expected to match: those weeks now carry the new themes, on purpose.
+  (From 2026-W52 this era is replaced by the one below, so its Narrow Necks to Deep Sand turns do
+  not play in it.)
 - Eight themes against the daily Saturday's seven-mechanic rotation (from 2026-11-28) stay out of
   step the same way.
+- **The five newer mechanics join from 2026-W52** (D228–D230, *designed in sprint 30; built in E3*).
+  From week `2026-W52` (Monday 21 December 2026) the rotation is `weekly.themesFrom[1].themes`,
+  thirteen themes counted from that week: the five newer mechanics in debut order, then the 2026-W49
+  era's eight in their order, and round again. **13 weeks per cycle:**
+
+  | # | Theme | Mechanic | First week |
+  |---|---|---|---|
+  | 1 | **Rain on the Dunes** | wet sand | 2026-W52 |
+  | 2 | **High Water** | tide jar | 2026-W53 |
+  | 3 | **Crab Walk** | crab | 2027-W01 |
+  | 4 | **Night Watch** | lighthouse jar | 2027-W02 |
+  | 5 | **Dawn to Dusk** | sunrise and sunset jars | 2027-W03 |
+  | 6–13 | Turning Tides, Fine Sieve, Clam Bay, Narrow Necks, Cold Snap, Lock and Key, Funnel Week, Deep Sand | as above | 2027-W04 to 2027-W11 |
+
+  - The five names are the owner's (D230). Each new theme puts its mechanic on **all five boards**
+    (5 to 9 colours, §3.4), placed as on the numbered levels (`jar-mechanics.md` §2.7 to §2.11),
+    with the same solver proof and fallback chain (§3.4); one mechanic a board, so the pair's
+    give-way rule (D226) never applies. Dawn to Dusk deals the pair as two extra empty jars on
+    every board (D225).
+  - The intro card shows on a player's first encounter, as for every theme (D2).
+  - **Before 2026-W52 nothing changes**: W49 to W51 stay Turning Tides, Fine Sieve and Clam Bay.
+    The `weekly-boards.json` fixture changes only from W52 on; E3 hashes it before any change.
+  - The week holds only if 0.26.0 ships first (D229, D233): if the release slips, R1 moves `from`
+    to the first ISO week after the release, never to a week already played.
+  - Measurements (two years of weeks: every board with its theme's mechanic, counted fallbacks):
+    *to be measured in E3*.
+- Thirteen themes against the daily Saturday's twelve (from 2026-12-19) use the same order, so at
+  first a week's Saturday is one mechanic ahead of its theme (W52: Rain on the Dunes, Saturday
+  12-26 the tide jar). Because 13 and 12 differ by one, the offset shifts by one each weekly cycle;
+  on paper the two line up for about 12 weeks running roughly 143 weeks in (late 2029) unless a
+  later era intervenes. *Open, for the owner:* acceptable, or offset a later era.
 
 ### 3.4 The five boards: a gentle ramp
 
@@ -344,3 +377,4 @@ All in `weekly` in `src/config/game-config.json`.
 | 2026-11-09 | Claude (0.11.1) | D83: completing the set pays `completeBonus` (100) once a week; single boards still pay nothing (§3.7, §7, §8) |
 | 2026-11-09 | Claude (0.11.1) | D82: Share carries `?weekly=`, which opens the chooser (§3.9) |
 | 2026-11-11 | Claude (sprint 13 W1) | D98 built: from 2026-W49 the rotation adds Turning Tides (hourglass), Fine Sieve (sieve) and Clam Bay (clam) (`weekly.themesFrom`, §3.3, §4, §7, §8); earlier weeks unchanged (pinned) |
+| 2026-11-24 | Claude (sprint 30 E1) | D228–D230 designed (§3.3): from 2026-W52 a second `weekly.themesFrom` era of thirteen themes, the five newer mechanics first in debut order as Rain on the Dunes (wet sand), High Water (tide), Crab Walk (crab), Night Watch (lighthouse) and Dawn to Dusk (the pair), then the 2026-W49 eight; earlier weeks unchanged; the 12-vs-13 alignment with the Saturday noted as open; measurements pending E3 |

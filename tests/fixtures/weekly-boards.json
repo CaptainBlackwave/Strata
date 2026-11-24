@@ -1,5 +1,5 @@
 {
- "$comment": "FNV-1a hashes of the weekly-set boards for 2026-W47 to 2027-W01 (8 weeks x 5 boards, across week 53 and the year boundary), made by generateWeekly in src/core/weekly.ts at sprint 11 W2 (design/gdd/weekly-set.md). A change here changes every player's boards: regenerate only on purpose.",
+ "$comment": "FNV-1a hashes of the weekly-set boards for 2026-W47 to 2027-W01 (8 weeks x 5 boards, across week 53 and the year boundary), made by generateWeekly in src/core/weekly.ts at sprint 11 W2 (design/gdd/weekly-set.md). A change here changes every player's boards: regenerate only on purpose. W47 and W48 are the sprint 11 boards. W49 to W51 are the sprint 11 hashes, superseded on purpose by the 2026-W49 era (sprint 13 W1, D98) and not checked; those weeks are pinned in weekly-era-pins.json. W52, W53 and 2027-W01 were re-pinned at sprint 30 E3 for the 2026-W52 era (D228-D230: wet, tide, crab).",
  "hashes": {
   "2026-W47#1": "c023df31",
   "2026-W47#2": "6d874abc",
@@ -26,20 +26,20 @@
   "2026-W51#3": "cbca58b1",
   "2026-W51#4": "13889445",
   "2026-W51#5": "fabe39dc",
-  "2026-W52#1": "a3344eed",
-  "2026-W52#2": "ceb91d1a",
-  "2026-W52#3": "8ddf07cc",
-  "2026-W52#4": "ff4284c6",
-  "2026-W52#5": "193fbb93",
-  "2026-W53#1": "bdeac993",
-  "2026-W53#2": "45279fdb",
-  "2026-W53#3": "62a6ed7a",
-  "2026-W53#4": "1b645ed5",
-  "2026-W53#5": "7532634c",
-  "2027-W01#1": "d6523dcb",
-  "2027-W01#2": "565d7fee",
-  "2027-W01#3": "77a03c82",
-  "2027-W01#4": "91d0db0a",
-  "2027-W01#5": "2b886b19"
+  "2026-W52#1": "109de62f",
+  "2026-W52#2": "57a549be",
+  "2026-W52#3": "cfcabd08",
+  "2026-W52#4": "1674378c",
+  "2026-W52#5": "6763b39b",
+  "2026-W53#1": "99cc9600",
+  "2026-W53#2": "391b36ef",
+  "2026-W53#3": "2ac12ac4",
+  "2026-W53#4": "d23d51e8",
+  "2026-W53#5": "b2dc9398",
+  "2027-W01#1": "f60daa08",
+  "2027-W01#2": "85a9010d",
+  "2027-W01#3": "ecf33f59",
+  "2027-W01#4": "b642fdc1",
+  "2027-W01#5": "ea4af9fa"
  }
 }
