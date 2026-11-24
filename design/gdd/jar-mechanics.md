@@ -30,7 +30,7 @@ verified-by: pending review (the four mechanics and unlock pacing were chosen by
 - All four mechanics ship: Narrow, Frozen, Locked lid, One-way funnel (S3-1).
 - They unlock every 20 levels, easiest first: 21, 41, 61, 81 (S3-2).
 - After unlock each appears in about 1 in 3 levels (S3-3); from level 45 that chance ramps to 1 in 2 by level 120 (D1, `level-generation.md` §3). Two rolled mechanics can combine from level 101.
-- **Up to 3 mechanics on one level from level 101** (D22): the spare-jar swap of the D1 ramp can add a narrow or funnel to a level that rolled two. This is part of the ramp, not an accident.
+- **Up to 3 mechanics on one level from level 101** (D22): the spare-jar swap of the D1 ramp can add a narrow or funnel to a level that rolled two. This is part of the ramp, not an accident. **Own rolls are not capped (D227):** wet sand, the tide jar, the crab, the lighthouse jar and the sunrise and sunset pair each roll on top, so a late level can have 4 or 5 mechanics. The owner kept this on purpose (2026-11-23); the cap applies to the shared pick and the swap only.
 - A Saturday daily features one mechanic (S3-4).
 - Frozen jars thaw when any jar seals (S3-5).
 - **The game says when a mechanic has made the board unwinnable**, for the cases it can be certain of (D21).
@@ -816,7 +816,7 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reported (D21), up to 3 mechanics (D22).
 
 - **Answered (D198):** the tide jar comes only from its own roll (`shared: false`), so wet sand keeps about 1 in 8 and levels 201–240 are unchanged.
-- **Open (sprint 27):** one-spare crab levels often fall back: of 500–610, three keep the crab with two spares and three lose it. A larger step budget for crab levels, or keeping the crab in the fallback before the classic mechanics, would keep it; both change boards from 500, so they wait for the owner.
+- **Answered (D212):** one-spare crab levels often fall back (of 500–610, three keep the crab with two spares and three lose it). The owner chose to leave 529, 532 and 562 as they are.
 - **Open (sprint 27):** the simulated player (`tools/balance/sim-player.ts`) sees a dark lighthouse jar's colours. A dark-aware player would measure the lighthouse's real cost; until then its stuck rates do not show it.
 - **Open (sprint 29):** should the sunrise and sunset jars join the Saturday daily or a weekly theme once players know them? D220 holds them to levels for v1.
 

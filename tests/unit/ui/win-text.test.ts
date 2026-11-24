@@ -16,4 +16,11 @@ describe('winText', () => {
     expect(t.winText(18, 21)).toBe('18 pours');
     expect(t.newBest(18)).toBe('New best: 18 pours');
   });
+  // Beads strata-yha: a one-pour win read "1 pours".
+  it('a single pour is singular', () => {
+    expect(t.winText(1, undefined)).toBe('1 pour · new best');
+    expect(t.winText(1, 1)).toBe('1 pour · best 1');
+    expect(t.winText(1, 3)).toBe('1 pour');
+    expect(t.newBest(1)).toBe('New best: 1 pour');
+  });
 });
