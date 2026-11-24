@@ -49,6 +49,14 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.26.1 (2026-11-24): a gentler lighthouse
+**For players**
+- **The lighthouse jar now only appears on levels with two spare jars.** Dark sand with a single spare was the hardest combination measured. It still shows up on about 1 level in 8 from 322. Levels 329, 352 and 353 have new boards, as do the later levels whose lighthouse changed; best pours are kept.
+- On small screens with large text, the date at the top of a daily puzzle now fits instead of being cut off.
+
+**Under the hood**
+- Owner decision D235 (`design/gdd/jar-mechanics.md` §2.10): the lighthouse gives way on a one-spare level; its own chance 0.145 → 0.35 (12.21% of 321-1000) and the pair's 0.22 → 0.23 (12.34%). Lighthouse levels 321-600 stuck 70% → 58% with the dark-aware simulator. `boards-1-360.json` re-pinned for 329, 352, 353; level 466 is a known pair fallback. Header label capped by its own width (`cqi`, Beads strata-o9x).
+
 ## 0.26.0 (2026-11-24): sprint 30, the newer jars come to the daily
 **For players**
 - **The Saturday daily features the newer jars** from Saturday 2026-12-19: wet sand, the tide jar, the crab, the lighthouse jar, and the sunrise and sunset jars, then the earlier rotation (twelve Saturdays a cycle). A player who has not reached a jar yet sees its intro card first.

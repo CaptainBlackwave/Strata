@@ -1,5 +1,5 @@
 {
- "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-360 as built before the sunrise and sunset jars (sprint 29 N3, from commit dde8dbc). The pair unlocks at 361: levels 1-360 must never change.",
+ "$comment": "FNV-1a hashes (JSON.stringify of the board) of every level 1-360 as built before the sunrise and sunset jars (sprint 29 N3, from commit dde8dbc). The pair unlocks at 361: levels 1-360 must never change. Re-pinned in sprint 31 for D235 (the lighthouse gives way on one-spare levels; its own chance rises to 0.35): only 329 and 353 (now with a lighthouse) and 352 (a one-spare level that lost its lighthouse) changed; every other level 1-360 is byte-identical.",
  "hashes": {
   "1": "2ed94f4c",
   "2": "3750eaba",
@@ -329,7 +329,7 @@
   "326": "a521d896",
   "327": "30369398",
   "328": "86eba005",
-  "329": "684e62a4",
+  "329": "3c31317e",
   "330": "debbeff0",
   "331": "a3afdab6",
   "332": "e9cae4c6",
@@ -352,8 +352,8 @@
   "349": "b041c3c2",
   "350": "29434315",
   "351": "8e0f6af7",
-  "352": "cdcb6217",
-  "353": "9f24ee70",
+  "352": "aeac81a1",
+  "353": "75dd3912",
   "354": "8825624e",
   "355": "e542cdd4",
   "356": "a2f485a9",

@@ -337,11 +337,19 @@ describe('sunrise and sunset fallback and generation', () => {
 
   // The gate with lane A's finished order rules (sprint 29 N2): the proof replays through pour(), which
   // refuses every out-of-order fill, so a replayed win is a win in order.
-  it('every pair level of 361-480 is built with the pair, within its pour cap, and its proof replays to a win', () => {
+  // Owner, 2026-11-24 (D235): 466 is a known fallback. It is a one-spare level whose spare swap adds a
+  // narrow jar; since its lighthouse gives way (D235) no deal is proven with the pair, so it falls back
+  // to a level without it, like the crab's 529, 532 and 562 (D212). Every other pair level must keep it.
+  const KNOWN_FALLBACKS = new Set([466]);
+  it('every pair level of 361-480 but the known fallbacks is built with the pair, within its pour cap, and its proof replays to a win', () => {
     let count = 0;
     for (let l = UNLOCK; l <= 480; l++) {
       if (!levelSpec(l, cfg).sun) continue;
       const g = generateLevel(l, cfg);
+      if (KNOWN_FALLBACKS.has(l)) {
+        expect(g.spec.sun, `level ${l} is a known fallback`).toBeFalsy();
+        continue;
+      }
       expect(g.spec.sun, `level ${l} keeps the pair`).toBe(true);
       expect(g.attempts, `level ${l}`).toBeGreaterThan(0);
       const { rise, set } = pairOf(g.board);

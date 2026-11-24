@@ -286,8 +286,10 @@ The fourth mechanic of the 40-level pace: the lighthouse jar debuts on level 321
 
 **Placement** (`applyMechanics`): after the crab and before wet sand. One filled plain jar: not sealed, frozen, locked, narrow, a funnel, the hourglass, the sieve, the clam, the tide jar or the crab's jar. Its sand is shown (`hidden: 0`): dark sand hides enough, so it never also buries any. **Wet sand is never placed on it** (wet placement skips it), so the dark jar starts as plain dark sand; wet sand poured in later keeps its rules. A deal with no candidate is re-dealt.
 
-**Schedule**: `{ "id": "lighthouse", "unlockAt": 321, "every": 4, "ownChance": 0.145, "ownSalt": 8329, "shared": false }`. Level 321 is its debut: the lighthouse jar alone, two spares (D28). From 322 it comes only from its own roll (D210).
-- **Share (D210).** 85 of levels 321–1000 (**12.5%**). Measured over `ownChance` 0.12, 0.13, 0.14, 0.145, 0.15, 0.16 (with the crab at 0.16): 10.3%, 11.5%, 12.1%, 12.5%, 12.6%, 14.6%.
+**Schedule**: `{ "id": "lighthouse", "unlockAt": 321, "every": 4, "ownChance": 0.35, "ownSalt": 8329, "shared": false }`. Level 321 is its debut: the lighthouse jar alone, two spares (D28). From 322 it comes only from its own roll (D210). **It gives way on a one-spare level (D235, 2026-11-24):** a level with one spare drops the rolled lighthouse and keeps everything else as rolled (`levelSpec`, after the spare is known), so every lighthouse level has two spares.
+- **Share (D210, D235).** 83 of levels 321–1000 (**12.21%**). With the one-spare give-way, `ownChance` 0.145 gives only 5.44% (37), 0.2 7.06%, 0.25 8.97%, 0.3 10.74%, 0.35 12.21%, 0.4 13.09%; it is 0.35. (Before D235: 0.145 for 85 levels, 12.5%.)
+- **Why (D235).** The sprint 30 dark-aware simulator (`production/qa/sprint-30/lighthouse-dark-sim.md`) found lighthouse levels of 321–600 stuck 70% against 52% for other levels, mostly from where the lighthouse lands (its own roll stacks it on one-spare boards, 82% stuck). Measured options, each with the chance raised back to about 1 in 8: giving way on boards with two other special jars changed nothing (67% stuck); giving way on one-spare boards brought it to 58% and 401–500 from 54% to 50%; both together 57%. The owner chose the one-spare rule. Final (dark-aware, 321–600): lighthouse levels 58% (25/43), all two-spare; levels without it 55%.
+- **Levels that changed (D235).** Of 1–360 only 329 and 353 (now with a lighthouse) and 352 (a one-spare level that lost its lighthouse); `boards-1-360.json` re-pinned for those three. From 361 on, every level whose lighthouse roll changed. Best pours are kept, as for every board change.
 - **Levels that changed.** Levels 321 and up only. Every lighthouse level of 321–440 is built with it, within its cap, and its proof replays to a win.
 - **Balance.** The simulated player sees every colour, so the lighthouse does not change its results; of the 32 lighthouse levels in 322–500 it is stuck on 20 (these are late, mostly one-spare boards). A dark-aware simulated player is an open question below.
 
@@ -356,15 +358,15 @@ A deal with no candidate band is re-dealt. Levels that do not roll the pair draw
 
 It keeps the first pair whose proof is within the level's pour cap. Failing that, it keeps the shortest over-cap proof for the fallback chain. Failing that, it rejects the deal. Every proof is a win, so every kept pair is winnable in order.
 
-**Schedule (D220, D226)**: `{ "id": "sun", "unlockAt": 361, "colorTries": 3, "ownChance": 0.22, "ownSalt": 9173, "shared": false }`.
+**Schedule (D220, D226, D235)**: `{ "id": "sun", "unlockAt": 361, "colorTries": 3, "ownChance": 0.23, "ownSalt": 9173, "shared": false }`.
 - **Debut.** Level 361 has the pair alone, two spares and no spare swap (D28).
 - **After the debut.** From 362 the pair comes only from its own roll, like the crab and lighthouse (D210). It can combine with rolled mechanics and the spare swap, still at most 3 (D22). Tall-jar levels never get own rolls, so they never have the pair.
-- **Share (D220, D226).** 79 of levels 361–1000 have the pair (**12.34%**, about 1 in 8). Measured with the pair giving way to the tide jar, the crab and the narrow jar: `ownChance` 0.22 gives 12.34%, 0.24 13.28%, 0.26 13.91%, 0.28 14.53%. (Before D226 it was 0.14 for 12.97%.)
+- **Share (D220, D226, D235).** 79 of levels 361–1000 have the pair (**12.34%**, about 1 in 8). Since D235 the more frequent lighthouse takes a breather's slot before the pair more often, so `ownChance` rose from 0.22 (now 11.88%) to 0.23 (12.34%); 0.24 gives 12.81%. (Before D226 it was 0.14 for 12.97%.)
 - **Levels that changed.** Levels 1–360 are byte-identical: fixture `tests/fixtures/boards-1-360.json` hashes every level 1–360 at commit `dde8dbc`, before the mechanic (`tests/unit/core/pins-1-360.test.ts`; it matches `boards-1-320.json` on 1–320). Of 361–1000 only the 79 levels that roll the pair and keep it after D226 changed (72 now have the pair; 7 are built as their fallback step). A level whose pair gave way to the tide jar, the crab or a narrow jar is exactly its old board.
 - **Generation and balance (measured 2026-11-23, D225 and D226).**
-  - **72 of the 79 pair levels are built with the pair (91%)**; every pair level of 361–480 is built with it, within its pour cap, and its proof replays to a win in order (`sun-placement.test.ts`).
-  - The 7 that fall back to a level without the pair: 515, 581, 679, 714, 735, 846, 932 (most are one-spare levels whose spare swap added a narrow jar after the give-way check).
-  - Of the 51 one-spare pair rolls, 42 keep the pair with one spare; 434, 692 and 897 keep it with two.
+  - **70 of the 79 pair levels are built with the pair (89%, measured after D235)**; every pair level of 361–480 but 466 is built with it, within its pour cap, and its proof replays to a win in order (`sun-placement.test.ts`). **466 is a known fallback (owner, 2026-11-24):** a one-spare level whose spare swap adds a narrow jar; since its lighthouse gives way (D235) no deal is proven with the pair.
+  - The 9 that fall back to a level without the pair: 466, 581, 622, 679, 714, 735, 846, 867, 932 (most are one-spare levels whose spare swap added a narrow jar after the give-way check). Before D235 it was 7 of 79.
+  - Of the 52 one-spare pair rolls, 43 keep the pair with one spare (before D235: 42 of 51).
   - "Most ordinary levels from 500 play with one ordinary spare" passes (`placement-ramp`; the empty pair jars are not counted as spares). The stuck-rate and difficulty gates pass unchanged (`tests/unit/balance`, `difficulty-bands`).
   - Build time per pair level: 0.76 s on average; the worst, 4.7 s, is a level that falls back (it spends its step budgets first). Kept levels mostly build in under 1.5 s.
   - Rejected levers, measured on 361–480 when the pair was dealt on filled jars and again on the empty pair's losses: 6 band pairs, a 3× solver budget (builds up to 13 s) and a pour cap of 80 or 90 each rescued too few to matter.
@@ -470,14 +472,14 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 | Crab step | `to` = the first `i = (at + k) mod J`, `k = 1 … J − 1`, with jar `i` non-empty and not sealed; none: it stays | `at` its jar, `J` jars on the board | Crab on jar 4 of 6, jars 5 and 0 empty or sealed: it goes to jar 1 |
 | Crab share | its own roll only: `rng(mixSeed(7841, level)) < 0.16` from 281, not on another mechanic's debut level, not on tall-jar levels | `ownChance` 0.16, `ownSalt` 7841 | Measured 92 of 281–1000 (12.8%) |
 | Beam | unsealed: lit after pour `n` exactly when `n ≥ every` and `n mod every = 0`; `left = every − (n mod every)`; sealed: always lit, count frozen | `every` (default 4) | `every` 4: lit after pours 4 and 8, dark after 5 |
-| Lighthouse share | its own roll only: `rng(mixSeed(8329, level)) < 0.145` from 321, as the crab | `ownChance` 0.145, `ownSalt` 8329 | Measured 85 of 321–1000 (12.5%) |
+| Lighthouse share | its own roll only: `rng(mixSeed(8329, level)) < 0.35` from 321, as the crab; dropped on a one-spare level (D235) | `ownChance` 0.35, `ownSalt` 8329 | Measured 83 of 321–1000 (12.21%) |
 | Filled (§2.11) | `filled(j) = isComplete(j, capacity)`; pair levels have no wet sand, so filled = sealed | | |
 | Sunrise refusal | `'sunrise'` when the sunrise jar `r` is not filled, `m.to ≠ r`, and `filled(after(b, m).jars[m.to])`; checked after every other reason | `b` board, `m` pour | Sunrise jar holds 2 of 4 red; pouring the last blue into a jar of 3 blue is refused |
 | Sunset refusal | `'sunset'` when `m.to` is the sunset jar, `filled(after(b, m).jars[m.to])` and `¬isWon(after(b, m))` | | The sunset jar holds 3 of 4 green and one jar is still mixed: pouring the last green in is refused |
 | Pair win | `isWon(b)` = every jar with `sun` or `sieve` complete in its band, every other jar empty or complete | | An empty sunset jar with everything else sorted is not won |
 | Sunrise lost | `reach(r.band) < capacity − count(r, r.band)`, where `reach` counts the band outside funnels, frozen jars and jars locked by another key | | Two of four red in a funnel: lost at once |
 | Sunset lost | `free(s.band) < capacity − count(s, s.band)`, where `free` counts the band outside sealed jars and funnels | | Green sealed in an ordinary jar: lost |
-| Pair share | its own roll only: `rng(mixSeed(9173, level)) < ownChance` from 361, as the crab; not on tall-jar levels; dropped when the level also rolled the tide jar, the crab or a narrow jar (D226) | `ownChance` 0.22, `ownSalt` 9173 | Measured 79 of 361–1000 (12.34%) |
+| Pair share | its own roll only: `rng(mixSeed(9173, level)) < ownChance` from 361, as the crab; not on tall-jar levels; dropped when the level also rolled the tide jar, the crab or a narrow jar (D226) | `ownChance` 0.23, `ownSalt` 9173 | Measured 79 of 361–1000 (12.34%) |
 | Pair band tries | pairs tried on one deal: `min(colorTries, colors − 1)`, sunset band `s` fixed, sunrise band `r, r+1, … (mod colors)`, skipping `s` | `colorTries` 3 | |
 
 **Tuning knobs (hourglass)**
@@ -536,7 +538,7 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 |---|---|---|---|
 | `mechanics.list[lighthouse].unlockAt` | 321 | ≥ 321 (lower would change levels ≤ 320) | Debut level (D206) |
 | `mechanics.list[lighthouse].every` | 4 | 2–6 (at least 1 is enforced) | Pours between sweeps (D208). 1 lights it after every pour (no mechanic left); above 6 the player plays most of the level blind on that jar |
-| `mechanics.list[lighthouse].ownChance` | 0.145 | 0–0.25 | Its only roll; 0.145 gives 12.5% of 321–1000 (D210) |
+| `mechanics.list[lighthouse].ownChance` | 0.35 | 0–0.45 | Its only roll; with the one-spare give-way (D235) 0.35 gives 12.21% of 321–1000. Changing it changes which levels 322+ have a lighthouse |
 | `mechanics.list[lighthouse].ownSalt` | 8329 | any, distinct from other salts | Seeds the own roll. Never change it once released |
 
 **Tuning knobs (sunrise and sunset jars)**
@@ -544,7 +546,7 @@ It keeps the first pair whose proof is within the level's pour cap. Failing that
 | Knob | Default | Safe range | Effect |
 |---|---|---|---|
 | `mechanics.list[sun].unlockAt` | 361 | ≥ 361 (lower would change levels ≤ 360) | Debut level (D220) |
-| `mechanics.list[sun].ownChance` | 0.22 | 0–0.3 | Its only roll; 0.22 gives 12.34% of 361–1000 after the pair gives way to the tide jar, the crab and the narrow jar (D220, D226). Changing it changes which levels 362+ have the pair |
+| `mechanics.list[sun].ownChance` | 0.23 | 0–0.3 | Its only roll; 0.23 gives 12.34% of 361–1000 since D235 (0.22 before it) after the pair gives way to the tide jar, the crab and the narrow jar (D220, D226). Changing it changes which levels 362+ have the pair |
 | `mechanics.list[sun].ownSalt` | 9173 | any, distinct from other salts | Seeds the own roll. Never change it once released |
 | `mechanics.list[sun].colorTries` | 3 | 1–5 | Band pairs proven per deal before the deal is rejected (D222) |
 
@@ -843,3 +845,4 @@ Saturday stays as built (D2), narrow jars never seal (D4), dead ends are reporte
 | 2026-11-19 | Claude (sprint 29 design) | Sunrise and sunset jars (D218–D224), §2.11, from two owner interviews: a banded pair (different colours, only the band in, anything out, dealt on filled jars); sunrise first and sunset last by refusal (`'sun'`, `'sunrise'`, `'sunset'`); the win needs both complete in band; two sound dead ends; no wet sand or sieve on pair levels, frozen jars and locks shut until sunrise, the crab allowed; Shuffle keeps the pair; up to 3 band pairs tried; debut 361, own roll about 1 in 8; marks, moments, strings and the 0.25.0 release. Formulas, tuning knobs, edge cases, acceptance criteria and one open question added; measurements pending |
 | 2026-11-23 | Claude (sprint 29 build) | Sunrise and sunset jars built and measured: the pair dealt empty as two extra jars (D225) and giving way to the tide jar, the crab and a rolled narrow jar (D226), own chance 0.22 for 12.34% of 361–1000; 72 of 79 pair levels build with the pair; measurements, rejected levers, the changed levels and the fixture recorded in §2.11; §4 edge cases and §6 criteria ticked; a filled pair jar's label says "filled" without "sealed" (owner) |
 | 2026-11-24 | Claude (sprint 30 E1) | D228, D229, D231: the "Daily, weekly, events" paragraphs of §2.7–§2.11 updated: wet sand, the tide jar, the crab, the lighthouse jar and the pair join the Saturday daily from 2026-12-19 and the weekly themes from 2026-W52 (Rain on the Dunes, High Water, Crab Walk, Night Watch, Dawn to Dusk, D230), placed as on the levels, one mechanic a board (D226 never applies), the pair Saturday 14 jars; events stay plain (D144 kept); the sprint 29 open question answered (D228); build rates pending E2/E3 |
+| 2026-11-24 | Claude (after 0.26.0) | D235: the lighthouse jar gives way on one-spare levels, own chance 0.145 → 0.35 (12.21%); the pair's own chance 0.22 → 0.23 to keep 12.34%; options measured with the dark-aware simulator; levels 329, 352, 353 re-pinned in boards-1-360.json; 466 a known pair fallback; pair 70 of 79 built |
