@@ -101,7 +101,9 @@ function hashKey(key: string, salt: number): number {
  * `saturdayFrom` era: the four classic mechanics, `floor(dayNumber / 7) mod 4`, exactly as before
  * sprint 13 W1 (tests/fixtures/daily-weekly-pins.json). From an era's `from`: its list, counted
  * from that date, so no daily before the start date changes (D98).
- * Example: `rotationMechanic('2026-11-28', config) // 'hourglass'`.
+ * Since 2026-12-19 (sprint 30 E2, D228, D229) the last era is twelve Saturdays long: wet sand, the tide jar,
+ * the crab, the lighthouse jar and the sunrise and sunset jars, then the 2026-11-28 rotation.
+ * Example: `rotationMechanic('2026-11-28', config) // 'hourglass'`, `rotationMechanic('2026-12-19', config) // 'wet'`.
  */
 export function rotationMechanic(key: string, config: GameConfig & DailyConfig): MechanicId {
   const era = [...(config.daily.saturdayFrom ?? [])].reverse().find((e) => e.mechanics.length > 0 && key >= e.from);
@@ -113,7 +115,12 @@ export function rotationMechanic(key: string, config: GameConfig & DailyConfig):
   return classic[Math.floor(dayNumber(key) / 7) % classic.length];
 }
 
-/** The board recipe for a date. A new jar (hourglass, sieve, clam) rides in its `LevelSpec` flag, as on the levels. */
+/**
+ * The board recipe for a date. A rotate day's newer jar (the hourglass, the sieve, the clam, wet sand, the tide
+ * jar, the crab, the lighthouse jar, or the sunrise and sunset pair) rides in its `LevelSpec` flag via
+ * `splitMechanics`, so `applyMechanics` places it exactly as on the levels (jar-mechanics.md §2.4-§2.11).
+ * The pair's give-way rule (D226) never applies: a Saturday features one mechanic on its own.
+ */
 export function dailySpec(key: string, config: GameConfig & DailyConfig): DailySpec {
   const day = config.daily.week[weekday(key)];
   const featured = day.mechanic === 'rotate' ? splitMechanics([rotationMechanic(key, config)]) : { mechanics: [] };

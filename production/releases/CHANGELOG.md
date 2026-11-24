@@ -48,6 +48,16 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.26.0 (2026-11-24): sprint 30, the newer jars come to the daily
+**For players**
+- **The Saturday daily features the newer jars** from Saturday 2026-12-19: wet sand, the tide jar, the crab, the lighthouse jar, and the sunrise and sunset jars, then the earlier rotation (twelve Saturdays a cycle). A player who has not reached a jar yet sees its intro card first.
+- **Five new weekly themes** from the week of 2026-12-21 (2026-W52): Rain on the Dunes, High Water, Crab Walk, Night Watch and Dawn to Dusk, then the earlier themes (thirteen weeks a cycle).
+- No daily or weekly before those dates changes. Seasonal event boards stay plain.
+- The win card says "1 pour" on a one-pour win (it said "1 pours").
+
+**Under the hood**
+- Owner decisions D227-D234 (`production/sprints/sprint-30.md`). New `daily.saturdayFrom` and `weekly.themesFrom` eras; all 105 Saturdays and 525 weekly boards of the first two years build with their mechanic, no fallbacks (fixtures `daily-era-pins.json`, `weekly-era-pins.json`, `weekly-boards.json`). The balance simulator can play blind to a dark lighthouse jar, and the stuck-rate gates now use it (D234, thresholds unchanged; report `production/qa/sprint-30/lighthouse-dark-sim.md`). Own rolls may take a level past D22's three mechanics (D227).
+
 ## 0.25.0 (2026-11-23): sprint 29, sunrise and sunset
 **For players**
 - **The sunrise and sunset jars**, from level 361: two extra empty jars, each banded in its own colour, that take only that colour. The sunrise jar is filled first: no other jar can be filled before it ("The sun hasn't risen yet: fill the sunrise jar first."). The sunset jar is filled last, by the winning pour ("Sunset comes last: finish every other jar first.").

@@ -42,10 +42,14 @@ function provenAndReplayed(board: Board): boolean {
   return isWon(b);
 }
 
+/** The config with only the first Saturday era (2026-11-28), as before sprint 30's D228 era. */
+const firstEra = { ...cfg, daily: { ...cfg.daily, saturdayFrom: [(cfg.daily.saturdayFrom ?? [])[0]] } } as typeof cfg;
+
 describe('config: the start dates (D98)', () => {
   it('the daily rotation era starts on Saturday 2026-11-28 with all seven mechanics in cyclic unlock order', () => {
     const eras = cfg.daily.saturdayFrom ?? [];
-    expect(eras).toHaveLength(1);
+    // The 2026-12-19 era (sprint 30, D228) follows; tests/unit/daily/newer-jars-era.test.ts covers it.
+    expect(eras).toHaveLength(2);
     expect(eras[0].from).toBe(DAILY_FROM);
     expect(weekday(eras[0].from)).toBe(6);
     const list = eras[0].mechanics;
@@ -54,8 +58,9 @@ describe('config: the start dates (D98)', () => {
     expect(list).toEqual(list.map((_, i) => UNLOCK_ORDER[(start + i) % 7]));
   });
   it('the weekly theme era starts at 2026-W49 and adds the three new jar themes to the old five', () => {
+    // A later era (2026-W52, sprint 30 E3) follows it; see newer-jars-era.test.ts.
     const eras = cfg.weekly.themesFrom ?? [];
-    expect(eras).toHaveLength(1);
+    expect(eras.length).toBeGreaterThanOrEqual(1);
     expect(eras[0].from).toBe(WEEKLY_FROM);
     expect(weekMonday(eras[0].from)).toBe('2026-11-30');
     const ids = eras[0].themes.map((t) => t.id);
@@ -82,7 +87,9 @@ describe('the daily Saturday rotation from 2026-11-28 (D98)', () => {
     expect(dailySpec('2026-11-07', cfg).mechanics).toEqual(['locked']);
   });
   it('from the start every seven Saturdays feature all seven mechanics, one each, the hourglass first', () => {
-    const picks = Array.from({ length: 21 }, (_, w) => specMechanics(dailySpec(addDays(DAILY_FROM, 7 * w), cfg)));
+    // The first era alone: from 2026-12-19 the D228 era takes over (its own test covers it).
+    const picks = Array.from({ length: 21 }, (_, w) => specMechanics(dailySpec(addDays(DAILY_FROM, 7 * w), firstEra)));
+    for (let w = 0; w < 3; w++) expect(specMechanics(dailySpec(addDays(DAILY_FROM, 7 * w), cfg))).toEqual(picks[w]);
     for (const p of picks) expect(p).toHaveLength(1);
     expect(picks[0]).toEqual(['hourglass']);
     for (let w = 0; w + 7 <= picks.length; w++) expect(new Set(picks.slice(w, w + 7).flat()).size, `from week ${w}`).toBe(7);
@@ -95,7 +102,9 @@ describe('the daily Saturday rotation from 2026-11-28 (D98)', () => {
     expect(s.hourglass).toBe(true);
     expect(dailySpec(addDays(DAILY_FROM, 7), cfg).sieve).toBe(true);
     expect(dailySpec(addDays(DAILY_FROM, 14), cfg).clam).toBe(true);
-    expect(dailySpec(addDays(DAILY_FROM, 21), cfg).mechanics).toEqual(['narrow']);
+    expect(dailySpec(addDays(DAILY_FROM, 21), firstEra).mechanics).toEqual(['narrow']);
+    // In the live config that Saturday (2026-12-19) opens the D228 era with wet sand, again in its flag.
+    expect(dailySpec(addDays(DAILY_FROM, 21), cfg).wet).toBe(true);
   });
   it('the other weekdays after the start still have no mechanic', () => {
     for (let d = 1; d < 7; d++) expect(specMechanics(dailySpec(addDays(DAILY_FROM, d), cfg)), addDays(DAILY_FROM, d)).toEqual([]);
@@ -127,7 +136,11 @@ describe('the weekly themes from 2026-W49 (D98)', () => {
     expect(weeklyTheme('2026-W48', cfg).id).toBe('deep');
   });
   it('from the start the rotation has eight themes, the hourglass first, then the sieve and the clam', () => {
-    const ids = Array.from({ length: 16 }, (_, n) => weeklyTheme(weekAfter(WEEKLY_FROM, n), cfg).id);
+    // The era as it was before the 2026-W52 era (sprint 30 E3) cut its run to W49 to W51; the live config is checked there.
+    const era1: WeeklyConfig = { weekly: { ...cfg.weekly, themesFrom: (cfg.weekly.themesFrom ?? []).slice(0, 1) } };
+    const live = Array.from({ length: 3 }, (_, n) => weeklyTheme(weekAfter(WEEKLY_FROM, n), cfg).id);
+    expect(live).toEqual(['hourglass', 'sieve', 'clam']);
+    const ids = Array.from({ length: 16 }, (_, n) => weeklyTheme(weekAfter(WEEKLY_FROM, n), era1).id);
     expect(ids.slice(0, 3)).toEqual(['hourglass', 'sieve', 'clam']);
     expect(new Set(ids.slice(0, 8)).size).toBe(8);
     expect(ids.slice(8)).toEqual(ids.slice(0, 8));

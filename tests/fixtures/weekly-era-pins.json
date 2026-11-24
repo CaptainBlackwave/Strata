@@ -1,0 +1,20 @@
+{
+  "$comment": "FNV-1a hashes of the weekly boards of 2026-W49 to 2026-W51 (hourglass, sieve, clam), the weeks between the 2026-W49 era and the 2026-W52 era, made by generateWeekly in src/core/weekly.ts at sprint 30 E3 with weekly.themesFrom cut to its first era, so the code before the 2026-W52 era (D228-D230, design/gdd/weekly-set.md section 3.3). These boards must never change: regenerate only on purpose.",
+  "weeks": {
+    "2026-W49#1": "f2bf84f4",
+    "2026-W49#2": "bd6cffd7",
+    "2026-W49#3": "73a212ec",
+    "2026-W49#4": "6d91a676",
+    "2026-W49#5": "e16bf624",
+    "2026-W50#1": "2c439318",
+    "2026-W50#2": "6d3ff5d0",
+    "2026-W50#3": "213f257",
+    "2026-W50#4": "fd6ab004",
+    "2026-W50#5": "4677baa0",
+    "2026-W51#1": "93328e0f",
+    "2026-W51#2": "713aa9a6",
+    "2026-W51#3": "ce07e2c6",
+    "2026-W51#4": "530c77d6",
+    "2026-W51#5": "967c1245"
+  }
+}

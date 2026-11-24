@@ -9,6 +9,7 @@
  *   npx vite-node tools/balance/stuck-sweep.ts
  * Options (env): SWEEP_FROM=1 SWEEP_TO=500 SWEEP_STEP=2 PATIENCE=150
  *   SWEEP_CONFIG=path to another game-config.json (for a before/after comparison)
+ *   DARK=0 for the player that sees a dark lighthouse jar's colours (sprint 15-29); default 1, dark-aware (D232)
  * Prints one line per band: stuck share, Hints per 100 levels, and the most Hints one level needed.
  */
 // @ts-expect-error node:fs types are not installed (no @types/node; same approach as vite.config.ts)
@@ -28,15 +29,16 @@ const TO = Number(process.env.SWEEP_TO ?? 500);
 const STEP = Number(process.env.SWEEP_STEP ?? 2);
 const PATIENCE = Number(process.env.PATIENCE ?? 150);
 const MAX_HINTS = 30;
+const SIM = { darkAware: process.env.DARK !== '0' };
 
 /** Hints the simulated player needs on `board`: 0 when it wins alone. */
 function hintsNeeded(board: Board): number {
-  if (simPlay(board, PATIENCE).won) return 0;
+  if (simPlay(board, PATIENCE, SIM).won) return 0;
   const path = solve(board, config.generator.solverNodeBudget).path;
   let b = board;
   for (let h = 1; h <= Math.min(MAX_HINTS, path.length); h++) {
     b = pour(b, path[h - 1].from, path[h - 1].to).board;
-    if (simPlay(b, PATIENCE).won) return h;
+    if (simPlay(b, PATIENCE, SIM).won) return h;
   }
   return MAX_HINTS;
 }
@@ -44,7 +46,7 @@ function hintsNeeded(board: Board): number {
 const bands: [number, number][] = [[1, 40], [41, 80], [81, 150], [151, 200], [201, 300], [301, 400], [401, 500], [501, 1000]];
 const rows: { level: number; hints: number }[] = [];
 for (let level = FROM; level <= TO; level += STEP) rows.push({ level, hints: hintsNeeded(generateLevel(level, config).board) });
-console.log(`patience ${PATIENCE}, every ${STEP} level(s), ${path ?? 'shipped config'}`);
+console.log(`patience ${PATIENCE}, every ${STEP} level(s), ${path ?? 'shipped config'}, ${SIM.darkAware ? 'dark-aware' : 'sees dark colours'}`);
 for (const [a, b] of bands) {
   const x = rows.filter((r) => r.level >= a && r.level <= b);
   if (!x.length) continue;

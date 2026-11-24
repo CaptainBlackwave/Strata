@@ -20,7 +20,9 @@ export interface WeeklyBoard {
 
 /**
  * A theme of the week (§3.3): one featured jar mechanic, or more buried sand. `id` keys the UI name.
- * The hourglass, the sieve and the clam ride in their `LevelSpec` flags (sprint 13 W1).
+ * The hourglass, the sieve and the clam ride in their `LevelSpec` flags (sprint 13 W1), and so do wet
+ * sand, the tide jar, the crab, the lighthouse jar and the sunrise and sunset pair from 2026-W52
+ * (sprint 30 E3, D228-D230), placed as on the levels (jar-mechanics.md §2.7 to §2.11).
  */
 export interface WeeklyTheme {
   readonly id: string;
@@ -131,7 +133,8 @@ export function daysLeft(key: string, now: Date): number {
 /**
  * The theme of a week (§3.3): `themes[weekIndex mod themes.length]` before the first `themesFrom`
  * era, exactly as before sprint 13 W1; from an era's `from`, its list counted from that week (D98).
- * Example: `weeklyTheme('2026-W49', config).id // 'hourglass'`.
+ * The latest era started wins, so a new era never changes a week before its `from` (D229).
+ * Example: `weeklyTheme('2026-W49', config).id // 'hourglass'`, `weeklyTheme('2026-W52', config).id // 'wet'`.
  */
 export function weeklyTheme(week: string, config: WeeklyConfig): WeeklyTheme {
   const era = [...(config.weekly.themesFrom ?? [])].reverse().find((e) => e.themes.length > 0 && week >= e.from);

@@ -362,17 +362,20 @@ describe('sunrise and sunset fallback and generation', () => {
 });
 
 describe('the pair stays out of the daily, the weekly and events (D220)', () => {
-  it('the daily never features it (two years of days from 2026-11-01)', () => {
+  it('the daily never features it on any day but its Saturdays from 2026-12-19 (two years from 2026-11-01, D228)', () => {
     for (let d = 0; d < 730; d++) {
       const key = new Date(Date.UTC(2026, 10, 1 + d)).toISOString().slice(0, 10);
+      // From the D228 era (Saturday 2026-12-19) it rides the Saturday rotation (tests/unit/daily/newer-jars-era.test.ts); no other day has it.
+      if (key >= '2026-12-19' && new Date(`${key}T00:00:00Z`).getUTCDay() === 6) continue;
       expect(dailySpec(key, cfg).sun, key).toBeFalsy();
     }
   });
 
-  it('no weekly theme features it, and no weekly board of 52 weeks has it', () => {
+  it('the base weekly themes never feature it, and no weekly board before 2026-W52 has it (D228)', () => {
     expect((config.weekly.themes as { mechanic?: string }[]).some((t) => t.mechanic === 'sun')).toBe(false);
-    for (let w = 1; w <= 52; w++) {
-      const week = `2027-W${String(w).padStart(2, '0')}`;
+    // Before the D228 era (2026-W52); from it the theme rotation features it (tests/unit/weekly/newer-jars-era.test.ts).
+    for (let w = 1; w <= 51; w++) {
+      const week = `2026-W${String(w).padStart(2, '0')}`;
       for (let i = 0; i < 3; i++) expect(weeklySpec(week, i, cfg).sun, `${week} #${i}`).toBeFalsy();
     }
   });
