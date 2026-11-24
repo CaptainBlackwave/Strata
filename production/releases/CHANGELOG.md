@@ -46,6 +46,7 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.24.1 | `46005c7` (sprint 28, the sieve is a goal, PR #61) |
 | v0.25.0 | `8548dfd` (sprint 29, sunrise and sunset, PR #62) |
 | v0.26.0 | `2203230` (sprint 30, the newer jars come to the daily, PR #65) |
+| v0.26.1 | `fe4d464` (a gentler lighthouse, PR #66) |
 
 ## Unreleased
 
