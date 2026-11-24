@@ -355,7 +355,10 @@ export function levelSpec(level: number, config: GameConfig): LevelSpec {
       }
     }
   }
-  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}), ...(crab ? { crab } : {}), ...(lighthouse ? { lighthouse } : {}), ...(sun ? { sun } : {}) };
+  // Decision D235: the lighthouse jar gives way on a one-spare level (dark sand with a single spare was
+  // the hardest combination measured, sprint 30 S1); the rest of the level stays exactly as rolled.
+  const lit = lighthouse && spare > 1;
+  return { level, colors: Math.min(colors, maxColors), capacity, spare, buriedDepth, challenge: false, mechanics, ...(hourglass ? { hourglass } : {}), ...(sieve ? { sieve } : {}), ...(clam ? { clam } : {}), ...(wet ? { wet } : {}), ...(tide ? { tide } : {}), ...(crab ? { crab } : {}), ...(lit ? { lighthouse: lit } : {}), ...(sun ? { sun } : {}) };
 }
 
 /**

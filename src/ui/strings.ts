@@ -218,6 +218,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.26.1',
+        name: 'A gentler lighthouse',
+        lines: [
+          'Levels with the lighthouse jar now always have two spare jars.',
+          'A few levels from 329 on have a new board because of this. Your best pours are kept.',
+          'On small screens with large text, the date at the top of a daily puzzle now fits.',
+        ],
+      },
+      {
         version: '0.26.0',
         name: 'The newer jars come to the daily',
         lines: [

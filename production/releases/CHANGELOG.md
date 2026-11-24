@@ -45,8 +45,17 @@ When a release merges, add its row here so a backfill can recreate it.
 | v0.24.0 | `b9425e4` (sprint 27, a crab and a lighthouse, PR #59) |
 | v0.24.1 | `46005c7` (sprint 28, the sieve is a goal, PR #61) |
 | v0.25.0 | `8548dfd` (sprint 29, sunrise and sunset, PR #62) |
+| v0.26.0 | `2203230` (sprint 30, the newer jars come to the daily, PR #65) |
 
 ## Unreleased
+
+## 0.26.1 (2026-11-24): a gentler lighthouse
+**For players**
+- **The lighthouse jar now only appears on levels with two spare jars.** Dark sand with a single spare was the hardest combination measured. It still shows up on about 1 level in 8 from 322. Levels 329, 352 and 353 have new boards, as do the later levels whose lighthouse changed; best pours are kept.
+- On small screens with large text, the date at the top of a daily puzzle now fits instead of being cut off.
+
+**Under the hood**
+- Owner decision D235 (`design/gdd/jar-mechanics.md` §2.10): the lighthouse gives way on a one-spare level; its own chance 0.145 → 0.35 (12.21% of 321-1000) and the pair's 0.22 → 0.23 (12.34%). Lighthouse levels 321-600 stuck 70% → 58% with the dark-aware simulator. `boards-1-360.json` re-pinned for 329, 352, 353; level 466 is a known pair fallback. Header label capped by its own width (`cqi`, Beads strata-o9x).
 
 ## 0.26.0 (2026-11-24): sprint 30, the newer jars come to the daily
 **For players**

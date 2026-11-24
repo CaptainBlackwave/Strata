@@ -518,6 +518,8 @@ body {
 .hud-title {
   flex: 1 1 auto;
   min-width: 0;
+  /* The level label sizes itself to this box (cqi below), so a long daily date fits beside the tag. */
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -530,8 +532,10 @@ body {
 }
 .level-label {
   font-weight: var(--fw-black);
-  /* Large text on a narrow phone: cap the heading by the screen width so it isn't cut (AX-20). */
-  font-size: min(var(--fs-5), 8vw);
+  /* Large text on a narrow phone: cap the heading by the screen width so it isn't cut (AX-20), and by
+     its own box (14cqi fits "Wed, Sep 30", about 6.3em wide), so a daily date beside the
+     "Daily · tricky" tag shows in full at 320px and 150% text (Beads strata-o9x). Where it fits, nothing changes. */
+  font-size: min(var(--fs-5), 8vw, 14cqi);
   line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
