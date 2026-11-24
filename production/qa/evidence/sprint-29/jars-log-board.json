@@ -1,6 +1,5 @@
 {
-  "gpu-dark": {
-    "render": "gpu",
+  "dom-light": {
     "startLabels": [
       "Jar 15: empty (sunrise jar, terracotta only, fill it first)",
       "Jar 16: empty (sunset jar, rose only, fill it last)"
@@ -8,7 +7,7 @@
     "dawn": true,
     "dawnAnims": 1,
     "filledLabels": [
-      "Jar 15: terracotta, terracotta, terracotta, terracotta (sunrise jar, terracotta only, filled, sealed)",
+      "Jar 15: terracotta, terracotta, terracotta, terracotta (sunrise jar, terracotta only, filled)",
       "Jar 16: rose, rose (sunset jar, rose only, fill it last)"
     ],
     "announce": [
@@ -17,7 +16,7 @@
       "Poured 1 terracotta into jar 15. Jar 15 sealed. The sun is up: the sunrise jar is filled."
     ],
     "dusk": true,
-    "winOpenAtDuskShot": true,
+    "winOpenAtDuskShot": false,
     "winDusk": true,
     "errors": []
   },
@@ -59,7 +58,7 @@
       "t": 6
     }
   },
-  "words-gpu": {
+  "words-dom": {
     "sunRise": "Only terracotta greets the sunrise.",
     "sunSet": "Only rose waits for sunset.",
     "sunrise": "The sun hasn’t risen yet: fill the sunrise jar first.",
@@ -75,7 +74,7 @@
     },
     "errors": []
   },
-  "320-150-gpu": {
+  "320-150-dom": {
     "scrollW": 320,
     "innerW": 320,
     "marks": [
@@ -161,7 +160,7 @@
       ]
     ]
   },
-  "patterns-gpu": {
+  "patterns-dom": {
     "scrollW": 412,
     "innerW": 412,
     "marks": [
@@ -247,7 +246,7 @@
       ]
     ]
   },
-  "reduced-gpu": {
+  "reduced-dom": {
     "dawnLayers": 0,
     "winDusk": true
   }

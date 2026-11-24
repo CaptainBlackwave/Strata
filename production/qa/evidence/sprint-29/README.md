@@ -37,8 +37,8 @@ Each shot is on the Classic (`dom`) and Realistic (`gpu`) boards. Light means th
 | `patterns-{start,filled}-*.png` | Colour-blind patterns on, including on the bands |
 | `320-150-{start,filled}-*.png` | 361 at 320px wide with 150% text |
 | `wide-541-{dom,gpu}-320-150.png` | The widest pair board measured, 541 (18 jars with a spare-swap narrow jar), at 320px and 150%: no horizontal scroll and every badge in view |
-| `jars-log-board.json` | The labels, refusal texts and checks from the last board run (`BOARDS=gpu SCENES=moonlit`) |
+| `jars-log-board.json` | The labels, refusal texts and checks from the last board run (`BOARDS=dom SCENES=midday`) |
 
 The layout guard (`npm run guard:layout`) passed: 48 screens checked, none overflowing.
 
-Known, outside this sprint: the win card says "1 pours" on a one-pour win, which the injected board here triggers.
+The win card said "1 pours" on a one-pour win, which the injected board here triggers. That was fixed after the release (Beads `strata-yha`): `win-dusk-dom-light.png` and the other Classic daylight shots were retaken on 2026-11-23 and read "1 pour · new best".

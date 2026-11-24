@@ -70,8 +70,10 @@ const en = {
   home: 'Home',
   winTitle: 'Level cleared',
   perfectTitle: 'Perfect!',
-  winText: (moves: number, best: number | undefined) =>
-    best !== undefined && best <= moves ? `${moves} pours · best ${best}` : `${moves} pours${best === undefined ? ' · new best' : ''}`,
+  winText: (moves: number, best: number | undefined) => {
+    const pours = `${moves} ${moves === 1 ? 'pour' : 'pours'}`;
+    return best !== undefined && best <= moves ? `${pours} · best ${best}` : `${pours}${best === undefined ? ' · new best' : ''}`;
+  },
   perfectNote: 'No hint, shuffle or extra jar used',
   /** The win card after a replay that changed nothing (level-map.md D50). */
   replayNote: 'Replay: no coins',
