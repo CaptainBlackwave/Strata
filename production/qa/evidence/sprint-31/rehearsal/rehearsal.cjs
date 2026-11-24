@@ -392,4 +392,41 @@ async function run() {
   await browser.close();
   flush();
 }
-run().catch((e) => { console.error(e); flush(); process.exit(1); });
+
+// Board 25's holly-capped stoppers on SEALED jars (the win card hides them): the board one pour before the
+// win, in the DOM board and in the default (GPU) board. Run alone with ONLY=holly (writes holly-log.json).
+async function hollyCheck() {
+  const browser = await chromium.launch();
+  const res = {};
+  for (const r of ['dom', 'default']) {
+    const context = await browser.newContext({ viewport: { width: 412, height: 860 }, deviceScaleFactor: 2, serviceWorkers: 'block' });
+    await context.clock.setFixedTime(new Date('2026-12-25T09:00:00Z'));
+    await context.addInitScript(([key, seen]) => {
+      if (sessionStorage.getItem('seeded')) return; sessionStorage.setItem('seeded', '1');
+      localStorage.setItem(key, JSON.stringify({ tutorialDone: true, level: 120, seenMechanics: seen, seenWhatsNew: '9.9.9', wallet: { coins: 100, boosters: { hint: 3, shuffle: 3, extraJar: 1, undo: 5 } }, settings: { sound: false, music: false, haptics: false }, onboarding: { visits: 9, installShown: true, offlineNoticed: true, homeHintSeen: true, scenesNewSeen: true, stylesNewSeen: true, mapHintSeen: true, boosterHintSeen: true }, gifts: { christmas: 2026 }, startCards: { wintertide: 2026 } }));
+    }, [KEY, ALL]);
+    const page = await context.newPage();
+    const errors = []; page.on('pageerror', (e) => errors.push(String(e))); page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+    await page.goto(`${BASE}/${r === 'dom' ? '?board=dom' : ''}`);
+    await boot(page, errors);
+    await chooser(page, null);
+    await page.click('#event-boards .event-board[data-board="25"]');
+    await page.waitForFunction(() => window.__S.mode === 'event' && !!window.__S.session, null, { timeout: 30000 });
+    await page.waitForTimeout(1200);
+    const plan = await page.evaluate(async () => {
+      const B = await import('/src/core/board.ts'); const { solve } = await import('/src/core/solver.ts');
+      const b0 = window.__S.session.board; const sol = solve(b0, 3_000_000); let b = b0;
+      for (const m of sol.path.slice(0, -1)) b = B.pour(b, m.from, m.to).board;
+      const { beginSession } = await import('/src/ui/screens/board.ts'); beginSession(b, false);
+      return { pours: sol.path.length };
+    });
+    await page.waitForTimeout(1500);
+    const f = await page.evaluate(() => ({ renderer: document.querySelector('#board canvas') ? 'gpu' : 'dom', festive: document.getElementById('board').classList.contains('festive-board'), sealed: document.querySelectorAll('#board .jar.sealed, #board .jar.done, #board .jar.complete').length, corkEls: [...document.querySelectorAll('#board .jar')].slice(0, 2).map((j) => [...j.children].map((c) => c.className).join(' | ')), label: document.getElementById('level-label').textContent }));
+    await page.screenshot({ path: out(`board25-sealed-${r}-2026-12-25.png`) });
+    res[r] = { ...f, plan, errors };
+    await context.close();
+  }
+  await browser.close();
+  fs.writeFileSync(out('holly-log.json'), JSON.stringify(res, null, 1));
+}
+(process.env.ONLY === 'holly' ? hollyCheck() : run()).catch((e) => { console.error(e); flush(); process.exit(1); });

@@ -13,6 +13,8 @@ const KEY = 'strata.save.v2';
 const ALL = config.mechanics.list.map((m) => m.id);
 const out = (f) => path.join(__dirname, f);
 const LOOKS = [{ board: 'dom', scene: 'midday', look: 'light' }, { board: 'gpu', scene: 'moonlit', look: 'dark' }];
+// Items 1, 2 and 4: every board in both themes.
+const LOOKS4 = [...LOOKS, { board: 'dom', scene: 'moonlit', look: 'dark' }, { board: 'gpu', scene: 'midday', look: 'light' }];
 const QUIET = { gifts: { christmas: 2026 }, startCards: { wintertide: 2026, newtide: 2026 } };
 
 async function open(browser, { day, query = '', board = 'dom', scene = 'midday', width = 412, height = 900, text = 100, reduced = false, styles = null, extra = QUIET }) {
@@ -61,7 +63,7 @@ const boardFacts = (page) => page.evaluate(() => ({
   festive: document.getElementById('board').classList.contains('festive-board'), sealed: document.querySelectorAll('#board .jar.sealed').length,
   label: document.getElementById('level-label')?.textContent, scrollW: document.documentElement.scrollWidth,
 }));
-const homeReady = (page) => page.waitForSelector('#home:not([hidden])', { timeout: 30000 });
+const homeReady = async (page) => { await page.waitForSelector('#home:not([hidden])', { timeout: 30000 }); await page.waitForTimeout(400); await closeOverlays(page); await page.waitForTimeout(500); };
 
 /** Visible leaf text/controls inside #home that overlap the garland. */
 const garlandOverlap = (page) => page.evaluate(() => {
@@ -96,7 +98,7 @@ async function run() {
   const rec = async (name, fn, ctx) => { try { log[name] = { ...(await fn()), errors: ctx.errors }; } catch (e) { log[name] = { failed: String(e).slice(0, 300), errors: ctx.errors }; } await ctx.context.close(); };
 
   // 1-2. Holly cap and Sparkle glass worn on a crafted board with sealed jars, both boards, light and dark.
-  for (const piece of [{ tag: 'holly-cap', worn: { glass: 'clear', cork: 'holly', sand: 'plain' } }, { tag: 'sparkle-glass', worn: { glass: 'sparkle', cork: 'cork', sand: 'plain' } }]) for (const v of LOOKS) {
+  for (const piece of [{ tag: 'holly-cap', worn: { glass: 'clear', cork: 'holly', sand: 'plain' } }, { tag: 'sparkle-glass', worn: { glass: 'sparkle', cork: 'cork', sand: 'plain' } }]) for (const v of LOOKS4) {
     const ctx = await open(browser, { day: '2026-11-24', query: '&level=400', board: v.board, scene: v.scene, styles: { owned: ['cork:holly', 'glass:sparkle'], worn: piece.worn } });
     await rec(`${piece.tag}-${v.board}-${v.look}`, async () => {
       await closeOverlays(ctx.page);
@@ -130,7 +132,7 @@ async function run() {
 
   // 4. Winter Tide board 25 on Christmas Day (started as the chooser does), both boards, light and dark;
   //    plus the chooser with the festive tile, and a crafted festive board so the sealed jars show the cap.
-  for (const v of LOOKS) {
+  for (const v of LOOKS4) {
     const ctx = await open(browser, { day: '2026-12-25', board: v.board, scene: v.scene });
     await rec(`board25-${v.board}-${v.look}`, async () => {
       await homeReady(ctx.page);
@@ -141,7 +143,7 @@ async function run() {
       await ctx.page.waitForTimeout(300);
       await ctx.page.screenshot({ path: out(`event-chooser-2026-12-25-${v.look}.png`) });
       const tile = await ctx.page.locator('.event-board.festive').getAttribute('aria-label').catch(() => null);
-      await ctx.page.evaluate(async () => (await import('/src/ui/screens/board.ts')).startEvent('wintertide', 2026, 25));
+      await ctx.page.click('.event-board.festive');
       await ctx.page.waitForFunction(() => window.__S.mode === 'event' && !!window.__S.session, null, { timeout: 30000 });
       await ctx.page.waitForSelector('#board .jar .unit', { state: 'attached', timeout: 30000 });
       await ctx.page.waitForTimeout(1600);
@@ -198,6 +200,7 @@ async function run() {
     const ctx = await open(browser, { day: n.day, width: s.width, text: s.text, board: s.board, scene: s.scene, extra: {}, styles: { owned: [], worn: { glass: 'clear', cork: 'cork', sand: 'plain' } } });
     const tag = `notice-${n.tag}-${n.day}-${s.sfx}-${s.look}`;
     await rec(tag, async () => {
+      await homeReady(ctx.page);
       await ctx.page.waitForSelector('#home-notice:not([hidden])', { timeout: 15000 });
       await ctx.page.waitForTimeout(900);
       await ctx.page.screenshot({ path: out(`${tag}.png`) });

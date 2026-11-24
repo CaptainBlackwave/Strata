@@ -6945,6 +6945,13 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   outline: 2px dashed color-mix(in srgb, var(--festive-green) 75%, transparent);
   outline-offset: 3px;
 }
+/* "Christmas Day" is wider than a tile at 412px: let it wrap onto two lines inside the tile (sprint 31 visual check). */
+.event-board.festive span {
+  white-space: normal;
+  text-align: center;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
 .event-board.festive::after {
   content: '';
   position: absolute;

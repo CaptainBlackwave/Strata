@@ -1,0 +1,30 @@
+{
+ "dom": {
+  "renderer": "dom",
+  "festive": false,
+  "sealed": 4,
+  "corkEls": [
+   "cork | padlock | funnel-mark | glass | hint-badge | hourglass-mark | tide-mark | lh-mark | crab-mark | sieve-band | sieve-goal | sun-band | sun-mark | clam-shell",
+   "cork | padlock | funnel-mark | glass | hint-badge | hourglass-mark | tide-mark | lh-mark | crab-mark | sieve-band | sieve-goal | sun-band | sun-mark | clam-shell"
+  ],
+  "label": "Christmas Day",
+  "plan": {
+   "pours": 20
+  },
+  "errors": []
+ },
+ "default": {
+  "renderer": "dom",
+  "festive": false,
+  "sealed": 4,
+  "corkEls": [
+   "cork | padlock | funnel-mark | glass | hint-badge | hourglass-mark | tide-mark | lh-mark | crab-mark | sieve-band | sieve-goal | sun-band | sun-mark | clam-shell",
+   "cork | padlock | funnel-mark | glass | hint-badge | hourglass-mark | tide-mark | lh-mark | crab-mark | sieve-band | sieve-goal | sun-band | sun-mark | clam-shell"
+  ],
+  "label": "Christmas Day",
+  "plan": {
+   "pours": 20
+  },
+  "errors": []
+ }
+}
