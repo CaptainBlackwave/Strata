@@ -1,0 +1,70 @@
+{
+  "holly-cap-dom-light": {
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "holly-cap-gpu-dark": {
+    "render": "gpu",
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "holly-cap-dom-dark": {
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "holly-cap-gpu-light": {
+    "render": "gpu",
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-dom-light": {
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-gpu-dark": {
+    "render": "gpu",
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-dom-dark": {
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-gpu-light": {
+    "render": "gpu",
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  }
+}

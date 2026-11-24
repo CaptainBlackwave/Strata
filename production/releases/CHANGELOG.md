@@ -50,6 +50,17 @@ When a release merges, add its row here so a backfill can recreate it.
 
 ## Unreleased
 
+## 0.27.0 (2026-11-24): sprint 31, Christmas at the seaside
+**For players**
+- **Winter Tide** runs from 1 to 25 December: a new board every day, with catch-up until Christmas Day. Clear boards 1-24 for the Frost jar glass and the Winter Tide badge, with 50 coins after every 6th board. **Board 25, Christmas Day,** is a bonus board with holly on every jar.
+- **A Christmas Day gift:** the first time you open the game on 25 December you get the **Holly cap** for your jars, 100 coins and a hint. In later years the gift is the coins and the hint.
+- **New Tide** runs from 26 December to 6 January: 12 boards, 50 coins after boards 4, 8 and 12, and the New Tide badge and **Sparkle glass** for clearing all 12.
+- **A festive December:** lights and Christmas decorations along the beach path, a garland on Home while Winter Tide runs, and the Winter snow and Winter lights scenes listed first with a Festive tag.
+- A card on Home tells you when Winter Tide and New Tide begin.
+
+**Under the hood**
+- Owner decisions D236-D243 (`design/gdd/events.md`, `jar-styles.md` §3.6, `scenes.md`, `level-map.md` §2.4). New config fields `prizeBoards` and `festiveBoard` on events, the `newtide` event, top-level `gifts` and `festive` blocks; `src/core/gifts.ts` gives the gift once a year (the year is kept in the save). Winter Tide boards 1-24 are byte-identical to before (`tests/fixtures/event-boards.json`). A dress rehearsal with a fixed clock covered every key date from 30 Nov 2026 to 25 Dec 2027 (`production/qa/evidence/sprint-31/rehearsal/`). After the owner's art review, the map lights, garland, Sparkle flecks and gift picture were made bolder, and Christmas decorations were added along the map (`production/qa/evidence/sprint-31/art2/`).
+
 ## 0.26.1 (2026-11-24): a gentler lighthouse
 **For players**
 - **The lighthouse jar now only appears on levels with two spare jars.** Dark sand with a single spare was the hardest combination measured. It still shows up on about 1 level in 8 from 322. Levels 329, 352 and 353 have new boards, as do the later levels whose lighthouse changed; best pours are kept.

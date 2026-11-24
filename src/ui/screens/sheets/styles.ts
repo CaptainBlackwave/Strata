@@ -79,7 +79,7 @@ function pieceButton(slot: StyleSlot, id: string, price: number): HTMLButtonElem
   status.className = 'scene-status';
   const action = styleAction(state.save.styles, state.save.wallet.coins, state.save.level, slot, id, config);
   if (action === 'wearing') status.textContent = t.styles.wearing;
-  else if (action === 'wear') status.textContent = id === config.styles.slots[slot][0].id || price === 0 && earnedDay(slot, id, config) === undefined && !config.styles.slots[slot].find((p) => p.id === id)?.event ? t.styles.free : t.styles.owned;
+  else if (action === 'wear') status.textContent = id === config.styles.slots[slot][0].id || price === 0 && earnedDay(slot, id, config) === undefined && !config.styles.slots[slot].find((p) => p.id === id)?.event && !(config.styles.slots[slot].find((p) => p.id === id) as { gift?: string } | undefined)?.gift ? t.styles.free : t.styles.owned; // an owned event prize or gift piece reads "Owned" (sprint 31)
   else if (action === 'earned') {
     status.textContent = lockText(slot, id, config, (config as unknown as EventsConfig).events); // streak or event prize: never a price
     status.classList.add('locked');

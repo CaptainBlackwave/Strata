@@ -39,4 +39,33 @@ describe('event win', () => {
     expect(again.styles?.owned.filter((x) => x === 'glass:frost')).toHaveLength(1);
     expect(again.badges.filter((x) => x === 'event-wintertide')).toHaveLength(1);
   });
+
+  // Sprint 31 C2 rehearsal finding 1: completing again in a later year showed "Frost jar glass is yours"
+  // although nothing new was granted. The prize row shows only when the piece is new.
+  it('a later year that completes again shows no prize row for a piece already owned', () => {
+    const cleared = Array.from({ length: 23 }, (_, i) => i + 1);
+    const first = applyWin(state({ events: { wintertide: { year: 2026, cleared, pours: {} } } }), win(24), cfg);
+    expect(first.card.event?.prizeStyle).toBe('glass:frost');
+    const again = applyWin({ ...first.state, events: { wintertide: { year: 2027, cleared, pours: {} } } }, { ...win(24), event: { id: 'wintertide', year: 2027, board: 24 } }, cfg);
+    expect(again.card.event?.completedNow).toBe(true);
+    expect(again.card.event?.prizeStyle).toBeUndefined();
+  });
+  it('board 25 (Christmas Day, D237) is a bonus: no coins, no prize, and the count stays "of 24"', () => {
+    const all = Array.from({ length: 24 }, (_, i) => i + 1);
+    const after = applyWin(state({ events: { wintertide: { year: 2026, cleared: all, pours: {} } } }), win(25), cfg);
+    expect(after.card.event).toMatchObject({ board: 25, cleared: 24, total: 24, firstClear: true, coins: 0, completedNow: false });
+    expect(after.card.rewardShown).toBe(false);
+    expect(after.state.styles?.owned).not.toContain('glass:frost');
+    expect(after.state.events?.wintertide.cleared).toContain(25);
+    const early = applyWin(state(), win(25), cfg);
+    expect(early.card.event).toMatchObject({ cleared: 0, total: 24, coins: 0, completedNow: false });
+  });
+
+  it('New Tide: the 12th board gives the Sparkle glass and the New Tide badge (D240)', () => {
+    const cleared = Array.from({ length: 11 }, (_, i) => i + 1);
+    const r = applyWin(state({ events: { newtide: { year: 2026, cleared, pours: {} } } }), { ...win(12), today: '2027-01-06', event: { id: 'newtide', year: 2026, board: 12 } }, cfg);
+    expect(r.card.event).toMatchObject({ id: 'newtide', cleared: 12, total: 12, coins: 50, completedNow: true, prizeStyle: 'glass:sparkle' });
+    expect(r.state.styles?.owned).toContain('glass:sparkle');
+    expect(r.state.badges).toContain('event-newtide');
+  });
 });

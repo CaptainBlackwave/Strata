@@ -16,6 +16,8 @@ import { showHome } from './home';
 import { audio, config, state } from '../state';
 import { mapHintOnOpen } from './onboarding';
 import { shareChallenge } from './friend';
+import { dailyKey } from '../clock';
+import { type Box, type FestiveConfig, type FestiveDecor, decorSpots, festiveDecorFor, lightRun, mapDecorOn, mapLightsOn, sagWire } from '../logic/festive';
 
 const mapEl = $('map');
 const scrollEl = $('map-scroll');
@@ -45,6 +47,12 @@ const bands = new Map<number, HTMLElement>();
 const pathSvg = document.createElementNS(SVG_NS, 'svg');
 pathSvg.classList.add('map-path');
 pathSvg.setAttribute('aria-hidden', 'true');
+/** The December lights (sprint 31, D241, §2.4): their own layer over the path, under the stones. */
+const lightsSvg = document.createElementNS(SVG_NS, 'svg');
+lightsSvg.classList.add('map-lights');
+lightsSvg.setAttribute('aria-hidden', 'true');
+/** One twinkle's length, s (style.css `bulb-twinkle`): a redrawn bulb picks up its phase from the clock, so scrolling never restarts it. */
+const TWINKLE_S = 4.8;
 /** The stretch fading in after a first clear (sprint 10 F5); the path below draws the old state until it ends. */
 let revealing: { from: number; to: number } | null = null;
 let revealSvg: SVGSVGElement | null = null;
@@ -100,6 +108,54 @@ const SCENERY: Record<string, { land?: string; sea?: string; landAt?: number[]; 
     landAt: [0.15, 0.5, 0.85],
   },
 };
+
+/**
+ * The December decorations (sprint 31): flat seaside-Christmas art in the scenery's style, fixed festive
+ * colours with an outline in the scene's ink so they read on day and night bands. `viewBox` 0 0 60 70,
+ * standing on y 66. Decorative only: inside the band, which is aria-hidden and takes no taps.
+ */
+const DECOR: Record<FestiveDecor, string> = {
+  tree:
+    '<svg viewBox="0 0 60 70"><ellipse class="d-shadow" cx="30" cy="66" rx="19" ry="3.5"/><rect class="d-trunk" x="26.5" y="55" width="7" height="11" rx="1"/>' +
+    '<path class="d-fir" d="M30 22 51 58Q30 63 9 58Z"/><path class="d-fir" d="M30 13 46 42Q30 47 14 42Z"/><path class="d-fir" d="M30 7 41 28Q30 32 19 28Z"/>' +
+    '<path class="d-tinsel" d="M17 39Q30 45 42.5 36M12.5 55Q30 61 47.5 51"/>' +
+    '<circle class="d-red" cx="21" cy="51" r="2.6"/><circle class="d-gold" cx="35" cy="54" r="2.6"/><circle class="d-blue" cx="42" cy="47" r="2.3"/><circle class="d-gold" cx="22" cy="35" r="2.3"/><circle class="d-red" cx="35" cy="33" r="2.3"/><circle class="d-blue" cx="28" cy="23" r="2"/>' +
+    '<path class="d-star" d="M30 0 31.3 3.2 34.8 3.5 32.1 5.7 32.9 9.1 30 7.2 27.1 9.1 27.9 5.7 25.2 3.5 28.7 3.2Z"/></svg>',
+  snowman:
+    '<svg viewBox="0 0 60 70"><ellipse class="d-shadow" cx="30" cy="66" rx="17" ry="3.5"/><path class="d-stick" d="M19.5 45 8 37M11 39.2 8.5 34.5M40.5 45 52 36.5M48.8 38.8 50.5 33.8"/>' +
+    '<circle class="d-snow" cx="30" cy="53" r="13"/><circle class="d-snow" cx="30" cy="32" r="9.5"/>' +
+    '<path class="d-red" d="M21.5 38.5Q30 43.5 38.5 38.5V42Q30 47 21.5 42ZM33 42.5 35.5 53 39.5 52 36.8 41.5Z"/>' +
+    '<circle class="d-coal" cx="26.8" cy="29.5" r="1.3"/><circle class="d-coal" cx="33.2" cy="29.5" r="1.3"/><circle class="d-coal" cx="30" cy="49" r="1.4"/><circle class="d-coal" cx="30" cy="55" r="1.4"/>' +
+    '<path class="d-carrot" d="M30 32.2 37.5 34 30 35.6Z"/>' +
+    '<rect class="d-hat" x="24" y="10" width="12" height="12.5" rx="1.5"/><rect class="d-red" x="24" y="18" width="12" height="2.8"/><rect class="d-hat" x="20.5" y="21.5" width="19" height="3.2" rx="1.2"/></svg>',
+  presents:
+    '<svg viewBox="0 0 60 70"><ellipse class="d-shadow" cx="30" cy="66" rx="25" ry="3.5"/>' +
+    '<rect class="d-red" x="6" y="40" width="27" height="26" rx="1.5"/><path class="d-ribbon" d="M17.5 40h4v26h-4ZM6 50.5h27v4H6Z"/>' +
+    '<rect class="d-green" x="33" y="48" width="21" height="18" rx="1.5"/><path class="d-ribbon-pale" d="M41.5 48h4v18h-4Z"/>' +
+    '<rect class="d-blue" x="11.5" y="25" width="17" height="15" rx="1.2"/><path class="d-ribbon-pale" d="M18 25h4v15h-4Z"/>' +
+    '<path class="d-ribbon-pale" d="M20 25C13 17 10 24 20 25 30 24 27 17 20 25Z"/><path class="d-ribbon" d="M43.5 48C37 41 34.5 47.5 43.5 48 52.5 47.5 50 41 43.5 48Z"/></svg>',
+};
+
+/** A wreath with a red bow for the lighthouse tower: drawn in the lighthouse's own viewBox, laid over it. */
+const WREATH =
+  '<svg viewBox="0 0 80 110"><circle class="d-wreath" cx="36" cy="42" r="5.6"/><circle class="d-red" cx="32.4" cy="38.6" r="1"/><circle class="d-red" cx="40" cy="40" r="1"/><circle class="d-red" cx="35" cy="47" r="1"/>' +
+  '<path class="d-tail" d="M36 47.2 34 52.5M36 47.2 38 52.5"/><path class="d-red" d="M36 47.2 32.4 45.2 32.6 49.4ZM36 47.2 39.6 45.2 39.4 49.4Z"/></svg>';
+
+/** Decorations stand where the path keeps to this fraction of the width or more (the land is on the left). */
+const DECOR_MIN_X = 0.65;
+
+/** The December decorations in band `band` (`lo..hi` of its levels on the track), as HTML: empty out of season. */
+function festiveDecor(band: number, id: string, first: number, last: number, lo: number, hi: number, top: number, place: (at: number) => string): string {
+  if (!mapDecorOn(dailyKey(state.clock), config as unknown as FestiveConfig)) return '';
+  let html = '';
+  decorSpots(first, last, pathX, DECOR_MIN_X).forEach((lv, slot) => {
+    if (lv - 1 < lo || lv > hi) return;
+    // Between stone `lv - 1` and `lv`, where the path is far over to the right.
+    html += `<span class="decor" aria-hidden="true" style="top:${yOf(lv) + geo.pitch / 2 - top}px">${DECOR[festiveDecorFor(band, slot)]}</span>`;
+  });
+  if (id === 'lighthouse') for (const at of SCENERY.lighthouse.landAt ?? []) html += `<span class="motif motif-land decor-wreath" aria-hidden="true" style="${place(at)}">${WREATH}</span>`;
+  return html;
+}
 
 /** The x position of a stone, as a fraction of the track width: a gentle wave. */
 function pathX(level: number): number {
@@ -175,6 +231,7 @@ function makeBand(band: number): HTMLElement {
   let html = '';
   for (const at of art.landAt ?? []) if (bottom - at * full - top > -40) html += `<span class="motif motif-land" style="${place(at)}">${art.land}</span>`;
   for (const at of art.seaAt ?? []) if (bottom - at * full - top > -40) html += `<span class="motif motif-sea" style="${place(at)}">${art.sea}</span>`;
+  html += festiveDecor(band, b.id, b.first, b.last, lo, hi, top, place);
   // The band's first stone sits just above the band line, beside the label: put the label on the other side.
   const side = pathX(lo) < 0.5 ? ' band-name-right' : '';
   html += `<span class="band-name${side}">${t.map.scenery[b.id] ?? ''}</span>`;
@@ -207,6 +264,74 @@ function drawPath(lo: number, hi: number): void {
   pathSvg.setAttribute('width', String(width));
   pathSvg.setAttribute('height', String(geo.height));
   pathSvg.innerHTML = `<path class="path-edge" d="${done}${ahead}"/><path class="path-done" d="${done}"/><path class="path-ahead" d="${ahead}"/>`;
+  drawLights(from, to, width);
+}
+
+/** One bulb (sprint 31 art pass): a glass drop hanging from its socket at the wire, 6.6 px across. */
+const BULB =
+  '<path class="bulb-glass" d="M-1.8 2.2C-3.3 3.8-3.4 6.6-1.9 8.9-1.2 10-.5 10.6 0 10.8.5 10.6 1.2 10 1.9 8.9 3.4 6.6 3.3 3.8 1.8 2.2Z"/>' +
+  '<ellipse class="bulb-shine" cx="-1.1" cy="5.4" rx=".7" ry="1.5"/><rect class="bulb-cap" x="-1.8" y="-.6" width="3.6" height="3.2" rx=".8"/>';
+/** How far a bulb hangs below the wire, px (BULB's tip), so the lights keep it clear of stones and their marks. */
+const BULB_DROP = 11;
+/** Each bulb colour's glow: a soft radial fade, under the bulb. */
+const GLOWS = `<defs>${[0, 1, 2, 3]
+  .map((k) => `<radialGradient id="map-glow-${k}"><stop offset="0" style="stop-color:var(--bulb-${k});stop-opacity:.95"/><stop offset=".4" style="stop-color:var(--bulb-${k});stop-opacity:.5"/><stop offset="1" style="stop-color:var(--bulb-${k});stop-opacity:0"/></radialGradient>`)
+  .join('')}</defs>`;
+
+/**
+ * The boxes of stones `from..to` and their marks (tags, lock, Perfect), track px, for the lights to keep
+ * clear of: each as drawn, so a large next stone (and its ring) or large text keeps its own clearance.
+ */
+function stoneBoxes(from: number, to: number): Box[] {
+  const t0 = trackEl.getBoundingClientRect();
+  const boxes: Box[] = [];
+  const add = (el: Element, pad: number) => {
+    const r = el.getBoundingClientRect();
+    boxes.push([r.left - t0.left - pad, r.top - t0.top - pad, r.right - t0.left + pad, r.bottom - t0.top + pad]);
+  };
+  for (let lv = from; lv <= to; lv++) {
+    const el = stones.get(lv);
+    if (!el) continue;
+    add(el, el.classList.contains('stone-next') ? 8 : 3);
+    for (const m of el.querySelectorAll('.stone-tags, .stone-lock, .stone-mark')) add(m, 3);
+  }
+  return boxes;
+}
+
+/**
+ * The December lights through stones `from..to` (§2.4): from `festive.from` to `festive.to` (UTC), a
+ * drooping wire beside the path with a hanging bulb every 21 px, kept clear of every stone and its marks. Each bulb glows and fades out of phase with its neighbours; under
+ * reduced motion they stay still.
+ */
+function drawLights(from: number, to: number, width: number): void {
+  if (!mapLightsOn(dailyKey(state.clock), config as unknown as FestiveConfig) || to <= from) {
+    if (lightsSvg.firstChild) lightsSvg.replaceChildren();
+    return;
+  }
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  // The circle keeps stones not in the DOM clear; the boxes fit the drawn ones closely, so the string runs long.
+  const gap = Math.max(30, 1.9 * rem);
+  const pt = (lv: number) => [pathX(lv) * width, yOf(lv)] as const;
+  const avoid = stoneBoxes(from, to);
+  const now = performance.now() / 1000;
+  let wire = '';
+  let bulbs = '';
+  for (let lv = from + 1; lv <= to; lv++) {
+    const run = lightRun(pt(lv - 1), pt(lv), gap, 21, 15, BULB_DROP, avoid);
+    if (run.wire.length > 1) wire += sagWire([run.wire[0], ...run.bulbs, run.wire[run.wire.length - 1]], 2.5);
+    run.bulbs.forEach(([x, y], k) => {
+      const n = lv * 3 + k;
+      const delay = -(((now + n * 1.7) % TWINKLE_S) + TWINKLE_S) % TWINKLE_S;
+      const tilt = ((n % 3) - 1) * 12; // hung by hand: a little this way and that
+      bulbs +=
+        `<g class="bulb bulb-${n % 4}" style="animation-delay:${delay.toFixed(2)}s" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${tilt})">` +
+        `<circle class="bulb-halo" cy="6.5" r="12" fill="url(#map-glow-${n % 4})"/>${BULB}</g>`;
+    });
+  }
+  lightsSvg.setAttribute('width', String(width));
+  lightsSvg.setAttribute('height', String(geo.height));
+  lightsSvg.classList.toggle('still', reducedMotion());
+  lightsSvg.innerHTML = `${GLOWS}<path class="light-wire" d="${wire}"/>${bulbs}`;
 }
 
 /**
@@ -427,7 +552,7 @@ export function onStoneCardKey(e: KeyboardEvent): void {
 
 /** Wires the map: stone taps, the Play and back buttons, the tap card, scrolling and resizing. */
 export function wireMap(): void {
-  trackEl.append(pathSvg);
+  trackEl.append(pathSvg, lightsSvg);
   trackEl.addEventListener('click', (e) => {
     const el = (e.target as HTMLElement).closest<HTMLButtonElement>('.stone');
     if (el) onStone(el);

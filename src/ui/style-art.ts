@@ -362,3 +362,41 @@ export function applyStyleAttrs(el: HTMLElement, worn: WornStyles): void {
   el.dataset.cork = worn.cork;
   el.dataset.sand = worn.sand;
 }
+
+/**
+ * The Holly cap's sprig (sprint 31, D239, jar-styles.md §3.6): two pointed, scalloped holly leaves and
+ * three round berries, in a 32 × 14 box. One drawing for both boards: `hollySprigSvg()` is the CSS art
+ * (style.css `--cork-sprig`, checked by tests/unit/ui/festive.test.ts) and board-gpu/mech-art.ts draws
+ * the same paths on the Realistic canvas. The holly reads by shape (spiky leaves, round berries), not
+ * by colour alone, and a pale outline keeps it readable on dark scenes.
+ */
+export const HOLLY = {
+  box: [32, 14] as const,
+  /** One leaf, pointing right from its stem at the origin, 14 long. */
+  leaf: 'M0 0Q0.8-2.4 3.5-3.3Q5.4-1.9 7.5-3.6Q9-1.8 11.3-2.6Q12-0.9 14 0Q12 0.9 11.3 2.6Q9 1.8 7.5 3.6Q5.4 1.9 3.5 3.3Q0.8 2.4 0 0Z',
+  /** The leaf's vein. */
+  vein: 'M1 0H12.5',
+  /** Each leaf's stem position and turn (degrees, clockwise): one up-left, one up-right. */
+  leaves: [[15, 9, 200], [17, 9, -20]] as const,
+  /** The berries' centres, and their radius. */
+  berries: [[13.8, 9.6], [18.2, 9.6], [16, 6.6]] as const,
+  berryR: 2.2,
+  colours: { leaf: '#1f6e3c', vein: '#a8d8a0', berry: '#c62832', outline: '#fff8ea', shine: '#ffffff' },
+} as const;
+
+/** The holly sprig as a standalone SVG document (single quotes, so it drops into a CSS `url("…")`). */
+export function hollySprigSvg(): string {
+  const c = HOLLY.colours;
+  const leaves = HOLLY.leaves
+    .map(([x, y, a]) => `<g transform='translate(${x} ${y}) rotate(${a})'><path d='${HOLLY.leaf}' fill='${c.leaf}' stroke='${c.outline}' stroke-width='0.7' stroke-linejoin='round'/><path d='${HOLLY.vein}' stroke='${c.vein}' stroke-width='0.5' stroke-linecap='round'/></g>`)
+    .join('');
+  const berries = HOLLY.berries
+    .map(([x, y]) => `<circle cx='${x}' cy='${y}' r='${HOLLY.berryR}' fill='${c.berry}' stroke='${c.outline}' stroke-width='0.7'/><circle cx='${x - 0.7}' cy='${y - 0.7}' r='0.6' fill='${c.shine}' fill-opacity='0.8'/>`)
+    .join('');
+  return `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${HOLLY.box[0]} ${HOLLY.box[1]}'>${leaves}${berries}</svg>`;
+}
+
+/** An SVG document as a CSS `url("data:…")`, escaping only what a data URL in CSS needs. */
+export function svgCssUrl(svg: string): string {
+  return `url("data:image/svg+xml,${svg.replace(/%/g, '%25').replace(/#/g, '%23').replace(/</g, '%3C').replace(/>/g, '%3E')}")`;
+}

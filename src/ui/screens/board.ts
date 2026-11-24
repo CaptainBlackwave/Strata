@@ -3,7 +3,8 @@ import { type Versus, versusOnStart } from '../logic/challenge';
 import { type Board, canPour, isClosed, isSealed, pourRefusal, sieveLostColor, sunriseLostColor, sunsetLostColor } from '../../core/board';
 import { generateDaily, utcDateKey } from '../../core/daily';
 import { generateWeekly, parseWeek } from '../../core/weekly';
-import { type EventsConfig, eventById, generateEventBoard } from '../../core/events';
+import { type EventsConfig, eventById, generateEventBoard, isFestiveBoard } from '../../core/events';
+import { eventBoardHeader } from '../logic/event-card';
 import { type GameConfig } from '../../core/levels';
 import { type BoosterId, isFreeBooster, spendBooster } from '../../core/economy';
 import { type BoosterArm, type RestartArm, BOOSTER_IDLE, RESTART_IDLE, stepBooster, stepRestart } from '../logic/arm';
@@ -37,6 +38,7 @@ import { boosterHintOnStart } from './onboarding';
 import { openWeekly, weeklyThemeName } from './sheets/weekly';
 import { openEvent } from './sheets/event';
 import { winterSnow } from '../winter';
+import { newTideSparkles } from '../sparkles';
 import { ANIM, audio, config, shuffleSeed, state } from '../state';
 
 /** How long Restart waits for its confirming second tap (ms): presentation only (F6). */
@@ -70,6 +72,7 @@ export function startDaily(): void {
   closeLayer(homeEl, false);
   state.mode = 'daily';
   winterSnow('off', null);
+  newTideSparkles('board', false);
   state.dailyDate = utcDateKey(state.clock()); // TD-16: the app clock
   const gen = generateDaily(state.dailyDate, config);
   state.dailyName = gen.spec.name;
@@ -92,6 +95,7 @@ export function startWeekly(week: string, index: number): void {
   closeLayer(homeEl, false);
   state.mode = 'weekly';
   winterSnow('off', null);
+  newTideSparkles('board', false);
   state.weeklyWeek = week;
   state.weeklyIndex = index;
   const gen = generateWeekly(week, index, config);
@@ -116,13 +120,17 @@ export function startEvent(id: string, year: number, n: number): void {
   closeLayer(homeEl, false);
   state.mode = 'event';
   winterSnow('event', id); // sprint 18 W1: the snow follows onto Winter Tide's boards
+  newTideSparkles('board', id === 'newtide'); // sprint 31 (D240): New Tide's sparkles, like the snow
   state.eventId = id;
   state.eventYear = year;
   state.eventBoard = n;
   const gen = generateEventBoard(event, year, n, config as unknown as GameConfig);
-  beginSession(gen.board, gen.spec.challenge);
-  levelLabel.textContent = t.event.label(t.event.names[id] ?? id, n);
-  challengeTag.hidden = true;
+  beginSession(gen.board, gen.spec.challenge, isFestiveBoard(event, n)); // board 25's holly-capped look (D237)
+  // Like the weekly: the board in the label, the event's name in the tag, so it fits at 412px (sprint 31 C2).
+  const header = eventBoardHeader(event, id, n); // "Christmas Day" on board 25 (D237)
+  levelLabel.textContent = header.label;
+  challengeTag.textContent = header.tag;
+  challengeTag.hidden = false;
   coach(null);
   introduce(specMechanics(gen.spec)); // none: event boards have no special jars (D144)
 }
@@ -140,6 +148,7 @@ export function play(): void {
 export function startTutorial(): void {
   state.mode = 'tutorial';
   winterSnow('off', null);
+  newTideSparkles('board', false);
   beginSession(tutorialBoard(config), false);
   levelLabel.textContent = t.level(1);
   challengeTag.hidden = true;
@@ -159,6 +168,7 @@ export function startTutorial(): void {
 export function startLevel(n: number, quiet = false, replay = false, versus: Versus | null = null): void {
   state.mode = 'level';
   winterSnow('off', null);
+  newTideSparkles('board', false);
   state.replay = replay;
   state.level = n;
   state.versus = versusOnStart(n, versus); // a challenge lasts only for the start it came with
@@ -227,7 +237,8 @@ function workerChannel<Req, Res>(): { post(req: Req): void; onMessage: ((res: Re
  */
 let shownBoard: Board | null = null;
 
-export function beginSession(board: Board, isChallenge: boolean): void {
+/** Starts a play session on `board`. `festive` puts Winter Tide's Christmas Day look on `#board` (sprint 31, D237). */
+export function beginSession(board: Board, isChallenge: boolean, festive = false): void {
   cancelAssists(); // a reply for the old level must not land on the new one (TD-13)
   // One place builds the options, so the shuffle's total budget (F7, GA-SB-4) is always passed.
   state.session = new GameSession(board, sessionOptions(config));
@@ -242,6 +253,7 @@ export function beginSession(board: Board, isChallenge: boolean): void {
   hideStuckBanner(false);
   disarmRestart();
   document.body.dataset.challenge = String(isChallenge);
+  boardEl.classList.toggle('festive-board', festive); // Winter Tide's Christmas Day board only (sprint 31, D237); before the jars are built
   buildJars();
   updateHud();
 }

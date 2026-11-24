@@ -11,7 +11,7 @@ export type StyleAction = 'wearing' | 'wear' | 'buy' | 'need' | 'earned' | 'clos
 
 /**
  * The action for piece `slot:id`: `wearing` (already worn; no button), `wear` (owned or a default),
- * `buy` (affordable), `need` (not enough coins), `earned` (a streak-only or event-prize piece not granted yet: no
+ * `buy` (affordable), `need` (not enough coins), `earned` (a streak-only, event-prize or gift piece not granted yet: no
  * Buy, sprint 16), or `closed` (unknown, or the shop is not open yet).
  * Example: `styleAction(save.styles, save.wallet.coins, save.level, 'glass', 'seaglass', config)`.
  */
@@ -20,7 +20,7 @@ export function styleAction(state: StyleState, coins: number, level: number, slo
   if (!piece) return 'closed';
   if (state.worn[slot] === id) return 'wearing';
   if (isStyleOwned(state, slot, id, config)) return 'wear';
-  if (piece.earned !== undefined || piece.event !== undefined) return 'earned';
+  if (piece.earned !== undefined || piece.event !== undefined || piece.gift !== undefined) return 'earned'; // a gift piece is never sold either (D239)
   if (!stylesOpen(level, state, config)) return 'closed';
   return coins >= piece.price ? 'buy' : 'need';
 }
@@ -34,10 +34,11 @@ export function stylesNewDue(o: Onboarding, open: boolean): boolean {
 }
 
 /**
- * The lock line of a piece that is never sold (sprint 16, sprint 17): "Streak reward · day 30" for a
- * streak piece, "Winter Tide prize · December" for an event prize (its first month), or '' for a piece
- * sold for coins. `events` gives each event's first day as `MM-DD`.
- * Example: `lockText('glass', 'frost', config, config.events)`.
+ * The lock line of a piece that is never sold (sprint 16, sprint 17, sprint 31): "Streak reward · day 30"
+ * for a streak piece, "Winter Tide prize · December" for an event prize (its first month, or its
+ * `t.event.season` word: "New Tide prize · New Year"), "Christmas Day gift · 25 December" for a gift
+ * piece (its `gifts[]` date in the config), or '' for a piece sold for coins. `events` gives each
+ * event's first day as `MM-DD`. Example: `lockText('glass', 'frost', config, config.events)`.
  */
 export function lockText(slot: StyleSlot, id: string, config: StylesConfig, events: readonly { readonly id: string; readonly from: string }[] = []): string {
   const piece = config.styles.slots[slot]?.find((p) => p.id === id);
@@ -45,8 +46,13 @@ export function lockText(slot: StyleSlot, id: string, config: StylesConfig, even
   if (piece.earned !== undefined) return t.track.locked(piece.earned);
   if (piece.event !== undefined) {
     const from = events.find((e) => e.id === piece.event)?.from;
-    const month = from ? (t.event.months[Number(from.slice(0, 2)) - 1] ?? '') : '';
+    const month = t.event.season[piece.event] ?? (from ? (t.event.months[Number(from.slice(0, 2)) - 1] ?? '') : '');
     return t.event.lockedPiece(t.event.names[piece.event] ?? piece.event, month);
+  }
+  if (piece.gift !== undefined) {
+    const gifts = (config as StylesConfig & { readonly gifts?: readonly { readonly id: string; readonly date: string }[] }).gifts ?? [];
+    const date = gifts.find((g) => g.id === piece.gift)?.date ?? '12-25';
+    return t.gift.lockedPiece(Number(date.slice(3)), t.event.months[Number(date.slice(0, 2)) - 1] ?? '');
   }
   return '';
 }

@@ -14,16 +14,21 @@ import { type HomeTab, landingTab } from '../logic/home-tabs';
 import { scenesNewDue } from '../logic/onboarding';
 import { whatsNewReleases } from '../logic/whats-new';
 import { type FocusTarget } from '../layers';
-import { writeSave } from '../storage';
+import { whatsNewDue, writeSave } from '../storage';
 import { type WhatsNewRelease, t } from '../strings';
 import { $, closeLayer, homeEl, layers, openLayer, winEl } from '../dom';
 import { screenIn } from '../fx';
 import { renderProfileChip } from './sheets/profile';
 import { maybeShowInstall } from './onboarding';
 import { renderWeeklyCard } from './sheets/weekly';
-import { renderEventCard } from './sheets/event';
+import { openEvent, renderEventCard } from './sheets/event';
 import { winterSnow } from '../winter';
-import { activeEvent, type EventsConfig } from '../../core/events';
+import { newTideSparkles } from '../sparkles';
+import { activeEvent, type EventsConfig, startCardDue } from '../../core/events';
+import { type GiftsConfig, applyGift, dueGift, giveGift } from '../../core/gifts';
+import { type HomeNotice, homeNotice } from '../logic/event-card';
+import { type StyleSlot } from '../../core/styles';
+import { styleSwatchEl } from './sheets/styles';
 import { EVENT_MUSIC } from '../music';
 import { applyStyles, renderStylesButton } from './sheets/styles';
 import { dailyKey } from '../clock';
@@ -39,6 +44,7 @@ import { renderHero } from './home-hero';
 export function showHome(tab?: HomeTab): void {
   const arriving = !layers.has(homeEl);
   closeLayer(winEl, false);
+  const notice = prepareNotice(dailyKey(state.clock)); // sprint 31: the gift is granted here, before the coins show
   const done = state.save.tutorialDone;
   $('home-coins').textContent = String(state.save.wallet.coins);
   $('btn-play').textContent = t.playTutorial;
@@ -78,9 +84,78 @@ export function showHome(tab?: HomeTab): void {
   openLayer(homeEl, shown === 'play' ? $('btn-play') : $(`home-tab-${shown}`), null);
   renderHero(); // sprint 20 H2: the live sand scene, or its still
   winterSnow('home', running); // sprint 18 W1: light snow behind Home while Winter Tide runs
+  newTideSparkles('home', running === 'newtide'); // sprint 31 (D240): a few sparkles while New Tide runs
+  $('home-garland').hidden = running !== 'wintertide'; // sprint 31 (D241): the garland while Winter Tide runs
+  if (notice) queueNotice(notice);
   if (arriving) screenIn(homeEl); // a short cross-fade over the board (sprint 10 F5)
   maybeShowInstall(); // after the 5th clear, at most twice, a week apart (O1, A1 D179)
   applyUpdateIfSafe(); // A3: the update bar for a release that took over while away, or the silent fallback
+}
+
+/** A Home card waiting to open, and the one open now (sprint 31). */
+let pendingNotice: HomeNotice | null = null;
+let noticeShown: HomeNotice | null = null;
+
+/**
+ * The one card Home shows now (events.md §3.9-§3.10, D238, D242), after the tutorial: the Christmas
+ * gift first, else an event's start card. A due gift is granted and saved here, when the card is
+ * due, so closing the app before tapping still keeps it; a start card the gift displaced is marked
+ * seen for its year. A start card is marked seen when it opens ({@link showPendingNotice}).
+ */
+function prepareNotice(today: string): HomeNotice | null {
+  const due = state.save.tutorialDone ? dueGift(today, (config as unknown as Partial<GiftsConfig>).gifts, state.save.gifts) : null;
+  const start = startCardDue(today, config as unknown as EventsConfig, state.save.startCards);
+  const plan = homeNotice(state.save.tutorialDone, due?.gift.id ?? null, start ? { id: start.event.id, year: start.year } : null);
+  if (!plan.show) return null;
+  if (due && plan.show.kind === 'gift') {
+    const grant = giveGift(due.gift, due.year, state.save.gifts, state.save.styles.owned);
+    state.save = applyGift(state.save, grant);
+    giftPiece = grant.style;
+  }
+  if (plan.markSeen) state.save.startCards = { ...state.save.startCards, [plan.markSeen.id]: plan.markSeen.year };
+  if (plan.show.kind === 'gift' || plan.markSeen) writeSave(state.save);
+  return plan.show;
+}
+
+/** The jar piece the last gift granted (`slot:id`), or null when it was already owned (coins and hint only). */
+let giftPiece: string | null = null;
+
+/** Opens `notice` once Home is on top, after anything opened over it on arrival (What's new, a shared link). */
+function queueNotice(notice: HomeNotice): void {
+  pendingNotice = notice;
+  window.setTimeout(showPendingNotice, 0);
+}
+
+/** Opens the waiting card when Home is on top and What's new is not due. A start card counts as seen once shown. */
+function showPendingNotice(): void {
+  const notice = pendingNotice;
+  if (!notice || layers.top() !== homeEl || whatsNewDue(state.save)) return;
+  pendingNotice = null;
+  noticeShown = notice;
+  const art = $('notice-art');
+  const later = $('btn-notice-later');
+  if (notice.kind === 'gift') {
+    const words = notice.id === 'christmas' ? t.gift.christmas : { title: '', text: '' };
+    $('notice-title').textContent = words.title;
+    $('notice-text').textContent = giftPiece ? words.text : (t.gift.owned[notice.id] ?? words.text);
+    $('btn-notice-ok').textContent = t.gift.claim;
+    later.hidden = true;
+    const [slot, id] = (giftPiece ?? '').split(':') as [StyleSlot, string];
+    art.replaceChildren(...(giftPiece ? [styleSwatchEl(slot, id)] : []));
+    art.hidden = !giftPiece;
+    audio.play('unlock');
+  } else {
+    const words = t.event.start[notice.id] ?? { title: t.event.names[notice.id] ?? notice.id, text: '' };
+    $('notice-title').textContent = words.title;
+    $('notice-text').textContent = words.text;
+    $('btn-notice-ok').textContent = t.event.startPlay;
+    later.hidden = false;
+    art.replaceChildren();
+    art.hidden = true;
+    state.save.startCards = { ...state.save.startCards, [notice.id]: notice.year }; // shown counts as seen (D242)
+    writeSave(state.save);
+  }
+  openLayer($('home-notice'), $('btn-notice-ok'), $('btn-play'));
 }
 
 /** Names for the streak track's words, from the config: frames, plates and scenes by id. */
@@ -194,10 +269,23 @@ export function openWhatsNew(opener: FocusTarget | null = document.activeElement
   openLayer($('whatsnew'), $('btn-whatsnew-ok'), opener);
 }
 
-/** Wires the What's new card's buttons and Home's tabs. */
+/** Wires the What's new card's buttons, the gift and start card, and Home's tabs. */
 export function wireHome(): void {
   $('btn-whatsnew').addEventListener('click', () => openWhatsNew(undefined, true)); // Settings: the whole changelog
   $('btn-me-whatsnew').addEventListener('click', () => openWhatsNew($('btn-me-whatsnew'), true)); // the Profile tab
-  $('btn-whatsnew-ok').addEventListener('click', () => closeLayer($('whatsnew')));
+  $('btn-whatsnew-ok').addEventListener('click', () => {
+    closeLayer($('whatsnew'));
+    showPendingNotice(); // a gift or start card waiting behind What's new (one card at a time)
+  });
+  $('btn-notice-later').addEventListener('click', () => closeLayer($('home-notice')));
+  $('btn-notice-ok').addEventListener('click', () => {
+    const shown = noticeShown;
+    closeLayer($('home-notice'), shown?.kind !== 'start');
+    if (shown?.kind === 'start') {
+      audio.unlock();
+      audio.play('select');
+      openEvent($('btn-play')); // Play: the event's chooser (D242)
+    }
+  });
   wireHomeTabs(realisticAvailable);
 }

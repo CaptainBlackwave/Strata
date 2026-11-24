@@ -103,9 +103,13 @@
     {
       "$comment": "Seasonal events (sprint 17, D141-D147, design/gdd/events.md). Yearly, UTC, MM-DD dates; board n opens on day n (advent, D145); recipes are gentle weekly rows with no special jars (D144); coins after every coinsEvery-th board; prize for all boards, kept for good and earnable again in a later year (D143). NEVER change id or seedSalt once an event has run.",
       "id": "wintertide",
+      "$commentSprint31": "Sprint 31 (D237): runs 1-25 December; board 25 opens on Christmas Day and is a bonus (festiveBoard, the holly-capped look): the prize needs boards 1-24 (prizeBoards). Boards 1-24 are byte-identical to before (the seed is event, year and board). announce: a one-time start card on the first open of the event each year (D242).",
       "from": "12-01",
-      "to": "12-31",
-      "boards": 24,
+      "to": "12-25",
+      "boards": 25,
+      "prizeBoards": 24,
+      "festiveBoard": 25,
+      "announce": true,
       "seedSalt": 7717,
       "recipes": [
         { "colors": 5, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 1 },
@@ -115,8 +119,43 @@
       "coinsEvery": 6,
       "coins": 50,
       "prize": { "style": "glass:frost", "badge": "event-wintertide" }
+    },
+    {
+      "$comment": "Sprint 31 (D240, design/gdd/events.md): the New Year event. 26 December to 6 January (crosses the year end; its year is the year it starts), 12 gentle boards (D144), 50 coins after boards 4, 8 and 12, and for all 12 the Sparkle glass and the New Tide badge. NEVER change seedSalt once it has run.",
+      "id": "newtide",
+      "from": "12-26",
+      "to": "01-06",
+      "boards": 12,
+      "seedSalt": 8191,
+      "announce": true,
+      "recipes": [
+        { "colors": 5, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 1 },
+        { "colors": 6, "capacity": 4, "spare": 2, "buriedDepth": 0, "bandLevel": 41 },
+        { "colors": 7, "capacity": 4, "spare": 2, "buriedDepth": 1, "bandLevel": 41 }
+      ],
+      "coinsEvery": 4,
+      "coins": 50,
+      "prize": { "style": "glass:sparkle", "badge": "event-newtide" }
     }
   ],
+  "gifts": [
+    {
+      "$comment": "Sprint 31 (D238, design/gdd/events.md): a one-time gift on the first open on this UTC day each year (MM-DD): coins, boosters and a jar piece that is never sold. The save records the year it was given.",
+      "id": "christmas",
+      "date": "12-25",
+      "coins": 100,
+      "boosters": { "hint": 1 },
+      "style": "cork:holly"
+    }
+  ],
+  "festive": {
+    "$comment": "Sprint 31 (D241): the December look, UTC MM-DD, every year: lights along the level map, small Christmas decorations in the map's scenery (mapDecor: a fir tree, a snowman, presents and a wreath on the lighthouse) and the listed scenes first in the scene picker with a Festive tag (no purchase change). The Home garland shows while Winter Tide runs.",
+    "from": "12-01",
+    "to": "12-31",
+    "mapLights": true,
+    "mapDecor": true,
+    "scenesFirst": ["wintersnow", "winterlights"]
+  },
   "weekly": {
     "$comment": "The weekly set (design/gdd/weekly-set.md, D77, sprint 11 W1). Five boards a week, ISO weeks from Monday 00:00 UTC. Boards borrow the daily's Monday-to-Friday recipes; bandLevel picks the generator.pourBands row that caps each board's length (45, 58, 58, 70, 70 pours; the levels moved from 21 and 41 to 41 and 101 with the gentler curve, D109, so the caps and the boards did not change). One theme a week, rotating: a mechanic on all five boards, or buriedBonus extra buried layers (capped at maxBuried). Single boards pay nothing; clearing all five pays completeBonus once per week (D83: about five level clears, see design/gdd/economy.md). NEVER change seedSalt once released: every player's boards for the current week would change.",
     "seedSalt": 5309,
@@ -941,14 +980,16 @@
         { "id": "cobalt", "price": 2450 },
         { "id": "pearl", "price": 2950 },
         { "id": "sealantern", "price": 0, "earned": 30 },
-        { "id": "frost", "price": 0, "event": "wintertide" }
+        { "id": "frost", "price": 0, "event": "wintertide" },
+        { "id": "sparkle", "price": 0, "event": "newtide" }
       ],
       "cork": [
         { "id": "cork", "price": 0 },
         { "id": "driftwood", "price": 1800 },
         { "id": "rope", "price": 2200 },
         { "id": "scallop", "price": 2600 },
-        { "id": "brass", "price": 3150 }
+        { "id": "brass", "price": 3150 },
+        { "id": "holly", "price": 0, "gift": "christmas" }
       ],
       "sand": [
         { "id": "plain", "price": 0 },

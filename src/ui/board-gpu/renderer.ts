@@ -14,7 +14,7 @@ import { DirtyTracker, jarKey } from './dirty';
 import { type ShelfWood, drawShelf, shelfBox } from './shelf';
 import { type JarGeometry, type Rect, cubicBezier, lipLocal, mouthRow, pourLip, pourSide } from './geometry';
 import { sunBandEdge } from '../logic/sun';
-import { type PillLook, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawIce, drawPadlock, drawPill, drawSieveBand, drawSunBand, padlockBox } from './mech-art';
+import { type PillLook, corkOverhang, drawClamShell, drawCork, drawFunnelMark, drawGlow, drawIce, drawPadlock, drawPill, drawSieveBand, drawSunBand, padlockBox } from './mech-art';
 import { corkDrop, glowAt, liftTarget, mustSnapPour, nopeShake, shuffleHop } from './events';
 import { type PaintLook, type Rgb, cornerMask, paintGrid, paintParticles } from './paint';
 import { type Overlay, PATTERNS, patternOverlay, sandOverlay } from './patterns';
@@ -64,7 +64,7 @@ export interface BoardLook {
   readonly sand: string;
   /** Colour-blind patterns on. */
   readonly patterns: boolean;
-  /** The worn cork piece id (`cork`, `driftwood`, `rope`, `scallop`, `brass`). */
+  /** The worn cork piece id (`cork`, `driftwood`, `rope`, `scallop`, `brass`, `holly`; `holly` on a festive board). */
   readonly cork: string;
   /** The scene's `--glow` and `--glow-core`, as `r, g, b` (the win glow, D73). */
   readonly glow: string;
@@ -922,10 +922,12 @@ export class GpuBoard {
     if (jar.clam !== undefined) v.decor.addChild(this.shellSprite(v));
     if (isSealed(jar, capacity) || (this.opts.corkFull && jar.units.length >= capacity)) {
       // style.css `.cork`: 18% in from each side, --jar-w × 0.18 − 6 px from the top, --jar-w × 0.26 tall.
-      const w = b.w * 0.64;
-      const h = b.w * 0.26;
-      const rest = { x: b.left + b.w * 0.18, y: b.top + b.w * 0.18 - 6, w, h };
+      // A piece that reaches above the cork (the Holly cap's sprig) grows the box upwards (corkOverhang).
       const id = this.look.cork;
+      const over = corkOverhang(id);
+      const w = b.w * 0.64;
+      const h = b.w * 0.26 * (1 + over);
+      const rest = { x: b.left + b.w * 0.18, y: b.top + b.w * 0.18 - 6 - b.w * 0.26 * over, w, h };
       const s = new Sprite(this.tex(`cork|${id}|${w.toFixed(2)}x${h.toFixed(2)}`, (r) => drawCork(id, w, h, r)));
       v.decor.addChild(s);
       v.cork = s;

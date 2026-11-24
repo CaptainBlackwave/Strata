@@ -78,7 +78,7 @@ function watchLayout(): void {
   });
   watch.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
   watch.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
-  watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand'] });
+  watch.observe(boardEl, { attributes: true, attributeFilter: ['data-glass', 'data-sand', 'data-cork'] });
 }
 
 /** Picks the board from the address, the dev flag, the Settings choice and WebGL. */
@@ -137,7 +137,7 @@ export function gpuMotion(): GpuMotion {
  */
 export function lookFor(host: HTMLElement): BoardLook {
   const t = host === boardEl ? (tokens ??= readTokens()) : readTokens(host);
-  return { glass: t.glass, ink: t.ink, sand: host.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: host.dataset.cork ?? 'cork', ...glowTokens() };
+  return { glass: t.glass, ink: t.ink, sand: host.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: corkOf(host), ...glowTokens() };
 }
 
 function load(): Promise<void> {
@@ -205,6 +205,7 @@ function readTokens(host: HTMLElement = boardEl): { glass: GlassLook; ink: strin
     body: read('var(--style-body, var(--glass))', body),
     band: read('var(--style-band, transparent)', 'rgba(0,0,0,0)'),
     rim: read('var(--style-rim, var(--glass))', body),
+    flecks: read('var(--style-flecks, transparent)', 'rgba(0,0,0,0)'),
     shadow: 'rgb(60,44,24)',
     night: NIGHT_SCENES.has(document.body.dataset.theme ?? '') || isDark(read('var(--bg-bottom)', '#f1dfc1')),
   };
@@ -235,7 +236,15 @@ function currentLook(): BoardLook {
   // Read once with the tokens (strata-8j3): getComputedStyle here forced a style recalculation on
   // every jar redraw of a pour. The scene sets --glow on <html>; the observer in watchLayout clears both.
   glow ??= glowTokens();
-  return { glass: tokens.glass, ink: tokens.ink, wood: tokens.wood, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: boardEl.dataset.cork ?? 'cork', ...glow };
+  return { glass: tokens.glass, ink: tokens.ink, wood: tokens.wood, sand: boardEl.dataset.sand ?? 'plain', patterns: state.save.settings.patterns, cork: corkOf(boardEl), ...glow };
+}
+
+/**
+ * The cork the canvas draws in `host`: the worn piece, or the Holly cap on Winter Tide's Christmas Day
+ * board (`#board.festive-board`, sprint 31 D237: a board look only, the worn cork is unchanged).
+ */
+function corkOf(host: HTMLElement): string {
+  return host.classList.contains('festive-board') ? 'holly' : (host.dataset.cork ?? 'cork');
 }
 
 /** The scene's glow colours, cached like `tokens`; `null` until read (and after a scene change). */

@@ -1,0 +1,2285 @@
+{
+ "dates": {
+  "2026-11-30": {
+   "notice": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "home": {
+    "eventCard": false,
+    "title": "",
+    "sub": "",
+    "days": "",
+    "garland": false,
+    "sparkleCanvas": false,
+    "snowing": false,
+    "musicEvent": null,
+    "clock": "2026-11-30T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "map": {
+    "mapShown": true,
+    "svg": true,
+    "children": 0,
+    "bulbs": 0
+   },
+   "scenes": {
+    "first": [
+     {
+      "id": "midday",
+      "name": "Midday",
+      "badges": []
+     },
+     {
+      "id": "dawn",
+      "name": "Dawn",
+      "badges": []
+     },
+     {
+      "id": "sunset",
+      "name": "Sunset",
+      "badges": []
+     },
+     {
+      "id": "moonlit",
+      "name": "Moonlit tide",
+      "badges": []
+     }
+    ],
+    "festiveTags": 0
+   },
+   "save": {
+    "coins": 100,
+    "hint": 3,
+    "events": {},
+    "gifts": {},
+    "startCards": {},
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2026-12-01": {
+   "notice": {
+    "shown": true,
+    "title": "Winter Tide has begun",
+    "text": "A new board every day until Christmas.",
+    "ok": "Play",
+    "later": "Later",
+    "art": {
+     "hidden": true,
+     "html": ""
+    },
+    "focus": "btn-notice-ok"
+   },
+   "saveAtCard": {
+    "wintertide": 2026
+   },
+   "playOpened": {
+    "chooser": true,
+    "notice": false
+   },
+   "chooserFromCard": {
+    "title": "Winter Tide",
+    "sub": "Board 1 open · 0 of 24 cleared · Ends in 24 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board open",
+      "text": "1Open",
+      "label": "Board 1, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board locked",
+      "text": "2Dec 2",
+      "label": "Board 2, opens Dec 2",
+      "disabled": true
+     },
+     {
+      "n": 24,
+      "cls": "event-board locked",
+      "text": "24Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     },
+     {
+      "n": 25,
+      "cls": "event-board locked festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, opens Dec 25, Christmas Day bonus, not needed for the prize",
+      "disabled": true
+     }
+    ]
+   },
+   "home": {
+    "eventCard": true,
+    "title": "Winter Tide",
+    "sub": "0 of 24 cleared",
+    "days": "Ends in 24 days",
+    "garland": true,
+    "sparkleCanvas": false,
+    "snowing": true,
+    "musicEvent": "wintertide",
+    "clock": "2026-12-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "noticeAfterReload": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "map": {
+    "mapShown": true,
+    "svg": true,
+    "children": 35,
+    "bulbs": 34
+   },
+   "scenes": {
+    "first": [
+     {
+      "id": "wintersnow",
+      "name": "Winter snow",
+      "badges": [
+       "Festive",
+       "In season",
+       "Animated"
+      ]
+     },
+     {
+      "id": "winterlights",
+      "name": "Winter lights",
+      "badges": [
+       "Festive",
+       "In season",
+       "Animated"
+      ]
+     },
+     {
+      "id": "midday",
+      "name": "Midday",
+      "badges": []
+     },
+     {
+      "id": "dawn",
+      "name": "Dawn",
+      "badges": []
+     }
+    ],
+    "festiveTags": 2
+   },
+   "coinsBefore": 100,
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 1 open · 0 of 24 cleared · Ends in 24 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board open",
+      "text": "1Open",
+      "label": "Board 1, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board locked",
+      "text": "2Dec 2",
+      "label": "Board 2, opens Dec 2",
+      "disabled": true
+     },
+     {
+      "n": 24,
+      "cls": "event-board locked",
+      "text": "24Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     },
+     {
+      "n": 25,
+      "cls": "event-board locked festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, opens Dec 25, Christmas Day bonus, not needed for the prize",
+      "disabled": true
+     }
+    ]
+   },
+   "board": {
+    "label": "Board 1",
+    "tag": "Winter Tide",
+    "ev": [
+     "wintertide",
+     2026,
+     1
+    ],
+    "festiveBoard": false,
+    "corkVar": "",
+    "snowing": true,
+    "sparkleCanvas": false,
+    "jars": 7,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 16,
+     "colors": 5
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 1",
+    "text": "16 pours · 1 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 100,
+    "hint": 3,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1
+      ],
+      "pours": {
+       "1": 16
+      }
+     }
+    },
+    "gifts": {},
+    "startCards": {
+     "wintertide": 2026
+    },
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "sub": "Board 1 open · 1 of 24 cleared · Ends in 24 days"
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2026-12-12": {
+   "notice": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "home": {
+    "eventCard": true,
+    "title": "Winter Tide",
+    "sub": "11 of 24 cleared",
+    "days": "Ends in 13 days",
+    "garland": true,
+    "sparkleCanvas": false,
+    "snowing": true,
+    "musicEvent": "wintertide",
+    "clock": "2026-12-12T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "coinsBefore": 100,
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 12 open · 11 of 24 cleared · Ends in 13 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "cls": "event-board locked",
+      "text": "24Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     },
+     {
+      "n": 25,
+      "cls": "event-board locked festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, opens Dec 25, Christmas Day bonus, not needed for the prize",
+      "disabled": true
+     }
+    ]
+   },
+   "board": {
+    "label": "Board 12",
+    "tag": "Winter Tide",
+    "ev": [
+     "wintertide",
+     2026,
+     12
+    ],
+    "festiveBoard": false,
+    "corkVar": "",
+    "snowing": true,
+    "sparkleCanvas": false,
+    "jars": 9,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 30,
+     "colors": 7
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 12",
+    "text": "1 pour · 12 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 150,
+    "hint": 3,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 1
+      }
+     }
+    },
+    "gifts": {},
+    "startCards": {
+     "wintertide": 2026
+    },
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "sub": "Board 12 open · 12 of 24 cleared · Ends in 13 days"
+   },
+   "chooserAfter": {
+    "title": "Winter Tide",
+    "sub": "Board 12 open · 12 of 24 cleared · Ends in 13 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "cls": "event-board locked",
+      "text": "24Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     },
+     {
+      "n": 25,
+      "cls": "event-board locked festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, opens Dec 25, Christmas Day bonus, not needed for the prize",
+      "disabled": true
+     }
+    ]
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2026-12-24": {
+   "notice": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "coinsBefore": 100,
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 24 open · 23 of 24 cleared · Ends tomorrow",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "cls": "event-board open",
+      "text": "24Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 25,
+      "cls": "event-board locked festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, opens Dec 25, Christmas Day bonus, not needed for the prize",
+      "disabled": true
+     }
+    ]
+   },
+   "board": {
+    "label": "Board 24",
+    "tag": "Winter Tide",
+    "ev": [
+     "wintertide",
+     2026,
+     24
+    ],
+    "festiveBoard": false,
+    "corkVar": "",
+    "snowing": true,
+    "sparkleCanvas": false,
+    "jars": 9,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 29,
+     "colors": 7
+    }
+   },
+   "win": {
+    "title": "Winter Tide complete!",
+    "text": "1 pour · 24 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "unlocks": [
+     "win-shell win-unlock win-prize: Frost jar glass is yours",
+     "win-shell win-unlock win-badge: New badges: Winter Tide, First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 150,
+    "hint": 3,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 1
+      }
+     }
+    },
+    "gifts": {},
+    "startCards": {
+     "wintertide": 2026
+    },
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "event-wintertide",
+     "first-seal"
+    ],
+    "owned": [
+     "glass:frost"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2026-12-25": {
+   "notice": {
+    "shown": true,
+    "title": "A Christmas gift",
+    "text": "The Holly cap for your jars, 100 coins and a hint. Merry Christmas!",
+    "ok": "Open",
+    "later": "Later",
+    "art": {
+     "hidden": false,
+     "html": "<span class=\"style-preview style-swatch\" aria-hidden=\"true\" data-glass=\"clear\" data-cork=\"holly\" data-sand=\"plain\"><span"
+    },
+    "focus": "btn-notice-ok"
+   },
+   "saveAtCard": {
+    "coins": 200,
+    "hint": 4,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 54
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2026
+    },
+    "startCards": {
+     "wintertide": 2026
+    },
+    "badges": [
+     "event-wintertide",
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4"
+    ],
+    "owned": [
+     "glass:frost",
+     "cork:holly"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "afterClaim": {
+    "notice": false,
+    "chooser": false
+   },
+   "home": {
+    "eventCard": true,
+    "title": "Winter Tide",
+    "sub": "All cleared ✓",
+    "days": "Last day",
+    "garland": true,
+    "sparkleCanvas": false,
+    "snowing": true,
+    "musicEvent": "wintertide",
+    "clock": "2026-12-25T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "noticeAfterReload": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "saveAfterReload": {
+    "coins": 200,
+    "hint": 4,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 54
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2026
+    },
+    "startCards": {
+     "wintertide": 2026
+    },
+    "badges": [
+     "event-wintertide",
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4"
+    ],
+    "owned": [
+     "glass:frost",
+     "cork:holly"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "All 25 boards open · All cleared ✓ · Last day",
+    "prize": "Prize collected",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "cls": "event-board cleared",
+      "text": "24✓ 54",
+      "label": "Board 24, cleared, best 54 pours",
+      "disabled": false
+     },
+     {
+      "n": 25,
+      "cls": "event-board open festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, not cleared yet, Christmas Day bonus, not needed for the prize",
+      "disabled": false
+     }
+    ]
+   },
+   "coinsBefore25": 200,
+   "board": {
+    "label": "Christmas Day",
+    "tag": "Winter Tide",
+    "ev": [
+     "wintertide",
+     2026,
+     25
+    ],
+    "festiveBoard": true,
+    "corkVar": "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000",
+    "snowing": true,
+    "sparkleCanvas": false,
+    "jars": 7,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 20,
+     "colors": 5
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Christmas Day",
+    "text": "1 pour · 24 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 200,
+    "hint": 4,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24,
+       25
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 54,
+       "25": 1
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2026
+    },
+    "startCards": {
+     "wintertide": 2026
+    },
+    "badges": [
+     "event-wintertide",
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [
+     "glass:frost",
+     "cork:holly"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "sub": "All 25 boards open · All cleared ✓ · Last day"
+   },
+   "chooserAfter": {
+    "title": "Winter Tide",
+    "sub": "All 25 boards open · All cleared ✓ · Last day",
+    "prize": "Prize collected",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "cls": "event-board cleared",
+      "text": "24✓ 54",
+      "label": "Board 24, cleared, best 54 pours",
+      "disabled": false
+     },
+     {
+      "n": 25,
+      "cls": "event-board cleared festive",
+      "text": "25✓ 1",
+      "label": "Board 25, cleared, best 1 pour, Christmas Day bonus, not needed for the prize",
+      "disabled": false
+     }
+    ]
+   },
+   "homeAfter": {
+    "eventCard": true,
+    "title": "Winter Tide",
+    "sub": "All cleared ✓",
+    "days": "Last day",
+    "garland": true,
+    "sparkleCanvas": false,
+    "snowing": true,
+    "musicEvent": "wintertide",
+    "clock": "2026-12-25T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "holly": {
+    "found": true,
+    "text": "Holly capOwned"
+   },
+   "hollyAction": {
+    "hidden": false,
+    "text": "Wear Holly cap",
+    "disabled": false
+   },
+   "wornAfterWear": {
+    "glass": "clear",
+    "cork": "holly",
+    "sand": "plain"
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2026-12-26": {
+   "notice": {
+    "shown": true,
+    "title": "New Tide is here",
+    "text": "12 boards to start the year.",
+    "ok": "Play",
+    "later": "Later",
+    "art": {
+     "hidden": true,
+     "html": ""
+    },
+    "focus": "btn-notice-ok"
+   },
+   "home": {
+    "eventCard": true,
+    "title": "New Tide",
+    "sub": "0 of 12 cleared",
+    "days": "Ends in 11 days",
+    "garland": false,
+    "sparkleCanvas": true,
+    "snowing": false,
+    "musicEvent": "newtide",
+    "clock": "2026-12-26T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "map": {
+    "mapShown": true,
+    "svg": true,
+    "children": 35,
+    "bulbs": 34
+   },
+   "scenes": {
+    "first": [
+     {
+      "id": "wintersnow",
+      "name": "Winter snow",
+      "badges": [
+       "Festive",
+       "In season",
+       "Animated"
+      ]
+     },
+     {
+      "id": "winterlights",
+      "name": "Winter lights",
+      "badges": [
+       "Festive",
+       "In season",
+       "Animated"
+      ]
+     },
+     {
+      "id": "midday",
+      "name": "Midday",
+      "badges": []
+     },
+     {
+      "id": "dawn",
+      "name": "Dawn",
+      "badges": []
+     }
+    ],
+    "festiveTags": 2
+   },
+   "coinsBefore": 100,
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "New Tide",
+    "sub": "Board 1 open · 0 of 12 cleared · Ends in 11 days",
+    "prize": "Clear all 12 for the Sparkle jar glass and the New Tide badge",
+    "tiles": 12,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board open",
+      "text": "1Open",
+      "label": "Board 1, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board locked",
+      "text": "2Dec 27",
+      "label": "Board 2, opens Dec 27",
+      "disabled": true
+     },
+     {
+      "n": 11,
+      "cls": "event-board locked",
+      "text": "11Jan 5",
+      "label": "Board 11, opens Jan 5",
+      "disabled": true
+     },
+     {
+      "n": 12,
+      "cls": "event-board locked",
+      "text": "12Jan 6",
+      "label": "Board 12, opens Jan 6",
+      "disabled": true
+     }
+    ]
+   },
+   "board": {
+    "label": "Board 1",
+    "tag": "New Tide",
+    "ev": [
+     "newtide",
+     2026,
+     1
+    ],
+    "festiveBoard": false,
+    "corkVar": "",
+    "snowing": false,
+    "sparkleCanvas": true,
+    "jars": 7,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 22,
+     "colors": 5
+    }
+   },
+   "win": {
+    "title": "New Tide · Board 1",
+    "text": "1 pour · 1 of 12 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 100,
+    "hint": 3,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 54
+      }
+     },
+     "newtide": {
+      "year": 2026,
+      "cleared": [
+       1
+      ],
+      "pours": {
+       "1": 1
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2026
+    },
+    "startCards": {
+     "wintertide": 2026,
+     "newtide": 2026
+    },
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2027-01-01": {
+   "notice": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "home": {
+    "eventCard": true,
+    "title": "New Tide",
+    "sub": "6 of 12 cleared",
+    "days": "Ends in 5 days",
+    "garland": false,
+    "sparkleCanvas": true,
+    "snowing": false,
+    "musicEvent": "newtide",
+    "clock": "2027-01-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "map": {
+    "mapShown": true,
+    "svg": true,
+    "children": 0,
+    "bulbs": 0
+   },
+   "scenes": {
+    "first": [
+     {
+      "id": "midday",
+      "name": "Midday",
+      "badges": []
+     },
+     {
+      "id": "dawn",
+      "name": "Dawn",
+      "badges": []
+     },
+     {
+      "id": "sunset",
+      "name": "Sunset",
+      "badges": []
+     },
+     {
+      "id": "moonlit",
+      "name": "Moonlit tide",
+      "badges": []
+     }
+    ],
+    "festiveTags": 0
+   },
+   "coinsBefore": 100,
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "New Tide",
+    "sub": "Board 7 open · 6 of 12 cleared · Ends in 5 days",
+    "prize": "Clear all 12 for the Sparkle jar glass and the New Tide badge",
+    "tiles": 12,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "cls": "event-board locked",
+      "text": "11Jan 5",
+      "label": "Board 11, opens Jan 5",
+      "disabled": true
+     },
+     {
+      "n": 12,
+      "cls": "event-board locked",
+      "text": "12Jan 6",
+      "label": "Board 12, opens Jan 6",
+      "disabled": true
+     }
+    ]
+   },
+   "board": {
+    "label": "Board 7",
+    "tag": "New Tide",
+    "ev": [
+     "newtide",
+     2026,
+     7
+    ],
+    "festiveBoard": false,
+    "corkVar": "",
+    "snowing": false,
+    "sparkleCanvas": true,
+    "jars": 7,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 18,
+     "colors": 5
+    }
+   },
+   "win": {
+    "title": "New Tide · Board 7",
+    "text": "1 pour · 7 of 12 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 100,
+    "hint": 3,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 54
+      }
+     },
+     "newtide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 1
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2026
+    },
+    "startCards": {
+     "wintertide": 2026,
+     "newtide": 2026
+    },
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2027-01-06": {
+   "notice": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "coinsBefore": 100,
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "New Tide",
+    "sub": "All 12 boards open · 11 of 12 cleared · Last day",
+    "prize": "Clear all 12 for the Sparkle jar glass and the New Tide badge",
+    "tiles": 12,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "cls": "event-board cleared",
+      "text": "11✓ 41",
+      "label": "Board 11, cleared, best 41 pours",
+      "disabled": false
+     },
+     {
+      "n": 12,
+      "cls": "event-board open",
+      "text": "12Open",
+      "label": "Board 12, not cleared yet",
+      "disabled": false
+     }
+    ]
+   },
+   "board": {
+    "label": "Board 12",
+    "tag": "New Tide",
+    "ev": [
+     "newtide",
+     2026,
+     12
+    ],
+    "festiveBoard": false,
+    "corkVar": "",
+    "snowing": false,
+    "sparkleCanvas": true,
+    "jars": 9,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 25,
+     "colors": 7
+    }
+   },
+   "win": {
+    "title": "New Tide complete!",
+    "text": "1 pour · 12 of 12 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "unlocks": [
+     "win-shell win-unlock win-prize: Sparkle jar glass is yours",
+     "win-shell win-unlock win-badge: New badges: New Tide, First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 150,
+    "hint": 3,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 54
+      }
+     },
+     "newtide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 1
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2026
+    },
+    "startCards": {
+     "wintertide": 2026,
+     "newtide": 2026
+    },
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "event-newtide",
+     "first-seal"
+    ],
+    "owned": [
+     "glass:sparkle"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2027-01-07": {
+   "notice": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "home": {
+    "eventCard": false,
+    "title": "",
+    "sub": "",
+    "days": "",
+    "garland": false,
+    "sparkleCanvas": false,
+    "snowing": false,
+    "musicEvent": null,
+    "clock": "2027-01-07T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "map": {
+    "mapShown": true,
+    "svg": true,
+    "children": 0,
+    "bulbs": 0
+   },
+   "scenes": {
+    "first": [
+     {
+      "id": "midday",
+      "name": "Midday",
+      "badges": []
+     },
+     {
+      "id": "dawn",
+      "name": "Dawn",
+      "badges": []
+     },
+     {
+      "id": "sunset",
+      "name": "Sunset",
+      "badges": []
+     },
+     {
+      "id": "moonlit",
+      "name": "Moonlit tide",
+      "badges": []
+     }
+    ],
+    "festiveTags": 0
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2027-12-25": {
+   "notice": {
+    "shown": true,
+    "title": "A Christmas gift",
+    "text": "100 coins and a hint. Merry Christmas!",
+    "ok": "Open",
+    "later": "Later",
+    "art": {
+     "hidden": true,
+     "html": ""
+    },
+    "focus": "btn-notice-ok"
+   },
+   "saveAtCard": {
+    "coins": 200,
+    "hint": 4,
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 54
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2027
+    },
+    "startCards": {
+     "wintertide": 2027,
+     "newtide": 2026
+    },
+    "badges": [
+     "event-wintertide",
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4"
+    ],
+    "owned": [
+     "glass:frost",
+     "cork:holly"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "noticeAfterReload": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "All 25 boards open · 0 of 24 cleared · Last day",
+    "prize": "You already have the prize from an earlier year",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board open",
+      "text": "1Open",
+      "label": "Board 1, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board open",
+      "text": "2Open",
+      "label": "Board 2, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "cls": "event-board open",
+      "text": "24Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 25,
+      "cls": "event-board open festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, not cleared yet, Christmas Day bonus, not needed for the prize",
+      "disabled": false
+     }
+    ]
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2027-12-24-second-year-complete": {
+   "notice": {
+    "shown": false,
+    "title": null,
+    "text": null,
+    "ok": null,
+    "later": null,
+    "art": null,
+    "focus": "btn-play"
+   },
+   "coinsBefore": 100,
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 24 open · 23 of 24 cleared · Ends tomorrow",
+    "prize": "You already have the prize from an earlier year",
+    "tiles": 25,
+    "boards": [
+     {
+      "n": 1,
+      "cls": "event-board cleared",
+      "text": "1✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "cls": "event-board cleared",
+      "text": "2✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "cls": "event-board open",
+      "text": "24Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 25,
+      "cls": "event-board locked festive",
+      "text": "25Christmas Day",
+      "label": "Board 25, opens Dec 25, Christmas Day bonus, not needed for the prize",
+      "disabled": true
+     }
+    ]
+   },
+   "board": {
+    "label": "Board 24",
+    "tag": "Winter Tide",
+    "ev": [
+     "wintertide",
+     2027,
+     24
+    ],
+    "festiveBoard": false,
+    "corkVar": "",
+    "snowing": true,
+    "sparkleCanvas": false,
+    "jars": 9,
+    "labelOverflow": false,
+    "plan": {
+     "solvable": true,
+     "pours": 26,
+     "colors": 7
+    }
+   },
+   "win": {
+    "title": "Winter Tide complete!",
+    "text": "1 pour · 24 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue"
+   },
+   "saveAfter": {
+    "coins": 150,
+    "hint": 3,
+    "events": {
+     "wintertide": {
+      "year": 2027,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 1
+      }
+     }
+    },
+    "gifts": {
+     "christmas": 2026
+    },
+    "startCards": {
+     "wintertide": 2027
+    },
+    "badges": [
+     "event-wintertide",
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [
+     "glass:frost",
+     "cork:holly"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    }
+   },
+   "errors": [],
+   "warnings": []
+  }
+ },
+ "layout": {
+  "2026-12-01": {
+   "notice": {
+    "shown": true,
+    "title": "Winter Tide has begun",
+    "text": "A new board every day until Christmas.",
+    "ok": "Play",
+    "later": "Later",
+    "art": {
+     "hidden": true,
+     "html": ""
+    },
+    "focus": "btn-notice-ok"
+   },
+   "noticeOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": []
+   },
+   "noticeCard": {
+    "left": 16,
+    "right": 304,
+    "top": 153,
+    "bottom": 487,
+    "sh": 329,
+    "ch": 329,
+    "innerH": 640
+   },
+   "homeOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": [
+     "span#.sr-only.coins-sr r=220 sw=65 cw=1 \"coins\"",
+     "div#.hero-sea r=320 sw=616 cw=320 \"\"",
+     "i#.w1 r=616 sw=640 cw=640 \"\"",
+     "i#.w2 r=336 sw=640 cw=640 \"\"",
+     "span#daily-date-sr.sr-only r=90 sw=110 cw=1 \", Tuesday 1\""
+    ]
+   },
+   "eventCardOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": []
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2026-12-25": {
+   "notice": {
+    "shown": true,
+    "title": "A Christmas gift",
+    "text": "The Holly cap for your jars, 100 coins and a hint. Merry Christmas!",
+    "ok": "Open",
+    "later": "Later",
+    "art": {
+     "hidden": false,
+     "html": "<span class=\"style-preview style-swatch\" aria-hidden=\"true\" data-glass=\"clear\" data-cork=\"holly\" data-sand=\"plain\"><span"
+    },
+    "focus": "btn-notice-ok"
+   },
+   "noticeOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": [
+     "span#.glass r=173 sw=24 cw=22 \"\""
+    ]
+   },
+   "noticeCard": {
+    "left": 16,
+    "right": 304,
+    "top": 139,
+    "bottom": 501,
+    "sh": 358,
+    "ch": 358,
+    "innerH": 640
+   },
+   "homeOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": [
+     "span#.sr-only.coins-sr r=220 sw=65 cw=1 \"coins\"",
+     "div#.hero-sea r=320 sw=616 cw=320 \"\"",
+     "i#.w1 r=616 sw=640 cw=640 \"\"",
+     "i#.w2 r=336 sw=640 cw=640 \"\"",
+     "span#daily-date-sr.sr-only r=90 sw=105 cw=1 \", Friday 25\""
+    ]
+   },
+   "eventCardOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": []
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "2026-12-26": {
+   "notice": {
+    "shown": true,
+    "title": "New Tide is here",
+    "text": "12 boards to start the year.",
+    "ok": "Play",
+    "later": "Later",
+    "art": {
+     "hidden": true,
+     "html": ""
+    },
+    "focus": "btn-notice-ok"
+   },
+   "noticeOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": []
+   },
+   "noticeCard": {
+    "left": 16,
+    "right": 304,
+    "top": 171,
+    "bottom": 469,
+    "sh": 293,
+    "ch": 293,
+    "innerH": 640
+   },
+   "homeOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": [
+     "span#.sr-only.coins-sr r=220 sw=65 cw=1 \"coins\"",
+     "div#.hero-sea r=320 sw=617 cw=320 \"\"",
+     "i#.w1 r=617 sw=640 cw=640 \"\"",
+     "i#.w2 r=336 sw=640 cw=640 \"\"",
+     "span#daily-date-sr.sr-only r=90 sw=132 cw=1 \", Saturday 26\""
+    ]
+   },
+   "eventCardOverflow": {
+    "docScrollW": 320,
+    "bodyScrollW": 320,
+    "innerW": 320,
+    "bad": []
+   },
+   "errors": [],
+   "warnings": []
+  }
+ }
+}

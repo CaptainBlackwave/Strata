@@ -33,6 +33,8 @@ import { badgeRow } from './sheets/badges';
 import { shareWeekly } from './sheets/weekly';
 import { styleSwatchEl } from './sheets/styles';
 import { type StyleSlot } from '../../core/styles';
+import { type EventsConfig, eventById, isFestiveBoard } from '../../core/events';
+import { eventWinCount } from '../logic/event-card';
 import { ANIM, audio, config, state } from '../state';
 
 /** Seconds after the win chime that a shell row's sound starts, so the two don't blur (F1, D68). */
@@ -278,13 +280,20 @@ export function winWeekly(): void {
  * An event board's win card (sprint 17, events.md): "Winter Tide · Board 6" (or "Winter Tide complete!"),
  * the pours and the year's progress, a replay or new-best note, the coins every 6th board, and on the
  * last board a prize row for the jar piece above the badge row. No Share (events have no share link yet).
+ * Sprint 31: the prize rows come on the clear that completes the prize boards (Winter Tide's 1-24; core
+ * decides), board 25 reads "Winter Tide · Christmas Day", and New Tide uses the same card (D237, D240).
  */
 export function winEvent(): void {
   const card = applyWinToSave();
   const e = card.event;
   const name = t.event.names[state.eventId] ?? state.eventId;
-  $('win-title').textContent = e?.completedNow ? t.event.completeTitle(name) : t.event.winTitle(name, state.eventBoard);
-  $('win-text').textContent = e ? t.event.winText(card.moves, e.cleared, e.total) : `${card.moves} ${t.poursLabel(card.moves)}`;
+  const event = eventById(state.eventId, config as unknown as EventsConfig);
+  // Sprint 31 (D237): the count is of prize boards ("24 of 24"), so a bonus board never reads "25 of 24".
+  const count = event ? eventWinCount(state.save.events, event, state.eventYear) : e;
+  // Board 25's title is just "Christmas Day": "Winter Tide · Christmas Day" wrapped to three lines at 412px (sprint 31 C6).
+  const title = event && isFestiveBoard(event, state.eventBoard) ? t.event.festiveTile : t.event.winTitle(name, state.eventBoard);
+  $('win-title').textContent = e?.completedNow ? t.event.completeTitle(name) : title; // "Winter Tide · Christmas Day" on board 25
+  $('win-text').textContent = e && count ? t.event.winText(card.moves, count.cleared, count.total) : `${card.moves} ${t.poursLabel(card.moves)}`;
   $('win-note').textContent = !e || e.firstClear ? '' : e.newBest ? t.newBest(card.moves) : t.event.replay;
   btnNext.textContent = t.next;
   renderRewards(card);

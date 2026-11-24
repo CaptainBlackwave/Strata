@@ -16,7 +16,7 @@ import { type ProfileConfig, type Progress, type SlotItem, type Stats, bumpStats
 import { type Goal, type GoalsConfig, type GoalsState, emptyGoals, goalsFor, recordGoals } from './goals';
 import { type TrackConfig, type TrackStep, claimTrack, trackOf } from './streak-track';
 import type { StyleState } from './styles';
-import { type EventsConfig, type EventsState, emptyEventProgress, eventById, recordEventClear } from './events';
+import { type EventsConfig, type EventsState, emptyEventProgress, eventById, prizeBoards, prizeBoardsCleared, recordEventClear } from './events';
 
 /** The slice of the save a win reads and writes. `SaveData` satisfies it structurally. */
 export interface WinState {
@@ -138,16 +138,17 @@ export interface WeeklyCard {
 export interface EventCard {
   readonly id: string;
   readonly board: number;
+  /** Prize boards (1..prizeBoards) cleared this year after this win, and how many there are ("6 of 24"); a bonus board never moves it (D237). */
   readonly cleared: number;
   readonly total: number;
   readonly firstClear: boolean;
   readonly newBest: boolean;
   readonly prevBest: number | undefined;
-  /** Coins this clear paid (every `coinsEvery`-th board). */
+  /** Coins this clear paid (every `coinsEvery`-th prize board). */
   readonly coins: number;
-  /** This clear finished every board: the prize was granted. */
+  /** This clear finished every prize board: the prize was granted (never on a bonus board). */
   readonly completedNow: boolean;
-  /** The prize's jar piece `slot:id`, when `completedNow`. */
+  /** The prize's jar piece `slot:id`, when `completedNow` granted it (absent when it was already owned). */
   readonly prizeStyle?: string;
 }
 
@@ -287,7 +288,7 @@ function winWeekly(s: WinState, result: WinResult, config: WinConfig): WinOutcom
 
 /**
  * An event board (sprint 17, events.md): records the clear and best pours, pays `coins` on every
- * `coinsEvery`-th board, and on the last board grants the prize (a jar piece and a badge, each once
+ * `coinsEvery`-th prize board, and on the clear completing boards 1..prizeBoards grants the prize (a jar piece and a badge, each once
  * and kept for good, D143, D146).
  */
 function winEvent(s: WinState, result: WinResult, config: WinConfig): WinOutcome {
@@ -302,9 +303,14 @@ function winEvent(s: WinState, result: WinResult, config: WinConfig): WinOutcome
   let state: WinState = { ...s, events: { ...(s.events ?? {}), [event.id]: r.state }, stats: bumpStats(s.stats, { pours: result.moves }) };
   if (r.coins > 0) state = earn(state, r.coins);
   const prizeBadges: string[] = [];
+  // The piece the win card names: only when this clear adds it (a later year's completion grants nothing new).
+  let newPiece: string | undefined;
   if (r.completedNow) {
     const { style, badge } = event.prize;
-    if (style && state.styles && !state.styles.owned.includes(style)) state = { ...state, styles: { ...state.styles, owned: [...state.styles.owned, style] } };
+    if (style && state.styles && !state.styles.owned.includes(style)) {
+      state = { ...state, styles: { ...state.styles, owned: [...state.styles.owned, style] } };
+      newPiece = style;
+    }
     if (badge && !state.badges.includes(badge)) {
       state = { ...state, badges: [...state.badges, badge] };
       prizeBadges.push(badge);
@@ -318,7 +324,7 @@ function winEvent(s: WinState, result: WinResult, config: WinConfig): WinOutcome
     reward: r.coins,
     badges: [...prizeBadges, ...f.badges],
     goals: f.goals,
-    event: { id: event.id, board: played.board, cleared: r.state.cleared.length, total: event.boards, firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, coins: r.coins, completedNow: r.completedNow, ...(r.completedNow && event.prize.style ? { prizeStyle: event.prize.style } : {}) },
+    event: { id: event.id, board: played.board, cleared: prizeBoardsCleared(r.state.cleared, event), total: prizeBoards(event), firstClear: r.firstClear, newBest: r.newBest, prevBest: r.prevBest, coins: r.coins, completedNow: r.completedNow, ...(newPiece ? { prizeStyle: newPiece } : {}) },
     unlocks: newlyUnlocked(config, before, progressOfState(state, config)),
   };
   return { state, card };

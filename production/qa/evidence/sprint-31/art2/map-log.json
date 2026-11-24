@@ -1,0 +1,180 @@
+{
+  "2026-12-12-412-light": {
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 15,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-412-dark": {
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 15,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-412-light-lv30": {
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 18,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-412-dark-lv30": {
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 18,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-412-light-lv52": {
+    "decorInView": 1,
+    "decorKinds": [
+      "tree"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 19,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-412-light-lv368": {
+    "decorInView": 2,
+    "decorKinds": [
+      "tree"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 17,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-412-dark-lv368": {
+    "decorInView": 2,
+    "decorKinds": [
+      "tree"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 17,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-412-light-lv88": {
+    "decorInView": 1,
+    "decorKinds": [
+      "snowman"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 17,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-12-12-320-150-light": {
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 5,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 320,
+    "errors": []
+  },
+  "2026-12-12-320-150-light-lv30": {
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 6,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 320,
+    "errors": []
+  },
+  "2026-12-12-412-reduced": {
+    "decorInView": 1,
+    "decorKinds": [
+      "presents"
+    ],
+    "decorHits": 0,
+    "bulbsInView": 15,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": true,
+    "anim": "none",
+    "scrollW": 412,
+    "errors": []
+  },
+  "2026-11-30-412-light": {
+    "decorInView": 0,
+    "decorKinds": [],
+    "decorHits": 0,
+    "bulbsInView": 0,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": null,
+    "scrollW": 412,
+    "errors": []
+  },
+  "2027-01-01-412-light": {
+    "decorInView": 0,
+    "decorKinds": [],
+    "decorHits": 0,
+    "bulbsInView": 0,
+    "bulbHits": 0,
+    "decorAria": true,
+    "still": false,
+    "anim": null,
+    "scrollW": 412,
+    "errors": []
+  }
+}

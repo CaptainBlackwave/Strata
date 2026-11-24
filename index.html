@@ -212,6 +212,17 @@
           </div>
         </div>
       </div>
+      <div id="home-notice" class="cabinet" hidden>
+        <div class="card cabinet-card intro-card notice-card" role="dialog" aria-modal="true" aria-labelledby="notice-title" aria-describedby="notice-text">
+          <span id="notice-art" class="notice-art" aria-hidden="true" hidden></span>
+          <h2 id="notice-title" class="whatsnew-title"></h2>
+          <p id="notice-text" class="install-text"></p>
+          <div class="sheet-row install-actions">
+            <button id="btn-notice-later" data-s="event.startLater" class="secondary" type="button">Later</button>
+            <button id="btn-notice-ok" class="primary" type="button"></button>
+          </div>
+        </div>
+      </div>
       <div id="friend" class="cabinet" hidden>
         <div class="card cabinet-card intro-card" role="dialog" aria-modal="true" aria-labelledby="friend-title" aria-describedby="friend-text">
           <h2 id="friend-title" data-s="friend.title" class="whatsnew-title">A friend's challenge</h2>
@@ -346,6 +357,7 @@
         </div>
       </div>
       <div id="home" class="home" data-tab="play" hidden>
+        <div id="home-garland" class="festive-garland" aria-hidden="true" hidden></div>
         <header class="home-top">
           <button id="btn-profile" class="profile-chip" type="button" hidden aria-label="Profile">
             <span id="profile-chip-art" class="portrait portrait-sm" aria-hidden="true"></span>

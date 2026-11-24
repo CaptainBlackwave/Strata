@@ -33,11 +33,21 @@ export interface EventDef {
   readonly from: string;
   readonly to: string;
   readonly boards: number;
+  /**
+   * How many boards the prize needs: boards 1..prizeBoards (sprint 31, D237). The rest are bonus
+   * boards that pay no coins and never grant the prize. Missing or out of range means `boards`;
+   * read it through {@link prizeBoards}.
+   */
+  readonly prizeBoards?: number;
+  /** The board with the festive look (Winter Tide's Christmas Day board 25, D237). A look only. */
+  readonly festiveBoard?: number;
+  /** A one-time start card on the first open of each event year (D242). */
+  readonly announce?: boolean;
   /** NEVER change once an event has run: every player's boards would change. */
   readonly seedSalt: number;
   /** Board n uses `recipes[(n - 1) % recipes.length]`. */
   readonly recipes: readonly EventRecipe[];
-  /** Coins after every `coinsEvery`-th board cleared that year. */
+  /** Coins after every `coinsEvery`-th prize board (1..prizeBoards) first cleared that year. */
   readonly coinsEvery: number;
   readonly coins: number;
   readonly prize: EventPrize;
@@ -90,6 +100,52 @@ export function openBoards(event: EventDef, day: number): number {
   return Math.max(0, Math.min(event.boards, Math.floor(day)));
 }
 
+/**
+ * How many boards the prize needs (events.md §3.4, D237): `event.prizeBoards` when it is a whole
+ * number from 1 to `boards`, else `boards`. Example: Winter Tide 24, New Tide 12.
+ */
+export function prizeBoards(event: EventDef): number {
+  const p = event.prizeBoards;
+  return Number.isInteger(p) && (p as number) >= 1 && (p as number) <= event.boards ? (p as number) : event.boards;
+}
+
+/** Whether board `n` is the event's festive board (Winter Tide's Christmas Day board 25, D237). */
+export function isFestiveBoard(event: EventDef, n: number): boolean {
+  return event.festiveBoard !== undefined && Number.isInteger(n) && n === event.festiveBoard;
+}
+
+/** How many of `cleared` are prize boards (1..prizeBoards): the "9 of 24" count; a bonus board never moves it. */
+export function prizeBoardsCleared(cleared: readonly number[], event: EventDef): number {
+  const p = prizeBoards(event);
+  return cleared.filter((n) => n >= 1 && n <= p).length;
+}
+
+/**
+ * The start card due on `date` (D242, events.md §3.10): the running event with `announce` whose
+ * `seen` year (event id to the event year last shown) is below its year, or null. The UI marks it
+ * seen when shown, and decides the order of Home cards (the gift first on 25 December).
+ * Example: `startCardDue('2026-12-01', config, {})` is Winter Tide 2026.
+ */
+export function startCardDue(date: string, config: EventsConfig, seen: Readonly<Record<string, number>>): { event: EventDef; year: number } | null {
+  const run = activeEvent(date, config);
+  if (!run || run.event.announce !== true) return null;
+  const last = seen[run.event.id];
+  return (typeof last === 'number' && Number.isInteger(last) ? last : 0) < run.year ? { event: run.event, year: run.year } : null;
+}
+
+/**
+ * A saved `startCards` value made safe (event id to the event year its start card was last shown):
+ * unknown events are dropped and a year must be a whole number from 2000.
+ */
+export function repairStartCards(raw: unknown, config: EventsConfig): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+  for (const [id, y] of Object.entries(raw as Record<string, unknown>)) {
+    if (eventById(id, config) && Number.isInteger(y) && (y as number) >= 2000) out[id] = y as number;
+  }
+  return out;
+}
+
 /** An event board's spec, for its intro cards and its pour cap. */
 export interface EventSpec extends LevelSpec {
   readonly event: string;
@@ -136,15 +192,17 @@ export interface EventClearResult {
   readonly firstClear: boolean;
   readonly newBest: boolean;
   readonly prevBest: number | undefined;
-  /** Coins earned by this clear (every `coinsEvery`-th first clear of the year). */
+  /** Coins earned by this clear (every `coinsEvery`-th first clear of a prize board that year). */
   readonly coins: number;
-  /** This clear finished every board of the year. */
+  /** This clear finished every prize board (1..prizeBoards) of the year. Never on a bonus board. */
   readonly completedNow: boolean;
 }
 
 /**
  * Records clearing board `n` of `event` in `year` in `pours`. A different year than the saved one
- * starts fresh. A replay only lowers best pours. Example: the 6th first clear pays `event.coins`.
+ * starts fresh. A replay only lowers best pours. Coins and the prize count only prize boards
+ * (1..prizeBoards): a bonus board (Winter Tide's 25) never pays and never completes the set
+ * (sprint 31, D237, owner direction). Example: the 6th prize board first cleared pays `event.coins`.
  */
 export function recordEventClear(state: EventProgress, event: EventDef, year: number, n: number, pours: number): EventClearResult {
   const base = state.year === year ? state : { year, cleared: [], pours: {} };
@@ -153,8 +211,11 @@ export function recordEventClear(state: EventProgress, event: EventDef, year: nu
   const firstClear = !base.cleared.includes(n);
   const cleared = firstClear ? [...base.cleared, n].sort((a, b) => a - b) : [...base.cleared];
   const best = prevBest === undefined || pours < prevBest ? pours : prevBest;
-  const coins = firstClear && cleared.length % event.coinsEvery === 0 ? event.coins : 0;
-  const completedNow = firstClear && cleared.length === event.boards;
+  const prize = prizeBoards(event);
+  const counted = firstClear && n >= 1 && n <= prize;
+  const done = prizeBoardsCleared(cleared, event);
+  const coins = counted && done % event.coinsEvery === 0 ? event.coins : 0;
+  const completedNow = counted && done === prize;
   return { state: { year, cleared, pours: { ...base.pours, [key]: best } }, firstClear, newBest: prevBest !== undefined && pours < prevBest, prevBest, coins, completedNow };
 }
 

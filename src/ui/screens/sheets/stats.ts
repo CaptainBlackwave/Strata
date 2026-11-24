@@ -4,7 +4,7 @@
  * sent automatically. The text is built by the pure logic/stats-sheet.ts.
  */
 import { streakStatus } from '../../../core/daily';
-import { activeEvent, type EventsConfig } from '../../../core/events';
+import { activeEvent, type EventsConfig, prizeBoards, prizeBoardsCleared } from '../../../core/events';
 import type { GoalsConfig } from '../../../core/goals';
 import { type StatsInput, browserName, statsSections, statsText } from '../../logic/stats-sheet';
 import { dailyKey } from '../../clock';
@@ -30,7 +30,8 @@ function inputNow(): StatsInput {
     goalsDone: s.goals.date === today ? s.goals.done.length : 0,
     goalsTotal: (config as unknown as GoalsConfig).goals.perDay,
     dailySolvedToday: s.daily.last === today,
-    event: run ? { name: t.event.names[run.event.id] ?? run.event.id, cleared: progress && progress.year === run.year ? progress.cleared.length : 0, total: run.event.boards } : null,
+    // Prize boards only: "9 of 24", never counting Winter Tide's bonus board 25 (sprint 31, D237).
+    event: run ? { name: t.event.names[run.event.id] ?? run.event.id, cleared: progress && progress.year === run.year ? prizeBoardsCleared(progress.cleared, run.event) : 0, total: prizeBoards(run.event) } : null,
     coins: s.wallet.coins,
     browser: browserName(navigator.userAgent),
     screen: { width: window.screen.width, height: window.screen.height, ratio: Math.round((window.devicePixelRatio || 1) * 100) / 100 },
