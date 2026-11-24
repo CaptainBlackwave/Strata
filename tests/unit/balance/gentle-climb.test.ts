@@ -14,17 +14,18 @@ const PATIENCE = 150;
 
 /**
  * The share of sampled levels in `from`-`to` (every `step`-th) where the simulated player got stuck.
- * The targets were set (sprint 15) with the player that sees a dark lighthouse jar's colours, so they
- * keep measuring with it (`darkAware: false`); the dark-aware numbers are in
- * production/qa/sprint-30/lighthouse-dark-sim.md (sprint 30 S1, D232). Levels below 321 have no
- * lighthouse jar, so there the two players agree.
+ * The player is dark-aware (owner, 2026-11-24, D234): it sees a dark lighthouse jar's sand as unknown,
+ * as a person does, so the gates measure what a player can see. The targets (sprint 15) are unchanged;
+ * the dark-aware rates are 3-4 points higher in 301-500 and still pass (sprint 30 S1, D232,
+ * production/qa/sprint-30/lighthouse-dark-sim.md). Levels below 321 have no lighthouse jar, so there the
+ * two players agree.
  */
 function stuckRate(from: number, to: number, step: number): number {
   let n = 0;
   let stuck = 0;
   for (let l = from; l <= to; l += step) {
     n++;
-    if (!simPlay(generateLevel(l, cfg).board, PATIENCE, { darkAware: false }).won) stuck++;
+    if (!simPlay(generateLevel(l, cfg).board, PATIENCE, { darkAware: true }).won) stuck++;
   }
   return stuck / n;
 }

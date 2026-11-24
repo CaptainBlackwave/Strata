@@ -218,6 +218,15 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.26.0',
+        name: 'The newer jars come to the daily',
+        lines: [
+          'From Saturday 19 December, the Saturday daily features the newer jars too: wet sand, the tide jar, the crab, the lighthouse jar, and the sunrise and sunset jars.',
+          'From the week of 21 December, five new weekly themes: Rain on the Dunes, High Water, Crab Walk, Night Watch and Dawn to Dusk.',
+          'The win card now says "1 pour" on a one-pour win.',
+        ],
+      },
+      {
         version: '0.25.0',
         name: 'Sunrise and sunset',
         lines: [

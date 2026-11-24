@@ -1,0 +1,301 @@
+{
+  "saturdays": {
+    "daily-2026-12-19-wet-dom-light.png": {
+      "mode": "daily",
+      "today": "2026-12-19T12:00:00.000Z",
+      "label": "Sat, Dec 19",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 3: buried; buried; wet denim, dries in 5 pours; wet sage, dries in 5 pours",
+        "Jar 10: buried; buried; lagoon; wet coral, dries in 5 pours"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2026-12-19-wet-gpu-dark.png": {
+      "mode": "daily",
+      "today": "2026-12-19T12:00:00.000Z",
+      "render": "gpu",
+      "label": "Sat, Dec 19",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 3: buried; buried; wet denim, dries in 5 pours; wet sage, dries in 5 pours",
+        "Jar 10: buried; buried; lagoon; wet coral, dries in 5 pours"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2026-12-26-tide-dom-light.png": {
+      "mode": "daily",
+      "today": "2026-12-26T12:00:00.000Z",
+      "label": "Sat, Dec 26",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 9: plum, cocoa, denim, coral (tide jar, turns in 4 pours)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2026-12-26-tide-gpu-dark.png": {
+      "mode": "daily",
+      "today": "2026-12-26T12:00:00.000Z",
+      "render": "gpu",
+      "label": "Sat, Dec 26",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 9: plum, cocoa, denim, coral (tide jar, turns in 4 pours)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2027-01-02-crab-dom-light.png": {
+      "mode": "daily",
+      "today": "2027-01-02T12:00:00.000Z",
+      "label": "Sat, Jan 2",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 5: buried, buried, coral, lagoon (crab on this jar, moves in 3 pours)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2027-01-02-crab-gpu-dark.png": {
+      "mode": "daily",
+      "today": "2027-01-02T12:00:00.000Z",
+      "render": "gpu",
+      "label": "Sat, Jan 2",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 5: buried, buried, coral, lagoon (crab on this jar, moves in 3 pours)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2027-01-09-lighthouse-dom-light.png": {
+      "mode": "daily",
+      "today": "2027-01-09T12:00:00.000Z",
+      "label": "Sat, Jan 9",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 2: 4 layers (dark, lit in 4 pours)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2027-01-09-lighthouse-gpu-dark.png": {
+      "mode": "daily",
+      "today": "2027-01-09T12:00:00.000Z",
+      "render": "gpu",
+      "label": "Sat, Jan 9",
+      "tag": "Daily · tricky",
+      "jars": 12,
+      "special": [
+        "Jar 2: 4 layers (dark, lit in 4 pours)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2027-01-16-sun-dom-light.png": {
+      "mode": "daily",
+      "today": "2027-01-16T12:00:00.000Z",
+      "label": "Sat, Jan 16",
+      "tag": "Daily · tricky",
+      "jars": 14,
+      "special": [
+        "Jar 13: empty (sunrise jar, denim only, fill it first)",
+        "Jar 14: empty (sunset jar, saffron only, fill it last)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2027-01-16-sun-gpu-dark.png": {
+      "mode": "daily",
+      "today": "2027-01-16T12:00:00.000Z",
+      "render": "gpu",
+      "label": "Sat, Jan 16",
+      "tag": "Daily · tricky",
+      "jars": 14,
+      "special": [
+        "Jar 13: empty (sunrise jar, denim only, fill it first)",
+        "Jar 14: empty (sunset jar, saffron only, fill it last)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    }
+  },
+  "pair320": {
+    "daily-2027-01-16-sun-320-150-dom.png": {
+      "mode": "daily",
+      "today": "2027-01-16T12:00:00.000Z",
+      "label": "Sat, Jan 16",
+      "tag": "Daily · tricky",
+      "jars": 14,
+      "special": [
+        "Jar 13: empty (sunrise jar, denim only, fill it first)",
+        "Jar 14: empty (sunset jar, saffron only, fill it last)"
+      ],
+      "scrollW": 320,
+      "innerW": 320,
+      "introOpen": false,
+      "errors": []
+    },
+    "daily-2027-01-16-sun-320-150-gpu.png": {
+      "mode": "daily",
+      "today": "2027-01-16T12:00:00.000Z",
+      "render": "gpu",
+      "label": "Sat, Jan 16",
+      "tag": "Daily · tricky",
+      "jars": 14,
+      "special": [
+        "Jar 13: empty (sunrise jar, denim only, fill it first)",
+        "Jar 14: empty (sunset jar, saffron only, fill it last)"
+      ],
+      "scrollW": 320,
+      "innerW": 320,
+      "introOpen": false,
+      "errors": []
+    }
+  },
+  "intro": {
+    "seen": [
+      "narrow",
+      "frozen"
+    ],
+    "text": "3\nCrab jar\n\nA crab sits on one jar’s lid. You can pour into that jar, but not out of it. Every third pour on the board the crab walks to the next jar along; the number on it counts the pours left. It never sits on a sealed jar.",
+    "title": "NEW JAR!",
+    "mode": "daily",
+    "today": "2027-01-02T12:00:00.000Z",
+    "label": "Sat, Jan 2",
+    "tag": "Daily · tricky",
+    "jars": 12,
+    "special": [
+      "Jar 5: buried, buried, coral, lagoon (crab on this jar, moves in 3 pours)"
+    ],
+    "scrollW": 412,
+    "innerW": 412,
+    "introOpen": true,
+    "errors": []
+  },
+  "weekly": {
+    "2026-W52": {
+      "sheet": "Week 52 · Rain on the Dunes · 0 of 5 cleared",
+      "card": "WEEKLY SET\nRain on the Dunes\n5 days left\n0 of 5 cleared",
+      "scrollW": 412,
+      "errors": []
+    },
+    "2026-W52-320-150": {
+      "sheet": "Week 52 · Rain on the Dunes · 0 of 5 cleared",
+      "card": "WEEKLY SET\nRain on the Dunes\n5 days left\n0 of 5 cleared",
+      "scrollW": 320,
+      "errors": []
+    },
+    "2026-W53": {
+      "sheet": "Week 53 · High Water · 0 of 5 cleared",
+      "card": "WEEKLY SET\nHigh Water\n5 days left\n0 of 5 cleared",
+      "scrollW": 412,
+      "errors": []
+    },
+    "2026-W53-320-150": {
+      "sheet": "Week 53 · High Water · 0 of 5 cleared",
+      "card": "WEEKLY SET\nHigh Water\n5 days left\n0 of 5 cleared",
+      "scrollW": 320,
+      "errors": []
+    },
+    "2027-W01": {
+      "sheet": "Week 1 · Crab Walk · 0 of 5 cleared",
+      "card": "WEEKLY SET\nCrab Walk\n5 days left\n0 of 5 cleared",
+      "scrollW": 412,
+      "errors": []
+    },
+    "2027-W01-320-150": {
+      "sheet": "Week 1 · Crab Walk · 0 of 5 cleared",
+      "card": "WEEKLY SET\nCrab Walk\n5 days left\n0 of 5 cleared",
+      "scrollW": 320,
+      "errors": []
+    },
+    "2027-W02": {
+      "sheet": "Week 2 · Night Watch · 0 of 5 cleared",
+      "card": "WEEKLY SET\nNight Watch\n5 days left\n0 of 5 cleared",
+      "scrollW": 412,
+      "errors": []
+    },
+    "2027-W02-320-150": {
+      "sheet": "Week 2 · Night Watch · 0 of 5 cleared",
+      "card": "WEEKLY SET\nNight Watch\n5 days left\n0 of 5 cleared",
+      "scrollW": 320,
+      "errors": []
+    },
+    "2027-W03": {
+      "sheet": "Week 3 · Dawn to Dusk · 0 of 5 cleared",
+      "card": "WEEKLY SET\nDawn to Dusk\n5 days left\n0 of 5 cleared",
+      "scrollW": 412,
+      "errors": []
+    },
+    "2027-W03-320-150": {
+      "sheet": "Week 3 · Dawn to Dusk · 0 of 5 cleared",
+      "card": "WEEKLY SET\nDawn to Dusk\n5 days left\n0 of 5 cleared",
+      "scrollW": 320,
+      "errors": []
+    }
+  },
+  "weeklyBoard": {
+    "weekly-board-2027-W03-dawn-to-dusk-dom-light.png": {
+      "mode": "weekly",
+      "today": "2027-01-20T12:00:00.000Z",
+      "label": "Week 3 · Board 1",
+      "tag": "Dawn to Dusk",
+      "jars": 9,
+      "special": [
+        "Jar 8: empty (sunrise jar, coral only, fill it first)",
+        "Jar 9: empty (sunset jar, saffron only, fill it last)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    },
+    "weekly-board-2027-W03-dawn-to-dusk-gpu-dark.png": {
+      "mode": "weekly",
+      "today": "2027-01-20T12:00:00.000Z",
+      "render": "gpu",
+      "label": "Week 3 · Board 1",
+      "tag": "Dawn to Dusk",
+      "jars": 9,
+      "special": [
+        "Jar 8: empty (sunrise jar, coral only, fill it first)",
+        "Jar 9: empty (sunset jar, saffron only, fill it last)"
+      ],
+      "scrollW": 412,
+      "innerW": 412,
+      "introOpen": false,
+      "errors": []
+    }
+  }
+}

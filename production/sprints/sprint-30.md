@@ -1,6 +1,6 @@
 # Sprint 30: The new jars come to the daily and weekly (0.26.0)
 
-> **Status: planned (2026-11-24).** From the owner's interview on the open Beads items on 2026-11-24 (Beads `strata-qym`, `strata-m4f`; decisions D228–D233). Design: `design/gdd/daily-puzzle.md` §2.1, `design/gdd/weekly-set.md` §3.3, `design/gdd/jar-mechanics.md` §2.7–§2.11. Evidence: `production/qa/evidence/sprint-30/`. Target: **0.26.0**.
+> **Status: built (2026-11-24); awaiting the owner's look at the screenshots before release (R1).** Evidence: `production/qa/evidence/sprint-30/`. From the owner's interview on the open Beads items on 2026-11-24 (Beads `strata-qym`, `strata-m4f`; decisions D228–D233). Design: `design/gdd/daily-puzzle.md` §2.1, `design/gdd/weekly-set.md` §3.3, `design/gdd/jar-mechanics.md` §2.7–§2.11. Evidence: `production/qa/evidence/sprint-30/`. Target: **0.26.0**.
 
 ## Why
 Five mechanics only appear on numbered levels so far: wet sand (201), the tide jar (241), the crab (281), the lighthouse jar (321) and the sunrise and sunset jars (361). The Saturday daily and the weekly themes still use only the four classic jars, the hourglass, the sieve and the clam. The owner chose to bring all five newer mechanics into both (D228). The sprint also fixes a known gap in the balance numbers: the simulated player can see a dark lighthouse jar's colours (D232).
@@ -63,6 +63,7 @@ Five mechanics only appear on numbered levels so far: wet sand (201), the tide j
 - D231: seasonal event boards stay plain (D144 kept).
 - D232: the balance simulator becomes dark-aware for the lighthouse; report only.
 - D233: one sprint, released as 0.26.0 with screenshots sent before release.
+- D234: the stuck-rate gates use the dark-aware simulated player; the lighthouse is left as it is for 0.26.0 (S1 report), with a later look at what it is stacked with.
 
 ## Out of scope
 - Combining two featured mechanics on one Saturday or one weekly board.
