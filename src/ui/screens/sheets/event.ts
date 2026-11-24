@@ -1,5 +1,6 @@
 /**
  * A seasonal event's Home card and its chooser of boards (sprint 17, D141-D147; design/gdd/events.md).
+ * Sprint 31: Winter Tide's Christmas Day tile and note (D237) and New Tide's chooser (D240).
  * The rules are the pure core/events.ts; the words and states are logic/event-card.ts.
  */
 import { type EventsConfig } from '../../../core/events';
@@ -44,7 +45,7 @@ export function openEvent(opener: FocusTarget | null = document.activeElement as
     const li = document.createElement('li');
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = `event-board ${b.state}`;
+    btn.className = `event-board ${b.state}${b.festive ? ' festive' : ''}`; // Christmas Day (D237): set apart as a bonus
     btn.dataset.board = String(b.n);
     btn.setAttribute('aria-label', b.label);
     btn.innerHTML = '<b aria-hidden="true"></b><span aria-hidden="true"></span>';
@@ -63,7 +64,24 @@ export function openEvent(opener: FocusTarget | null = document.activeElement as
     return li;
   });
   $('event-boards').replaceChildren(...items);
+  festiveNote(v.note);
   openLayer($('event'), items[v.focus - 1]?.querySelector('button') ?? null, opener);
+}
+
+/**
+ * The bonus board's note under the tiles (D237: "A Christmas Day bonus board, not needed for the
+ * prize"), made once after the list and hidden for an event without a festive board.
+ */
+function festiveNote(text: string): void {
+  let note = document.getElementById('event-note');
+  if (!note) {
+    note = document.createElement('p');
+    note.id = 'event-note';
+    note.className = 'event-note soft small';
+    $('event-boards').after(note);
+  }
+  note.textContent = text;
+  note.hidden = !text;
 }
 
 /** Wires Home's card and the chooser's Close. */
