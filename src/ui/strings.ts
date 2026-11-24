@@ -1029,7 +1029,8 @@ const en = {
     /** The festive tile's spoken name: its usual label, then the bonus note. */
     festiveTileLabel: (label: string) => `${label}, Christmas Day bonus, not needed for the prize`,
     /** The chooser's line with a bonus board (D237): boards open of all, prize boards cleared, e.g. "Board 12 open · 9 of 24 cleared". */
-    cardLine: (open: number, boards: number, cleared: number, total: number) => `${open >= boards ? `All ${boards} boards open` : `Board ${open} open`} \u00b7 ${cleared >= total ? 'All cleared \u2713' : `${cleared} of ${total} cleared`}`,
+    // "All 24 cleared" names the prize boards, so an open bonus board doesn't contradict it (sprint 31 C6).
+    cardLine: (open: number, boards: number, cleared: number, total: number) => `${open >= boards ? `All ${boards} boards open` : `Board ${open} open`} \u00b7 ${cleared >= total ? `All ${total} cleared \u2713` : `${cleared} of ${total} cleared`}`,
     /** An event prize's lock line season when its first month misleads (New Tide runs mostly in January), by event id. */
     season: { newtide: 'New Year' } as Readonly<Record<string, string>>,
     /** Sprint 31 (D242): the one-time start card on the first open of an event each year, by event id. */
@@ -1043,7 +1044,7 @@ const en = {
   /** Sprint 31 (D238): the one-time gifts (`gifts` in game-config.json), by gift id. */
   gift: {
     christmas: { title: 'A Christmas gift', text: 'The Holly cap for your jars, 100 coins and a hint. Merry Christmas!' },
-    claim: 'Open',
+    claim: 'Thank you', // the gift is already given when its card shows (sprint 31 C6)
     /** The gift card when the Holly cap is already owned (a later year): only the coins and the hint, by gift id. */
     owned: { christmas: '100 coins and a hint. Merry Christmas!' } as Readonly<Record<string, string>>,
     /** A jar piece that is a gift, in the Jar styles sheet, e.g. "Christmas Day gift · 25 December". */

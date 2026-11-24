@@ -50,7 +50,7 @@ describe('eventView: Winter Tide', () => {
     expect(eventView({ wintertide: { year: 2026, cleared: [25], pours: { '25': 20 } } }, [], '2026-12-25', cfg)!.cleared).toBe(0);
     const all = Array.from({ length: 24 }, (_, i) => i + 1);
     const v = eventView({ wintertide: { year: 2026, cleared: all, pours: {} } }, [], '2026-12-25', cfg)!;
-    expect(v.sub).toBe('All 25 boards open · All cleared ✓');
+    expect(v.sub).toBe('All 25 boards open · All 24 cleared ✓'); // sprint 31 C6: names the prize boards
     expect(v.focus).toBe(25);
   });
   it('progress from last year does not count; with the badge owned the prize line says it is already yours', () => {

@@ -34,7 +34,7 @@ import { shareWeekly } from './sheets/weekly';
 import { styleSwatchEl } from './sheets/styles';
 import { type StyleSlot } from '../../core/styles';
 import { type EventsConfig, eventById, isFestiveBoard } from '../../core/events';
-import { eventBoardLabel, eventWinCount } from '../logic/event-card';
+import { eventWinCount } from '../logic/event-card';
 import { ANIM, audio, config, state } from '../state';
 
 /** Seconds after the win chime that a shell row's sound starts, so the two don't blur (F1, D68). */
@@ -290,7 +290,8 @@ export function winEvent(): void {
   const event = eventById(state.eventId, config as unknown as EventsConfig);
   // Sprint 31 (D237): the count is of prize boards ("24 of 24"), so a bonus board never reads "25 of 24".
   const count = event ? eventWinCount(state.save.events, event, state.eventYear) : e;
-  const title = event && isFestiveBoard(event, state.eventBoard) ? eventBoardLabel(event, state.eventId, state.eventBoard) : t.event.winTitle(name, state.eventBoard);
+  // Board 25's title is just "Christmas Day": "Winter Tide · Christmas Day" wrapped to three lines at 412px (sprint 31 C6).
+  const title = event && isFestiveBoard(event, state.eventBoard) ? t.event.festiveTile : t.event.winTitle(name, state.eventBoard);
   $('win-title').textContent = e?.completedNow ? t.event.completeTitle(name) : title; // "Winter Tide · Christmas Day" on board 25
   $('win-text').textContent = e && count ? t.event.winText(card.moves, count.cleared, count.total) : `${card.moves} ${t.poursLabel(card.moves)}`;
   $('win-note').textContent = !e || e.firstClear ? '' : e.newBest ? t.newBest(card.moves) : t.event.replay;
