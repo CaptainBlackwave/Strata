@@ -1,0 +1,239 @@
+{
+  "holly-cap-dom-light": {
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "holly-cap-gpu-dark": {
+    "render": "gpu",
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-dom-light": {
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-gpu-dark": {
+    "render": "gpu",
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "styles-sheet-locked-light": {
+    "rows": {
+      "sparkle": "Sparkle\nNew Tide prize · New Year",
+      "holly": "Holly cap\nChristmas Day gift · 25 December"
+    },
+    "errors": []
+  },
+  "styles-sheet-locked-dark": {
+    "rows": {
+      "sparkle": "Sparkle\nNew Tide prize · New Year",
+      "holly": "Holly cap\nChristmas Day gift · 25 December"
+    },
+    "errors": []
+  },
+  "styles-sheet-owned-light": {
+    "rows": {
+      "sparkle": "Sparkle\nWearing",
+      "holly": "Holly cap\nWearing"
+    },
+    "errors": []
+  },
+  "styles-sheet-owned-dark": {
+    "rows": {
+      "sparkle": "Sparkle\nWearing",
+      "holly": "Holly cap\nWearing"
+    },
+    "errors": []
+  },
+  "board25-dom-light": {
+    "tile": "Board 25, not cleared yet, Christmas Day bonus, not needed for the prize",
+    "real": {
+      "cork": "cork",
+      "festive": true,
+      "sealed": 0,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "sealed": {
+      "cork": "cork",
+      "festive": true,
+      "sealed": 4,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "errors": []
+  },
+  "board25-gpu-dark": {
+    "tile": "Board 25, not cleared yet, Christmas Day bonus, not needed for the prize",
+    "real": {
+      "render": "gpu",
+      "cork": "cork",
+      "festive": true,
+      "sealed": 0,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "sealed": {
+      "render": "gpu",
+      "cork": "cork",
+      "festive": true,
+      "sealed": 4,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "errors": []
+  },
+  "map-412": {
+    "bulbsInView": 19,
+    "stonesInView": 7,
+    "bulbsTouchingStones": 0,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "map-320-150": {
+    "bulbsInView": 8,
+    "stonesInView": 8,
+    "bulbsTouchingStones": 0,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 320,
+    "errors": []
+  },
+  "map-412-reduced": {
+    "bulbsInView": 19,
+    "stonesInView": 7,
+    "bulbsTouchingStones": 0,
+    "still": true,
+    "anim": "none",
+    "scrollW": 412,
+    "errors": []
+  },
+  "map-412-dark": {
+    "bulbsInView": 19,
+    "stonesInView": 7,
+    "bulbsTouchingStones": 0,
+    "still": false,
+    "anim": "bulb-twinkle",
+    "scrollW": 412,
+    "errors": []
+  },
+  "home-garland-412-light": {
+    "shown": true,
+    "rect": [
+      0,
+      73,
+      412,
+      14
+    ],
+    "hits": [],
+    "scrollW": 412,
+    "errors": []
+  },
+  "home-garland-412-dark": {
+    "shown": true,
+    "rect": [
+      0,
+      73,
+      412,
+      14
+    ],
+    "hits": [],
+    "scrollW": 412,
+    "errors": []
+  },
+  "home-garland-320-150-light": {
+    "shown": true,
+    "rect": [
+      0,
+      69,
+      320,
+      14
+    ],
+    "hits": [],
+    "scrollW": 320,
+    "errors": []
+  },
+  "home-garland-320-150-dark": {
+    "shown": true,
+    "rect": [
+      0,
+      69,
+      320,
+      14
+    ],
+    "hits": [],
+    "scrollW": 320,
+    "errors": []
+  },
+  "home-newtide-2026-12-27-light": {
+    "canvases": 1,
+    "garland": false,
+    "errors": []
+  },
+  "home-newtide-2026-12-27-dark": {
+    "canvases": 1,
+    "garland": false,
+    "errors": []
+  },
+  "home-newtide-2026-12-27-light-reduced": {
+    "canvases": 0,
+    "garland": false,
+    "errors": []
+  },
+  "notice-gift-2026-12-25-412-light": {
+    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "errors": []
+  },
+  "notice-gift-2026-12-25-320-150-light": {
+    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "errors": []
+  },
+  "notice-gift-2026-12-25-412-dark": {
+    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "errors": []
+  },
+  "notice-start-2026-12-01-412-light": {
+    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "errors": []
+  },
+  "notice-start-2026-12-01-320-150-light": {
+    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "errors": []
+  },
+  "notice-start-2026-12-01-412-dark": {
+    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "errors": []
+  },
+  "scenes-light": {
+    "festive": [
+      "Winter snow | Festive | In season | Animated | Owned",
+      "Winter lights | Festive | In season | Animated | Owned"
+    ],
+    "errors": []
+  },
+  "scenes-dark": {
+    "festive": [
+      "Winter snow | Festive | In season | Animated | Owned",
+      "Winter lights | Festive | In season | Animated | Owned"
+    ],
+    "errors": []
+  }
+}
