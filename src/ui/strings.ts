@@ -1006,7 +1006,7 @@ const en = {
     title: 'Weekly set',
     /** Theme names by `weekly.themes[].id` and `weekly.themesFrom[].themes[].id` in game-config.json (§3.3). */
     // The hourglass, sieve and clam themes join from 2026-W49 (`weekly.themesFrom`, sprint 13 W1, D98).
-    themes: { narrow: 'Narrow Necks', frozen: 'Cold Snap', locked: 'Lock and Key', funnel: 'Funnel Week', deep: 'Deep Sand', hourglass: 'Turning Tides', sieve: 'Fine Sieve', clam: 'Clam Bay' } as Readonly<Record<string, string>>,
+    themes: { narrow: 'Narrow Necks', frozen: 'Cold Snap', locked: 'Lock and Key', funnel: 'Funnel Week', deep: 'Deep Sand', hourglass: 'Turning Tides', sieve: 'Fine Sieve', clam: 'Clam Bay', wet: 'Rain on the Dunes', tide: 'High Water', crab: 'Crab Walk', lighthouse: 'Night Watch', sun: 'Dawn to Dusk' } as Readonly<Record<string, string>>,
     progress: (cleared: number, total: number) => (cleared >= total ? 'Set complete \u2713' : `${cleared} of ${total} cleared`),
     daysLeft: (n: number) => (n <= 1 ? 'Last day' : `${n} days left`),
     /** The chooser's line under its heading, e.g. "Week 46 · Lock and Key · 2 of 5 cleared". */
