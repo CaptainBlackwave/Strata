@@ -7,6 +7,7 @@
  */
 import { PATTERNS } from './patterns';
 import { SUN_BOX, SUN_PATHS, SUN_STROKE } from '../logic/sun';
+import { HOLLY } from '../style-art';
 
 function canvas(w: number, h: number, res: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
   const c = document.createElement('canvas');
@@ -322,14 +323,75 @@ export function drawClamShell(width: number, height: number, w: number, night: b
 }
 
 /** The cork pieces (config `styles.slots.cork`), as style.css draws them on a sealed jar. */
-export type CorkId = 'cork' | 'driftwood' | 'rope' | 'scallop' | 'brass';
+export type CorkId = 'cork' | 'driftwood' | 'rope' | 'scallop' | 'brass' | 'holly';
+
+/**
+ * How far a cork piece's art reaches above the cork, as a fraction of the cork's height: the Holly
+ * cap's sprig stands half a cork above it (style.css `.cork::after`, top −50%); every other piece, 0.
+ * The renderer grows the cork's box by this much upwards and passes the whole box to `drawCork`.
+ */
+export function corkOverhang(id: string): number {
+  return id === 'holly' ? 0.5 : 0;
+}
+
+/** The Holly cap's sprig (style-art.ts `HOLLY`, the CSS art's own paths) in the box `x, y, w, h`. */
+function drawHolly(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
+  const [bw, bh] = HOLLY.box;
+  const s = Math.min(w / bw, h / bh);
+  const c = HOLLY.colours;
+  g.save();
+  g.translate(x + (w - bw * s) / 2, y + (h - bh * s) / 2);
+  g.scale(s, s);
+  const leaf = new Path2D(HOLLY.leaf);
+  const vein = new Path2D(HOLLY.vein);
+  for (const [lx, ly, a] of HOLLY.leaves) {
+    g.save();
+    g.translate(lx, ly);
+    g.rotate((a * Math.PI) / 180);
+    g.fillStyle = c.leaf;
+    g.fill(leaf);
+    g.strokeStyle = c.outline;
+    g.lineWidth = 0.7;
+    g.lineJoin = 'round';
+    g.stroke(leaf);
+    g.strokeStyle = c.vein;
+    g.lineWidth = 0.5;
+    g.lineCap = 'round';
+    g.stroke(vein);
+    g.restore();
+  }
+  for (const [bx, by] of HOLLY.berries) {
+    g.beginPath();
+    g.arc(bx, by, HOLLY.berryR, 0, Math.PI * 2);
+    g.fillStyle = c.berry;
+    g.fill();
+    g.strokeStyle = c.outline;
+    g.lineWidth = 0.7;
+    g.stroke();
+    g.beginPath();
+    g.arc(bx - 0.7, by - 0.7, 0.6, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(255,255,255,0.8)';
+    g.fill();
+  }
+  g.restore();
+}
 
 /**
  * A sealed jar's cork (`.cork` and the `[data-cork]` pieces in style.css), `w` × `h` CSS px:
  * the plain cork, grey driftwood with its grain and knot, cork bound with rope, a scallop shell,
- * or a brass cap. The edge is drawn inside the box, as the DOM's 2 px border.
+ * or a brass cap. The edge is drawn inside the box, as the DOM's 2 px border. The Holly cap (sprint 31,
+ * D239) is the plain cork with its sprig: there `h` is the whole box, `corkOverhang('holly')` of it above
+ * the cork, and the sprig stands over the cork's top edge as the DOM's `.cork::after` does.
  */
 export function drawCork(id: string, w: number, h: number, res: number): HTMLCanvasElement {
+  if (id === 'holly') {
+    const over = corkOverhang(id);
+    const ch = h / (1 + over);
+    const [hc, hg] = canvas(w, h, res);
+    hg.drawImage(drawCork('cork', w, ch, res), 0, h - ch, w, ch);
+    drawHolly(hg, w * 0.04, 0, w * 0.92, ch);
+    return hc;
+  }
   const [c, g] = canvas(w, h, res);
   const piece = (['cork', 'driftwood', 'rope', 'scallop', 'brass'] as const).find((x) => x === id) ?? 'cork';
   const shape = () => {

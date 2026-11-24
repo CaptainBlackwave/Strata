@@ -38,8 +38,9 @@ describe('Frost glass (glass:frost)', () => {
 describe('Winter Tide badge (event-wintertide)', () => {
   const bcfg = config as unknown as BadgeConfig & EventBadgeConfig;
   it('is an event prize badge, kept by the save repair', () => {
-    expect(eventBadgeIds(bcfg)).toEqual(['event-wintertide']);
+    expect(eventBadgeIds(bcfg)).toEqual(['event-wintertide', 'event-newtide']); // New Tide's badge from sprint 31 (D240)
     expect(repairBadges(['event-wintertide', 'event-nope', 'first-seal'], bcfg)).toEqual(['event-wintertide', 'first-seal']);
+    expect(repairBadges(['event-newtide'], bcfg)).toEqual(['event-newtide']);
   });
   it('is never awarded by a badge rule, however much progress there is', () => {
     const huge = { levels: 1e6, jarsSealed: 1e6, pours: 1e6, perfectClears: 1e6, tallPerfect: 1e6, shells: 1e6, sets: 1e6, scenesOwned: 1e6, scenesPlayed: 1e6, ownedScenesPlayed: 1e6, mechanicsSeen: 1e6, dailiesSolved: 1e6, bestStreak: 1e6 };

@@ -9,23 +9,25 @@ const cfg = raw as unknown as GameConfig & EventsConfig;
 const winter = eventById('wintertide', cfg)!;
 
 describe('activeEvent', () => {
-  it('runs Winter Tide from 1 to 31 December, every year', () => {
+  it('runs Winter Tide from 1 to 25 December, every year (D237)', () => {
     expect(activeEvent('2026-12-01', cfg)).toEqual({ event: winter, year: 2026, day: 1 });
-    expect(activeEvent('2026-12-31', cfg)?.day).toBe(31);
+    expect(activeEvent('2026-12-25', cfg)).toEqual({ event: winter, year: 2026, day: 25 });
     expect(activeEvent('2027-12-12', cfg)).toEqual({ event: winter, year: 2027, day: 12 });
   });
-  it('is null outside the dates', () => {
+  it('is null outside the dates, and New Tide follows it from 26 December (D240)', () => {
     expect(activeEvent('2026-11-30', cfg)).toBeNull();
-    expect(activeEvent('2027-01-01', cfg)).toBeNull();
+    expect(activeEvent('2026-12-26', cfg)?.event.id).toBe('newtide');
+    expect(activeEvent('2027-01-07', cfg)).toBeNull();
   });
 });
 
 describe('openBoards', () => {
-  it('opens board n on day n, up to 24, and keeps them open to the end', () => {
+  it('opens board n on day n, up to 25, and keeps them open to the end', () => {
     expect(openBoards(winter, 1)).toBe(1);
     expect(openBoards(winter, 12)).toBe(12);
     expect(openBoards(winter, 24)).toBe(24);
-    expect(openBoards(winter, 31)).toBe(24);
+    expect(openBoards(winter, 25)).toBe(25);
+    expect(openBoards(winter, 31)).toBe(25);
   });
 });
 
@@ -64,7 +66,7 @@ describe('recordEventClear', () => {
     expect(again.coins).toBe(0);
     expect(again.state.pours['3']).toBe(25);
   });
-  it('completes on the last board and says so once', () => {
+  it('completes on the last prize board (24) and says so once', () => {
     let s = emptyEventProgress();
     let done = 0;
     for (let n = 1; n <= winter.boards; n++) {
@@ -74,6 +76,7 @@ describe('recordEventClear', () => {
     }
     expect(done).toBe(1);
     expect(recordEventClear(s, winter, 2026, 1, 10).completedNow).toBe(false);
+    expect(recordEventClear(s, winter, 2026, 25, 10).completedNow).toBe(false);
   });
   it('a new year starts fresh', () => {
     const last = recordEventClear(emptyEventProgress(), winter, 2026, 1, 20).state;

@@ -37,7 +37,12 @@ async function open(browser, { date, time = '09:00:00', width = 412, height = 86
   page.on('pageerror', (e) => errors.push(`pageerror: ${e}`));
   page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`console.${m.type()}: ${m.text()}`); });
   await page.goto(`${BASE}/?board=dom`);
-  await page.waitForFunction(() => document.getElementById('home') && !document.getElementById('home').hidden, null, { timeout: 30000 });
+  const homeUp = await page.waitForFunction(() => document.getElementById('home') && !document.getElementById('home').hidden, null, { timeout: 20000 }).then(() => true).catch(() => false);
+  if (!homeUp) {
+    // Record what the page shows instead of Home (a boot failure at this size, an overlay, ...).
+    errors.push(`home not shown: ${JSON.stringify(await page.evaluate(() => ({ visible: [...document.querySelectorAll('body > *, #app > *')].filter((e) => !e.hidden && e.getClientRects().length).map((e) => e.id || e.className).slice(0, 12), mode: (window.__S || {}).mode, text: document.body.innerText.slice(0, 300) })).catch((e) => String(e)))}`);
+    await page.screenshot({ path: out(`home-missing-${date}-${width}.png`) });
+  }
   await page.evaluate(async () => {
     const st = await import('/src/ui/state.ts');
     window.__S = st.state; window.__A = st.audio;
@@ -205,6 +210,7 @@ async function run() {
     } catch (e) { L.failed = String(e).slice(0, 400); }
     L.errors = errors;
     await context.close();
+    fs.writeFileSync(process.env.OUT || out('rehearsal-log.json'), JSON.stringify(log, null, 1));
   }
 
   // Second-year completion: 2027-12-24 with 23 cleared in 2027 and the 2026 prize owned.
@@ -284,7 +290,9 @@ async function run() {
   // 320px at 150% text: Home (Play and Today tabs), chooser and win card on 1, 12, 24 and 31 Dec.
   for (const d of [{ date: '2026-12-01', seed: {}, play: 1 }, { date: '2026-12-12', seed: { events: progress(2026, range(1, 11)) }, play: 12 }, { date: '2026-12-24', seed: { events: progress(2026, range(1, 23)) }, play: 24 }, { date: '2026-12-31', seed: { events: progress(2026, range(1, 20)) }, play: 21 }]) {
     const L = (log.extra[`w320-${d.date}`] = {});
-    const { context, page, errors } = await open(browser, { date: d.date, width: 320, height: 700, text: 150, dsf: 2, seed: d.seed });
+    let o;
+    try { o = await open(browser, { date: d.date, width: 320, height: 700, text: 150, dsf: 2, seed: d.seed }); } catch (e) { L.openFailed = String(e).slice(0, 300); continue; }
+    const { context, page, errors } = o;
     try {
       L.homePlay = await overflow(page, '#btn-event');
       L.homeFacts = await homeFacts(page);
@@ -306,6 +314,7 @@ async function run() {
       L.winOverflow = await overflow(page, '#win');
     } catch (e) { L.failed = String(e).slice(0, 400); }
     L.errors = errors; await context.close();
+    fs.writeFileSync(process.env.OUT || out('rehearsal-log.json'), JSON.stringify(log, null, 1));
   }
 
   await browser.close();

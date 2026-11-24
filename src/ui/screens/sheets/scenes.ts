@@ -1,11 +1,13 @@
-/** The Scenes sheet: preview, buy and use (sprint 4). */
+/** The Scenes sheet: preview, buy and use (sprint 4); the December order and Festive tag (sprint 31, D241). */
 import { type Theme, buyTheme, isOwned, themeById } from '../../../core/themes';
 import { type FocusTarget } from '../../layers';
 import { writeSave } from '../../storage';
 import { t } from '../../strings';
 import { $, closeLayer, openLayer, showToast } from '../../dom';
 import { updateHud } from '../hud';
-import { seasonBadge } from '../../clock';
+import { dailyKey, seasonBadge } from '../../clock';
+import { type FestiveConfig, festiveActive, festiveScenesFirst } from '../../logic/festive';
+import { sceneOrder } from '../../logic/event-card';
 import { audio, config, state } from '../../state';
 import { applyTheme, currentTheme } from '../../theme';
 import { awardBadgesNow } from './badges';
@@ -34,8 +36,11 @@ export function renderScenes(): void {
   // Use or Buy turns clock-matching off, so the switch re-syncs on every render (UX-scenes-1).
   $<HTMLInputElement>('set-auto').checked = state.save.themes.auto;
   const grid = $('scene-grid');
+  // Sprint 31 (D241): in December the festive scenes come first with a "Festive" tag; nothing else changes.
+  const festiveCfg = config as unknown as FestiveConfig;
+  const festive = festiveActive(dailyKey(state.clock), festiveCfg) ? festiveScenesFirst(festiveCfg) : [];
   grid.replaceChildren(
-    ...[...config.themes.list].sort((a, b) => (a.earned ?? 0) - (b.earned ?? 0) || a.price - b.price).map((theme) => { // streak-only scenes last
+    ...sceneOrder(config.themes.list, festive).map((theme) => { // streak-only scenes last
       const owned = isOwned(theme, state.save.themes.owned);
       const card = document.createElement('button');
       card.type = 'button';
@@ -45,7 +50,7 @@ export function renderScenes(): void {
       card.innerHTML = '<span class="scene-name"></span><span class="scene-status"></span>';
       card.prepend(sceneSwatchEl(theme));
       card.querySelector('.scene-name')!.textContent = theme.name;
-      const badges = [seasonBadge(theme, state.clock, { southern: state.save.settings.southern }) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
+      const badges = [festive.includes(theme.id) && ['festive', t.festiveTag], seasonBadge(theme, state.clock, { southern: state.save.settings.southern }) && ['season', t.sceneInSeason], (theme.tier ?? 1) > 1 && ['tier', t.sceneAnimated]].filter(Boolean) as string[][];
       if (badges.length) {
         const row = document.createElement('span');
         row.className = 'scene-badges';

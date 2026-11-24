@@ -139,6 +139,7 @@ export const FALLBACK_SCENES: readonly string[] = [];
  */
 export const EVENT_MUSIC: Readonly<Record<string, SceneVariation>> = {
   wintertide: { root: 329.63, scale: MAJOR_PENT, stepMs: 840, lead: { type: 'sine', partial: 2.76, partialLevel: 0.34 }, vol: 0.0776, swell: 0.034, layer: 'sparkle', layerLevel: 0.0125 },
+  newtide: { root: 329.63, scale: MAJOR_PENT, stepMs: 840, lead: { type: 'sine', partial: 2.76, partialLevel: 0.34 }, vol: 0.0776, swell: 0.034, layer: 'sparkle', layerLevel: 0.0125 }, // sprint 31 (D240): New Tide reuses Winter Tide's music
 };
 
 /** The music key for an event: `event:<id>` (see {@link musicFor}). */

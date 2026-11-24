@@ -6905,6 +6905,96 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   display: none;
 }
 
+/* ==== Sprint 31 C4: Christmas at the seaside, the December look (D237, D240, D241) ====
+   Kept above the jar styles block, which must never animate (tests/unit/ui/style-art.test.ts). */
+
+/* Winter Tide's Christmas Day board (#board.festive-board): every jar wears the Holly cap (jar styles
+   block) and each shelf carries a soft line of snow. The snow is DOM, so it shows over both boards
+   (the Realistic canvas draws under #board); it is still, and takes no taps. */
+#board.festive-board .rows:not(.no-shelves) .jar-row::after {
+  content: '';
+  position: absolute;
+  top: calc(100% - 3px);
+  left: calc(-1 * var(--shelf-over) + 2px);
+  right: calc(-1 * var(--shelf-over) + 2px);
+  height: 6px;
+  border-radius: 3px;
+  background:
+    radial-gradient(circle at 50% 100%, #ffffff 0 62%, transparent 66%) 0 0 / 9px 6px repeat-x,
+    linear-gradient(180deg, transparent 0 45%, #f4f9ff 45%);
+  filter: drop-shadow(0 1px 0 rgba(110, 140, 180, 0.55));
+  pointer-events: none;
+}
+
+/* The Home garland (D241): a still swag of evergreen with red baubles and gold stars hanging just below
+   Home's header band while Winter Tide runs (home.ts adds the element). It sits in the gap under the
+   band, so it never covers the header's text, the coins, a card or a button, and takes no taps. It
+   works as a child of .home-top (preferred) or of #home. */
+.festive-garland {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 14px;
+  padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 22'%3E%3Cpath d='M0 3Q32 19 64 3Q96 19 128 3' fill='none' stroke='%23fff8ea' stroke-opacity='0.55' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M0 3Q32 19 64 3Q96 19 128 3' fill='none' stroke='%231d5a33' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M0 3Q32 19 64 3Q96 19 128 3' fill='none' stroke='%233f9a5a' stroke-width='4' stroke-dasharray='1.4 1.6' stroke-linecap='round'/%3E%3Cpath d='M32 11v1.6' stroke='%235b3a10' stroke-width='1'/%3E%3Ccircle cx='32' cy='15.6' r='3.4' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.8'/%3E%3Ccircle cx='30.9' cy='14.5' r='0.9' fill='%23ffffff' fill-opacity='0.8'/%3E%3Cpath d='M96 10.3L97.06 13.04L99.99 13.2L97.71 15.06L98.47 17.9L96 16.3L93.53 17.9L94.29 15.06L92.01 13.2L94.94 13.04Z' fill='%23e8b93a' stroke='%236b4410' stroke-width='0.6' stroke-linejoin='round'/%3E%3Ccircle cx='0' cy='3' r='2.2' fill='%23e8b93a' stroke='%236b4410' stroke-width='0.5'/%3E%3Ccircle cx='64' cy='3' r='2.2' fill='%23e8b93a' stroke='%236b4410' stroke-width='0.5'/%3E%3Ccircle cx='128' cy='3' r='2.2' fill='%23e8b93a' stroke='%236b4410' stroke-width='0.5'/%3E%3C/svg%3E") 50% 0 / 82px 14px repeat-x content-box;
+  pointer-events: none;
+}
+.home-top > .festive-garland {
+  top: calc(100% - 3px);
+  z-index: -1;
+}
+.home > .festive-garland {
+  grid-row: 2;
+  grid-column: 1;
+  top: calc(-1 * var(--sp-3) - 3px);
+  z-index: 2;
+}
+
+/* The level map's December lights (level-map.md §2.4): a thin wire beside the path with small round
+   bulbs, under the stones and their numbers, kept clear of every stone (logic/festive.ts lightRun).
+   Each bulb fades slowly between bright and dim, out of phase; still under reduced motion. */
+.map-lights {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.map-lights .light-wire {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink-soft) 60%, transparent);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.map-lights .bulb {
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 0.8;
+  opacity: 0.95;
+}
+.map-lights .bulb-0 { fill: #ffd25e; }
+.map-lights .bulb-1 { fill: #ff8a73; }
+.map-lights .bulb-2 { fill: #8fd6ff; }
+.map-lights .bulb-3 { fill: #b4ee8e; }
+.map-lights .bulb-halo {
+  opacity: 0.28;
+  stroke: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .map-lights:not(.still) .bulb {
+    animation: bulb-twinkle 4.8s ease-in-out infinite;
+  }
+}
+@keyframes bulb-twinkle {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
 /* ==== Sprint 12 S3: jar styles (design/gdd/jar-styles.md §3.1, §3.4, §4) ====
    One block, keyed by data-glass, data-cork and data-sand on a container (#board, #home or a
    .style-preview): `[data-x='id'] …`. A missing attribute or a default id (clear, cork, plain) matches
@@ -6962,7 +7052,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   --style-shine-w: 11%;
   --style-shine-x: 17%;
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .jar > .glass {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost'], [data-glass='sparkle']) .jar > .glass {
   border-color: var(--style-edge);
   background-color: var(--style-body);
   box-shadow:
@@ -6970,11 +7060,11 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
     inset 0 -6px 10px rgba(255, 255, 255, 0.35),
     0 6px 0 var(--ground);
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .jar > .glass::before {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost'], [data-glass='sparkle']) .jar > .glass::before {
   border-color: var(--style-edge);
   background: var(--style-rim);
 }
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .jar .shine {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost'], [data-glass='sparkle']) .jar .shine {
   left: var(--style-shine-x, 16%);
   width: var(--style-shine-w, 14%);
   background: var(--style-shine);
@@ -7004,6 +7094,28 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
     inset 0 0 14px rgba(255, 214, 150, 0.22),
     0 6px 0 var(--ground);
 }
+[data-glass='sparkle'] {
+  /* Sparkle glass (sprint 31, the New Tide prize, D240): clear glass with fine, still gold flecks in the
+     edge, the rim and the empty glass above the sand; the sand itself is never flecked (§3.4). The
+     Realistic board reads --style-flecks (board-gpu/art.ts) and scatters the same flecks. */
+  --style-edge: color-mix(in srgb, var(--glass-edge) 70%, rgb(176, 132, 40));
+  --style-body: var(--glass);
+  --style-band: rgba(236, 196, 96, 0.24);
+  --style-rim: rgba(255, 242, 206, 0.62);
+  --style-shine: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 246, 220, 0.15));
+  --style-shine-w: 12%;
+  --style-flecks: rgb(214, 168, 58);
+}
+[data-glass='sparkle'] .jar:not(.funnel) > .glass {
+  background-image: radial-gradient(circle at 20% 30%, rgba(214, 168, 58, 0.95) 0 0.6px, transparent 1px), radial-gradient(circle at 70% 60%, rgba(255, 226, 140, 0.95) 0 0.5px, transparent 0.9px), radial-gradient(circle at 40% 80%, rgba(176, 128, 32, 0.9) 0 0.55px, transparent 0.95px);
+  background-size: 7px 9px, 11px 6px, 9px 13px;
+  background-position: 0 0, 0 0, 2px 1px;
+}
+[data-glass='sparkle'] .jar > .glass::before {
+  background-image: radial-gradient(circle at 20% 30%, rgba(214, 168, 58, 0.95) 0 0.6px, transparent 1px), radial-gradient(circle at 70% 60%, rgba(255, 226, 140, 0.95) 0 0.5px, transparent 0.9px), radial-gradient(circle at 40% 80%, rgba(176, 128, 32, 0.9) 0 0.55px, transparent 0.95px);
+  background-size: 5px 4px, 7px 5px, 6px 6px;
+  background-position: 0 0, 1px 0, 2px 1px;
+}
 /* Sea glass is frosted: a fine white speckle on the empty glass above the sand (the funnel keeps its stripes). */
 [data-glass='seaglass'] .jar:not(.funnel) > .glass {
   /* Scene-aware: about 0.2 alpha on light scenes' glass, about 0.05 on dark scenes' (--glass is 0.1 there). */
@@ -7011,7 +7123,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   background-size: 3px 3px;
 }
 /* Home art: the outline and a highlight streak (the art has no rim). */
-:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost']) .logo-jars i {
+:is([data-glass='seaglass'], [data-glass='amber'], [data-glass='cobalt'], [data-glass='pearl'], [data-glass='sealantern'], [data-glass='frost'], [data-glass='sparkle']) .logo-jars i {
   border-color: var(--style-edge);
   background:
     var(--style-shine) 18% 30% / var(--style-shine-w, 14%) 58% no-repeat,
@@ -7054,7 +7166,20 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   --cork-radius: 3px 3px 2px 2px;
   --cork-shadow: inset 0 1.5px 0 rgba(255, 250, 225, 0.75), inset 0 -1px 0 rgba(70, 45, 8, 0.3);
 }
-:is([data-cork='driftwood'], [data-cork='rope'], [data-cork='scallop'], [data-cork='brass']) .jar .cork {
+/* Holly cap (sprint 31, the Christmas Day gift, D239): the plain cork with a holly sprig standing on it,
+   two spiky leaves and three round berries (style-art.ts HOLLY; the shape tells it apart, not the colour).
+   Winter Tide's Christmas Day board (#board.festive-board, D237) wears it on every jar, whatever cork is
+   worn; the id selector outranks the worn piece's [data-cork] there. */
+[data-cork='holly'],
+#board.festive-board {
+  --cork-bg: radial-gradient(rgba(0, 0, 0, 0.18) 1px, transparent 1.5px) 0 0 / 5px 4px, linear-gradient(180deg, #d8a86b, #b7834a);
+  --cork-edge: #8a6136;
+  --cork-radius: 5px 5px 3px 3px;
+  --cork-shadow: none;
+  --cork-sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 14'%3E%3Cg transform='translate(15 9) rotate(200)'%3E%3Cpath d='M0 0Q0.8-2.4 3.5-3.3Q5.4-1.9 7.5-3.6Q9-1.8 11.3-2.6Q12-0.9 14 0Q12 0.9 11.3 2.6Q9 1.8 7.5 3.6Q5.4 1.9 3.5 3.3Q0.8 2.4 0 0Z' fill='%231f6e3c' stroke='%23fff8ea' stroke-width='0.7' stroke-linejoin='round'/%3E%3Cpath d='M1 0H12.5' stroke='%23a8d8a0' stroke-width='0.5' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='translate(17 9) rotate(-20)'%3E%3Cpath d='M0 0Q0.8-2.4 3.5-3.3Q5.4-1.9 7.5-3.6Q9-1.8 11.3-2.6Q12-0.9 14 0Q12 0.9 11.3 2.6Q9 1.8 7.5 3.6Q5.4 1.9 3.5 3.3Q0.8 2.4 0 0Z' fill='%231f6e3c' stroke='%23fff8ea' stroke-width='0.7' stroke-linejoin='round'/%3E%3Cpath d='M1 0H12.5' stroke='%23a8d8a0' stroke-width='0.5' stroke-linecap='round'/%3E%3C/g%3E%3Ccircle cx='13.8' cy='9.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='13.100000000000001' cy='8.9' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3Ccircle cx='18.2' cy='9.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='17.5' cy='8.9' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3Ccircle cx='16' cy='6.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='15.3' cy='5.8999999999999995' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3C/svg%3E");
+}
+:is([data-cork='driftwood'], [data-cork='rope'], [data-cork='scallop'], [data-cork='brass'], [data-cork='holly']) .jar .cork,
+#board.festive-board .jar .cork {
   background: var(--cork-bg);
   border-color: var(--cork-edge);
   border-radius: var(--cork-radius);
@@ -7075,6 +7200,20 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   border-radius: var(--cork-radius, 5px 5px 3px 3px);
   box-shadow: var(--cork-shadow, none);
   pointer-events: none;
+}
+/* The holly sprig: half a cork above the cork's top edge, over it (board-gpu/mech-art.ts corkOverhang). */
+:is([data-cork='holly'], #board.festive-board) .jar .cork::after {
+  content: '';
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: -50%;
+  height: 100%;
+  background: var(--cork-sprig) center / contain no-repeat;
+  pointer-events: none;
+}
+[data-cork='holly'] .logo-jars i::before {
+  background: var(--cork-sprig) 50% 0 / auto 100% no-repeat, var(--cork-bg);
 }
 /* style-art:pieces:end */
 

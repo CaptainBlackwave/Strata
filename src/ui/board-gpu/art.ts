@@ -79,6 +79,37 @@ export interface GlassLook {
   /** The contact shadow's colour, and a night scene (darker, stronger shadow). */
   readonly shadow: string;
   readonly night: boolean;
+  /**
+   * Fine static flecks on the wall, the rim and the empty glass (`--style-flecks`: Sparkle glass's gold,
+   * sprint 31 D240), or none. Behind the sand they show only above it; the sand is never flecked.
+   */
+  readonly flecks?: string;
+}
+
+/** True for a fleck colour that draws (not unset, `transparent` or zero alpha). */
+function hasFlecks(c: string | undefined): c is string {
+  return !!c && c !== 'transparent' && !/^rgba\([^)]*,\s*0\)$/.test(c.replace(/\s+/g, ' ').trim());
+}
+
+/**
+ * Scatters flecks over the current clip, about one every `area` px² of the box, seeded so a jar size
+ * always draws the same pattern. Two sizes and a paler highlight, like the DOM's three gradient layers.
+ */
+function flecks(c: CanvasRenderingContext2D, color: string, x: number, y: number, w: number, h: number, area: number): void {
+  let seed = Math.round(w * 131 + h * 7) | 1;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+  const n = Math.max(3, Math.round((w * h) / area));
+  for (let i = 0; i < n; i++) {
+    const px = x + rnd() * w;
+    const py = y + rnd() * h;
+    const r = 0.45 + rnd() * 0.35;
+    c.globalAlpha = 0.65 + rnd() * 0.35;
+    c.fillStyle = i % 3 === 2 ? 'rgb(255, 236, 170)' : color;
+    c.beginPath();
+    c.arc(px, py, r, 0, Math.PI * 2);
+    c.fill();
+  }
+  c.globalAlpha = 1;
 }
 
 /** Clear glass on a daylight scene: today's tokens. */
@@ -114,6 +145,14 @@ export function drawJarArt(g: JarGeometry, res: number, look: GlassLook = DEFAUL
   b.fillStyle = look.body;
   b.fill();
   b.restore();
+  if (hasFlecks(look.flecks) && !funnel) {
+    b.save();
+    b.beginPath();
+    inner(b);
+    b.clip();
+    flecks(b, look.flecks, -iw / 2, -ih, iw, ih, 46);
+    b.restore();
+  }
   if (funnel) {
     // The funnel's glass: faint brown stripes, 6 px on, 6 px off (style.css `.funnel .glass`).
     b.save();
@@ -165,6 +204,16 @@ export function drawJarArt(g: JarGeometry, res: number, look: GlassLook = DEFAUL
   f.fillStyle = gr;
   f.fillRect(-ox, 0, ox * 2, g.base);
   f.restore();
+  if (hasFlecks(look.flecks)) {
+    // Sparkle glass: gold flecks in the wall and the base, never over the sand.
+    f.save();
+    f.beginPath();
+    outer(f);
+    inner(f);
+    f.clip('evenodd');
+    flecks(f, look.flecks, -ox, -ih, ox * 2, ih + g.base, 14);
+    f.restore();
+  }
 
   // 3. The outline: a thin dark edge (reads on light scenes) with a faint light line inside it
   // (reads on dark scenes), and the inner edge, so the wall has a little thickness.
@@ -207,6 +256,12 @@ export function drawJarArt(g: JarGeometry, res: number, look: GlassLook = DEFAUL
   rr(f, -ox - 1.5, -ih - rim * 0.3, (ox + 1.5) * 2, rim, rim * 0.45, rim * 0.45);
   f.fillStyle = look.rim;
   f.fill();
+  if (hasFlecks(look.flecks)) {
+    f.save();
+    f.clip();
+    flecks(f, look.flecks, -ox - 1.5, -ih - rim * 0.3, (ox + 1.5) * 2, rim, 10);
+    f.restore();
+  }
   f.strokeStyle = look.edge;
   f.lineWidth = 1;
   f.stroke();
