@@ -23,6 +23,8 @@ export interface StylePiece {
   readonly earned?: number;
   /** An event-only piece (sprint 17, D146): the event id whose prize it is. Never sold, like `earned`. */
   readonly event?: string;
+  /** A gift piece (sprint 31, D238, D239): the gift id that grants it (`christmas`). Never sold. */
+  readonly gift?: string;
 }
 
 /**
@@ -123,14 +125,14 @@ export function stylesOpen(level: number, state: StyleState, config: StylesConfi
 /**
  * Buys a piece with coins and wears it at once in its slot (§3.3, §4). Refuses, returning the same
  * `wallet` and `state` objects, when styles are closed, the slot or id is unknown, the piece is a
- * default, a streak-only piece (`earned`) or already owned, or `coins < price`. Other slots stay worn as they were.
+ * default, a streak-only piece (`earned`), an event prize (`event`), a gift piece (`gift`) or already owned, or `coins < price`. Other slots stay worn as they were.
  * Example: `buyStyle(save.wallet, save.styles, save.level, 'glass', 'seaglass', config)`.
  */
 export function buyStyle(wallet: Wallet, state: StyleState, level: number, slot: StyleSlot, id: string, config: StylesConfig): StyleBuyResult {
   const piece = pieceOf(slot, id, config);
   const refused = { ok: false, wallet, state };
   if (!piece || !stylesOpen(level, state, config) || id === defaultOf(slot, config)) return refused;
-  if (piece.earned !== undefined || piece.event !== undefined) return refused; // streak-only (D136) or an event prize (D146): never for sale
+  if (piece.earned !== undefined || piece.event !== undefined || piece.gift !== undefined) return refused; // streak-only (D136), an event prize (D146) or a gift (D238): never for sale
   if (isStyleOwned(state, slot, id, config) || wallet.coins < piece.price) return refused;
   return {
     ok: true,
@@ -145,6 +147,20 @@ export function buyStyle(wallet: Wallet, state: StyleState, level: number, slot:
  */
 export function earnedDay(slot: StyleSlot, id: string, config: StylesConfig): number | undefined {
   return pieceOf(slot, id, config)?.earned;
+}
+
+/**
+ * The gift id that grants this piece (sprint 31, D238), or undefined for any other piece (or unknown).
+ * The Jar styles sheet shows a gift piece locked as the gift until owned.
+ * Example: `giftOf('cork', 'holly', config) // 'christmas'`.
+ */
+export function giftOf(slot: StyleSlot, id: string, config: StylesConfig): string | undefined {
+  return pieceOf(slot, id, config)?.gift;
+}
+
+/** Whether this piece is a gift piece (never sold, granted by a gift). Example: `isGiftPiece('cork', 'holly', config) // true`. */
+export function isGiftPiece(slot: StyleSlot, id: string, config: StylesConfig): boolean {
+  return giftOf(slot, id, config) !== undefined;
 }
 
 /**
