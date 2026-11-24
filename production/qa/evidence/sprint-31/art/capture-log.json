@@ -16,6 +16,23 @@
     "scrollW": 412,
     "errors": []
   },
+  "holly-cap-dom-dark": {
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "holly-cap-gpu-light": {
+    "render": "gpu",
+    "cork": "holly",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
   "sparkle-glass-dom-light": {
     "cork": "cork",
     "festive": false,
@@ -25,6 +42,23 @@
     "errors": []
   },
   "sparkle-glass-gpu-dark": {
+    "render": "gpu",
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-dom-dark": {
+    "cork": "cork",
+    "festive": false,
+    "sealed": 4,
+    "label": "Level 400",
+    "scrollW": 412,
+    "errors": []
+  },
+  "sparkle-glass-gpu-light": {
     "render": "gpu",
     "cork": "cork",
     "festive": false,
@@ -80,6 +114,44 @@
     "errors": []
   },
   "board25-gpu-dark": {
+    "tile": "Board 25, not cleared yet, Christmas Day bonus, not needed for the prize",
+    "real": {
+      "render": "gpu",
+      "cork": "cork",
+      "festive": true,
+      "sealed": 0,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "sealed": {
+      "render": "gpu",
+      "cork": "cork",
+      "festive": true,
+      "sealed": 4,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "errors": []
+  },
+  "board25-dom-dark": {
+    "tile": "Board 25, not cleared yet, Christmas Day bonus, not needed for the prize",
+    "real": {
+      "cork": "cork",
+      "festive": true,
+      "sealed": 0,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "sealed": {
+      "cork": "cork",
+      "festive": true,
+      "sealed": 4,
+      "label": "Christmas Day",
+      "scrollW": 412
+    },
+    "errors": []
+  },
+  "board25-gpu-light": {
     "tile": "Board 25, not cleared yet, Christmas Day bonus, not needed for the prize",
     "real": {
       "render": "gpu",
@@ -172,15 +244,7 @@
     "errors": []
   },
   "home-garland-320-150-dark": {
-    "shown": true,
-    "rect": [
-      0,
-      69,
-      320,
-      14
-    ],
-    "hits": [],
-    "scrollW": 320,
+    "failed": "TimeoutError: page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
     "errors": []
   },
   "home-newtide-2026-12-27-light": {
@@ -199,27 +263,81 @@
     "errors": []
   },
   "notice-gift-2026-12-25-412-light": {
-    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "title": "A Christmas gift",
+    "art": true,
+    "card": [
+      16,
+      322,
+      380,
+      255
+    ],
+    "vh": 900,
+    "scrollW": 412,
     "errors": []
   },
   "notice-gift-2026-12-25-320-150-light": {
-    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "title": "A Christmas gift",
+    "art": true,
+    "card": [
+      16,
+      269,
+      288,
+      362
+    ],
+    "vh": 900,
+    "scrollW": 320,
     "errors": []
   },
   "notice-gift-2026-12-25-412-dark": {
-    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "title": "A Christmas gift",
+    "art": true,
+    "card": [
+      16,
+      322,
+      380,
+      255
+    ],
+    "vh": 900,
+    "scrollW": 412,
     "errors": []
   },
   "notice-start-2026-12-01-412-light": {
-    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "title": "Winter Tide has begun",
+    "art": false,
+    "card": [
+      16,
+      335,
+      380,
+      230
+    ],
+    "vh": 900,
+    "scrollW": 412,
     "errors": []
   },
   "notice-start-2026-12-01-320-150-light": {
-    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "title": "Winter Tide has begun",
+    "art": false,
+    "card": [
+      16,
+      283,
+      288,
+      333
+    ],
+    "vh": 900,
+    "scrollW": 320,
     "errors": []
   },
   "notice-start-2026-12-01-412-dark": {
-    "failed": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#home-notice:not([hidden])') to be visible\u001b[22m\n",
+    "title": "Winter Tide has begun",
+    "art": false,
+    "card": [
+      16,
+      335,
+      380,
+      230
+    ],
+    "vh": 900,
+    "scrollW": 412,
     "errors": []
   },
   "scenes-light": {
