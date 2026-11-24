@@ -267,6 +267,9 @@ export function drawJarArt(g: JarGeometry, res: number, look: GlassLook = DEFAUL
     f.clip();
     flecks(f, look.flecks, -ox - 1.5, -ih - rim * 0.3, (ox + 1.5) * 2, rim, 10);
     f.restore();
+    // flecks() builds its own paths, and save/restore do not keep the path: trace the rim again for its edge.
+    f.beginPath();
+    rr(f, -ox - 1.5, -ih - rim * 0.3, (ox + 1.5) * 2, rim, rim * 0.45, rim * 0.45);
   }
   f.strokeStyle = look.edge;
   f.lineWidth = 1;
