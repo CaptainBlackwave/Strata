@@ -1,6 +1,6 @@
 # Sprint 31: Christmas at the seaside (0.27.0)
 
-> **Status: built; releasing as 0.27.0 (2026-11-24).** From the owner interview on 2026-11-24 (decisions D236–D243). Design: `design/gdd/events.md`, plus the touched sections of `design/gdd/jar-styles.md`, `scenes.md` and `level-map.md`. Evidence: `production/qa/evidence/sprint-31/`. Target: **0.27.0, live before Winter Tide starts on 1 December (UTC)**. The release has no set date before then, but nothing ships half-done.
+> **Status: released as 0.27.0 on 2026-11-24 (PR #68, `5accc79`).** From the owner interview on 2026-11-24 (decisions D236–D243). Design: `design/gdd/events.md`, plus the touched sections of `design/gdd/jar-styles.md`, `scenes.md` and `level-map.md`. Evidence: `production/qa/evidence/sprint-31/`. Target: **0.27.0, live before Winter Tide starts on 1 December (UTC)**. The release has no set date before then, but nothing ships half-done.
 
 ## Why
 **Winter Tide** (sprint 17) is the advent event for December. It is built, switched on in the config, and has never run for players; its first season starts on 1 December. The owner wants to:
