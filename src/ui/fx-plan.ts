@@ -210,3 +210,25 @@ export const SNOW = {
 export function snowShows(env: FxEnv, eventId: string | null, where: 'home' | 'event' | 'off', sceneSnows: boolean): boolean {
   return effectAllowed(env) && eventId === 'wintertide' && where !== 'off' && !sceneSnows;
 }
+
+/** Sprint 31 (D240): New Tide's gentle gold sparkles behind Home (and its boards), within the scene-layer budget. */
+export const SPARKLE = {
+  /** Sparkles on screen at once. */
+  count: 14,
+  /** Frames a second, at most. */
+  fps: 24,
+  /** One sparkle's fade in and out, seconds (each picks a length in this range). */
+  life: [3.5, 6.5] as const,
+  /** Size range, px (the star's arm), and drift, px a second (slowly upwards). */
+  radius: [2, 3.6] as const,
+  drift: [3, 8] as const,
+} as const;
+
+/**
+ * Whether New Tide's sparkles show: the caller says the event runs on this screen (`on`), with motion
+ * allowed and the tab visible. Off completely under reduced motion (feel-audio-ui.md).
+ * Example: `sparklesShow({ reduced: false, hidden: false }, true)` is true.
+ */
+export function sparklesShow(env: FxEnv, on: boolean): boolean {
+  return effectAllowed(env) && on;
+}

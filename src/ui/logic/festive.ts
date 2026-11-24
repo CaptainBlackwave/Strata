@@ -68,25 +68,26 @@ export function lightRun(a: Pt, b: Pt, gap: number, spacing: number, offset: num
   };
   const far = (p: Pt) => Math.hypot(p[0] - a[0], p[1] - a[1]) >= gap && Math.hypot(p[0] - b[0], p[1] - b[1]) >= gap;
   const wire: Pt[] = [];
-  const bulbs: Pt[] = [];
-  let run = spacing / 2;
-  let prev: Pt | null = null;
   for (let i = 0; i <= n; i++) {
     const [x, y, dx, dy] = at(i / n);
     const len = Math.hypot(dx, dy) || 1;
     // The normal on the path's right-hand side (going up the map), so the string keeps one side.
     const p: Pt = [x - (dy / len) * offset, y + (dx / len) * offset];
-    if (!far(p)) {
-      prev = null;
-      continue;
-    }
-    if (prev) run += Math.hypot(p[0] - prev[0], p[1] - prev[1]);
-    wire.push(p);
-    if (run >= spacing) {
-      bulbs.push(p);
-      run = 0;
-    }
-    prev = p;
+    // The ends near the stones drop out; what is left is one stretch in the middle.
+    if (far(p)) wire.push(p);
+  }
+  if (wire.length < 2) return { wire: [], bulbs: [] };
+  // Bulbs evenly along the stretch, about `spacing` apart, at least one.
+  const acc = [0];
+  for (let i = 1; i < wire.length; i++) acc.push(acc[i - 1] + Math.hypot(wire[i][0] - wire[i - 1][0], wire[i][1] - wire[i - 1][1]));
+  const total = acc[acc.length - 1];
+  const count = Math.max(1, Math.floor(total / spacing));
+  const bulbs: Pt[] = [];
+  for (let k = 0; k < count; k++) {
+    const want = ((k + 0.5) * total) / count;
+    let i = 1;
+    while (i < acc.length - 1 && acc[i] < want) i++;
+    bulbs.push(wire[acc[i] - want < want - acc[i - 1] ? i : i - 1]);
   }
   return { wire, bulbs };
 }

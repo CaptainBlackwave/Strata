@@ -16,6 +16,8 @@ import { showHome } from './home';
 import { audio, config, state } from '../state';
 import { mapHintOnOpen } from './onboarding';
 import { shareChallenge } from './friend';
+import { dailyKey } from '../clock';
+import { type FestiveConfig, lightRun, mapLightsOn } from '../logic/festive';
 
 const mapEl = $('map');
 const scrollEl = $('map-scroll');
@@ -45,6 +47,12 @@ const bands = new Map<number, HTMLElement>();
 const pathSvg = document.createElementNS(SVG_NS, 'svg');
 pathSvg.classList.add('map-path');
 pathSvg.setAttribute('aria-hidden', 'true');
+/** The December lights (sprint 31, D241, §2.4): their own layer over the path, under the stones. */
+const lightsSvg = document.createElementNS(SVG_NS, 'svg');
+lightsSvg.classList.add('map-lights');
+lightsSvg.setAttribute('aria-hidden', 'true');
+/** One twinkle's length, s (style.css `bulb-twinkle`): a redrawn bulb picks up its phase from the clock, so scrolling never restarts it. */
+const TWINKLE_S = 4.8;
 /** The stretch fading in after a first clear (sprint 10 F5); the path below draws the old state until it ends. */
 let revealing: { from: number; to: number } | null = null;
 let revealSvg: SVGSVGElement | null = null;
@@ -207,6 +215,38 @@ function drawPath(lo: number, hi: number): void {
   pathSvg.setAttribute('width', String(width));
   pathSvg.setAttribute('height', String(geo.height));
   pathSvg.innerHTML = `<path class="path-edge" d="${done}${ahead}"/><path class="path-done" d="${done}"/><path class="path-ahead" d="${ahead}"/>`;
+  drawLights(from, to, width);
+}
+
+/**
+ * The December lights through stones `from..to` (§2.4): from `festive.from` to `festive.to` (UTC), a
+ * wire beside the path and a bulb every 26 px, kept a stone's size clear of every stone. Each bulb
+ * fades out of phase with its neighbours; under reduced motion they stay still.
+ */
+function drawLights(from: number, to: number, width: number): void {
+  if (!mapLightsOn(dailyKey(state.clock), config as unknown as FestiveConfig) || to <= from) {
+    if (lightsSvg.firstChild) lightsSvg.replaceChildren();
+    return;
+  }
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const gap = Math.max(34, 2.3 * rem);
+  const pt = (lv: number) => [pathX(lv) * width, yOf(lv)] as const;
+  const now = performance.now() / 1000;
+  let wire = '';
+  let bulbs = '';
+  for (let lv = from + 1; lv <= to; lv++) {
+    const run = lightRun(pt(lv - 1), pt(lv), gap, 26, 15);
+    if (run.wire.length > 1) wire += `M${run.wire.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join('L')}`;
+    run.bulbs.forEach(([x, y], k) => {
+      const n = lv * 3 + k;
+      const delay = -(((now + n * 1.7) % TWINKLE_S) + TWINKLE_S) % TWINKLE_S;
+      bulbs += `<g class="bulb bulb-${n % 4}" style="animation-delay:${delay.toFixed(2)}s"><circle class="bulb-halo" cx="${x.toFixed(1)}" cy="${(y + 3).toFixed(1)}" r="5.5"/><circle cx="${x.toFixed(1)}" cy="${(y + 3).toFixed(1)}" r="2.6"/></g>`;
+    });
+  }
+  lightsSvg.setAttribute('width', String(width));
+  lightsSvg.setAttribute('height', String(geo.height));
+  lightsSvg.classList.toggle('still', reducedMotion());
+  lightsSvg.innerHTML = `<path class="light-wire" d="${wire}"/>${bulbs}`;
 }
 
 /**
@@ -427,7 +467,7 @@ export function onStoneCardKey(e: KeyboardEvent): void {
 
 /** Wires the map: stone taps, the Play and back buttons, the tap card, scrolling and resizing. */
 export function wireMap(): void {
-  trackEl.append(pathSvg);
+  trackEl.append(pathSvg, lightsSvg);
   trackEl.addEventListener('click', (e) => {
     const el = (e.target as HTMLElement).closest<HTMLButtonElement>('.stone');
     if (el) onStone(el);

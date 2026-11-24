@@ -128,7 +128,8 @@ describe('style pieces in style.css (jar-styles.md §3.4)', () => {
     for (const slot of ['glass', 'cork'] as const) {
       for (const p of config.styles.slots[slot]) {
         const sel = `[data-${slot}='${p.id}']`;
-        if (p.price > 0 || p.earned !== undefined || (p as { event?: string }).event !== undefined) expect(piecesBlock, sel).toContain(sel); // sold, streak-only (sprint 16) or an event prize (sprint 17)
+        const granted = (p as { event?: string; gift?: string }).event !== undefined || (p as { gift?: string }).gift !== undefined;
+        if (p.price > 0 || p.earned !== undefined || granted) expect(piecesBlock, sel).toContain(sel); // sold, streak-only (sprint 16), an event prize (sprint 17) or a gift (sprint 31)
         else expect(styleBlock, sel).not.toContain(sel);
       }
     }

@@ -6926,6 +6926,55 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   pointer-events: none;
 }
 
+/* The holly sprig (style-art.ts hollySprigSvg, checked by tests/unit/ui/festive.test.ts): the Holly cap's
+   art, and the Christmas Day tile's mark. */
+:root {
+  --festive-green: #1f6e3c;
+  --bulb-0: #ffd25e;
+  --bulb-1: #ff8a73;
+  --bulb-2: #8fd6ff;
+  --bulb-3: #b4ee8e;
+  --holly-sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 14'%3E%3Cg transform='translate(15 9) rotate(200)'%3E%3Cpath d='M0 0Q0.8-2.4 3.5-3.3Q5.4-1.9 7.5-3.6Q9-1.8 11.3-2.6Q12-0.9 14 0Q12 0.9 11.3 2.6Q9 1.8 7.5 3.6Q5.4 1.9 3.5 3.3Q0.8 2.4 0 0Z' fill='%231f6e3c' stroke='%23fff8ea' stroke-width='0.7' stroke-linejoin='round'/%3E%3Cpath d='M1 0H12.5' stroke='%23a8d8a0' stroke-width='0.5' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='translate(17 9) rotate(-20)'%3E%3Cpath d='M0 0Q0.8-2.4 3.5-3.3Q5.4-1.9 7.5-3.6Q9-1.8 11.3-2.6Q12-0.9 14 0Q12 0.9 11.3 2.6Q9 1.8 7.5 3.6Q5.4 1.9 3.5 3.3Q0.8 2.4 0 0Z' fill='%231f6e3c' stroke='%23fff8ea' stroke-width='0.7' stroke-linejoin='round'/%3E%3Cpath d='M1 0H12.5' stroke='%23a8d8a0' stroke-width='0.5' stroke-linecap='round'/%3E%3C/g%3E%3Ccircle cx='13.8' cy='9.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='13.100000000000001' cy='8.9' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3Ccircle cx='18.2' cy='9.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='17.5' cy='8.9' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3Ccircle cx='16' cy='6.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='15.3' cy='5.8999999999999995' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3C/svg%3E");
+}
+
+/* C5's December screens: the Christmas Day tile in the event chooser stands apart as a bonus (a dashed
+   evergreen ring and a sprig in its corner, so it reads by shape as well as colour); the bonus note
+   under the tiles; the gift and start card's art; the scene picker's "Festive" tag. */
+.event-board.festive {
+  position: relative;
+  outline: 2px dashed color-mix(in srgb, var(--festive-green) 75%, transparent);
+  outline-offset: 3px;
+}
+.event-board.festive::after {
+  content: '';
+  position: absolute;
+  top: -9px;
+  right: -6px;
+  width: 26px;
+  height: 12px;
+  background: var(--holly-sprig) center / contain no-repeat;
+  pointer-events: none;
+}
+.event-note {
+  margin: var(--sp-2) 0 0;
+  text-align: center;
+}
+.notice-card {
+  text-align: center;
+}
+.notice-art {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto var(--sp-3);
+}
+.notice-art[hidden] {
+  display: none;
+}
+.scene-badge.festive {
+  color: #ffffff;
+  background: var(--festive-green); /* white on this green is 6.4:1 */
+}
+
 /* The Home garland (D241): a still swag of evergreen with red baubles and gold stars hanging just below
    Home's header band while Winter Tide runs (home.ts adds the element). It sits in the gap under the
    band, so it never covers the header's text, the coins, a card or a button, and takes no taps. It
@@ -6972,10 +7021,10 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   stroke-width: 0.8;
   opacity: 0.95;
 }
-.map-lights .bulb-0 { fill: #ffd25e; }
-.map-lights .bulb-1 { fill: #ff8a73; }
-.map-lights .bulb-2 { fill: #8fd6ff; }
-.map-lights .bulb-3 { fill: #b4ee8e; }
+.map-lights .bulb-0 { fill: var(--bulb-0); }
+.map-lights .bulb-1 { fill: var(--bulb-1); }
+.map-lights .bulb-2 { fill: var(--bulb-2); }
+.map-lights .bulb-3 { fill: var(--bulb-3); }
 .map-lights .bulb-halo {
   opacity: 0.28;
   stroke: none;
@@ -7176,7 +7225,7 @@ body:is([data-theme='moonlit'], [data-theme='harvestmoon'], [data-theme='newyear
   --cork-edge: #8a6136;
   --cork-radius: 5px 5px 3px 3px;
   --cork-shadow: none;
-  --cork-sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 14'%3E%3Cg transform='translate(15 9) rotate(200)'%3E%3Cpath d='M0 0Q0.8-2.4 3.5-3.3Q5.4-1.9 7.5-3.6Q9-1.8 11.3-2.6Q12-0.9 14 0Q12 0.9 11.3 2.6Q9 1.8 7.5 3.6Q5.4 1.9 3.5 3.3Q0.8 2.4 0 0Z' fill='%231f6e3c' stroke='%23fff8ea' stroke-width='0.7' stroke-linejoin='round'/%3E%3Cpath d='M1 0H12.5' stroke='%23a8d8a0' stroke-width='0.5' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='translate(17 9) rotate(-20)'%3E%3Cpath d='M0 0Q0.8-2.4 3.5-3.3Q5.4-1.9 7.5-3.6Q9-1.8 11.3-2.6Q12-0.9 14 0Q12 0.9 11.3 2.6Q9 1.8 7.5 3.6Q5.4 1.9 3.5 3.3Q0.8 2.4 0 0Z' fill='%231f6e3c' stroke='%23fff8ea' stroke-width='0.7' stroke-linejoin='round'/%3E%3Cpath d='M1 0H12.5' stroke='%23a8d8a0' stroke-width='0.5' stroke-linecap='round'/%3E%3C/g%3E%3Ccircle cx='13.8' cy='9.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='13.100000000000001' cy='8.9' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3Ccircle cx='18.2' cy='9.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='17.5' cy='8.9' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3Ccircle cx='16' cy='6.6' r='2.2' fill='%23c62832' stroke='%23fff8ea' stroke-width='0.7'/%3E%3Ccircle cx='15.3' cy='5.8999999999999995' r='0.6' fill='%23ffffff' fill-opacity='0.8'/%3E%3C/svg%3E");
+  --cork-sprig: var(--holly-sprig);
 }
 :is([data-cork='driftwood'], [data-cork='rope'], [data-cork='scallop'], [data-cork='brass'], [data-cork='holly']) .jar .cork,
 #board.festive-board .jar .cork {
