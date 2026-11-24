@@ -218,6 +218,16 @@ const en = {
     latest: 'Latest',
     releases: [
       {
+        version: '0.27.0',
+        name: 'Christmas at the seaside',
+        lines: [
+          'Winter Tide starts on 1 December: a new board every day until Christmas, and a bonus board on Christmas Day.',
+          'Open the game on Christmas Day for a gift: the Holly cap for your jars, 100 coins and a hint.',
+          'New Tide runs from 26 December to 6 January: 12 boards to start the year, with Sparkle glass for clearing them all.',
+          'In December the beach path has lights and decorations, Home has a garland, and the winter scenes come first.',
+        ],
+      },
+      {
         version: '0.26.1',
         name: 'A gentler lighthouse',
         lines: [

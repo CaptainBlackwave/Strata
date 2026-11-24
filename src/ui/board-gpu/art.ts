@@ -93,7 +93,8 @@ function hasFlecks(c: string | undefined): c is string {
 
 /**
  * Scatters flecks over the current clip, about one every `area` px² of the box, seeded so a jar size
- * always draws the same pattern. Two sizes and a paler highlight, like the DOM's three gradient layers.
+ * always draws the same pattern. Two sizes, a paler highlight and a few four-point glints, like the DOM's
+ * gradient layers (made bolder after the owner's review, 2026-11-24).
  */
 function flecks(c: CanvasRenderingContext2D, color: string, x: number, y: number, w: number, h: number, area: number): void {
   let seed = Math.round(w * 131 + h * 7) | 1;
@@ -102,12 +103,17 @@ function flecks(c: CanvasRenderingContext2D, color: string, x: number, y: number
   for (let i = 0; i < n; i++) {
     const px = x + rnd() * w;
     const py = y + rnd() * h;
-    const r = 0.45 + rnd() * 0.35;
-    c.globalAlpha = 0.65 + rnd() * 0.35;
+    const r = 0.7 + rnd() * 0.5;
+    c.globalAlpha = 0.8 + rnd() * 0.2;
     c.fillStyle = i % 3 === 2 ? 'rgb(255, 236, 170)' : color;
     c.beginPath();
     c.arc(px, py, r, 0, Math.PI * 2);
     c.fill();
+    if (i % 7 === 3) {
+      // Every seventh fleck is a small four-point glint, so the glass reads as sparkling on light scenes too.
+      c.fillRect(px - 2.4, py - 0.35, 4.8, 0.7);
+      c.fillRect(px - 0.35, py - 2.4, 0.7, 4.8);
+    }
   }
   c.globalAlpha = 1;
 }

@@ -1,0 +1,54 @@
+{
+  "2026-12-12-412-light": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-dark": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-light-lv30": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-dark-lv30": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-light-lv52": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-light-lv372": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-dark-lv372": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-light-lv88": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-320-150-light": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-320-150-light-lv30": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-12-12-412-reduced": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2026-11-30-412-light": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  },
+  "2027-01-01-412-light": {
+    "failed": "Error: page.evaluate: NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.\n    at render (http://localhost:5251/src/ui/screens/map.ts:286:15)\n    at Module.openMap (http://localhost:5251/src/ui/screens/map.ts:334",
+    "errors": []
+  }
+}

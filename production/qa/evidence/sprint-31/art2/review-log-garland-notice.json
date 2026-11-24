@@ -1,0 +1,128 @@
+{
+  "home-garland-412-light": {
+    "shown": true,
+    "rect": [
+      0,
+      73,
+      412,
+      28
+    ],
+    "hits": [],
+    "scrollW": 412,
+    "errors": []
+  },
+  "home-garland-412-dark": {
+    "shown": true,
+    "rect": [
+      0,
+      73,
+      412,
+      28
+    ],
+    "hits": [],
+    "scrollW": 412,
+    "errors": []
+  },
+  "home-garland-320-150-light": {
+    "shown": true,
+    "rect": [
+      0,
+      69,
+      320,
+      28
+    ],
+    "hits": [],
+    "scrollW": 320,
+    "errors": []
+  },
+  "home-garland-320-150-dark": {
+    "shown": true,
+    "rect": [
+      0,
+      69,
+      320,
+      28
+    ],
+    "hits": [],
+    "scrollW": 320,
+    "errors": []
+  },
+  "notice-gift-2026-12-25-412-light": {
+    "title": "A Christmas gift",
+    "art": true,
+    "card": [
+      16,
+      286,
+      380,
+      328
+    ],
+    "vh": 900,
+    "scrollW": 412,
+    "errors": []
+  },
+  "notice-gift-2026-12-25-320-150-light": {
+    "title": "A Christmas gift",
+    "art": true,
+    "card": [
+      16,
+      233,
+      288,
+      434
+    ],
+    "vh": 900,
+    "scrollW": 320,
+    "errors": []
+  },
+  "notice-gift-2026-12-25-412-dark": {
+    "title": "A Christmas gift",
+    "art": true,
+    "card": [
+      16,
+      286,
+      380,
+      328
+    ],
+    "vh": 900,
+    "scrollW": 412,
+    "errors": []
+  },
+  "notice-start-2026-12-01-412-light": {
+    "title": "Winter Tide has begun",
+    "art": false,
+    "card": [
+      16,
+      335,
+      380,
+      230
+    ],
+    "vh": 900,
+    "scrollW": 412,
+    "errors": []
+  },
+  "notice-start-2026-12-01-320-150-light": {
+    "title": "Winter Tide has begun",
+    "art": false,
+    "card": [
+      16,
+      283,
+      288,
+      333
+    ],
+    "vh": 900,
+    "scrollW": 320,
+    "errors": []
+  },
+  "notice-start-2026-12-01-412-dark": {
+    "title": "Winter Tide has begun",
+    "art": false,
+    "card": [
+      16,
+      335,
+      380,
+      230
+    ],
+    "vh": 900,
+    "scrollW": 412,
+    "errors": []
+  }
+}

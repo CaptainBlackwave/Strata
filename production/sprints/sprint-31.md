@@ -1,6 +1,6 @@
 # Sprint 31: Christmas at the seaside (0.27.0)
 
-> **Status: planned (2026-11-24).** From the owner interview on 2026-11-24 (decisions D236–D243). Design: `design/gdd/events.md`, plus the touched sections of `design/gdd/jar-styles.md`, `scenes.md` and `level-map.md`. Evidence: `production/qa/evidence/sprint-31/`. Target: **0.27.0, live before Winter Tide starts on 1 December (UTC)**. The release has no set date before then, but nothing ships half-done.
+> **Status: built; releasing as 0.27.0 (2026-11-24).** From the owner interview on 2026-11-24 (decisions D236–D243). Design: `design/gdd/events.md`, plus the touched sections of `design/gdd/jar-styles.md`, `scenes.md` and `level-map.md`. Evidence: `production/qa/evidence/sprint-31/`. Target: **0.27.0, live before Winter Tide starts on 1 December (UTC)**. The release has no set date before then, but nothing ships half-done.
 
 ## Why
 **Winter Tide** (sprint 17) is the advent event for December. It is built, switched on in the config, and has never run for players; its first season starts on 1 December. The owner wants to:
@@ -97,6 +97,13 @@ Check both boards, light and dark, at 412px and at 320px with 150% text. Anythin
 - D241: the December look is map lights, a Home garland during Winter Tide, and the Winter scenes listed first with a "Festive" tag.
 - D242: one-time start cards for Winter Tide (on 1 December) and New Tide (on 26 December).
 - D243: one complete release, 0.27.0, live before 1 December. Nothing half-done ships.
+- D244 (art review, 2026-11-24): the owner asked for a bolder December look. That means:
+  - bigger map lights, plus Christmas decorations along the map;
+  - a deeper Home garland;
+  - stronger Sparkle flecks on light scenes;
+  - a larger jar on the gift card.
+
+  Board 25's holly caps are enough: no shelf snow, since shelves stay off (D213). Evidence: `production/qa/evidence/sprint-31/art2/`.
 
 ## Out of scope
 - Special jars on event boards (D144 is kept).

@@ -149,10 +149,11 @@
     }
   ],
   "festive": {
-    "$comment": "Sprint 31 (D241): the December look, UTC MM-DD, every year: lights along the level map and the listed scenes first in the scene picker with a Festive tag (no purchase change). The Home garland shows while Winter Tide runs.",
+    "$comment": "Sprint 31 (D241): the December look, UTC MM-DD, every year: lights along the level map, small Christmas decorations in the map's scenery (mapDecor: a fir tree, a snowman, presents and a wreath on the lighthouse) and the listed scenes first in the scene picker with a Festive tag (no purchase change). The Home garland shows while Winter Tide runs.",
     "from": "12-01",
     "to": "12-31",
     "mapLights": true,
+    "mapDecor": true,
     "scenesFirst": ["wintersnow", "winterlights"]
   },
   "weekly": {
