@@ -1,0 +1,3725 @@
+{
+ "dates": {
+  "2026-11-30": {
+   "saveBefore": {},
+   "coinsBefore": 100,
+   "home": {
+    "playCard": false,
+    "title": "",
+    "sub": "",
+    "days": "",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": false,
+    "snowCanvas": false,
+    "musicEvent": null,
+    "musicRoot": 261.63,
+    "clock": "2026-11-30T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": false,
+    "title": "",
+    "sub": "",
+    "days": "",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": false,
+    "snowCanvas": false,
+    "musicEvent": null,
+    "musicRoot": 261.63,
+    "clock": "2026-11-30T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": false,
+    "viaCard": false
+   },
+   "errors": []
+  },
+  "2026-12-01": {
+   "saveBefore": {},
+   "coinsBefore": 100,
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "0 of 24 cleared",
+    "days": "Ends in 30 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "0 of 24 cleared",
+    "days": "Ends in 30 days",
+    "todayCard": true,
+    "todayTitle": "Winter Tide",
+    "todaySub": "Board 1 open · 0 of 24 cleared",
+    "todayDays": "Ends in 30 days",
+    "todayBar": "0%",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 1 open · 0 of 24 cleared · Ends in 30 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "boards": [
+     {
+      "n": 1,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 1, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "locked",
+      "status": "Dec 2",
+      "label": "Board 2, opens Dec 2",
+      "disabled": true
+     },
+     {
+      "n": 3,
+      "state": "locked",
+      "status": "Dec 3",
+      "label": "Board 3, opens Dec 3",
+      "disabled": true
+     },
+     {
+      "n": 4,
+      "state": "locked",
+      "status": "Dec 4",
+      "label": "Board 4, opens Dec 4",
+      "disabled": true
+     },
+     {
+      "n": 5,
+      "state": "locked",
+      "status": "Dec 5",
+      "label": "Board 5, opens Dec 5",
+      "disabled": true
+     },
+     {
+      "n": 6,
+      "state": "locked",
+      "status": "Dec 6",
+      "label": "Board 6, opens Dec 6",
+      "disabled": true
+     },
+     {
+      "n": 7,
+      "state": "locked",
+      "status": "Dec 7",
+      "label": "Board 7, opens Dec 7",
+      "disabled": true
+     },
+     {
+      "n": 8,
+      "state": "locked",
+      "status": "Dec 8",
+      "label": "Board 8, opens Dec 8",
+      "disabled": true
+     },
+     {
+      "n": 9,
+      "state": "locked",
+      "status": "Dec 9",
+      "label": "Board 9, opens Dec 9",
+      "disabled": true
+     },
+     {
+      "n": 10,
+      "state": "locked",
+      "status": "Dec 10",
+      "label": "Board 10, opens Dec 10",
+      "disabled": true
+     },
+     {
+      "n": 11,
+      "state": "locked",
+      "status": "Dec 11",
+      "label": "Board 11, opens Dec 11",
+      "disabled": true
+     },
+     {
+      "n": 12,
+      "state": "locked",
+      "status": "Dec 12",
+      "label": "Board 12, opens Dec 12",
+      "disabled": true
+     },
+     {
+      "n": 13,
+      "state": "locked",
+      "status": "Dec 13",
+      "label": "Board 13, opens Dec 13",
+      "disabled": true
+     },
+     {
+      "n": 14,
+      "state": "locked",
+      "status": "Dec 14",
+      "label": "Board 14, opens Dec 14",
+      "disabled": true
+     },
+     {
+      "n": 15,
+      "state": "locked",
+      "status": "Dec 15",
+      "label": "Board 15, opens Dec 15",
+      "disabled": true
+     },
+     {
+      "n": 16,
+      "state": "locked",
+      "status": "Dec 16",
+      "label": "Board 16, opens Dec 16",
+      "disabled": true
+     },
+     {
+      "n": 17,
+      "state": "locked",
+      "status": "Dec 17",
+      "label": "Board 17, opens Dec 17",
+      "disabled": true
+     },
+     {
+      "n": 18,
+      "state": "locked",
+      "status": "Dec 18",
+      "label": "Board 18, opens Dec 18",
+      "disabled": true
+     },
+     {
+      "n": 19,
+      "state": "locked",
+      "status": "Dec 19",
+      "label": "Board 19, opens Dec 19",
+      "disabled": true
+     },
+     {
+      "n": 20,
+      "state": "locked",
+      "status": "Dec 20",
+      "label": "Board 20, opens Dec 20",
+      "disabled": true
+     },
+     {
+      "n": 21,
+      "state": "locked",
+      "status": "Dec 21",
+      "label": "Board 21, opens Dec 21",
+      "disabled": true
+     },
+     {
+      "n": 22,
+      "state": "locked",
+      "status": "Dec 22",
+      "label": "Board 22, opens Dec 22",
+      "disabled": true
+     },
+     {
+      "n": 23,
+      "state": "locked",
+      "status": "Dec 23",
+      "label": "Board 23, opens Dec 23",
+      "disabled": true
+     },
+     {
+      "n": 24,
+      "state": "locked",
+      "status": "Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     }
+    ],
+    "focus": "1"
+   },
+   "board": {
+    "label": "Winter Tide · Board 1",
+    "ev": [
+     "wintertide",
+     2026,
+     1
+    ],
+    "snowing": true,
+    "jars": 7,
+    "plan": {
+     "solvable": true,
+     "pours": 16,
+     "colors": 5,
+     "capacity": 4,
+     "hidden": 0,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 1",
+    "text": "16 pours · 1 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": "+20",
+    "rewardSr": "+0 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 16
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1
+      ],
+      "pours": {
+       "1": 16
+      }
+     }
+    },
+    "coins": 100,
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    },
+    "jarsSealed": 5,
+    "level": 120
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "snowing": true,
+    "sub": "Board 1 open · 1 of 24 cleared · Ends in 30 days"
+   },
+   "afterReload": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1
+     ],
+     "pours": {
+      "1": 16
+     }
+    }
+   },
+   "errors": []
+  },
+  "2026-12-06": {
+   "saveBefore": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35
+     }
+    }
+   },
+   "coinsBefore": 100,
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "5 of 24 cleared",
+    "days": "Ends in 25 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-06T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "5 of 24 cleared",
+    "days": "Ends in 25 days",
+    "todayCard": true,
+    "todayTitle": "Winter Tide",
+    "todaySub": "Board 6 open · 5 of 24 cleared",
+    "todayDays": "Ends in 25 days",
+    "todayBar": "20.8333%",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-06T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 6 open · 5 of 24 cleared · Ends in 25 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "boards": [
+     {
+      "n": 1,
+      "state": "cleared",
+      "status": "✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "cleared",
+      "status": "✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 3,
+      "state": "cleared",
+      "status": "✓ 33",
+      "label": "Board 3, cleared, best 33 pours",
+      "disabled": false
+     },
+     {
+      "n": 4,
+      "state": "cleared",
+      "status": "✓ 34",
+      "label": "Board 4, cleared, best 34 pours",
+      "disabled": false
+     },
+     {
+      "n": 5,
+      "state": "cleared",
+      "status": "✓ 35",
+      "label": "Board 5, cleared, best 35 pours",
+      "disabled": false
+     },
+     {
+      "n": 6,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 6, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 7,
+      "state": "locked",
+      "status": "Dec 7",
+      "label": "Board 7, opens Dec 7",
+      "disabled": true
+     },
+     {
+      "n": 8,
+      "state": "locked",
+      "status": "Dec 8",
+      "label": "Board 8, opens Dec 8",
+      "disabled": true
+     },
+     {
+      "n": 9,
+      "state": "locked",
+      "status": "Dec 9",
+      "label": "Board 9, opens Dec 9",
+      "disabled": true
+     },
+     {
+      "n": 10,
+      "state": "locked",
+      "status": "Dec 10",
+      "label": "Board 10, opens Dec 10",
+      "disabled": true
+     },
+     {
+      "n": 11,
+      "state": "locked",
+      "status": "Dec 11",
+      "label": "Board 11, opens Dec 11",
+      "disabled": true
+     },
+     {
+      "n": 12,
+      "state": "locked",
+      "status": "Dec 12",
+      "label": "Board 12, opens Dec 12",
+      "disabled": true
+     },
+     {
+      "n": 13,
+      "state": "locked",
+      "status": "Dec 13",
+      "label": "Board 13, opens Dec 13",
+      "disabled": true
+     },
+     {
+      "n": 14,
+      "state": "locked",
+      "status": "Dec 14",
+      "label": "Board 14, opens Dec 14",
+      "disabled": true
+     },
+     {
+      "n": 15,
+      "state": "locked",
+      "status": "Dec 15",
+      "label": "Board 15, opens Dec 15",
+      "disabled": true
+     },
+     {
+      "n": 16,
+      "state": "locked",
+      "status": "Dec 16",
+      "label": "Board 16, opens Dec 16",
+      "disabled": true
+     },
+     {
+      "n": 17,
+      "state": "locked",
+      "status": "Dec 17",
+      "label": "Board 17, opens Dec 17",
+      "disabled": true
+     },
+     {
+      "n": 18,
+      "state": "locked",
+      "status": "Dec 18",
+      "label": "Board 18, opens Dec 18",
+      "disabled": true
+     },
+     {
+      "n": 19,
+      "state": "locked",
+      "status": "Dec 19",
+      "label": "Board 19, opens Dec 19",
+      "disabled": true
+     },
+     {
+      "n": 20,
+      "state": "locked",
+      "status": "Dec 20",
+      "label": "Board 20, opens Dec 20",
+      "disabled": true
+     },
+     {
+      "n": 21,
+      "state": "locked",
+      "status": "Dec 21",
+      "label": "Board 21, opens Dec 21",
+      "disabled": true
+     },
+     {
+      "n": 22,
+      "state": "locked",
+      "status": "Dec 22",
+      "label": "Board 22, opens Dec 22",
+      "disabled": true
+     },
+     {
+      "n": 23,
+      "state": "locked",
+      "status": "Dec 23",
+      "label": "Board 23, opens Dec 23",
+      "disabled": true
+     },
+     {
+      "n": 24,
+      "state": "locked",
+      "status": "Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     }
+    ],
+    "focus": "6"
+   },
+   "board": {
+    "label": "Winter Tide · Board 6",
+    "ev": [
+     "wintertide",
+     2026,
+     6
+    ],
+    "snowing": true,
+    "jars": 9,
+    "plan": {
+     "solvable": true,
+     "pours": 26,
+     "colors": 7,
+     "capacity": 4,
+     "hidden": 7,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 6",
+    "text": "1 pour · 6 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "rewardSr": "+50 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 1
+      }
+     }
+    },
+    "coins": 150,
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    },
+    "jarsSealed": 7,
+    "level": 120
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "snowing": true,
+    "sub": "Board 6 open · 6 of 24 cleared · Ends in 25 days"
+   },
+   "afterReload": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 1
+     }
+    }
+   },
+   "errors": []
+  },
+  "2026-12-12": {
+   "saveBefore": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      10,
+      11,
+      12
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42
+     }
+    }
+   },
+   "coinsBefore": 100,
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "11 of 24 cleared",
+    "days": "Ends in 19 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-12T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "11 of 24 cleared",
+    "days": "Ends in 19 days",
+    "todayCard": true,
+    "todayTitle": "Winter Tide",
+    "todaySub": "Board 12 open · 11 of 24 cleared",
+    "todayDays": "Ends in 19 days",
+    "todayBar": "45.8333%",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-12T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 12 open · 11 of 24 cleared · Ends in 19 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "boards": [
+     {
+      "n": 1,
+      "state": "cleared",
+      "status": "✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "cleared",
+      "status": "✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 3,
+      "state": "cleared",
+      "status": "✓ 33",
+      "label": "Board 3, cleared, best 33 pours",
+      "disabled": false
+     },
+     {
+      "n": 4,
+      "state": "cleared",
+      "status": "✓ 34",
+      "label": "Board 4, cleared, best 34 pours",
+      "disabled": false
+     },
+     {
+      "n": 5,
+      "state": "cleared",
+      "status": "✓ 35",
+      "label": "Board 5, cleared, best 35 pours",
+      "disabled": false
+     },
+     {
+      "n": 6,
+      "state": "cleared",
+      "status": "✓ 36",
+      "label": "Board 6, cleared, best 36 pours",
+      "disabled": false
+     },
+     {
+      "n": 7,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 7, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 8,
+      "state": "cleared",
+      "status": "✓ 38",
+      "label": "Board 8, cleared, best 38 pours",
+      "disabled": false
+     },
+     {
+      "n": 9,
+      "state": "cleared",
+      "status": "✓ 39",
+      "label": "Board 9, cleared, best 39 pours",
+      "disabled": false
+     },
+     {
+      "n": 10,
+      "state": "cleared",
+      "status": "✓ 40",
+      "label": "Board 10, cleared, best 40 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "state": "cleared",
+      "status": "✓ 41",
+      "label": "Board 11, cleared, best 41 pours",
+      "disabled": false
+     },
+     {
+      "n": 12,
+      "state": "cleared",
+      "status": "✓ 42",
+      "label": "Board 12, cleared, best 42 pours",
+      "disabled": false
+     },
+     {
+      "n": 13,
+      "state": "locked",
+      "status": "Dec 13",
+      "label": "Board 13, opens Dec 13",
+      "disabled": true
+     },
+     {
+      "n": 14,
+      "state": "locked",
+      "status": "Dec 14",
+      "label": "Board 14, opens Dec 14",
+      "disabled": true
+     },
+     {
+      "n": 15,
+      "state": "locked",
+      "status": "Dec 15",
+      "label": "Board 15, opens Dec 15",
+      "disabled": true
+     },
+     {
+      "n": 16,
+      "state": "locked",
+      "status": "Dec 16",
+      "label": "Board 16, opens Dec 16",
+      "disabled": true
+     },
+     {
+      "n": 17,
+      "state": "locked",
+      "status": "Dec 17",
+      "label": "Board 17, opens Dec 17",
+      "disabled": true
+     },
+     {
+      "n": 18,
+      "state": "locked",
+      "status": "Dec 18",
+      "label": "Board 18, opens Dec 18",
+      "disabled": true
+     },
+     {
+      "n": 19,
+      "state": "locked",
+      "status": "Dec 19",
+      "label": "Board 19, opens Dec 19",
+      "disabled": true
+     },
+     {
+      "n": 20,
+      "state": "locked",
+      "status": "Dec 20",
+      "label": "Board 20, opens Dec 20",
+      "disabled": true
+     },
+     {
+      "n": 21,
+      "state": "locked",
+      "status": "Dec 21",
+      "label": "Board 21, opens Dec 21",
+      "disabled": true
+     },
+     {
+      "n": 22,
+      "state": "locked",
+      "status": "Dec 22",
+      "label": "Board 22, opens Dec 22",
+      "disabled": true
+     },
+     {
+      "n": 23,
+      "state": "locked",
+      "status": "Dec 23",
+      "label": "Board 23, opens Dec 23",
+      "disabled": true
+     },
+     {
+      "n": 24,
+      "state": "locked",
+      "status": "Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     }
+    ],
+    "focus": "7"
+   },
+   "board": {
+    "label": "Winter Tide · Board 7",
+    "ev": [
+     "wintertide",
+     2026,
+     7
+    ],
+    "snowing": true,
+    "jars": 7,
+    "plan": {
+     "solvable": true,
+     "pours": 19,
+     "colors": 5,
+     "capacity": 4,
+     "hidden": 0,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 7",
+    "text": "1 pour · 12 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "rewardSr": "+50 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 1,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42
+      }
+     }
+    },
+    "coins": 150,
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    },
+    "jarsSealed": 5,
+    "level": 120
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "snowing": true,
+    "sub": "Board 12 open · 12 of 24 cleared · Ends in 19 days"
+   },
+   "afterReload": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 1,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42
+     }
+    }
+   },
+   "errors": []
+  },
+  "2026-12-24": {
+   "saveBefore": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42,
+      "13": 43,
+      "14": 44,
+      "15": 45,
+      "16": 46,
+      "17": 47,
+      "18": 48,
+      "19": 49,
+      "20": 50,
+      "21": 51,
+      "22": 52,
+      "23": 53
+     }
+    }
+   },
+   "coinsBefore": 100,
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "23 of 24 cleared",
+    "days": "Ends in 7 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-24T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "23 of 24 cleared",
+    "days": "Ends in 7 days",
+    "todayCard": true,
+    "todayTitle": "Winter Tide",
+    "todaySub": "All 24 boards open · 23 of 24 cleared",
+    "todayDays": "Ends in 7 days",
+    "todayBar": "95.8333%",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-24T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "All 24 boards open · 23 of 24 cleared · Ends in 7 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "boards": [
+     {
+      "n": 1,
+      "state": "cleared",
+      "status": "✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "cleared",
+      "status": "✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 3,
+      "state": "cleared",
+      "status": "✓ 33",
+      "label": "Board 3, cleared, best 33 pours",
+      "disabled": false
+     },
+     {
+      "n": 4,
+      "state": "cleared",
+      "status": "✓ 34",
+      "label": "Board 4, cleared, best 34 pours",
+      "disabled": false
+     },
+     {
+      "n": 5,
+      "state": "cleared",
+      "status": "✓ 35",
+      "label": "Board 5, cleared, best 35 pours",
+      "disabled": false
+     },
+     {
+      "n": 6,
+      "state": "cleared",
+      "status": "✓ 36",
+      "label": "Board 6, cleared, best 36 pours",
+      "disabled": false
+     },
+     {
+      "n": 7,
+      "state": "cleared",
+      "status": "✓ 37",
+      "label": "Board 7, cleared, best 37 pours",
+      "disabled": false
+     },
+     {
+      "n": 8,
+      "state": "cleared",
+      "status": "✓ 38",
+      "label": "Board 8, cleared, best 38 pours",
+      "disabled": false
+     },
+     {
+      "n": 9,
+      "state": "cleared",
+      "status": "✓ 39",
+      "label": "Board 9, cleared, best 39 pours",
+      "disabled": false
+     },
+     {
+      "n": 10,
+      "state": "cleared",
+      "status": "✓ 40",
+      "label": "Board 10, cleared, best 40 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "state": "cleared",
+      "status": "✓ 41",
+      "label": "Board 11, cleared, best 41 pours",
+      "disabled": false
+     },
+     {
+      "n": 12,
+      "state": "cleared",
+      "status": "✓ 42",
+      "label": "Board 12, cleared, best 42 pours",
+      "disabled": false
+     },
+     {
+      "n": 13,
+      "state": "cleared",
+      "status": "✓ 43",
+      "label": "Board 13, cleared, best 43 pours",
+      "disabled": false
+     },
+     {
+      "n": 14,
+      "state": "cleared",
+      "status": "✓ 44",
+      "label": "Board 14, cleared, best 44 pours",
+      "disabled": false
+     },
+     {
+      "n": 15,
+      "state": "cleared",
+      "status": "✓ 45",
+      "label": "Board 15, cleared, best 45 pours",
+      "disabled": false
+     },
+     {
+      "n": 16,
+      "state": "cleared",
+      "status": "✓ 46",
+      "label": "Board 16, cleared, best 46 pours",
+      "disabled": false
+     },
+     {
+      "n": 17,
+      "state": "cleared",
+      "status": "✓ 47",
+      "label": "Board 17, cleared, best 47 pours",
+      "disabled": false
+     },
+     {
+      "n": 18,
+      "state": "cleared",
+      "status": "✓ 48",
+      "label": "Board 18, cleared, best 48 pours",
+      "disabled": false
+     },
+     {
+      "n": 19,
+      "state": "cleared",
+      "status": "✓ 49",
+      "label": "Board 19, cleared, best 49 pours",
+      "disabled": false
+     },
+     {
+      "n": 20,
+      "state": "cleared",
+      "status": "✓ 50",
+      "label": "Board 20, cleared, best 50 pours",
+      "disabled": false
+     },
+     {
+      "n": 21,
+      "state": "cleared",
+      "status": "✓ 51",
+      "label": "Board 21, cleared, best 51 pours",
+      "disabled": false
+     },
+     {
+      "n": 22,
+      "state": "cleared",
+      "status": "✓ 52",
+      "label": "Board 22, cleared, best 52 pours",
+      "disabled": false
+     },
+     {
+      "n": 23,
+      "state": "cleared",
+      "status": "✓ 53",
+      "label": "Board 23, cleared, best 53 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     }
+    ],
+    "focus": "24"
+   },
+   "board": {
+    "label": "Winter Tide · Board 24",
+    "ev": [
+     "wintertide",
+     2026,
+     24
+    ],
+    "snowing": true,
+    "jars": 9,
+    "plan": {
+     "solvable": true,
+     "pours": 29,
+     "colors": 7,
+     "capacity": 4,
+     "hidden": 7,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide complete!",
+    "text": "29 pours · 24 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "rewardSr": "+50 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-prize: Frost jar glass is yours",
+     "win-shell win-unlock win-badge: New badges: Winter Tide, First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 29
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 29
+      }
+     }
+    },
+    "coins": 150,
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "event-wintertide",
+     "first-seal"
+    ],
+    "owned": [
+     "glass:frost"
+    ],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    },
+    "jarsSealed": 7,
+    "level": 120
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "snowing": true,
+    "sub": "All 24 boards open · All cleared ✓ · Ends in 7 days"
+   },
+   "afterReload": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42,
+      "13": 43,
+      "14": 44,
+      "15": 45,
+      "16": 46,
+      "17": 47,
+      "18": 48,
+      "19": 49,
+      "20": 50,
+      "21": 51,
+      "22": 52,
+      "23": 53,
+      "24": 29
+     }
+    }
+   },
+   "styles": {
+    "found": true,
+    "text": "FrostOwned",
+    "stylesBtnHidden": false
+   },
+   "errors": []
+  },
+  "2026-12-25": {
+   "saveBefore": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40
+     }
+    }
+   },
+   "coinsBefore": 100,
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "9 of 24 cleared",
+    "days": "Ends in 6 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-25T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "9 of 24 cleared",
+    "days": "Ends in 6 days",
+    "todayCard": true,
+    "todayTitle": "Winter Tide",
+    "todaySub": "All 24 boards open · 9 of 24 cleared",
+    "todayDays": "Ends in 6 days",
+    "todayBar": "37.5%",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-25T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "All 24 boards open · 9 of 24 cleared · Ends in 6 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "boards": [
+     {
+      "n": 1,
+      "state": "cleared",
+      "status": "✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "cleared",
+      "status": "✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 3,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 3, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 4,
+      "state": "cleared",
+      "status": "✓ 34",
+      "label": "Board 4, cleared, best 34 pours",
+      "disabled": false
+     },
+     {
+      "n": 5,
+      "state": "cleared",
+      "status": "✓ 35",
+      "label": "Board 5, cleared, best 35 pours",
+      "disabled": false
+     },
+     {
+      "n": 6,
+      "state": "cleared",
+      "status": "✓ 36",
+      "label": "Board 6, cleared, best 36 pours",
+      "disabled": false
+     },
+     {
+      "n": 7,
+      "state": "cleared",
+      "status": "✓ 37",
+      "label": "Board 7, cleared, best 37 pours",
+      "disabled": false
+     },
+     {
+      "n": 8,
+      "state": "cleared",
+      "status": "✓ 38",
+      "label": "Board 8, cleared, best 38 pours",
+      "disabled": false
+     },
+     {
+      "n": 9,
+      "state": "cleared",
+      "status": "✓ 39",
+      "label": "Board 9, cleared, best 39 pours",
+      "disabled": false
+     },
+     {
+      "n": 10,
+      "state": "cleared",
+      "status": "✓ 40",
+      "label": "Board 10, cleared, best 40 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 11, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 12,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 12, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 13,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 13, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 14,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 14, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 15,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 15, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 16,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 16, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 17,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 17, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 18,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 18, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 19,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 19, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 20,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 20, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 21,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 21, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 22,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 22, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 23,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 23, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     }
+    ],
+    "focus": "3"
+   },
+   "board": {
+    "label": "Winter Tide · Board 3",
+    "ev": [
+     "wintertide",
+     2026,
+     3
+    ],
+    "snowing": true,
+    "jars": 9,
+    "plan": {
+     "solvable": true,
+     "pours": 29,
+     "colors": 7,
+     "capacity": 4,
+     "hidden": 7,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 3",
+    "text": "1 pour · 10 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": "+20",
+    "rewardSr": "+0 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 1,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40
+      }
+     }
+    },
+    "coins": 100,
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    },
+    "jarsSealed": 7,
+    "level": 120
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "snowing": true,
+    "sub": "All 24 boards open · 10 of 24 cleared · Ends in 6 days"
+   },
+   "afterReload": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 1,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40
+     }
+    }
+   },
+   "errors": []
+  },
+  "2026-12-31": {
+   "saveBefore": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42,
+      "13": 43,
+      "14": 44,
+      "15": 45,
+      "16": 46,
+      "17": 47,
+      "18": 48,
+      "19": 49,
+      "20": 50
+     }
+    }
+   },
+   "coinsBefore": 100,
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "20 of 24 cleared",
+    "days": "Last day",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-31T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "20 of 24 cleared",
+    "days": "Last day",
+    "todayCard": true,
+    "todayTitle": "Winter Tide",
+    "todaySub": "All 24 boards open · 20 of 24 cleared",
+    "todayDays": "Last day",
+    "todayBar": "83.3333%",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-31T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "All 24 boards open · 20 of 24 cleared · Last day",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "boards": [
+     {
+      "n": 1,
+      "state": "cleared",
+      "status": "✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "cleared",
+      "status": "✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 3,
+      "state": "cleared",
+      "status": "✓ 33",
+      "label": "Board 3, cleared, best 33 pours",
+      "disabled": false
+     },
+     {
+      "n": 4,
+      "state": "cleared",
+      "status": "✓ 34",
+      "label": "Board 4, cleared, best 34 pours",
+      "disabled": false
+     },
+     {
+      "n": 5,
+      "state": "cleared",
+      "status": "✓ 35",
+      "label": "Board 5, cleared, best 35 pours",
+      "disabled": false
+     },
+     {
+      "n": 6,
+      "state": "cleared",
+      "status": "✓ 36",
+      "label": "Board 6, cleared, best 36 pours",
+      "disabled": false
+     },
+     {
+      "n": 7,
+      "state": "cleared",
+      "status": "✓ 37",
+      "label": "Board 7, cleared, best 37 pours",
+      "disabled": false
+     },
+     {
+      "n": 8,
+      "state": "cleared",
+      "status": "✓ 38",
+      "label": "Board 8, cleared, best 38 pours",
+      "disabled": false
+     },
+     {
+      "n": 9,
+      "state": "cleared",
+      "status": "✓ 39",
+      "label": "Board 9, cleared, best 39 pours",
+      "disabled": false
+     },
+     {
+      "n": 10,
+      "state": "cleared",
+      "status": "✓ 40",
+      "label": "Board 10, cleared, best 40 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "state": "cleared",
+      "status": "✓ 41",
+      "label": "Board 11, cleared, best 41 pours",
+      "disabled": false
+     },
+     {
+      "n": 12,
+      "state": "cleared",
+      "status": "✓ 42",
+      "label": "Board 12, cleared, best 42 pours",
+      "disabled": false
+     },
+     {
+      "n": 13,
+      "state": "cleared",
+      "status": "✓ 43",
+      "label": "Board 13, cleared, best 43 pours",
+      "disabled": false
+     },
+     {
+      "n": 14,
+      "state": "cleared",
+      "status": "✓ 44",
+      "label": "Board 14, cleared, best 44 pours",
+      "disabled": false
+     },
+     {
+      "n": 15,
+      "state": "cleared",
+      "status": "✓ 45",
+      "label": "Board 15, cleared, best 45 pours",
+      "disabled": false
+     },
+     {
+      "n": 16,
+      "state": "cleared",
+      "status": "✓ 46",
+      "label": "Board 16, cleared, best 46 pours",
+      "disabled": false
+     },
+     {
+      "n": 17,
+      "state": "cleared",
+      "status": "✓ 47",
+      "label": "Board 17, cleared, best 47 pours",
+      "disabled": false
+     },
+     {
+      "n": 18,
+      "state": "cleared",
+      "status": "✓ 48",
+      "label": "Board 18, cleared, best 48 pours",
+      "disabled": false
+     },
+     {
+      "n": 19,
+      "state": "cleared",
+      "status": "✓ 49",
+      "label": "Board 19, cleared, best 49 pours",
+      "disabled": false
+     },
+     {
+      "n": 20,
+      "state": "cleared",
+      "status": "✓ 50",
+      "label": "Board 20, cleared, best 50 pours",
+      "disabled": false
+     },
+     {
+      "n": 21,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 21, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 22,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 22, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 23,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 23, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     }
+    ],
+    "focus": "21"
+   },
+   "board": {
+    "label": "Winter Tide · Board 23",
+    "ev": [
+     "wintertide",
+     2026,
+     23
+    ],
+    "snowing": true,
+    "jars": 8,
+    "plan": {
+     "solvable": true,
+     "pours": 23,
+     "colors": 6,
+     "capacity": 4,
+     "hidden": 0,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 23",
+    "text": "1 pour · 21 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": "+20",
+    "rewardSr": "+0 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2026,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       23
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "23": 1
+      }
+     }
+    },
+    "coins": 100,
+    "badges": [
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [],
+    "worn": {
+     "glass": "clear",
+     "cork": "cork",
+     "sand": "plain"
+    },
+    "jarsSealed": 6,
+    "level": 120
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "snowing": true,
+    "sub": "All 24 boards open · 21 of 24 cleared · Last day"
+   },
+   "afterReload": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      23
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42,
+      "13": 43,
+      "14": 44,
+      "15": 45,
+      "16": 46,
+      "17": 47,
+      "18": 48,
+      "19": 49,
+      "20": 50,
+      "23": 1
+     }
+    }
+   },
+   "errors": []
+  },
+  "2027-01-01": {
+   "saveBefore": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42,
+      "13": 43,
+      "14": 44,
+      "15": 45,
+      "16": 46,
+      "17": 47,
+      "18": 48,
+      "19": 49,
+      "20": 50
+     }
+    }
+   },
+   "coinsBefore": 100,
+   "home": {
+    "playCard": false,
+    "title": "",
+    "sub": "",
+    "days": "",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": false,
+    "snowCanvas": false,
+    "musicEvent": null,
+    "musicRoot": 261.63,
+    "clock": "2027-01-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": false,
+    "title": "",
+    "sub": "",
+    "days": "",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": false,
+    "snowCanvas": false,
+    "musicEvent": null,
+    "musicRoot": 261.63,
+    "clock": "2027-01-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": false,
+    "viaCard": false
+   },
+   "errors": []
+  },
+  "2027-12-01": {
+   "saveBefore": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42,
+      "13": 43,
+      "14": 44,
+      "15": 45,
+      "16": 46,
+      "17": 47,
+      "18": 48,
+      "19": 49,
+      "20": 50,
+      "21": 51,
+      "22": 52,
+      "23": 53,
+      "24": 54
+     }
+    }
+   },
+   "coinsBefore": 100,
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "0 of 24 cleared",
+    "days": "Ends in 30 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2027-12-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "todayTab": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "0 of 24 cleared",
+    "days": "Ends in 30 days",
+    "todayCard": true,
+    "todayTitle": "Winter Tide",
+    "todaySub": "Board 1 open · 0 of 24 cleared",
+    "todayDays": "Ends in 30 days",
+    "todayBar": "0%",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2027-12-01T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "Board 1 open · 0 of 24 cleared · Ends in 30 days",
+    "prize": "Prize collected",
+    "boards": [
+     {
+      "n": 1,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 1, not cleared yet",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "locked",
+      "status": "Dec 2",
+      "label": "Board 2, opens Dec 2",
+      "disabled": true
+     },
+     {
+      "n": 3,
+      "state": "locked",
+      "status": "Dec 3",
+      "label": "Board 3, opens Dec 3",
+      "disabled": true
+     },
+     {
+      "n": 4,
+      "state": "locked",
+      "status": "Dec 4",
+      "label": "Board 4, opens Dec 4",
+      "disabled": true
+     },
+     {
+      "n": 5,
+      "state": "locked",
+      "status": "Dec 5",
+      "label": "Board 5, opens Dec 5",
+      "disabled": true
+     },
+     {
+      "n": 6,
+      "state": "locked",
+      "status": "Dec 6",
+      "label": "Board 6, opens Dec 6",
+      "disabled": true
+     },
+     {
+      "n": 7,
+      "state": "locked",
+      "status": "Dec 7",
+      "label": "Board 7, opens Dec 7",
+      "disabled": true
+     },
+     {
+      "n": 8,
+      "state": "locked",
+      "status": "Dec 8",
+      "label": "Board 8, opens Dec 8",
+      "disabled": true
+     },
+     {
+      "n": 9,
+      "state": "locked",
+      "status": "Dec 9",
+      "label": "Board 9, opens Dec 9",
+      "disabled": true
+     },
+     {
+      "n": 10,
+      "state": "locked",
+      "status": "Dec 10",
+      "label": "Board 10, opens Dec 10",
+      "disabled": true
+     },
+     {
+      "n": 11,
+      "state": "locked",
+      "status": "Dec 11",
+      "label": "Board 11, opens Dec 11",
+      "disabled": true
+     },
+     {
+      "n": 12,
+      "state": "locked",
+      "status": "Dec 12",
+      "label": "Board 12, opens Dec 12",
+      "disabled": true
+     },
+     {
+      "n": 13,
+      "state": "locked",
+      "status": "Dec 13",
+      "label": "Board 13, opens Dec 13",
+      "disabled": true
+     },
+     {
+      "n": 14,
+      "state": "locked",
+      "status": "Dec 14",
+      "label": "Board 14, opens Dec 14",
+      "disabled": true
+     },
+     {
+      "n": 15,
+      "state": "locked",
+      "status": "Dec 15",
+      "label": "Board 15, opens Dec 15",
+      "disabled": true
+     },
+     {
+      "n": 16,
+      "state": "locked",
+      "status": "Dec 16",
+      "label": "Board 16, opens Dec 16",
+      "disabled": true
+     },
+     {
+      "n": 17,
+      "state": "locked",
+      "status": "Dec 17",
+      "label": "Board 17, opens Dec 17",
+      "disabled": true
+     },
+     {
+      "n": 18,
+      "state": "locked",
+      "status": "Dec 18",
+      "label": "Board 18, opens Dec 18",
+      "disabled": true
+     },
+     {
+      "n": 19,
+      "state": "locked",
+      "status": "Dec 19",
+      "label": "Board 19, opens Dec 19",
+      "disabled": true
+     },
+     {
+      "n": 20,
+      "state": "locked",
+      "status": "Dec 20",
+      "label": "Board 20, opens Dec 20",
+      "disabled": true
+     },
+     {
+      "n": 21,
+      "state": "locked",
+      "status": "Dec 21",
+      "label": "Board 21, opens Dec 21",
+      "disabled": true
+     },
+     {
+      "n": 22,
+      "state": "locked",
+      "status": "Dec 22",
+      "label": "Board 22, opens Dec 22",
+      "disabled": true
+     },
+     {
+      "n": 23,
+      "state": "locked",
+      "status": "Dec 23",
+      "label": "Board 23, opens Dec 23",
+      "disabled": true
+     },
+     {
+      "n": 24,
+      "state": "locked",
+      "status": "Dec 24",
+      "label": "Board 24, opens Dec 24",
+      "disabled": true
+     }
+    ],
+    "focus": "1"
+   },
+   "board": {
+    "label": "Winter Tide · Board 1",
+    "ev": [
+     "wintertide",
+     2027,
+     1
+    ],
+    "snowing": true,
+    "jars": 7,
+    "plan": {
+     "solvable": true,
+     "pours": 21,
+     "colors": 5,
+     "capacity": 4,
+     "hidden": 0,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 1",
+    "text": "21 pours · 1 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": "+20",
+    "rewardSr": "+0 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 21
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2027,
+      "cleared": [
+       1
+      ],
+      "pours": {
+       "1": 21
+      }
+     }
+    },
+    "coins": 100,
+    "badges": [
+     "event-wintertide",
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [
+     "glass:frost"
+    ],
+    "worn": {
+     "glass": "frost",
+     "cork": "cork",
+     "sand": "plain"
+    },
+    "jarsSealed": 5,
+    "level": 120
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": true,
+    "snowing": true,
+    "sub": "Board 1 open · 1 of 24 cleared · Ends in 30 days"
+   },
+   "afterReload": {
+    "wintertide": {
+     "year": 2027,
+     "cleared": [
+      1
+     ],
+     "pours": {
+      "1": 21
+     }
+    }
+   },
+   "styles": {
+    "found": true,
+    "text": "FrostWearing",
+    "stylesBtnHidden": false
+   },
+   "errors": []
+  }
+ },
+ "extra": {
+  "secondYearComplete": {
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "All 24 boards open · 23 of 24 cleared · Ends in 7 days",
+    "prize": "Prize collected",
+    "boards": [
+     {
+      "n": 1,
+      "state": "cleared",
+      "status": "✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "cleared",
+      "status": "✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 3,
+      "state": "cleared",
+      "status": "✓ 33",
+      "label": "Board 3, cleared, best 33 pours",
+      "disabled": false
+     },
+     {
+      "n": 4,
+      "state": "cleared",
+      "status": "✓ 34",
+      "label": "Board 4, cleared, best 34 pours",
+      "disabled": false
+     },
+     {
+      "n": 5,
+      "state": "cleared",
+      "status": "✓ 35",
+      "label": "Board 5, cleared, best 35 pours",
+      "disabled": false
+     },
+     {
+      "n": 6,
+      "state": "cleared",
+      "status": "✓ 36",
+      "label": "Board 6, cleared, best 36 pours",
+      "disabled": false
+     },
+     {
+      "n": 7,
+      "state": "cleared",
+      "status": "✓ 37",
+      "label": "Board 7, cleared, best 37 pours",
+      "disabled": false
+     },
+     {
+      "n": 8,
+      "state": "cleared",
+      "status": "✓ 38",
+      "label": "Board 8, cleared, best 38 pours",
+      "disabled": false
+     },
+     {
+      "n": 9,
+      "state": "cleared",
+      "status": "✓ 39",
+      "label": "Board 9, cleared, best 39 pours",
+      "disabled": false
+     },
+     {
+      "n": 10,
+      "state": "cleared",
+      "status": "✓ 40",
+      "label": "Board 10, cleared, best 40 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "state": "cleared",
+      "status": "✓ 41",
+      "label": "Board 11, cleared, best 41 pours",
+      "disabled": false
+     },
+     {
+      "n": 12,
+      "state": "cleared",
+      "status": "✓ 42",
+      "label": "Board 12, cleared, best 42 pours",
+      "disabled": false
+     },
+     {
+      "n": 13,
+      "state": "cleared",
+      "status": "✓ 43",
+      "label": "Board 13, cleared, best 43 pours",
+      "disabled": false
+     },
+     {
+      "n": 14,
+      "state": "cleared",
+      "status": "✓ 44",
+      "label": "Board 14, cleared, best 44 pours",
+      "disabled": false
+     },
+     {
+      "n": 15,
+      "state": "cleared",
+      "status": "✓ 45",
+      "label": "Board 15, cleared, best 45 pours",
+      "disabled": false
+     },
+     {
+      "n": 16,
+      "state": "cleared",
+      "status": "✓ 46",
+      "label": "Board 16, cleared, best 46 pours",
+      "disabled": false
+     },
+     {
+      "n": 17,
+      "state": "cleared",
+      "status": "✓ 47",
+      "label": "Board 17, cleared, best 47 pours",
+      "disabled": false
+     },
+     {
+      "n": 18,
+      "state": "cleared",
+      "status": "✓ 48",
+      "label": "Board 18, cleared, best 48 pours",
+      "disabled": false
+     },
+     {
+      "n": 19,
+      "state": "cleared",
+      "status": "✓ 49",
+      "label": "Board 19, cleared, best 49 pours",
+      "disabled": false
+     },
+     {
+      "n": 20,
+      "state": "cleared",
+      "status": "✓ 50",
+      "label": "Board 20, cleared, best 50 pours",
+      "disabled": false
+     },
+     {
+      "n": 21,
+      "state": "cleared",
+      "status": "✓ 51",
+      "label": "Board 21, cleared, best 51 pours",
+      "disabled": false
+     },
+     {
+      "n": 22,
+      "state": "cleared",
+      "status": "✓ 52",
+      "label": "Board 22, cleared, best 52 pours",
+      "disabled": false
+     },
+     {
+      "n": 23,
+      "state": "cleared",
+      "status": "✓ 53",
+      "label": "Board 23, cleared, best 53 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     }
+    ],
+    "focus": "24"
+   },
+   "board": {
+    "label": "Winter Tide · Board 24",
+    "ev": [
+     "wintertide",
+     2027,
+     24
+    ],
+    "snowing": true,
+    "jars": 9,
+    "plan": {
+     "solvable": true,
+     "pours": 26,
+     "colors": 7,
+     "capacity": 4,
+     "hidden": 7,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide complete!",
+    "text": "1 pour · 24 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "rewardSr": "+50 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-prize: Frost jar glass is yours",
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "saveAfter": {
+    "events": {
+     "wintertide": {
+      "year": 2027,
+      "cleared": [
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24
+      ],
+      "pours": {
+       "1": 31,
+       "2": 32,
+       "3": 33,
+       "4": 34,
+       "5": 35,
+       "6": 36,
+       "7": 37,
+       "8": 38,
+       "9": 39,
+       "10": 40,
+       "11": 41,
+       "12": 42,
+       "13": 43,
+       "14": 44,
+       "15": 45,
+       "16": 46,
+       "17": 47,
+       "18": 48,
+       "19": 49,
+       "20": 50,
+       "21": 51,
+       "22": 52,
+       "23": 53,
+       "24": 1
+      }
+     }
+    },
+    "coins": 150,
+    "badges": [
+     "event-wintertide",
+     "levels-10",
+     "levels-50",
+     "levels-100",
+     "mechanics-1",
+     "mechanics-4",
+     "first-seal"
+    ],
+    "owned": [
+     "glass:frost"
+    ]
+   },
+   "errors": []
+  },
+  "lowLevelPrize": {
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "23 of 24 cleared",
+    "days": "Ends in 7 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-24T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "chooser": {
+    "opened": true,
+    "viaCard": true,
+    "title": "Winter Tide",
+    "sub": "All 24 boards open · 23 of 24 cleared · Ends in 7 days",
+    "prize": "Clear all 24 for the Frost jar glass and the Winter Tide badge",
+    "boards": [
+     {
+      "n": 1,
+      "state": "cleared",
+      "status": "✓ 31",
+      "label": "Board 1, cleared, best 31 pours",
+      "disabled": false
+     },
+     {
+      "n": 2,
+      "state": "cleared",
+      "status": "✓ 32",
+      "label": "Board 2, cleared, best 32 pours",
+      "disabled": false
+     },
+     {
+      "n": 3,
+      "state": "cleared",
+      "status": "✓ 33",
+      "label": "Board 3, cleared, best 33 pours",
+      "disabled": false
+     },
+     {
+      "n": 4,
+      "state": "cleared",
+      "status": "✓ 34",
+      "label": "Board 4, cleared, best 34 pours",
+      "disabled": false
+     },
+     {
+      "n": 5,
+      "state": "cleared",
+      "status": "✓ 35",
+      "label": "Board 5, cleared, best 35 pours",
+      "disabled": false
+     },
+     {
+      "n": 6,
+      "state": "cleared",
+      "status": "✓ 36",
+      "label": "Board 6, cleared, best 36 pours",
+      "disabled": false
+     },
+     {
+      "n": 7,
+      "state": "cleared",
+      "status": "✓ 37",
+      "label": "Board 7, cleared, best 37 pours",
+      "disabled": false
+     },
+     {
+      "n": 8,
+      "state": "cleared",
+      "status": "✓ 38",
+      "label": "Board 8, cleared, best 38 pours",
+      "disabled": false
+     },
+     {
+      "n": 9,
+      "state": "cleared",
+      "status": "✓ 39",
+      "label": "Board 9, cleared, best 39 pours",
+      "disabled": false
+     },
+     {
+      "n": 10,
+      "state": "cleared",
+      "status": "✓ 40",
+      "label": "Board 10, cleared, best 40 pours",
+      "disabled": false
+     },
+     {
+      "n": 11,
+      "state": "cleared",
+      "status": "✓ 41",
+      "label": "Board 11, cleared, best 41 pours",
+      "disabled": false
+     },
+     {
+      "n": 12,
+      "state": "cleared",
+      "status": "✓ 42",
+      "label": "Board 12, cleared, best 42 pours",
+      "disabled": false
+     },
+     {
+      "n": 13,
+      "state": "cleared",
+      "status": "✓ 43",
+      "label": "Board 13, cleared, best 43 pours",
+      "disabled": false
+     },
+     {
+      "n": 14,
+      "state": "cleared",
+      "status": "✓ 44",
+      "label": "Board 14, cleared, best 44 pours",
+      "disabled": false
+     },
+     {
+      "n": 15,
+      "state": "cleared",
+      "status": "✓ 45",
+      "label": "Board 15, cleared, best 45 pours",
+      "disabled": false
+     },
+     {
+      "n": 16,
+      "state": "cleared",
+      "status": "✓ 46",
+      "label": "Board 16, cleared, best 46 pours",
+      "disabled": false
+     },
+     {
+      "n": 17,
+      "state": "cleared",
+      "status": "✓ 47",
+      "label": "Board 17, cleared, best 47 pours",
+      "disabled": false
+     },
+     {
+      "n": 18,
+      "state": "cleared",
+      "status": "✓ 48",
+      "label": "Board 18, cleared, best 48 pours",
+      "disabled": false
+     },
+     {
+      "n": 19,
+      "state": "cleared",
+      "status": "✓ 49",
+      "label": "Board 19, cleared, best 49 pours",
+      "disabled": false
+     },
+     {
+      "n": 20,
+      "state": "cleared",
+      "status": "✓ 50",
+      "label": "Board 20, cleared, best 50 pours",
+      "disabled": false
+     },
+     {
+      "n": 21,
+      "state": "cleared",
+      "status": "✓ 51",
+      "label": "Board 21, cleared, best 51 pours",
+      "disabled": false
+     },
+     {
+      "n": 22,
+      "state": "cleared",
+      "status": "✓ 52",
+      "label": "Board 22, cleared, best 52 pours",
+      "disabled": false
+     },
+     {
+      "n": 23,
+      "state": "cleared",
+      "status": "✓ 53",
+      "label": "Board 23, cleared, best 53 pours",
+      "disabled": false
+     },
+     {
+      "n": 24,
+      "state": "open",
+      "status": "Open",
+      "label": "Board 24, not cleared yet",
+      "disabled": false
+     }
+    ],
+    "focus": "24"
+   },
+   "board": {
+    "label": "Winter Tide · Board 24",
+    "ev": [
+     "wintertide",
+     2026,
+     24
+    ],
+    "snowing": true,
+    "jars": 9,
+    "plan": {
+     "solvable": true,
+     "pours": 29,
+     "colors": 7,
+     "capacity": 4,
+     "hidden": 7,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide complete!",
+    "text": "1 pour · 24 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "rewardSr": "+50 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-prize: Frost jar glass is yours",
+     "win-shell win-unlock win-badge: New badges: Winter Tide, First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "saveAfter": {
+    "owned": [
+     "glass:frost"
+    ],
+    "badges": [
+     "mechanics-1",
+     "mechanics-4",
+     "event-wintertide",
+     "first-seal"
+    ],
+    "level": 8
+   },
+   "stylesButtonHidden": false,
+   "errors": []
+  },
+  "wonAfterMidnight": {
+   "chooser": true,
+   "board": {
+    "label": "Winter Tide · Board 21",
+    "ev": [
+     "wintertide",
+     2026,
+     21
+    ],
+    "snowing": true,
+    "jars": 9,
+    "plan": {
+     "solvable": true,
+     "pours": 29,
+     "colors": 7,
+     "capacity": 4,
+     "hidden": 7,
+     "special": 0
+    }
+   },
+   "win": {
+    "title": "Winter Tide · Board 21",
+    "text": "1 pour · 21 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": "+20",
+    "rewardSr": "+0 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "clockAtWin": "2027-01-01T00:01:00.000Z",
+   "saveAfter": {
+    "wintertide": {
+     "year": 2026,
+     "cleared": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+     ],
+     "pours": {
+      "1": 31,
+      "2": 32,
+      "3": 33,
+      "4": 34,
+      "5": 35,
+      "6": 36,
+      "7": 37,
+      "8": 38,
+      "9": 39,
+      "10": 40,
+      "11": 41,
+      "12": 42,
+      "13": 43,
+      "14": 44,
+      "15": 45,
+      "16": 46,
+      "17": 47,
+      "18": 48,
+      "19": 49,
+      "20": 50,
+      "21": 1
+     }
+    }
+   },
+   "afterNext": {
+    "homeShown": true,
+    "chooserShown": false,
+    "snowing": false,
+    "sub": "All 24 boards open · 20 of 24 cleared · Last day"
+   },
+   "homeAfter": {
+    "playCard": false,
+    "title": "Winter Tide",
+    "sub": "20 of 24 cleared",
+    "days": "Last day",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": false,
+    "snowCanvas": false,
+    "musicEvent": null,
+    "musicRoot": 261.63,
+    "clock": "2027-01-01T00:01:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "errors": []
+  },
+  "reduced": {
+   "home": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "0 of 24 cleared",
+    "days": "Ends in 19 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": false,
+    "snowCanvas": false,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-12T09:00:00.000Z",
+    "docScrollW": 412,
+    "innerW": 412
+   },
+   "boardSnow": {
+    "snowing": false,
+    "canvas": false
+   },
+   "errors": []
+  },
+  "levelBoardSnow": {
+   "homeSnow": true,
+   "levelSnow": {
+    "snowing": false,
+    "canvas": false
+   },
+   "errors": []
+  },
+  "w320-2026-12-01": {
+   "homePlay": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 300,
+    "bad": []
+   },
+   "homeFacts": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "0 of 24 cleared",
+    "days": "Ends in 30 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-01T09:00:00.000Z",
+    "docScrollW": 320,
+    "innerW": 320
+   },
+   "homeToday": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 308,
+    "bad": []
+   },
+   "chooserOpened": true,
+   "chooser": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": []
+   },
+   "chooserScroll": {
+    "olSW": 252,
+    "olCW": 252,
+    "cardSH": 1382,
+    "cardCH": 648,
+    "cardOverflowY": "auto"
+   },
+   "win": {
+    "title": "Winter Tide · Board 1",
+    "text": "1 pour · 1 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": "+20",
+    "rewardSr": "+0 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "winOverflow": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": [
+     "div#.win-bloom r=320 sw=560 cw=320 \"\"",
+     "span#.bloom-glow r=560 sw=768 cw=768 \"\""
+    ]
+   },
+   "errors": []
+  },
+  "w320-2026-12-12": {
+   "homePlay": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 300,
+    "bad": []
+   },
+   "homeFacts": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "11 of 24 cleared",
+    "days": "Ends in 19 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-12T09:00:00.000Z",
+    "docScrollW": 320,
+    "innerW": 320
+   },
+   "homeToday": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 308,
+    "bad": []
+   },
+   "chooserOpened": true,
+   "chooser": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": []
+   },
+   "chooserScroll": {
+    "olSW": 252,
+    "olCW": 252,
+    "cardSH": 1382,
+    "cardCH": 648,
+    "cardOverflowY": "auto"
+   },
+   "win": {
+    "title": "Winter Tide · Board 12",
+    "text": "1 pour · 12 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "rewardSr": "+50 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "winOverflow": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": [
+     "div#.win-bloom r=320 sw=616 cw=320 \"\"",
+     "span#.bloom-glow r=616 sw=877 cw=877 \"\"",
+     "span#win-reward-sr.sr-only r=115 sw=149 cw=1 \"+50 coins\""
+    ]
+   },
+   "errors": []
+  },
+  "w320-2026-12-24": {
+   "homePlay": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 300,
+    "bad": []
+   },
+   "homeFacts": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "23 of 24 cleared",
+    "days": "Ends in 7 days",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-24T09:00:00.000Z",
+    "docScrollW": 320,
+    "innerW": 320
+   },
+   "homeToday": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 308,
+    "bad": []
+   },
+   "chooserOpened": true,
+   "chooser": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": []
+   },
+   "chooserScroll": {
+    "olSW": 252,
+    "olCW": 252,
+    "cardSH": 1382,
+    "cardCH": 648,
+    "cardOverflowY": "auto"
+   },
+   "win": {
+    "title": "Winter Tide complete!",
+    "text": "1 pour · 24 of 24 cleared",
+    "note": "",
+    "rewardShown": true,
+    "coins": "+50",
+    "rewardSr": "+50 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-prize: Frost jar glass is yours",
+     "win-shell win-unlock win-badge: New badges: Winter Tide, First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "winOverflow": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": [
+     "div#.win-bloom r=320 sw=702 cw=320 \"\"",
+     "span#.bloom-glow r=702 sw=1042 cw=1042 \"\"",
+     "span#win-reward-sr.sr-only r=115 sw=149 cw=1 \"+50 coins\"",
+     "span#.glass r=70 sw=24 cw=22 \"\""
+    ]
+   },
+   "errors": []
+  },
+  "w320-2026-12-31": {
+   "homePlay": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 300,
+    "bad": []
+   },
+   "homeFacts": {
+    "playCard": true,
+    "title": "Winter Tide",
+    "sub": "20 of 24 cleared",
+    "days": "Last day",
+    "todayCard": false,
+    "todayTitle": "",
+    "todaySub": "",
+    "todayDays": "",
+    "todayBar": "",
+    "snowing": true,
+    "snowCanvas": true,
+    "musicEvent": "wintertide",
+    "musicRoot": 329.63,
+    "clock": "2026-12-31T09:00:00.000Z",
+    "docScrollW": 320,
+    "innerW": 320
+   },
+   "homeToday": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 308,
+    "bad": []
+   },
+   "chooserOpened": true,
+   "chooser": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": []
+   },
+   "chooserScroll": {
+    "olSW": 252,
+    "olCW": 252,
+    "cardSH": 1357,
+    "cardCH": 648,
+    "cardOverflowY": "auto"
+   },
+   "win": {
+    "title": "Winter Tide · Board 21",
+    "text": "1 pour · 21 of 24 cleared",
+    "note": "",
+    "rewardShown": false,
+    "coins": "+20",
+    "rewardSr": "+0 coins",
+    "shell": null,
+    "unlocks": [
+     "win-shell win-unlock win-badge: New badge: First SealShare"
+    ],
+    "next": "Continue",
+    "share": false,
+    "moves": 1
+   },
+   "winOverflow": {
+    "docScrollW": 320,
+    "innerW": 320,
+    "rootRight": 320,
+    "bad": [
+     "div#.win-bloom r=320 sw=560 cw=320 \"\"",
+     "span#.bloom-glow r=560 sw=768 cw=768 \"\""
+    ]
+   },
+   "errors": []
+  }
+ }
+}
